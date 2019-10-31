@@ -1,0 +1,7 @@
+zest.releaser[recommended]
+tox
+pylint
+pytest
+coverage
+
+-r requirements.txt

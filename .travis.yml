@@ -1,0 +1,21 @@
+language: python
+python:
+  - 3.5
+  - 3.6
+matrix:
+  include:
+    - python: 3.7
+      dist: xenial
+      sudo: true
+    - python: 3.8
+      dist: xenial
+      sudo: true
+install:
+  - pip install -r requirements-dev.txt --upgrade
+  - pip install coveralls
+script:
+  - pylint ddb
+  - coverage run --source=ddb -m pytest
+  - python setup.py build
+after_success:
+  - coveralls

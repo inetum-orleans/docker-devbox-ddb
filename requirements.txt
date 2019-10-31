@@ -1,0 +1,7 @@
+colorama
+netifaces
+requests
+PyYAML
+marshmallow
+dotty-dict
+deepmerge

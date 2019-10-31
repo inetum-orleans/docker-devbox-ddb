@@ -1,0 +1,15 @@
+foo: bar3
+ddb_home: ddb_home
+ddb: ddb
+project: project
+list:
+  - ddb_home
+  - home
+  - project
+  - project.local
+some:
+  deep: env
+  list:
+    - a
+    - replaced
+    - c

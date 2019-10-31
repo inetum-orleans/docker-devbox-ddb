@@ -1,0 +1,8 @@
+foo: bar3
+project: project
+list:
+  - project
+some:
+  deep:
+    nested:
+      variable: true

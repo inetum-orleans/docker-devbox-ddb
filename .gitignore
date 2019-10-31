@@ -1,0 +1,10 @@
+/.pytest_cache/
+/.eggs/
+/.coverage
+/.python-version
+/.tox/
+*.egg-info
+__pycache__/
+*.pyc
+*.pyo
+./.idea

@@ -1,0 +1,10 @@
+list:
+  - project.local
+some:
+  deep:
+    nested:
+      var: true
+  list:
+    - a
+    - b
+    - c
