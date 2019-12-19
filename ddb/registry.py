@@ -42,7 +42,7 @@ class DefaultRegistryObject(RegistryObject):
         return self._description if self._description else super().description
 
 
-T = TypeVar('T', bound=RegistryObject)  # pylint:disable=invalid-name
+T = TypeVar('T')  # pylint:disable=invalid-name
 
 
 class Registry(Generic[T]):
@@ -56,21 +56,29 @@ class Registry(Generic[T]):
         self._objects = []
         self._objects_dict = {}
 
-    def register(self, obj: T):
+    def _default_name(self, obj: T):  # pylint:disable=no-self-use
+        """
+        The name getter for an object.
+        """
+        if hasattr(obj, "name"):
+            return obj.name
+        raise ValueError("Name should be provided to register this kind of object")
+
+    def register(self, obj: T, name=None):
         """
         Register an object instance.
         """
+        name = name if name else self._default_name(obj)
+
         if not isinstance(obj, self._clazz):
-            name = obj.name if hasattr(obj, "name") else str(obj)
             raise ValueError(self._type_name + " name \"" +
                              name + "\" should be an instance of " +
                              self._clazz.__name__)
 
-        if obj.name in self._objects_dict:
-            name = obj.name if hasattr(obj, "name") else str(obj)
+        if name in self._objects_dict:
             raise ValueError(self._type_name + " name \"" + name + "\" is already registered")
 
-        self._objects_dict[obj.name] = obj
+        self._objects_dict[name] = obj
         self._objects.append(obj)
 
     def get(self, name: str) -> T:

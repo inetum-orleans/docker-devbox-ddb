@@ -3,17 +3,21 @@
 from argparse import ArgumentParser
 from typing import Optional, Sequence, Iterable, Callable, Any
 
-from ddb.event import bus
-from ddb.feature.core import CoreFeature
-from ddb.feature.docker import DockerFeature
-from ddb.feature.plugins import PluginsFeature
-from ddb.feature.shell import ShellFeature
-from ddb.registry import Registry
+from slugify import slugify
+
 from .action import actions
 from .binary import binaries
+from .cache import caches, _project_cache_name, ShelveCache, _global_cache_name
 from .command import commands
+from .config import config
+from .event import bus
 from .feature import features, Feature
+from .feature.core import CoreFeature
+from .feature.docker import DockerFeature
+from .feature.plugins import PluginsFeature
+from .feature.shell import ShellFeature
 from .phase import phases
+from .registry import Registry
 from .service import services
 
 
@@ -25,6 +29,15 @@ def register_default_features():
     features.register(ShellFeature())
     features.register(DockerFeature())
     features.register(PluginsFeature())
+
+
+def register_default_caches():
+    """
+    Register default caches.
+    """
+    caches.register(ShelveCache(slugify(config.paths.project_home, regex_pattern=r'[^-a-z0-9_\.]+')),
+                    _project_cache_name)
+    caches.register(ShelveCache("__global__"), _global_cache_name)
 
 
 def register_objects(features_list: Iterable[Feature],
@@ -100,6 +113,7 @@ def main(args: Optional[Sequence[str]] = None):
     Load all features and handle command line
     """
     register_default_features()
+    register_default_caches()
     load_registered_features()
     register_actions_in_event_bus()
     handle_command_line(args)

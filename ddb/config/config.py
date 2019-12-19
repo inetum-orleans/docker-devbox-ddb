@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
 import os
+from collections import namedtuple
 from os.path import exists
 from pathlib import Path
-from typing import Callable, Any
+from typing import Callable, Any, Union
 
 import yaml
 from deepmerge import always_merger
 from dotty_dict import dotty
 from marshmallow import Schema
 
+ConfigPaths = namedtuple('ConfigPaths', ['ddb_home', 'home', 'project_home'])
 
-def get_default_config_paths(env_prefix):
+
+def get_default_config_paths(env_prefix) -> ConfigPaths:
     """
     Get configuration paths
     """
@@ -18,7 +21,7 @@ def get_default_config_paths(env_prefix):
     home = os.environ.get(env_prefix + '_HOME', os.path.join(str(Path.home()), '.docker-devbox'))
     ddb_home = os.environ.get(env_prefix + '_DDB_HOME', os.path.join(home, 'ddb'))
 
-    return ddb_home, home, project_home
+    return ConfigPaths(ddb_home=ddb_home, home=home, project_home=project_home)
 
 
 class Config:
@@ -26,13 +29,16 @@ class Config:
     Configuration
     """
 
-    def __init__(self, config_paths=None, env_prefix='DDB', filenames=('ddb', 'ddb.local'),
+    def __init__(self,
+                 paths: Union[ConfigPaths, None] = None,
+                 env_prefix='DDB',
+                 filenames=('ddb', 'ddb.local'),
                  extensions=('yml', 'yaml')):
         self.env_prefix = env_prefix
         self.filenames = filenames
         self.extensions = extensions
         self.data = dotty()
-        self.config_paths = config_paths if config_paths else get_default_config_paths(env_prefix)
+        self.paths = paths if paths else get_default_config_paths(env_prefix)
 
     def clear(self):
         """
@@ -47,10 +53,10 @@ class Config:
         self.data.clear()
         loaded_data = {}
 
-        for config_path in self.config_paths:
+        for path in self.paths:
             for basename in self.filenames:
                 for ext in self.extensions:
-                    file = os.path.join(config_path, basename + '.' + ext)
+                    file = os.path.join(path, basename + '.' + ext)
                     if exists(file):
                         with open(file, 'rb') as stream:
                             file_data = yaml.load(stream, Loader=yaml.FullLoader)

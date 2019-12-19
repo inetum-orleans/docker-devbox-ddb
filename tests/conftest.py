@@ -6,6 +6,7 @@ from _pytest.fixtures import FixtureRequest
 
 from ddb.action import actions
 from ddb.binary import binaries
+from ddb.cache import caches
 from ddb.command import commands
 from ddb.event import bus
 from ddb.feature import features
@@ -30,6 +31,10 @@ def data_dir(global_data_dir: str, request: FixtureRequest) -> str:
 
 @pytest.fixture(autouse=True)
 def configure():
+    for cache in caches.all():
+        cache.close()
+
+    caches.clear()
     bus.clear()
     features.clear()
     phases.clear()

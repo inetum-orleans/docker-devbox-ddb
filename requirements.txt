@@ -5,3 +5,5 @@ PyYAML
 marshmallow
 dotty-dict
 deepmerge
+diskcache
+python-slugify

@@ -11,7 +11,7 @@ def test_defaults():
     assert config.env_prefix == 'DDB'
     assert config.filenames == ('ddb', 'ddb.local')
     assert config.extensions == ('yml', 'yaml')
-    assert len(config.config_paths) == 3
+    assert len(config.paths) == 3
 
 
 def test_load_and_clear(data_dir):
@@ -22,7 +22,7 @@ def test_load_and_clear(data_dir):
     with open(os.path.join(data_dir, 'load', 'expect.yml'), 'rb') as stream:
         expected = yaml.load(stream, Loader=yaml.FullLoader)
 
-    config = Config(config_paths=(ddb_home, home, project))
+    config = Config(paths=(ddb_home, home, project))
     config.load()
 
     assert config.data == expected
@@ -42,7 +42,7 @@ def test_load_with_env_overrides(data_dir):
     with open(os.path.join(data_dir, 'load', 'expect_env.yml'), 'rb') as stream:
         expected = yaml.load(stream, Loader=yaml.FullLoader)
 
-    config = Config(config_paths=(ddb_home, home, project))
+    config = Config(paths=(ddb_home, home, project))
     config.load()
 
     assert config.data == expected
@@ -51,7 +51,7 @@ def test_load_with_env_overrides(data_dir):
 def test_load_env_variables(data_dir):
     env = os.path.join(data_dir, 'load', 'env')
 
-    config = Config(config_paths=(env,))
+    config = Config(paths=(env,))
     config.load()
 
     assert os.environ.get('FOO') == 'bar'
