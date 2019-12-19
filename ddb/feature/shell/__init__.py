@@ -2,7 +2,10 @@
 import os
 from typing import Iterable, ClassVar
 
-from .actions import BashActivateAction, CmdActivateAction
+from dotty_dict import Dotty
+
+from .actions import ActivateAction, DeactivateAction
+from .integrations import BashShellIntegration, CmdShellIntegration
 from .schema import ShellSchema
 from ..feature import Feature, FeatureConfigurationAutoConfigureError
 from ..schema import FeatureSchema
@@ -27,8 +30,10 @@ class ShellFeature(Feature):
     @property
     def actions(self) -> Iterable[Action]:
         return (
-            BashActivateAction(),
-            CmdActivateAction()
+            ActivateAction(BashShellIntegration()),
+            DeactivateAction(BashShellIntegration()),
+            ActivateAction(CmdShellIntegration()),
+            DeactivateAction(CmdShellIntegration())
         )
 
     @property
@@ -43,17 +48,15 @@ class ShellFeature(Feature):
         return (
             LifecycleCommand("activate",
                              "Activate the environment and output a shell script to be executed",
-                             {
-                                 "configure", "print-activate"
-                             }),
+                             "configure", "print-activate"
+                             ),
             LifecycleCommand("deactivate",
                              "Deactivate the environment and output a shell script to be executed",
-                             {
-                                 "configure", "print-deactivate"
-                             }),
+                             "configure", "print-deactivate"
+                             ),
         )
 
-    def _auto_configure(self, feature_config: dict):
+    def _auto_configure(self, feature_config: Dotty):
         if 'shell' not in feature_config:
             comspec = os.environ.get('COMSPEC')
             shell = os.environ.get('SHELL')

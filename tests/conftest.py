@@ -4,14 +4,7 @@ import os
 import pytest
 from _pytest.fixtures import FixtureRequest
 
-from ddb.action import actions
-from ddb.binary import binaries
-from ddb.cache import caches
-from ddb.command import commands
-from ddb.event import bus
-from ddb.feature import features
-from ddb.phase import phases
-from ddb.service import services
+from ddb.__main__ import reset
 
 
 @pytest.fixture(scope="module")
@@ -31,30 +24,19 @@ def data_dir(global_data_dir: str, request: FixtureRequest) -> str:
 
 @pytest.fixture(autouse=True)
 def configure():
-    for cache in caches.all():
-        cache.close()
+    original_environ = dict(os.environ)
 
-    caches.clear()
-    bus.clear()
-    features.clear()
-    phases.clear()
-    commands.clear()
-    actions.clear()
-    binaries.clear()
-    services.clear()
+    try:
+        if os.name == 'nt' and 'COMSPEC' not in os.environ:
+            os.environ['COMSPEC'] = r'C:\Windows\System32\cmd.exe'
+        if os.name != 'nt' and 'SHELL' not in os.environ:
+            os.environ['SHELL'] = '/bin/bash'
+        if os.name == 'nt':
+            os.environ['DDB_OVERRIDE_DOCKER_USER_UID'] = '1000'
+            os.environ['DDB_OVERRIDE_DOCKER_USER_GID'] = '1000'
 
-    original_environ = os.environ.copy()
-
-    if os.name == 'nt' and 'COMSPEC' not in os.environ:
-        os.environ['COMSPEC'] = r'C:\Windows\System32\cmd.exe'
-    if os.name != 'nt' and 'SHELL' not in os.environ:
-        os.environ['SHELL'] = '/bin/bash'
-    if os.name == 'nt':
-        os.environ['DDB_DOCKER_USER_UID'] = '1000'
-        os.environ['DDB_DOCKER_USER_GID'] = '1000'
-
-    yield
-
-    os.environ.clear()
-    for k, v in original_environ.items():
-        os.environ[k] = v
+        yield
+    finally:
+        os.environ.clear()
+        os.environ.update(original_environ)
+        reset()

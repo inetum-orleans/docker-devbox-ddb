@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from typing import Iterable, ClassVar
 
-from dotty_dict import dotty
+from dotty_dict import dotty, Dotty
 
 from .actions import ListFeaturesAction
 from .schema import CoreFeatureSchema
@@ -51,38 +51,36 @@ class CoreFeature(Feature):
     @property
     def commands(self) -> Iterable[Command]:
         return (
-            LifecycleCommand("configure", "Configure the environment", {
-                "configure"
-            }),
+            LifecycleCommand("configure", "Configure the environment",
+                             "configure"
+                             ),
 
-            LifecycleCommand("up", "Configure the environment, create and start services", {
-                "configure", "create", "start"
-            }),
+            LifecycleCommand("up", "Configure the environment, create and start services",
+                             "configure", "create", "start"
+                             ),
 
-            LifecycleCommand("init", "Initialize project", {
-                "init"
-            }),
+            LifecycleCommand("init", "Initialize project",
+                             "init"
+                             ),
 
-            LifecycleCommand("down", "Stop and destroy services", {
-                "stop", "destroy"
-            }),
+            LifecycleCommand("down", "Stop and destroy services",
+                             "stop", "destroy"
+                             ),
 
-            LifecycleCommand("start", "Start services", {
-                "start"
-            }),
+            LifecycleCommand("start", "Start services",
+                             "start"
+                             ),
 
-            LifecycleCommand("stop", "Stop services", {
-                "stop"
-            }),
+            LifecycleCommand("stop", "Stop services",
+                             "stop"
+                             ),
 
-            LifecycleCommand("info", "List enabled features and effective configuration", {
-                "info"
-            }),
+            LifecycleCommand("info", "List enabled features and effective configuration",
+                             "info"
+                             ),
         )
 
-    def _auto_configure(self, feature_config: dict):
-        feature_config = dotty(feature_config)
-
+    def _auto_configure(self, feature_config: Dotty):
         env_current = 'env.current'
         env_available = 'env.available'
 

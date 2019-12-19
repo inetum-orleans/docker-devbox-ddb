@@ -119,5 +119,24 @@ def main(args: Optional[Sequence[str]] = None):
     handle_command_line(args)
 
 
+def reset():
+    """
+    Reset all caches and registries to run main method again
+    """
+
+    for cache in caches.all():
+        cache.close()
+
+    caches.clear()
+    bus.clear()
+    features.clear()
+    phases.clear()
+    commands.clear()
+    actions.clear()
+    binaries.clear()
+    services.clear()
+    config.clear()
+
+
 if __name__ == '__main__':  # pragma: no cover
     main()

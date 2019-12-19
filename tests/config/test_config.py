@@ -36,8 +36,8 @@ def test_load_with_env_overrides(data_dir):
                               os.path.join(data_dir, 'load', 'home'), \
                               os.path.join(data_dir, 'load', 'project')
 
-    os.environ['DDB_SOME_DEEP'] = "env"
-    os.environ['DDB_SOME_LIST[1]'] = "replaced"
+    os.environ['DDB_OVERRIDE_SOME_DEEP'] = "env"
+    os.environ['DDB_OVERRIDE_SOME_LIST[1]'] = "replaced"
 
     with open(os.path.join(data_dir, 'load', 'expect_env.yml'), 'rb') as stream:
         expected = yaml.load(stream, Loader=yaml.FullLoader)

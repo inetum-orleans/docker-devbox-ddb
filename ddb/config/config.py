@@ -7,7 +7,7 @@ from typing import Callable, Any, Union
 
 import yaml
 from deepmerge import always_merger
-from dotty_dict import dotty
+from dotty_dict import dotty, Dotty
 from marshmallow import Schema
 
 ConfigPaths = namedtuple('ConfigPaths', ['ddb_home', 'home', 'project_home'])
@@ -32,9 +32,11 @@ class Config:
     def __init__(self,
                  paths: Union[ConfigPaths, None] = None,
                  env_prefix='DDB',
+                 env_override_prefix='DDB_OVERRIDE',
                  filenames=('ddb', 'ddb.local'),
                  extensions=('yml', 'yaml')):
         self.env_prefix = env_prefix
+        self.env_override_prefix = env_override_prefix
         self.filenames = filenames
         self.extensions = extensions
         self.data = dotty()
@@ -68,10 +70,43 @@ class Config:
                 for (name, value) in env.items():
                     os.environ[name] = value
 
-        loaded_data = self.apply_environment_variables(loaded_data)
+        loaded_data = self.apply_environ_overrides(loaded_data)
         self.data.update(loaded_data)
 
-    def sanitize_and_validate(self, schema: Schema, key: str, auto_configure: Callable[[dict], Any] = None):
+    def to_environ(self, prefix=None, data=None, environ=None) -> dict:
+        """
+        Export configuration to dict for environ injection.
+        """
+        if environ is None:
+            environ = dict()
+
+        if data is None:
+            data = dict(self.data)
+        if prefix is None:
+            prefix = self.env_prefix
+
+        if isinstance(data, dict):
+            for (name, value) in data.items():
+                key_prefix = prefix + "_" + name.upper()
+                key_prefix = key_prefix.upper()
+
+                self.to_environ(key_prefix, value, environ)
+
+        elif isinstance(data, list):
+            i = 0
+            for value in data:
+                replace_prefix = prefix + "[" + str(i) + "]"
+                replace_prefix = replace_prefix.upper()
+
+                self.to_environ(replace_prefix, value, environ)
+
+                i += 1
+        else:
+            environ[prefix] = str(data)
+
+        return environ
+
+    def sanitize_and_validate(self, schema: Schema, key: str, auto_configure: Callable[[Dotty], Any] = None):
         """
         Sanitize and validate using given schema part of the configuration given by configuration key.
         """
@@ -82,21 +117,21 @@ class Config:
             raw_feature_config = {}
         feature_config = schema.dump(raw_feature_config)
 
-        feature_config = self.apply_environment_variables(feature_config, self.env_prefix + "_" + key)
+        feature_config = self.apply_environ_overrides(feature_config, self.env_override_prefix + "_" + key)
         feature_config = schema.dump(feature_config)
 
         if auto_configure:
-            auto_configure(feature_config)
+            auto_configure(dotty(feature_config))
 
         feature_config = schema.load(feature_config)
         self.data[key] = feature_config
 
-    def apply_environment_variables(self, data, prefix=None):
+    def apply_environ_overrides(self, data, prefix=None):
         """
         Apply environment variables to configuration.
         """
         if not prefix:
-            prefix = self.env_prefix
+            prefix = self.env_override_prefix
         prefix = prefix.upper()
 
         environ_value = os.environ.get(prefix)
@@ -108,7 +143,7 @@ class Config:
                 key_prefix = prefix + "_" + name
                 key_prefix = key_prefix.upper()
 
-                data[name] = self.apply_environment_variables(value, key_prefix)
+                data[name] = self.apply_environ_overrides(value, key_prefix)
         if isinstance(data, list):
             i = 0
             for value in data:
@@ -117,7 +152,7 @@ class Config:
 
                 environ_value = os.environ.get(replace_prefix)
                 if environ_value:
-                    data[i] = self.apply_environment_variables(value, replace_prefix)
+                    data[i] = self.apply_environ_overrides(value, replace_prefix)
 
                 i += 1
 

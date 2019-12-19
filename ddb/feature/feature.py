@@ -3,6 +3,7 @@ from abc import ABC
 from os import linesep
 from typing import ClassVar, Iterable, Union
 
+from dotty_dict import Dotty
 from marshmallow import ValidationError
 
 from .schema import FeatureSchema
@@ -73,7 +74,7 @@ class Feature(RegistryObject, ABC):  # pylint:disable=abstract-method
         except ValidationError as err:
             raise FeatureConfigurationValidationError(self, err)
 
-    def _auto_configure(self, feature_config: dict):
+    def _auto_configure(self, feature_config: Dotty):
         """
         Override this method to load default values that may depend on the context.
         """

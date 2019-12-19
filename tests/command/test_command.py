@@ -11,7 +11,7 @@ def test_lifecycle():
 
     bus.on(None, lambda event, *args, **kwargs: events.append(event))
 
-    command = LifecycleCommand("test", "TestCommand", ["step1", "step2", DefaultPhase("step3")])
+    command = LifecycleCommand("test", "TestCommand", "step1", "step2", DefaultPhase("step3"))
 
     command.execute(good="boy")
 

@@ -31,7 +31,7 @@ class LifecycleCommand(DefaultRegistryObject, Command):
     Triggered events are named "phase:<phase.name>"
     """
 
-    def __init__(self, name: str, description: Union[str, None], lifecycle: Iterable[Union[str, Phase]]):
+    def __init__(self, name: str, description: Union[str, None], *lifecycle: Union[str, Phase]):
         super().__init__(name, description)
         self._lifecycle = list(map(lambda phase: phases.get(phase) if not isinstance(phase, Phase) else phase,
                                    lifecycle))  # type: Iterable[Phase]

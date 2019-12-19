@@ -7,3 +7,4 @@ dotty-dict
 deepmerge
 diskcache
 python-slugify
+dictdiffer

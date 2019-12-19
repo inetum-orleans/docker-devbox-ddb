@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import os
-import re
 from typing import Iterable, ClassVar
 
-from dotty_dict import dotty
 import netifaces
+import re
+from dotty_dict import Dotty
 
 from .schema import DockerSchema
 from ..feature import Feature, FeatureConfigurationAutoConfigureError
@@ -29,24 +29,22 @@ class DockerFeature(Feature):
     def actions(self) -> Iterable[Action]:
         return ()
 
-    def _auto_configure(self, feature_config: dict):
-        feature_config = dotty(feature_config)
-
+    def _auto_configure(self, feature_config: Dotty):
         uid = feature_config.get('user.uid')
         if uid is None:
             try:
                 uid = os.getuid()  # pylint:disable=no-member
-                feature_config['user.uid'] = uid
-            except Exception as error:
+            except AttributeError as error:
                 raise FeatureConfigurationAutoConfigureError(self, 'user.uid', error)
+            feature_config['user.uid'] = uid
 
         gid = feature_config.get('user.gid')
         if gid is None:
             try:
                 gid = os.getgid()  # pylint:disable=no-member
-                feature_config['user.gid'] = gid
-            except Exception as error:
+            except AttributeError as error:
                 raise FeatureConfigurationAutoConfigureError(self, 'user.gid', error)
+            feature_config['user.gid'] = gid
 
         ip_address = feature_config.get('ip')
         if not ip_address:
@@ -72,4 +70,3 @@ class DockerFeature(Feature):
                                                              "from network interface configuration: " + interface)
 
         feature_config['ip'] = ip_address
-        # TODO: Export configuration to environment for docker/docker-compose to have those variables available
