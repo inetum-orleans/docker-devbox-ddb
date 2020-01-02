@@ -42,6 +42,12 @@ class Config:
         self.data = dotty()
         self.paths = paths if paths else get_default_config_paths(env_prefix)
 
+    def reset(self, *args, **kwargs):
+        """
+        Reset the configuration object.
+        """
+        self.__init__(*args, **kwargs)
+
     def clear(self):
         """
         Remove all configuration data.
@@ -52,10 +58,11 @@ class Config:
         """
         Load configuration data. Variable in 'env_key' key will be placed loaded as environment variables.
         """
-        self.data.clear()
         loaded_data = {}
 
         for path in self.paths:
+            if not path:
+                continue
             for basename in self.filenames:
                 for ext in self.extensions:
                     file = os.path.join(path, basename + '.' + ext)
@@ -71,7 +78,7 @@ class Config:
                     os.environ[name] = value
 
         loaded_data = self.apply_environ_overrides(loaded_data)
-        self.data.update(loaded_data)
+        self.data = dotty(always_merger.merge(self.data, loaded_data))
 
     def to_environ(self, prefix=None, data=None, environ=None) -> dict:
         """

@@ -1,0 +1,5 @@
+core:
+  env:
+    current: 'prod'
+symlinks:
+  targets: ['test.yml', 'test', 'test2']

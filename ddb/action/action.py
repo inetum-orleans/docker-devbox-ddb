@@ -20,7 +20,7 @@ class Action(RegistryObject, ABC):
     @abstractmethod
     def run(self, *args, **kwargs):
         """
-        Action implementation.
+        Action implementation. *args and **kwargs and coming from the provided command line arguments.
         """
 
     @property

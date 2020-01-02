@@ -1,0 +1,2 @@
+symlinks:
+  targets: ['test.yml', 'test']

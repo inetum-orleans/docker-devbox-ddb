@@ -5,6 +5,7 @@ from typing import Optional, Sequence, Iterable, Callable, Any
 
 from slugify import slugify
 
+from ddb.feature.symlinks import SymlinksFeature
 from .action import actions
 from .binary import binaries
 from .cache import caches, _project_cache_name, ShelveCache, _global_cache_name
@@ -29,6 +30,7 @@ def register_default_features():
     features.register(ShellFeature())
     features.register(DockerFeature())
     features.register(PluginsFeature())
+    features.register(SymlinksFeature())
 
 
 def register_default_caches():
@@ -135,7 +137,8 @@ def reset():
     actions.clear()
     binaries.clear()
     services.clear()
-    config.clear()
+
+    config.reset()
 
 
 if __name__ == '__main__':  # pragma: no cover

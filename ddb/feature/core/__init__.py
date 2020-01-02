@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from typing import Iterable, ClassVar
 
-from dotty_dict import dotty, Dotty
+from dotty_dict import Dotty
 
 from .actions import ListFeaturesAction
 from .schema import CoreFeatureSchema
@@ -81,13 +81,12 @@ class CoreFeature(Feature):
         )
 
     def _auto_configure(self, feature_config: Dotty):
-        env_current = 'env.current'
-        env_available = 'env.available'
+        if not feature_config.get('env.current') and feature_config.get('env.available'):
+            feature_config['env.current'] = feature_config['env.available'][-1]
 
-        if not feature_config.get(env_current) and feature_config.get(env_available):
-            feature_config[env_current] = feature_config[env_available][-1]
-        else:
-            raise FeatureConfigurationAutoConfigureError(self, env_current)
+        if not feature_config.get('env.current') or \
+                feature_config.get('env.current') not in feature_config['env.available']:
+            raise FeatureConfigurationAutoConfigureError(self, 'env.current')
 
     def before_load(self):
         config.load()

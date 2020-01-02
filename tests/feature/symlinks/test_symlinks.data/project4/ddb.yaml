@@ -1,0 +1,2 @@
+symlinks:
+  targets: ['subdirectory/test.yml', 'subdirectory/no.yml']
