@@ -5,6 +5,7 @@ from typing import Optional, Sequence, Iterable, Callable, Any
 
 from slugify import slugify
 
+from ddb.feature.jinja import JinjaFeature
 from ddb.feature.symlinks import SymlinksFeature
 from .action import actions
 from .binary import binaries
@@ -31,6 +32,7 @@ def register_default_features():
     features.register(DockerFeature())
     features.register(PluginsFeature())
     features.register(SymlinksFeature())
+    features.register(JinjaFeature())
 
 
 def register_default_caches():

@@ -1,0 +1,2 @@
+env: {{ core.env.current }}
+{% include 'partial/_partial.jinja.yml' %}
