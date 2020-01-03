@@ -19,7 +19,7 @@ class ListFeaturesAction(Action):
     def name(self) -> str:
         return "list-features"
 
-    def run(self, *args, **kwargs):
+    def execute(self, *args, **kwargs):
         enabled_features = [f for f in features.all() if not f.disabled]
 
         print("-" * 64)

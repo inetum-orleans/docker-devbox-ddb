@@ -56,7 +56,7 @@ class ShellFeature(Feature):
                              ),
         )
 
-    def _auto_configure(self, feature_config: Dotty):
+    def _configure_defaults(self, feature_config: Dotty):
         if 'shell' not in feature_config:
             comspec = os.environ.get('COMSPEC')
             shell = os.environ.get('SHELL')

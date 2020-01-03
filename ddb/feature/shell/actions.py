@@ -50,7 +50,7 @@ class ActivateAction(Action):
     def disabled(self) -> bool:
         return config.data.get('shell.shell') != self.shell.name
 
-    def run(self, *args, **kwargs):
+    def execute(self, *args, **kwargs):
         environ_backup = dict(os.environ)
         os.environ[_env_environ_backup] = json.dumps(environ_backup)
 
@@ -84,6 +84,6 @@ class DeactivateAction(Action):
     def disabled(self) -> bool:
         return config.data.get('shell.shell') != self.shell.name
 
-    def run(self, *args, **kwargs):
+    def execute(self, *args, **kwargs):
         environ_backup = json.loads(os.environ[_env_environ_backup])
         apply_diff_to_shell(self.shell, os.environ, environ_backup)

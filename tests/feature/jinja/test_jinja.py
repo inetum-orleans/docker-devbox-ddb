@@ -15,7 +15,7 @@ class TestConfigureAction:
         load_registered_features()
 
         action = ConfigureAction()
-        action.run()
+        action.execute()
 
         assert os.path.exists('foo.yml')
         with open('foo.yml', 'r') as f:
@@ -31,7 +31,7 @@ class TestConfigureAction:
         load_registered_features()
 
         action = ConfigureAction()
-        action.run()
+        action.execute()
 
         assert os.path.exists('foo.yml')
         with open('foo.yml', 'r') as f:
@@ -50,7 +50,7 @@ class TestConfigureAction:
         load_registered_features()
 
         action = ConfigureAction()
-        action.run()
+        action.execute()
 
         assert os.path.exists('.foo.yml')
         with open('.foo.yml', 'r') as f:
@@ -66,7 +66,7 @@ class TestConfigureAction:
         load_registered_features()
 
         action = ConfigureAction()
-        action.run()
+        action.execute()
 
         assert os.path.exists('foo')
         with open('foo', 'r') as f:
@@ -82,7 +82,7 @@ class TestConfigureAction:
         load_registered_features()
 
         action = ConfigureAction()
-        action.run()
+        action.execute()
 
         assert os.path.exists('foo')
         with open('foo', 'r') as f:

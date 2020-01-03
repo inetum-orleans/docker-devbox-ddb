@@ -3,8 +3,9 @@ from abc import abstractmethod, ABC
 from argparse import ArgumentParser
 from typing import Iterable, Union
 
-from ..event import bus
+from ..context import context
 from ..phase import phases, Phase
+from ..phase.phase import execute_phase
 from ..registry import RegistryObject, DefaultRegistryObject
 
 
@@ -42,4 +43,16 @@ class LifecycleCommand(DefaultRegistryObject, Command):
 
     def execute(self, *args, **kwargs):
         for phase in self._lifecycle:
-            bus.emit("phase:" + phase.name, *args, **kwargs)
+            execute_phase(phase, *args, **kwargs)
+
+
+def execute_command(command: Command, *args, **kwargs):
+    """
+    Execute a command with context update.
+    """
+
+    context.command = command
+    try:
+        command.execute(*args, **kwargs)
+    finally:
+        context.command = None

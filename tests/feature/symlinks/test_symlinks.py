@@ -21,7 +21,7 @@ class TestConfigureAction:
         load_registered_features()
 
         action = ConfigureAction()
-        action.run()
+        action.execute()
 
     def test_project_1(self, project_loader):
         project_loader("project1")
@@ -31,7 +31,7 @@ class TestConfigureAction:
         load_registered_features()
 
         action = ConfigureAction()
-        action.run()
+        action.execute()
 
         assert os.path.exists('test')
         assert os.path.islink('test')
@@ -47,7 +47,7 @@ class TestConfigureAction:
         load_registered_features()
 
         action = ConfigureAction()
-        action.run()
+        action.execute()
 
         assert os.path.islink('test')
         assert os.readlink('test') == 'test.stage'
@@ -68,7 +68,7 @@ class TestConfigureAction:
         load_registered_features()
 
         action = ConfigureAction()
-        action.run()
+        action.execute()
 
     def test_project_4_subdirectory(self, project_loader):
         project_loader("project4")
@@ -78,7 +78,7 @@ class TestConfigureAction:
         load_registered_features()
 
         action = ConfigureAction()
-        action.run()
+        action.execute()
 
         assert os.path.islink(os.path.join('subdirectory', 'test.yml'))
         assert os.readlink(os.path.join('subdirectory', 'test.yml')) == 'subdirectory/test.dev.yml'

@@ -30,7 +30,7 @@ class SymlinksFeature(Feature):
             ConfigureAction(),
         )
 
-    def _auto_configure(self, feature_config: Dotty):
+    def _configure_defaults(self, feature_config: Dotty):
         available_suffixes = feature_config.get("suffixes.available")
 
         if not available_suffixes:

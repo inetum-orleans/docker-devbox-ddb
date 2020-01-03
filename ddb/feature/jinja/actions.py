@@ -23,7 +23,7 @@ class ConfigureAction(Action):
     def event_name(self) -> str:
         return "phase:configure"
 
-    def run(self, *args, **kwargs):
+    def execute(self, *args, **kwargs):
         includes = config.data["jinja.includes"]
         excludes = config.data["jinja.excludes"]
         suffixes = config.data["jinja.suffixes"]

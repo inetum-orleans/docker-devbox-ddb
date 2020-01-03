@@ -29,7 +29,7 @@ class DockerFeature(Feature):
     def actions(self) -> Iterable[Action]:
         return ()
 
-    def _auto_configure(self, feature_config: Dotty):
+    def _configure_defaults(self, feature_config: Dotty):
         uid = feature_config.get('user.uid')
         if uid is None:
             try:

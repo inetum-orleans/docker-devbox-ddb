@@ -80,7 +80,7 @@ class CoreFeature(Feature):
                              ),
         )
 
-    def _auto_configure(self, feature_config: Dotty):
+    def _configure_defaults(self, feature_config: Dotty):
         if not feature_config.get('env.current') and feature_config.get('env.available'):
             feature_config['env.current'] = feature_config['env.available'][-1]
 

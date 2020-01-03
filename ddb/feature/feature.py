@@ -70,11 +70,11 @@ class Feature(RegistryObject, ABC):  # pylint:disable=abstract-method
         """
         schema = self.schema()
         try:
-            config.sanitize_and_validate(schema, self.name, self._auto_configure)
+            config.sanitize_and_validate(schema, self.name, self._configure_defaults)
         except ValidationError as err:
             raise FeatureConfigurationValidationError(self, err)
 
-    def _auto_configure(self, feature_config: Dotty):
+    def _configure_defaults(self, feature_config: Dotty):
         """
         Override this method to load default values that may depend on the context.
         """

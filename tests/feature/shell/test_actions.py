@@ -27,7 +27,7 @@ class ActivateActionBase(ABC):
 
     def test_run(self, capsys: CaptureFixture):
         action = ActivateAction(self.build_shell_integration())
-        action.run()
+        action.execute()
 
         capture = capsys.readouterr()
         assert capture.out
@@ -46,7 +46,7 @@ class ActivateActionBase(ABC):
         config.data["another.deep"] = "testing2"
 
         action = ActivateAction(self.build_shell_integration())
-        action.run()
+        action.execute()
 
         capture = capsys.readouterr()
         assert capture.out
@@ -93,7 +93,7 @@ class DeactivateActionBase(ABC):
         os.environ['DDB_SHELL_ENVIRON_BACKUP'] = json.dumps(dict(os.environ))
 
         action = DeactivateAction(self.build_shell_integration())
-        action.run()
+        action.execute()
 
         capture = capsys.readouterr()
         assert capture.out
@@ -112,7 +112,7 @@ class DeactivateActionBase(ABC):
         os.environ['DDB_SHELL_ENVIRON_BACKUP'] = json.dumps(dict())
 
         action = DeactivateAction(self.build_shell_integration())
-        action.run()
+        action.execute()
 
         capture = capsys.readouterr()
         assert capture.out
@@ -137,7 +137,7 @@ class DeactivateActionBase(ABC):
 
 
         action = DeactivateAction(self.build_shell_integration())
-        action.run()
+        action.execute()
 
         capture = capsys.readouterr()
         assert capture.out

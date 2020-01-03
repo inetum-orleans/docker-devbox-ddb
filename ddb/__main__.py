@@ -5,8 +5,9 @@ from typing import Optional, Sequence, Iterable, Callable, Any
 
 from slugify import slugify
 
-from ddb.feature.jinja import JinjaFeature
-from ddb.feature.symlinks import SymlinksFeature
+from ddb.command.command import execute_command
+from ddb.context import context
+from ddb.context.context import configure_context_logger
 from .action import actions
 from .binary import binaries
 from .cache import caches, _project_cache_name, ShelveCache, _global_cache_name
@@ -16,8 +17,10 @@ from .event import bus
 from .feature import features, Feature
 from .feature.core import CoreFeature
 from .feature.docker import DockerFeature
+from .feature.jinja import JinjaFeature
 from .feature.plugins import PluginsFeature
 from .feature.shell import ShellFeature
+from .feature.symlinks import SymlinksFeature
 from .phase import phases
 from .registry import Registry
 from .service import services
@@ -99,7 +102,9 @@ def handle_command_line(args: Optional[Sequence[str]] = None):
 
     if parsed_args.command:
         command = commands.get(parsed_args.command)
-        command.execute(**vars(parsed_args))
+        kwargs = vars(parsed_args)
+        del kwargs['command']
+        execute_command(command, **kwargs)
     else:
         opts.print_help()
 
@@ -109,13 +114,14 @@ def register_actions_in_event_bus():
     Register registered actions into event bus.
     """
     for action in actions.all():
-        bus.on(action.event_name, action.run)
+        bus.on(action.event_name, action.execute_in_context)
 
 
 def main(args: Optional[Sequence[str]] = None):
     """
     Load all features and handle command line
     """
+    configure_context_logger()
     register_default_features()
     register_default_caches()
     load_registered_features()
@@ -141,6 +147,7 @@ def reset():
     services.clear()
 
     config.reset()
+    context.reset()
 
 
 if __name__ == '__main__':  # pragma: no cover

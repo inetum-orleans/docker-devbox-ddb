@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from abc import abstractmethod, ABC
 
+from ddb.context import context
 from ddb.registry import RegistryObject
 
 
@@ -18,10 +19,16 @@ class Action(RegistryObject, ABC):
         """
 
     @abstractmethod
-    def run(self, *args, **kwargs):
+    def execute(self, *args, **kwargs):
         """
-        Action implementation. *args and **kwargs and coming from the provided command line arguments.
+        Action implementation. *args and **kwargs are coming from the provided command line arguments.
         """
+
+    def execute_in_context(self, *args, **kwargs):
+        """
+        Execute action implementation with context update.
+        """
+        execute_action(self, *args, **kwargs)
 
     @property
     def disabled(self) -> bool:
@@ -29,3 +36,15 @@ class Action(RegistryObject, ABC):
         Check if the action is disabled.
         """
         return False
+
+
+def execute_action(action: Action, *args, **kwargs):
+    """
+    Execute an action with context update.
+    """
+
+    context.action = action
+    try:
+        action.execute(*args, **kwargs)
+    finally:
+        context.action = None

@@ -12,13 +12,13 @@ class ConfigureAction(Action):
 
     @property
     def name(self) -> str:
-        return "symlinks:configure"
+        return "create-symlinks"
 
     @property
     def event_name(self) -> str:
         return "phase:configure"
 
-    def run(self, *args, **kwargs):
+    def execute(self, *args, **kwargs):
         targets = config.data["symlinks.targets"]
         current_suffix = config.data["symlinks.suffixes.current"]
         available_suffixes = config.data["symlinks.suffixes.available"]
