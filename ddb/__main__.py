@@ -3,7 +3,9 @@
 from argparse import ArgumentParser
 from typing import Optional, Sequence, Iterable, Callable, Any
 
+import pkg_resources
 from slugify import slugify
+from toposort import toposort_flatten
 
 from ddb.command.command import execute_command
 from ddb.context import context
@@ -15,27 +17,47 @@ from .command import commands
 from .config import config
 from .event import bus
 from .feature import features, Feature
-from .feature.core import CoreFeature
-from .feature.docker import DockerFeature
-from .feature.jinja import JinjaFeature
-from .feature.plugins import PluginsFeature
-from .feature.shell import ShellFeature
-from .feature.symlinks import SymlinksFeature
 from .phase import phases
 from .registry import Registry
 from .service import services
 
 
-def register_default_features():
+def register_entrypoint_features():
     """
-    Register default features inside features registry.
+    Register setuptools entrypoint 'ddb_features' inside features registry.
+    Features are registered in order for their dependency to be registered first with a topological sort.
+    Withing a command phase, actions are executed in the order of their feature registration.
     """
-    features.register(CoreFeature())
-    features.register(ShellFeature())
-    features.register(PluginsFeature())
-    features.register(JinjaFeature())
-    features.register(SymlinksFeature())
-    features.register(DockerFeature())
+    entrypoint_features = {}
+    for entry_point in pkg_resources.iter_entry_points('ddb_features'):
+        feature = entry_point.load()()
+        entrypoint_features[feature.name] = feature
+
+    required_dependencies = {}
+    toposort_data = {}
+
+    for name, feat in entrypoint_features.items():
+        feat_required_dependencies = []
+        dependencies = set()
+        for dependency_item in feat.dependencies:
+            if not dependency_item.endswith('[optional]'):
+                feat_required_dependencies.append(dependency_item)
+            else:
+                dependency_item = dependency_item[0:len(dependency_item) - len('[optional]')]
+            dependencies.add(dependency_item)
+
+        toposort_data[name] = dependencies
+        required_dependencies[name] = feat_required_dependencies
+
+    for name, feat_required_dependencies in required_dependencies.items():
+        for required_dependency in feat_required_dependencies:
+            if required_dependency not in entrypoint_features.keys():
+                raise ValueError("A required dependency is missing for " +
+                                 name + " feature (" + required_dependency + ")")
+
+    sorted_feature_names = toposort_flatten(toposort_data, sort=False)
+    for feature_name in sorted_feature_names:
+        features.register(entrypoint_features[feature_name])
 
 
 def register_default_caches():
@@ -122,7 +144,7 @@ def main(args: Optional[Sequence[str]] = None):
     Load all features and handle command line
     """
     configure_context_logger()
-    register_default_features()
+    register_entrypoint_features()
     register_default_caches()
     load_registered_features()
     register_actions_in_event_bus()

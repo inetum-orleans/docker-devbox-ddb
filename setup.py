@@ -24,6 +24,14 @@ entry_points = {
     'console_scripts': [
         'ddb = ddb.__main__:main'
     ],
+    'ddb_features': [
+        'core = ddb.feature.core:CoreFeature',
+        'docker = ddb.feature.docker:DockerFeature',
+        'jinja = ddb.feature.jinja:JinjaFeature',
+        'plugins = ddb.feature.plugins:PluginsFeature',
+        'shell = ddb.feature.shell:ShellFeature',
+        'symlinks = ddb.feature.symlinks:SymlinksFeature'
+    ]
 }
 
 with io.open('ddb/__version__.py', 'r') as f:

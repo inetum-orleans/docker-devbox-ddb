@@ -3,11 +3,10 @@ from typing import ClassVar, Iterable
 
 from dotty_dict import Dotty
 
-from ddb.action import Action
-from ddb.feature import Feature
 from .actions import CreateAction
 from .schema import SymlinksSchema
-from ..feature import FeatureConfigurationError
+from ..feature import Feature, FeatureConfigurationError
+from ...action import Action
 from ...config import config
 from ...utils.file import TemplateFinder
 
@@ -20,6 +19,10 @@ class SymlinksFeature(Feature):
     @property
     def name(self) -> str:
         return "symlinks"
+
+    @property
+    def dependencies(self) -> Iterable[str]:
+        return ["core", "jinja[optional]"]
 
     @property
     def schema(self) -> ClassVar[SymlinksSchema]:

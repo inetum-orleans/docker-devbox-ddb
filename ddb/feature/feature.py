@@ -64,6 +64,14 @@ class Feature(RegistryObject, ABC):  # pylint:disable=abstract-method
         """
         return []
 
+    @property
+    def dependencies(self) -> Iterable[str]:
+        """
+        Feature dependencies. It should match the name of other features. If may ends with '[optional]' if the
+        dependency is optional.
+        """
+        return []
+
     def configure(self):
         """
         Configure this feature.

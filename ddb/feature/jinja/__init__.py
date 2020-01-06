@@ -20,6 +20,10 @@ class JinjaFeature(Feature):
         return "jinja"
 
     @property
+    def dependencies(self) -> Iterable[str]:
+        return ["core"]
+
+    @property
     def schema(self) -> ClassVar[JinjaSchema]:
         return JinjaSchema
 

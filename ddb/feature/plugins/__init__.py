@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from typing import Iterable
+
 from ..feature import Feature
 
 
@@ -10,3 +12,7 @@ class PluginsFeature(Feature):
     @property
     def name(self) -> str:
         return "plugins"
+
+    @property
+    def dependencies(self) -> Iterable[str]:
+        return ["core"]

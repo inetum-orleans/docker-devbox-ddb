@@ -24,6 +24,10 @@ class ShellFeature(Feature):
         return "shell"
 
     @property
+    def dependencies(self) -> Iterable[str]:
+        return ["core"]
+
+    @property
     def schema(self) -> ClassVar[FeatureSchema]:
         return ShellSchema
 
