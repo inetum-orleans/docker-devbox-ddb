@@ -8,6 +8,6 @@ class JinjaSchema(FeatureSchema):
     """
     Symlinks schema.
     """
-    includes = fields.List(fields.String(), default=["**/*.jinja*"])
     suffixes = fields.List(fields.String(), default=[".jinja"])
-    excludes = fields.List(fields.String(), default=["**/_*"])
+    includes = fields.List(fields.String())  # default is build automatically from suffixes value
+    excludes = fields.List(fields.String(), default=["**/_*", "**/node_modules", "**/vendor"])

@@ -9,7 +9,7 @@ class EnvSchema(Schema):
     Env settings for core feature schema.
     """
     current = fields.String(required=True, default=None)  # default is set in feature _auto_configure
-    available = fields.List(fields.String, required=True, default=["prod", "stage", "dev"])
+    available = fields.List(fields.String, required=True, default=["prod", "stage", "ci", "dev"])
 
 
 class CoreFeatureSchema(FeatureSchema):

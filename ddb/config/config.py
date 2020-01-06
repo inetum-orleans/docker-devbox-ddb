@@ -69,7 +69,8 @@ class Config:
                     if exists(file):
                         with open(file, 'rb') as stream:
                             file_data = yaml.load(stream, Loader=yaml.FullLoader)
-                            loaded_data = always_merger.merge(loaded_data, file_data)
+                            if file_data:
+                                loaded_data = always_merger.merge(loaded_data, file_data)
 
         if env_key in loaded_data:
             env = loaded_data.pop(env_key)

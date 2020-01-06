@@ -3,10 +3,29 @@ import os
 from ddb.__main__ import load_registered_features
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
-from ddb.feature.jinja import JinjaFeature, ConfigureAction
+from ddb.feature.jinja import JinjaFeature, RenderAction
 
 
 class TestConfigureAction:
+    def test_empty_project_without_core(self, project_loader):
+        project_loader("empty")
+
+        features.register(JinjaFeature())
+        load_registered_features()
+
+        action = RenderAction()
+        action.execute()
+
+    def test_empty_project_with_core(self, project_loader):
+        project_loader("empty")
+
+        features.register(CoreFeature())
+        features.register(JinjaFeature())
+        load_registered_features()
+
+        action = RenderAction()
+        action.execute()
+
     def test_project1(self, project_loader):
         project_loader("project1")
 
@@ -14,7 +33,7 @@ class TestConfigureAction:
         features.register(JinjaFeature())
         load_registered_features()
 
-        action = ConfigureAction()
+        action = RenderAction()
         action.execute()
 
         assert os.path.exists('foo.yml')
@@ -30,7 +49,7 @@ class TestConfigureAction:
         features.register(JinjaFeature())
         load_registered_features()
 
-        action = ConfigureAction()
+        action = RenderAction()
         action.execute()
 
         assert os.path.exists('foo.yml')
@@ -49,7 +68,7 @@ class TestConfigureAction:
         features.register(JinjaFeature())
         load_registered_features()
 
-        action = ConfigureAction()
+        action = RenderAction()
         action.execute()
 
         assert os.path.exists('.foo.yml')
@@ -65,7 +84,7 @@ class TestConfigureAction:
         features.register(JinjaFeature())
         load_registered_features()
 
-        action = ConfigureAction()
+        action = RenderAction()
         action.execute()
 
         assert os.path.exists('foo')
@@ -81,7 +100,7 @@ class TestConfigureAction:
         features.register(JinjaFeature())
         load_registered_features()
 
-        action = ConfigureAction()
+        action = RenderAction()
         action.execute()
 
         assert os.path.exists('foo')

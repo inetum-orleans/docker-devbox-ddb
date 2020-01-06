@@ -5,10 +5,11 @@ from dotty_dict import Dotty
 
 from ddb.action import Action
 from ddb.feature import Feature
-from .actions import ConfigureAction
+from .actions import CreateAction
 from .schema import SymlinksSchema
 from ..feature import FeatureConfigurationError
 from ...config import config
+from ...utils.file import TemplateFinder
 
 
 class SymlinksFeature(Feature):
@@ -27,27 +28,29 @@ class SymlinksFeature(Feature):
     @property
     def actions(self) -> Iterable[Action]:
         return (
-            ConfigureAction(),
+            CreateAction(),
         )
 
     def _configure_defaults(self, feature_config: Dotty):
-        available_suffixes = feature_config.get("suffixes.available")
-
-        if not available_suffixes:
+        suffixes = feature_config.get('suffixes')
+        if not suffixes:
             try:
-                available_suffixes = config.data["core.env.available"]
+                env_available = config.data["core.env.available"]
             except KeyError:
-                raise FeatureConfigurationError(self, "core.env.available or suffixes.available_"
-                                                + "suffixes should be defined.")
-            feature_config["suffixes.available"] = available_suffixes
+                raise FeatureConfigurationError(self, "core.env.available or symlinks.suffixes should be defined.")
 
-        current_suffix = feature_config.get("suffixes.current")
-        if not current_suffix:
-            current_suffix = config.data.get("core.env.current")
-        if not current_suffix:
-            current_suffix = available_suffixes[-1]
+            available_suffixes = ["." + env for env in env_available]
 
-        feature_config["suffixes.current"] = current_suffix
+            env_current = config.data.get("core.env.current")
+            if not env_current:
+                current_suffix = available_suffixes[-1]
+            else:
+                current_suffix = "." + env_current
 
-        if current_suffix not in available_suffixes:
-            raise FeatureConfigurationError(self, "suffixes.current should be one of " + str(available_suffixes))
+            suffixes = available_suffixes[available_suffixes.index(current_suffix):]
+            feature_config["suffixes"] = suffixes
+
+        includes = feature_config.get('includes')
+        if not includes:
+            includes = TemplateFinder.build_default_includes_from_suffixes(suffixes)
+            feature_config["includes"] = includes

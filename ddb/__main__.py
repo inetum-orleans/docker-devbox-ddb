@@ -32,10 +32,10 @@ def register_default_features():
     """
     features.register(CoreFeature())
     features.register(ShellFeature())
-    features.register(DockerFeature())
     features.register(PluginsFeature())
-    features.register(SymlinksFeature())
     features.register(JinjaFeature())
+    features.register(SymlinksFeature())
+    features.register(DockerFeature())
 
 
 def register_default_caches():

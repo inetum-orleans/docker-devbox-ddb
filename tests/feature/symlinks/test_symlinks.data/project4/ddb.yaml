@@ -1,2 +1,3 @@
 symlinks:
-  targets: ['subdirectory/test.yml', 'subdirectory/no.yml']
+  includes: ['**/subdirectory/*', 'subdirectory/no.yml']
+  excludes: ['no.dev.yml']

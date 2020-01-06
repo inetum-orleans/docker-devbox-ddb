@@ -40,7 +40,7 @@ class ActivateAction(Action):
 
     @property
     def name(self) -> str:
-        return self.shell.name + "-print-activate"
+        return "shell:" + self.shell.name + ":activate"
 
     @property
     def description(self) -> str:
@@ -74,7 +74,7 @@ class DeactivateAction(Action):
 
     @property
     def name(self) -> str:
-        return self.shell.name + "-print-deactivate"
+        return "shell:" + self.shell.name + ":deactivate"
 
     @property
     def description(self) -> str:

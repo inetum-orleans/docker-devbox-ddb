@@ -3,36 +3,32 @@ import os
 
 from ddb.action import Action
 from ddb.config import config
+from ddb.utils.file import TemplateFinder
 
 
-class ConfigureAction(Action):
+class CreateAction(Action):
     """
     Creates symbolic links based on filename suffixes.
     """
 
     @property
     def name(self) -> str:
-        return "create-symlinks"
+        return "symlinks:create"
 
     @property
     def event_name(self) -> str:
         return "phase:configure"
 
     def execute(self, *args, **kwargs):
-        targets = config.data["symlinks.targets"]
-        current_suffix = config.data["symlinks.suffixes.current"]
-        available_suffixes = config.data["symlinks.suffixes.available"]
+        template_finder = TemplateFinder(config.data["symlinks.includes"],
+                                         config.data["symlinks.excludes"],
+                                         config.data["symlinks.suffixes"])
 
-        possible_suffixes = available_suffixes[available_suffixes.index(current_suffix):]
+        for source, target in template_finder.templates:
+            if os.path.islink(target):
+                os.unlink(target)
+            if os.path.exists(target):
+                os.remove(target)
 
-        for target in targets:
-            basename, ext = os.path.splitext(target)
-            if not ext and basename.startswith("."):
-                ext = basename
-                basename = ""
-
-            for suffix in possible_suffixes:
-                possible_filename = "{basename}.{suffix}{ext}".format(basename=basename, suffix=suffix, ext=ext)
-                if os.path.exists(possible_filename):
-                    os.symlink(possible_filename, target)
-                    break
+            relsource = os.path.relpath(source, os.path.dirname(target))
+            os.symlink(relsource, os.path.normpath(target))

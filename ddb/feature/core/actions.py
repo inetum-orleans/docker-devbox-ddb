@@ -17,7 +17,7 @@ class ListFeaturesAction(Action):
 
     @property
     def name(self) -> str:
-        return "list-features"
+        return "core:list-features"
 
     def execute(self, *args, **kwargs):
         enabled_features = [f for f in features.all() if not f.disabled]

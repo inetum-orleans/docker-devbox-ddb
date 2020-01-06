@@ -10,3 +10,4 @@ diskcache
 python-slugify
 dictdiffer
 Jinja2
+braceexpand
