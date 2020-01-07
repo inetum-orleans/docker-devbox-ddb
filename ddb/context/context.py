@@ -3,6 +3,7 @@ from typing import Optional, Union
 from typing import TYPE_CHECKING
 
 import colorlog
+from dotty_dict import Dotty
 
 if TYPE_CHECKING:
     from ..action import Action  # pylint:disable=cyclic-import
@@ -19,6 +20,7 @@ class Context:
         self.phase = None  # type: Optional[Phase]
         self.action = None  # type: Optional[Action]
         self.command = None  # type: Optional[Command]
+        self.data = Dotty(dict())
 
     def reset(self):
         """

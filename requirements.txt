@@ -13,3 +13,4 @@ dictdiffer
 Jinja2
 braceexpand
 toposort
+cookiecutter

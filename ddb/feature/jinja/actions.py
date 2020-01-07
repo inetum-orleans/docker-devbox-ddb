@@ -10,7 +10,7 @@ from ddb.utils.file import TemplateFinder
 
 class RenderAction(Action):
     """
-    Creates symbolic links based on filename suffixes.
+    Render jinja templates based on filename suffixes.
     """
 
     @property

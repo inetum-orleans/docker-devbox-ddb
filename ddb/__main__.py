@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from argparse import ArgumentParser
-from typing import Optional, Sequence, Iterable, Callable, Any
+from typing import Optional, Sequence, Iterable, Callable
 
 import pkg_resources
 from slugify import slugify
@@ -18,7 +18,7 @@ from .config import config
 from .event import bus
 from .feature import features, Feature
 from .phase import phases
-from .registry import Registry
+from .registry import Registry, RegistryObject
 from .service import services
 
 
@@ -70,14 +70,24 @@ def register_default_caches():
 
 
 def register_objects(features_list: Iterable[Feature],
-                     objects_getter: Callable[[Feature], Any],
-                     registry: Registry[Any]):
+                     objects_getter: Callable[[Feature], Iterable[RegistryObject]],
+                     registry: Registry[RegistryObject]):
     """
     Register objects from features inside registry.
     """
+    all_objects = {}
+    toposort_data = {}
+
     for feature in features_list:
-        for obj in objects_getter(feature):
-            registry.register(obj)
+        objects = objects_getter(feature)
+        for obj in objects:
+            toposort_data[obj.name] = set(obj.dependencies)
+            all_objects[obj.name] = obj
+
+    sorted_object_names = toposort_flatten(toposort_data)
+    for object_name in sorted_object_names:
+        obj = all_objects[object_name]
+        registry.register(obj)
 
 
 def load_registered_features():
@@ -92,7 +102,7 @@ def load_registered_features():
     for feature in all_features:
         feature.configure()
 
-    enabled_features = [f for f in all_features if not f.disabled]
+    enabled_features = [f for f in all_features if not f.disabled]  # type: Iterable[Feature]
 
     register_objects(enabled_features, lambda f: f.phases, phases)
     register_objects(enabled_features, lambda f: f.commands, commands)

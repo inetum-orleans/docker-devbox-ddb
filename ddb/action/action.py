@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from typing import Iterable
+
 from abc import abstractmethod, ABC
 
 from ddb.context import context

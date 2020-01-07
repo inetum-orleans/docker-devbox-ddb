@@ -64,6 +64,7 @@ def configure():
         if os.name == 'nt':
             os.environ['DDB_OVERRIDE_DOCKER_USER_UID'] = '1000'
             os.environ['DDB_OVERRIDE_DOCKER_USER_GID'] = '1000'
+            os.environ['DDB_OVERRIDE_DOCKER_IP'] = '127.0.0.1'
 
         yield
     finally:
