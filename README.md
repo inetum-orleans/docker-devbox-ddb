@@ -11,10 +11,10 @@ Development
 You should consider [pyenv](https://github.com/pyenv/pyenv) or [pyenv-win](https://github.com/pyenv-win/pyenv-win).
 
 ```
-pyenv install 3.5.4
+pyenv install 3.5.9
 pyenv rehash
-python -m venv ~/.pyenv/versions/3.5.4-ddb
-pyenv local 3.5.4-ddb
+python -m venv ~/.pyenv/versions/3.5.9-ddb
+pyenv local 3.5.9-ddb
 ```
 
 - Install development dependencies
