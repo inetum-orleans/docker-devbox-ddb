@@ -6,7 +6,7 @@ from ddb.feature.core import CoreFeature
 from ddb.feature.jinja import JinjaFeature, RenderAction
 
 
-class TestConfigureAction:
+class TestRenderAction:
     def test_empty_project_without_core(self, project_loader):
         project_loader("empty")
 

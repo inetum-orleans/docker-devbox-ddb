@@ -1,0 +1,10 @@
+var: "test"
+some:
+  deep:
+    nested:
+      variable: "testDeep"
+in:
+  array:
+    - "test1"
+    - "test2"
+    - "test3"

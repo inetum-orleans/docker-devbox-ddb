@@ -14,3 +14,4 @@ Jinja2
 braceexpand
 toposort
 cookiecutter
+jsonnet

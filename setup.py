@@ -28,6 +28,7 @@ entry_points = {
         'core = ddb.feature.core:CoreFeature',
         'docker = ddb.feature.docker:DockerFeature',
         'jinja = ddb.feature.jinja:JinjaFeature',
+        'jsonnet = ddb.feature.jsonnet:JsonnetFeature',
         'plugins = ddb.feature.plugins:PluginsFeature',
         'shell = ddb.feature.shell:ShellFeature',
         'symlinks = ddb.feature.symlinks:SymlinksFeature'

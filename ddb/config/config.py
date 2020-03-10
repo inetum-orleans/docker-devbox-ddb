@@ -81,38 +81,46 @@ class Config:
         loaded_data = self.apply_environ_overrides(loaded_data)
         self.data = dotty(always_merger.merge(self.data, loaded_data))
 
-    def to_environ(self, prefix=None, data=None, environ=None) -> dict:
+    def to_environ(self) -> dict:
         """
-        Export configuration to dict for environ injection.
+        Export configuration to environment dict.
         """
-        if environ is None:
-            environ = dict()
+        return self.flatten(self.env_prefix, "_", str.upper)
+
+    def flatten(self, prefix=None, sep=".", transformer=None, data=None, output=None) -> dict:
+        """
+        Export configuration to a flat dict.
+        """
+        if output is None:
+            output = dict()
 
         if data is None:
             data = dict(self.data)
         if prefix is None:
-            prefix = self.env_prefix
+            prefix = ""
+        if transformer is None:
+            transformer = lambda x: x
 
         if isinstance(data, dict):
             for (name, value) in data.items():
-                key_prefix = prefix + "_" + name.upper()
-                key_prefix = key_prefix.upper()
+                key_prefix = (prefix + sep if prefix else "") + transformer(name)
+                key_prefix = transformer(key_prefix)
 
-                self.to_environ(key_prefix, value, environ)
+                self.flatten(key_prefix, sep, transformer, value, output)
 
         elif isinstance(data, list):
             i = 0
             for value in data:
-                replace_prefix = prefix + "[" + str(i) + "]"
-                replace_prefix = replace_prefix.upper()
+                replace_prefix = (prefix if prefix else "") + "[" + str(i) + "]"
+                replace_prefix = transformer(replace_prefix)
 
-                self.to_environ(replace_prefix, value, environ)
+                self.flatten(replace_prefix, sep, transformer, value, output)
 
                 i += 1
         else:
-            environ[prefix] = str(data)
+            output[prefix] = str(data)
 
-        return environ
+        return output
 
     def sanitize_and_validate(self, schema: Schema, key: str, auto_configure: Callable[[Dotty], Any] = None):
         """
