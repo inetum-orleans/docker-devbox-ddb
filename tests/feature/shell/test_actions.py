@@ -78,6 +78,45 @@ class ActivateActionBase(ABC):
         env = dict(export_match)
 
         system_path = env.get('PATH', '')
+        first = system_path.split(os.pathsep)[0]
+
+        assert first == os.path.normpath(os.path.join(os.getcwd(), "./bin"))
+
+        os.environ.update(env)
+
+        deactivate_action = DeactivateAction(self.build_shell_integration())
+        deactivate_action.execute()
+
+        capture = capsys.readouterr()
+        assert capture.out
+        assert not capture.err
+
+        export_match = re.findall(self.export_regex, capture.out, re.MULTILINE)
+        env = dict(export_match)
+
+        system_path = env.get('PATH', '')
+        first = system_path.split(os.pathsep)[0]
+
+        assert first != os.path.normpath(os.path.join(os.getcwd(), "./bin"))
+
+    def test_run_activate_deactivate_project_prepend_false(self, capsys: CaptureFixture, project_loader):
+        project_loader("project_prepend_false")
+
+        features.register(CoreFeature())
+        features.register(ShellFeature())
+        load_registered_features()
+
+        action = ActivateAction(self.build_shell_integration())
+        action.execute()
+
+        capture = capsys.readouterr()
+        assert capture.out
+        assert not capture.err
+
+        export_match = re.findall(self.export_regex, capture.out, re.MULTILINE)
+        env = dict(export_match)
+
+        system_path = env.get('PATH', '')
         last = system_path.split(os.pathsep)[-1]
 
         assert last == os.path.normpath(os.path.join(os.getcwd(), "./bin"))

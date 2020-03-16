@@ -10,3 +10,4 @@ class ShellSchema(FeatureSchema):
     """
     shell = fields.String(required=True)
     path_additions = fields.List(fields.String(), default=["./bin"])
+    path_additions_prepend = fields.Boolean(default=True)
