@@ -9,3 +9,4 @@ class ShellSchema(FeatureSchema):
     Shell schema.
     """
     shell = fields.String(required=True)
+    path_additions = fields.List(fields.String(), default=["./bin"])

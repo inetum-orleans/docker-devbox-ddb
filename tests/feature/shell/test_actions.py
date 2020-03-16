@@ -5,8 +5,11 @@ from abc import ABC, abstractmethod
 
 from _pytest.capture import CaptureFixture
 
+from ddb.__main__ import load_registered_features
 from ddb.config import config
-from ddb.feature.shell import ActivateAction, DeactivateAction
+from ddb.feature import features
+from ddb.feature.core import CoreFeature
+from ddb.feature.shell import ActivateAction, DeactivateAction, ShellFeature
 from ddb.feature.shell.integrations import BashShellIntegration, ShellIntegration, CmdShellIntegration
 
 
@@ -57,9 +60,48 @@ class ActivateActionBase(ABC):
 
         assert sorted(env.keys()) == sorted(("DDB_SOME", "DDB_ANOTHER_DEEP", "DDB_SHELL_ENVIRON_BACKUP"))
 
+    def test_run_activate_deactivate_project(self, capsys: CaptureFixture, project_loader):
+        project_loader("project")
+
+        features.register(CoreFeature())
+        features.register(ShellFeature())
+        load_registered_features()
+
+        action = ActivateAction(self.build_shell_integration())
+        action.execute()
+
+        capture = capsys.readouterr()
+        assert capture.out
+        assert not capture.err
+
+        export_match = re.findall(self.export_regex, capture.out, re.MULTILINE)
+        env = dict(export_match)
+
+        system_path = env.get('PATH', '')
+        last = system_path.split(os.pathsep)[-1]
+
+        assert last == os.path.normpath(os.path.join(os.getcwd(), "./bin"))
+
+        os.environ.update(env)
+
+        deactivate_action = DeactivateAction(self.build_shell_integration())
+        deactivate_action.execute()
+
+        capture = capsys.readouterr()
+        assert capture.out
+        assert not capture.err
+
+        export_match = re.findall(self.export_regex, capture.out, re.MULTILINE)
+        env = dict(export_match)
+
+        system_path = env.get('PATH', '')
+        last = system_path.split(os.pathsep)[-1]
+
+        assert last != os.path.normpath(os.path.join(os.getcwd(), "./bin"))
+
 
 class TestBashActivateAction(ActivateActionBase):
-    export_regex = r"^export (.+?)=(.+)$"
+    export_regex = r"^export (.+?)=[\'\"]?(.+?)[\'\"]?$"
     unset_regex = r"^unset (.+)()$"
 
     def build_shell_integration(self) -> ShellIntegration:
@@ -67,7 +109,7 @@ class TestBashActivateAction(ActivateActionBase):
 
 
 class TestCmdActivateAction(ActivateActionBase):
-    export_regex = r"^set (.+?)=(.+)$"
+    export_regex = r"^set (.+?)=[\'\"]?(.+?)[\'\"]?$"
     unset_regex = r"^set (.+)=()$"
 
     def build_shell_integration(self) -> ShellIntegration:
@@ -135,7 +177,6 @@ class DeactivateActionBase(ABC):
 
         removed_item = os.environ.popitem()
 
-
         action = DeactivateAction(self.build_shell_integration())
         action.execute()
 
@@ -155,7 +196,7 @@ class DeactivateActionBase(ABC):
 
 
 class TestBashDeactivateAction(DeactivateActionBase):
-    export_regex = r"^export (.+?)=(.+)$"
+    export_regex = r"^export (.+?)=[\'\"]?(.+?)[\'\"]?$"
     unset_regex = r"^unset (.+)()$"
 
     def build_shell_integration(self) -> ShellIntegration:
@@ -163,7 +204,7 @@ class TestBashDeactivateAction(DeactivateActionBase):
 
 
 class TestCmdDeactivateAction(DeactivateActionBase):
-    export_regex = r"^set (.+?)=(.+)$"
+    export_regex = r"^set (.+?)=[\'\"]?(.+?)[\'\"]?$"
     unset_regex = r"^set (.+)=()$"
 
     def build_shell_integration(self) -> ShellIntegration:

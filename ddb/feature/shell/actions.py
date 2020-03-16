@@ -26,6 +26,16 @@ def apply_diff_to_shell(shell: ShellIntegration, source_environment: dict, targe
                 shell.remove_environment_variable(key)
 
 
+def add_to_system_path(shell: ShellIntegration, path: str):
+    """
+    Add given path to system PATH environment variable
+    """
+    system_path = os.environ.get('PATH', '')
+    system_path += os.pathsep + path
+
+    shell.set_environment_variable('PATH', system_path)
+
+
 class ActivateAction(Action):
     """
     Generates activation script
@@ -58,6 +68,10 @@ class ActivateAction(Action):
         os.environ.update(config_environ)
 
         apply_diff_to_shell(self.shell, environ_backup, os.environ)
+        path_additions = config.data.get('shell.path_additions')
+        if path_additions:
+            for path_addition in path_additions:
+                add_to_system_path(self.shell, os.path.normpath(os.path.join(os.getcwd(), path_addition)))
 
 
 class DeactivateAction(Action):
