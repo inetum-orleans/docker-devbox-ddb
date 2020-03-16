@@ -1,7 +1,15 @@
 # -*- coding: utf-8 -*-
-from marshmallow import fields
+from marshmallow import fields, Schema
 
 from ddb.feature.schema import FeatureSchema
+
+
+class PathSchema(Schema):
+    """
+    Shell schema.
+    """
+    directories = fields.List(fields.String(), required=False, default=["./bin"])
+    prepend = fields.Boolean(default=True)
 
 
 class ShellSchema(FeatureSchema):
@@ -9,5 +17,4 @@ class ShellSchema(FeatureSchema):
     Shell schema.
     """
     shell = fields.String(required=True)
-    path_additions = fields.List(fields.String(), default=["./bin"])
-    path_additions_prepend = fields.Boolean(default=True)
+    path = fields.Nested(PathSchema, required=True, default=PathSchema())

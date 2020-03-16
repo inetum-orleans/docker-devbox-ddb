@@ -31,7 +31,7 @@ def add_to_system_path(shell: ShellIntegration, path: str):
     Add given path to system PATH environment variable
     """
     system_path = os.environ.get('PATH', '')
-    if config.data.get('shell.path_additions_prepend'):
+    if config.data.get('shell.path.prepend'):
         system_path = path + os.pathsep + system_path
     else:
         system_path = system_path + os.pathsep + path
@@ -71,9 +71,9 @@ class ActivateAction(Action):
         os.environ.update(config_environ)
 
         apply_diff_to_shell(self.shell, environ_backup, os.environ)
-        path_additions = config.data.get('shell.path_additions')
-        if path_additions:
-            for path_addition in path_additions:
+        path_directories = config.data.get('shell.path.directories')
+        if path_directories:
+            for path_addition in path_directories:
                 add_to_system_path(self.shell, os.path.normpath(os.path.join(os.getcwd(), path_addition)))
 
 

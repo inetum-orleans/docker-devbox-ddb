@@ -1,2 +1,3 @@
 shell:
-  path_additions_prepend: False
+  path:
+    prepend: False
