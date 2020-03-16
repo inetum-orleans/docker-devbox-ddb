@@ -36,5 +36,8 @@ class JsonnetFeature(Feature):
     def _configure_defaults(self, feature_config: Dotty):
         includes = feature_config.get("includes")
         if not includes:
-            includes = TemplateFinder.build_default_includes_from_suffixes(feature_config["suffixes"])
+            includes = TemplateFinder.build_default_includes_from_suffixes(
+                feature_config["suffixes"],
+                feature_config["extensions"]
+            )
             feature_config["includes"] = includes

@@ -6,26 +6,26 @@ from dotty_dict import Dotty
 from ddb.action import Action
 from ddb.feature import Feature
 from .actions import RenderAction
-from .schema import JinjaSchema
+from .schema import YttSchema
 from ...utils.file import TemplateFinder
 
 
-class JinjaFeature(Feature):
+class YttFeature(Feature):
     """
-    Render template files with Jinja template engine.
+    Render ytt files with ytt (YAML Templating Tool) (https://get-ytt.io/).
     """
 
     @property
     def name(self) -> str:
-        return "jinja"
+        return "ytt"
 
     @property
     def dependencies(self) -> Iterable[str]:
         return ["core"]
 
     @property
-    def schema(self) -> ClassVar[JinjaSchema]:
-        return JinjaSchema
+    def schema(self) -> ClassVar[YttSchema]:
+        return YttSchema
 
     @property
     def actions(self) -> Iterable[Action]:
@@ -37,6 +37,7 @@ class JinjaFeature(Feature):
         includes = feature_config.get("includes")
         if not includes:
             includes = TemplateFinder.build_default_includes_from_suffixes(
-                feature_config["suffixes"]
+                feature_config["suffixes"],
+                feature_config["extensions"]
             )
             feature_config["includes"] = includes

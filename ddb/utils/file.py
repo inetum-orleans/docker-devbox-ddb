@@ -2,7 +2,7 @@
 import fnmatch
 import os
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Union, Optional
 
 from braceexpand import braceexpand
 
@@ -21,11 +21,15 @@ class TemplateFinder:
     Find templates sources inside project directory.
     """
 
+    # pylint:disable=too-many-arguments
     def __init__(self, includes: List[str], excludes: List[str], suffixes: List[str],
-                 rootpath: Union[Path, str] = Path('.')):
+                 rootpath: Union[Path, str] = Path('.'), recursive=True,
+                 first_only=True):
         self.includes, self.excludes = self._braceexpand(includes, excludes)
         self.suffixes = suffixes
         self.rootpath = rootpath if isinstance(rootpath, Path) else Path(rootpath)
+        self.recursive = recursive
+        self.first_only = first_only
 
     @property
     def templates(self):
@@ -35,17 +39,24 @@ class TemplateFinder:
 
         processed = set()
 
-        for source in self._walk(str(self.rootpath)):
+        for source in self._walk(str(self.rootpath), recursive=self.recursive):
             target = self._get_target(source, self.suffixes)
 
-            if target in processed:
-                continue
-            processed.add(target)
+            if self.first_only:
+                if target in processed:
+                    continue
+                processed.add(target)
 
             if target:
                 yield source, target
 
-    def _walk(self, *args, **kwargs):
+    def _walk(self, *args, recursive=True, **kwargs):
+        _walk_generator = os.walk(*args, **kwargs)
+        if not recursive:
+            try:
+                _walk_generator = next(_walk_generator)
+            except StopIteration:
+                return
         for root, dirs, files in os.walk(*args, **kwargs):
             for dirs_item in list(dirs):
                 dirpath = os.path.join(root, dirs_item)
@@ -110,11 +121,16 @@ class TemplateFinder:
         return None
 
     @staticmethod
-    def build_default_includes_from_suffixes(suffixes: List[str]):
+    def build_default_includes_from_suffixes(suffixes: List[str], extensions=(".*", "")):
         """
         Build default includes configuration from suffixes configuration.
         """
+        if extensions:
+            extensions_pattern = "{" + ",".join(extensions) + "}"
+        else:
+            extensions_pattern = ""
+
         if len(suffixes) > 1:
             joined_suffixes = ','.join(suffixes)
-            return ["**/*{" + joined_suffixes + "}" + "{.*,}"]
-        return ["**/*" + suffixes[0] + "{.*,}"]
+            return ["**/*{" + joined_suffixes + "}" + extensions_pattern]
+        return ["**/*" + suffixes[0] + extensions_pattern]

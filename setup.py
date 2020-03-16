@@ -31,7 +31,8 @@ entry_points = {
         'jsonnet = ddb.feature.jsonnet:JsonnetFeature',
         'plugins = ddb.feature.plugins:PluginsFeature',
         'shell = ddb.feature.shell:ShellFeature',
-        'symlinks = ddb.feature.symlinks:SymlinksFeature'
+        'symlinks = ddb.feature.symlinks:SymlinksFeature',
+        'ytt = ddb.feature.ytt:YttFeature'
     ]
 }
 

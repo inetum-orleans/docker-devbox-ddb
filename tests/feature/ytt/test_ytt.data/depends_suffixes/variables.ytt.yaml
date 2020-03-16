@@ -1,0 +1,4 @@
+#@ load("@ytt:data", "data")
+
+value: #@ data.values.depends_var
+overlay: foo

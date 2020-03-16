@@ -1,0 +1,14 @@
+#@ load("@ytt:data", "data")
+
+person2:
+  name: test
+  welcome: #@ "Hello " + data.values.var + "!"
+person3:
+  name: testDeep
+  welcome: #@ "Hello " + data.values.some.deep.nested.variable + "!"
+person4:
+  name: test2
+  welcome: #@ "Hello " + getattr(data.values, "in").array[1] + "!"
+person5:
+  name: test3
+  welcome: #@ "Hello " + data.values.in_.array[2] + "!"

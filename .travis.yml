@@ -11,6 +11,7 @@ matrix:
       dist: xenial
       sudo: true
 install:
+  - curl -Lo $HOME/bin/ytt https://github.com/k14s/ytt/releases/download/v0.26.0/ytt-linux-amd64 && chmod +x $HOME/bin/ytt
   - pip install -r requirements-dev.txt --upgrade
   - pip install coveralls
 script:

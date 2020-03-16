@@ -1,0 +1,20 @@
+nullz: null
+true_bool: true
+false_bool: false
+integer: 123
+float: 123.123
+string: value
+string_quoted: '#value'
+key: value
+nested_map:
+  key1: value1
+  key2: value2
+list:
+- item1
+- item2
+list_with_a_map:
+- key1: value1
+  key2: value1
+- item2
+---
+new_doc: true
