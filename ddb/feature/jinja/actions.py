@@ -7,6 +7,8 @@ from ddb.action import Action
 from ddb.config import config
 from ddb.utils.file import TemplateFinder
 
+from ddb.event import bus
+
 
 class RenderAction(Action):
     """
@@ -42,3 +44,4 @@ class RenderAction(Action):
 
         with open(target_path, 'w') as target:
             target.write(template.render(**context))
+        bus.emit('event:file-generated', source=template_path, target=target)

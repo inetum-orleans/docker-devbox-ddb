@@ -7,6 +7,7 @@ from _jsonnet import evaluate_file  # pylint: disable=no-name-in-module
 
 from ddb.action import Action
 from ddb.config import config
+from ddb.event import bus
 from ddb.utils.file import TemplateFinder
 
 
@@ -45,12 +46,14 @@ class RenderAction(Action):
                     os.makedirs(evaluated_target_parent_path)
                 with open(evaluated_target_path, 'w') as evaluated_target:
                     evaluated_target.write(content)
+                bus.emit('event:file-generated', source=template_path, target=evaluated_target)
         else:
             ext = os.path.splitext(target_path)[-1]
             if ext.lower() in ['.yaml', '.yml']:
                 evaluated = yaml.dump(json.loads(evaluated), Dumper=yaml.SafeDumper)
             with open(target_path, 'w') as target:
                 target.write(evaluated)
+            bus.emit('event:file-generated', source=template_path, target=target)
 
     @staticmethod
     def _parse_multiple_header(template_path, target_path):

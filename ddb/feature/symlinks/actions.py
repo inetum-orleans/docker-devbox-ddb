@@ -3,6 +3,7 @@ import os
 
 from ddb.action import Action
 from ddb.config import config
+from ddb.event import bus
 from ddb.utils.file import TemplateFinder
 
 
@@ -32,3 +33,4 @@ class CreateAction(Action):
 
             relsource = os.path.relpath(source, os.path.dirname(target))
             os.symlink(relsource, os.path.normpath(target))
+            bus.emit('event:file-generated', source=source, target=target)

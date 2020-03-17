@@ -7,6 +7,7 @@ import yaml
 
 from ddb.action import Action
 from ddb.config import config
+from ddb.event import bus
 from ddb.utils.file import TemplateFinder
 
 
@@ -83,5 +84,6 @@ class RenderAction(Action):
 
             with open(target_path, "wb") as output_file:
                 output_file.write(rendered.stdout)
+            bus.emit('event:file-generated', source=template_path, target=target_path)
         finally:
             yaml_config_file.close()
