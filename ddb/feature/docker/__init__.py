@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 import os
+import re
 from typing import Iterable, ClassVar
 
 import netifaces
-import re
 from dotty_dict import Dotty
 
+from .actions import CopyToBuildContextAction
 from .schema import DockerSchema
 from ..feature import Feature, FeatureConfigurationAutoConfigureError
 from ..schema import FeatureSchema
@@ -31,7 +32,9 @@ class DockerFeature(Feature):
 
     @property
     def actions(self) -> Iterable[Action]:
-        return ()
+        return (
+            CopyToBuildContextAction(),
+        )
 
     def _configure_defaults(self, feature_config: Dotty):
         uid = feature_config.get('user.uid')

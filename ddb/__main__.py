@@ -145,7 +145,9 @@ def register_actions_in_event_bus():
     """
     Register registered actions into event bus.
     """
-    for action in actions.all():
+    sorted_actions = sorted(actions.all(), key=lambda x: x.order)
+
+    for action in sorted_actions:
         bus.on(action.event_name, action.execute_in_context)
 
 

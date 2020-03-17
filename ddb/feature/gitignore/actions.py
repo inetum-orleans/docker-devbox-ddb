@@ -22,7 +22,7 @@ def find_gitignore(target: str):
 
 class UpdateGitignoreAction(Action):
     """
-    Add generated files to .gitignore
+    Append generated files to .gitignore
     """
 
     @property

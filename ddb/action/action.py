@@ -26,6 +26,16 @@ class Action(RegistryObject, ABC):
         Action implementation. *args and **kwargs are coming from the provided command line arguments.
         """
 
+    @property
+    def order(self) -> int:
+        """
+        The order index related to this action.
+
+        When many actions are registered on the same event name, they will be executed in sequence following the
+        natural ordering from this value.
+        """
+        return 0
+
     def execute_in_context(self, *args, **kwargs):
         """
         Execute action implementation with context update.
