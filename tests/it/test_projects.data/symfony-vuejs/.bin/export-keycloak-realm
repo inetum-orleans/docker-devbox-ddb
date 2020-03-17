@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+. "$DOCKER_DEVBOX_SCRIPTS_PATH/.bash.lib.d/50-docker"
+
+dc exec keycloak /opt/jboss/keycloak/bin/standalone.sh \
+-Djboss.socket.binding.port-offset=100 -Dkeycloak.migration.action=export \
+-Dkeycloak.migration.provider=singleFile \
+-Dkeycloak.migration.realmName=Biometrie \
+-Dkeycloak.migration.usersExportStrategy=REALM_FILE \
+-Dkeycloak.migration.file=/opt/jboss/keycloak/keycloak/realm-export.json

@@ -46,14 +46,14 @@ class RenderAction(Action):
                     os.makedirs(evaluated_target_parent_path)
                 with open(evaluated_target_path, 'w') as evaluated_target:
                     evaluated_target.write(content)
-                bus.emit('event:file-generated', source=template_path, target=evaluated_target)
+                bus.emit('event:file-generated', source=template_path, target=evaluated_target_path)
         else:
             ext = os.path.splitext(target_path)[-1]
             if ext.lower() in ['.yaml', '.yml']:
                 evaluated = yaml.dump(json.loads(evaluated), Dumper=yaml.SafeDumper)
             with open(target_path, 'w') as target:
                 target.write(evaluated)
-            bus.emit('event:file-generated', source=template_path, target=target)
+            bus.emit('event:file-generated', source=template_path, target=target_path)
 
     @staticmethod
     def _parse_multiple_header(template_path, target_path):

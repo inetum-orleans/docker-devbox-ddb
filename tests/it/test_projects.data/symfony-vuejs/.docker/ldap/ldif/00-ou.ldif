@@ -1,0 +1,12 @@
+version: 1
+# OU contenant les utilisateurs
+dn: ou=users,dc=biometrie,dc=test
+objectClass: organizationalUnit
+objectClass: top
+ou: users
+
+# OU contenant les groups
+dn: ou=groups,dc=biometrie,dc=test
+objectClass: organizationalUnit
+objectClass: top
+ou: groups

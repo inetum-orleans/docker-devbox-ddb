@@ -5,9 +5,19 @@ from jinja2 import Environment, FileSystemLoader
 
 from ddb.action import Action
 from ddb.config import config
-from ddb.utils.file import TemplateFinder
-
 from ddb.event import bus
+from ddb.utils.file import TemplateFinder
+from . import filters, tests
+
+custom_filters = vars(filters)
+for k in tuple(custom_filters.keys()):
+    if k.startswith("__"):
+        del custom_filters[k]
+
+custom_tests = vars(tests)
+for k in tuple(custom_tests.keys()):
+    if k.startswith("__"):
+        del custom_tests[k]
 
 
 class RenderAction(Action):
@@ -29,8 +39,11 @@ class RenderAction(Action):
                                    config.data["jinja.suffixes"])
 
         env = Environment(
-            loader=FileSystemLoader(str(generator.rootpath))
+            loader=FileSystemLoader(str(generator.rootpath)),
         )
+
+        env.filters.update(custom_filters)
+        env.tests.update(custom_tests)
 
         context = dict(config.data)
 
@@ -44,4 +57,4 @@ class RenderAction(Action):
 
         with open(target_path, 'w') as target:
             target.write(template.render(**context))
-        bus.emit('event:file-generated', source=template_path, target=target)
+        bus.emit('event:file-generated', source=template_path, target=target_path)

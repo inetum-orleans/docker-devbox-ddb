@@ -1,0 +1,7 @@
+FROM nginx:1.17.7
+LABEL maintainer="Rémi Alvergnat <remi.alvergnat@gfi.fr>"
+{% if '.docker/php/.ca-certificates/*' is found_with_glob %}
+COPY .ca-certificates/* /usr/local/share/ca-certificates/
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/* \
+&& update-ca-certificates
+{% endif %}

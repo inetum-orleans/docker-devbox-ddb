@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+. "$DOCKER_DEVBOX_SCRIPTS_PATH/.bash.lib.d/50-docker"
+
+run --workdir="$(_docker_workdir "/app")" node vue "$@"

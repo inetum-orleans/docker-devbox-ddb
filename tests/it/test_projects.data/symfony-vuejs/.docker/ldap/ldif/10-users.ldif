@@ -1,0 +1,59 @@
+dn: uid=admin,ou=users,dc=biometrie,dc=test
+objectClass: inetOrgPerson
+cn: Elon
+sn: Musk
+displayName: Elon
+givenName: Elon
+mail: admin@ldap.test.test
+uid: ldap-admin
+userPassword: admin
+
+dn: uid=agent,ou=users,dc=biometrie,dc=test
+objectClass: inetOrgPerson
+cn: Agent
+sn: Smith
+displayName: Agent
+givenName: Agent
+mail: agent@ldap.test.test
+uid: ldap-agent
+userPassword: agent
+
+dn: uid=checker,ou=users,dc=biometrie,dc=test
+objectClass: inetOrgPerson
+cn: Analyse
+sn: JN-66
+displayName: Analyse
+givenName: Analyse
+mail: checker@ldap.test.test
+uid: ldap-checker
+userPassword: checker
+
+dn: uid=enrolleur,ou=users,dc=biometrie,dc=test
+objectClass: inetOrgPerson
+cn: Peter
+sn: Drucker
+displayName: Peter
+givenName: Peter
+mail: enrolleur@ldap.test.test
+uid: ldap-enrolleur
+userPassword: enrolleur
+
+dn: uid=printer,ou=users,dc=biometrie,dc=test
+objectClass: inetOrgPerson
+cn: Archiviste
+sn: Série A9G
+displayName: Archiviste
+givenName: Archiviste
+mail: printer@ldap.test.test
+uid: ldap-printer
+userPassword: printer
+
+dn: uid=this-is-ldap,ou=users,dc=biometrie,dc=test
+objectClass: inetOrgPerson
+cn: John
+sn: Deuf
+displayName: John
+givenName: John
+mail: this-is-ldap@ldap.test.test
+uid: ldap-this-is-ldap
+userPassword: this-is-ldap

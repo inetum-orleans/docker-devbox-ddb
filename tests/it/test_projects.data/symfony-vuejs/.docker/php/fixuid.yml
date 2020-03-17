@@ -1,0 +1,7 @@
+user: www-data
+group: www-data
+paths:
+  - /
+  - /composer/cache
+  - /composer/vendor
+

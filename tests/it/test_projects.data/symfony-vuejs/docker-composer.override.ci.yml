@@ -1,0 +1,39 @@
+version: '3.7'
+services:
+  php:
+    build:
+      cache_from:
+        - '${DOCKER_DEVBOX_REGISTRY}${DOCKER_DEVBOX_REGISTRY_REPOSITORY}/php'
+  web:
+    build:
+      cache_from:
+        - '${DOCKER_DEVBOX_REGISTRY}${DOCKER_DEVBOX_REGISTRY_REPOSITORY}/web'
+  db:
+    build:
+      cache_from:
+        - '${DOCKER_DEVBOX_REGISTRY}${DOCKER_DEVBOX_REGISTRY_REPOSITORY}/db'
+  node:
+    build:
+      cache_from:
+        - '${DOCKER_DEVBOX_REGISTRY}${DOCKER_DEVBOX_REGISTRY_REPOSITORY}/node'
+  keycloak-db:
+    build:
+      cache_from:
+        - '${DOCKER_DEVBOX_REGISTRY}${DOCKER_DEVBOX_REGISTRY_REPOSITORY}/keycloak-db'
+db-test:
+  build:
+    context: .docker/db
+    cache_from:
+      - '${DOCKER_DEVBOX_REGISTRY}${DOCKER_DEVBOX_REGISTRY_REPOSITORY}/db'
+  image: '${DOCKER_DEVBOX_REGISTRY}${DOCKER_DEVBOX_REGISTRY_REPOSITORY}/db'
+  init: true
+  restart: '${DOCKER_DEVBOX_RESTART_POLICY}'
+  ports:
+    - '${DOCKER_DEVBOX_PORT_PREFIX}33:5432'
+  environment:
+    - POSTGRES_USER=biometrie
+    - POSTGRES_PASSWORD=biometrie
+  volumes:
+    - '${COMPOSE_PROJECT_DIR}:/workdir'
+    - 'db-test-data:/var/lib/postgresql/data'
+  user: '${USER_ID}:${GROUP_ID}'

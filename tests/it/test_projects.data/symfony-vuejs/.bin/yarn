@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+. "$DOCKER_DEVBOX_SCRIPTS_PATH/.bash.lib.d/50-docker"
+
+if [ "$1" == "serve" ] || { [ "$1" == "run" ] && [ "$2" == "serve" ]; }; then
+ export _RUN_REVERSE_PROXY_ENABLE=1
+fi
+
+run --workdir="$(_docker_workdir "/app")" node yarn "$@"

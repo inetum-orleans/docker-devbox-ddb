@@ -1,0 +1,31 @@
+version: 1
+
+dn: cn=ROLE_ADMIN,ou=groups,dc=biometrie,dc=test
+objectClass: groupOfNames
+cn: ROLE_ADMIN
+member: uid=admin,ou=users,dc=biometrie,dc=test
+
+dn: cn=ROLE_AGENT,ou=groups,dc=biometrie,dc=test
+objectClass: groupOfNames
+cn: ROLE_AGENT
+member: uid=admin,ou=users,dc=biometrie,dc=test
+member: uid=agent,ou=users,dc=biometrie,dc=test
+member: uid=this-is-ldap,ou=users,dc=biometrie,dc=test
+
+dn: cn=ROLE_ENROLLMENT,ou=groups,dc=biometrie,dc=test
+objectClass: groupOfNames
+cn: ROLE_ENROLLMENT
+member: uid=admin,ou=users,dc=biometrie,dc=test
+member: uid=enrolleur,ou=users,dc=biometrie,dc=test
+
+dn: cn=ROLE_PRINTER,ou=groups,dc=biometrie,dc=test
+objectClass: groupOfNames
+cn: ROLE_PRINTER
+member: uid=admin,ou=users,dc=biometrie,dc=test
+member: uid=printer,ou=users,dc=biometrie,dc=test
+
+dn: cn=ROLE_PERSON_CHECKER,ou=groups,dc=biometrie,dc=test
+objectClass: groupOfNames
+cn: ROLE_PERSON_CHECKER
+member: uid=admin,ou=users,dc=biometrie,dc=test
+member: uid=checker,ou=users,dc=biometrie,dc=test

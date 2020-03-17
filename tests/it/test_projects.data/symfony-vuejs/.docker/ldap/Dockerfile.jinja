@@ -1,0 +1,6 @@
+FROM osixia/openldap
+LABEL maintainer="Pierre LEJEUNE <pierre.lejeune@gfi.world>"
+
+RUN rm -Rf /container/service/slapd/assets/config/bootstrap/ldif/custom/*
+
+COPY ldif/*.ldif /container/service/slapd/assets/config/bootstrap/ldif/custom/

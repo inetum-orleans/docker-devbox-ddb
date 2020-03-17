@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from typing import ClassVar, Iterable
 
-from dotty_dict import Dotty
-
 from ddb.action import Action
 from ddb.feature import Feature
 from .actions import UpdateGitignoreAction
@@ -16,7 +14,7 @@ class GitignoreFeature(Feature):
 
     @property
     def name(self) -> str:
-        return "jsonnet"
+        return "gitignore"
 
     @property
     def dependencies(self) -> Iterable[str]:
