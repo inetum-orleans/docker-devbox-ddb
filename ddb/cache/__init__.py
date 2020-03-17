@@ -7,6 +7,7 @@ caches = Registry(Cache, 'Cache')  # type: Registry[Cache]
 
 _global_cache_name = 'global'
 _project_cache_name = 'project'
+_requests_cache_name = 'requests'
 
 
 def global_cache():

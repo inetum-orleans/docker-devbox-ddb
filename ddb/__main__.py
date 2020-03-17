@@ -12,7 +12,7 @@ from ddb.context import context
 from ddb.context.context import configure_context_logger
 from .action import actions
 from .binary import binaries
-from .cache import caches, _project_cache_name, ShelveCache, _global_cache_name
+from .cache import caches, _project_cache_name, ShelveCache, _global_cache_name, _requests_cache_name
 from .command import commands
 from .config import config
 from .event import bus
@@ -67,6 +67,7 @@ def register_default_caches():
     caches.register(ShelveCache(slugify(config.paths.project_home, regex_pattern=r'[^-a-z0-9_\.]+')),
                     _project_cache_name)
     caches.register(ShelveCache("__global__"), _global_cache_name)
+    caches.register(ShelveCache(_requests_cache_name), _requests_cache_name)
 
 
 def register_objects(features_list: Iterable[Feature],

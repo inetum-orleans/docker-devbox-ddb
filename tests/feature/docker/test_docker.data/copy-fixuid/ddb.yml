@@ -1,0 +1,4 @@
+docker:
+  copy_to_build_context:
+    - source: "https://github.com/boxboat/fixuid/releases/download/v0.4/fixuid-0.4-linux-amd64.tar.gz"
+      filename: "fixuid.tar.gz"

@@ -2,10 +2,32 @@
 import fnmatch
 import glob
 import os
+import re
 import shutil
 
+import requests
+
 from ddb.action import Action
+from ddb.cache import caches, _requests_cache_name
 from ddb.config import config
+
+
+def copy_from_url(source, destination, filename=None):
+    """
+    Copy from an URL source.
+    """
+    cache = caches.get(_requests_cache_name)
+    response = cache.get(source)
+    if not response:
+        response = requests.get(source, allow_redirects=True)
+        response.raise_for_status()
+        cache.set(source, response)
+    if not filename:
+        content_disposition = response.headers['content-disposition']
+        filename = re.findall("filename=(.+)", content_disposition)[0]
+    target_path = os.path.join(destination, filename)
+    with open(target_path, 'wb') as output_file:
+        output_file.write(response.content)
 
 
 class CopyToBuildContextAction(Action):
@@ -43,15 +65,23 @@ class CopyToBuildContextAction(Action):
             destination = copy_spec.get('destination')
             service = copy_spec.get('service')
 
-            for file in glob.glob(source):
-                for service_directory in service_directories:
-                    if not service \
-                            or service_directory == service \
-                            or fnmatch.fnmatch(service_directory, service):
-                        if destination:
-                            file_destination = os.path.join(service_directory, destination)
-                            os.makedirs(file_destination, exist_ok=True)
-                        else:
-                            file_destination = service_directory
-                        file_destination = os.path.join(file_destination, os.path.basename(file))
-                        shutil.copy(file, file_destination)
+            for service_directory in service_directories:
+                if destination:
+                    file_destination = os.path.join(service_directory, destination)
+                    os.makedirs(file_destination, exist_ok=True)
+                else:
+                    file_destination = service_directory
+
+                if not service \
+                        or service_directory == service \
+                        or fnmatch.fnmatch(service_directory, service):
+                    if source.startswith('http://') or source.startswith('https://'):
+                        copy_from_url(source, file_destination, copy_spec.get('filename'))
+                    elif os.path.exists(source):
+                        filename = copy_spec.get('filename', os.path.basename(source))
+                        target_path = os.path.join(file_destination, filename)
+                        shutil.copy(source, target_path)
+                    else:
+                        for file in glob.glob(source):
+                            target_path = os.path.join(file_destination, os.path.basename(file))
+                            shutil.copy(file, target_path)

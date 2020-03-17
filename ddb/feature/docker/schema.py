@@ -17,7 +17,8 @@ class CopyToBuildContextSchema(Schema):
     Copy to build context schema.
     """
     source = fields.String(required=True)
-    destination = fields.String(required=False)
+    destination = fields.String(required=True, default=".")
+    filename = fields.String(required=False)
     service = fields.String(required=False)
 
 
