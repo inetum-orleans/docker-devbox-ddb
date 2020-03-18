@@ -10,14 +10,14 @@ _project_cache_name = 'project'
 _requests_cache_name = 'requests'
 
 
-def global_cache():
+def global_cache() -> Cache:
     """
     Get global cache.
     """
     return caches.get(_global_cache_name)
 
 
-def project_cache():
+def project_cache() -> Cache:
     """
     Get current project cache.
     """

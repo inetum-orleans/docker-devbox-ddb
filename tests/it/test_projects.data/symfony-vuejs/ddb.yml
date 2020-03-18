@@ -1,4 +1,15 @@
-docker:
-  copy_to_build_context:
+copy:
+  specs:
     - source: .ca-certificates/*.crt
       destination: .ca-certificates
+      dispatch:
+        - ".docker/*"
+    - source: .docker/.ca-certificates.manual/*.crt
+      destination: .ca-certificates
+      dispatch:
+        - ".docker/*"
+docker:
+  port_prefix: 160
+  registry:
+    name: gfiorleans.azurecr.io
+    repository: gli-biometrie

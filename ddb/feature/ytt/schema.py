@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 from marshmallow import fields
 
 from ddb.feature.schema import FeatureSchema
@@ -19,6 +20,7 @@ class YttSchema(FeatureSchema):
     depends_suffixes = fields.List(fields.String(), default=[".data", ".overlay"])
     includes = fields.List(fields.String())  # default is build automatically from suffixes value
     excludes = fields.List(fields.String(), default=["**/_*", "**/node_modules", "**/vendor"])
+    bin = fields.String(default="ytt" if os.name != "nt" else "ytt.exe")
     args = fields.List(fields.String(), default=["--ignore-unknown-comments"])
     keywords = fields.List(fields.String(), default=keywords + reserved)
     keywords_escape_format = fields.String(default="%s_")

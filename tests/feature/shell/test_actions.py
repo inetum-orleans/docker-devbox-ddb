@@ -1,4 +1,3 @@
-import json
 import os
 import re
 from abc import ABC, abstractmethod
@@ -10,6 +9,7 @@ from ddb.config import config
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.shell import ActivateAction, DeactivateAction, ShellFeature
+from ddb.feature.shell.actions import encode_environ_backup
 from ddb.feature.shell.integrations import BashShellIntegration, ShellIntegration, CmdShellIntegration
 
 
@@ -39,7 +39,7 @@ class ActivateActionBase(ABC):
         export_match = re.findall(self.export_regex, capture.out, re.MULTILINE)
         env = dict(export_match)
 
-        assert sorted(env.keys()) == sorted(("DDB_SHELL_ENVIRON_BACKUP",))
+        assert sorted(env.keys()) == sorted(("DDB_PROJECT_HOME", "DDB_SHELL_ENVIRON_BACKUP"))
 
         assert "DDB_SHELL_ENVIRON_BACKUP" in env
         assert env["DDB_SHELL_ENVIRON_BACKUP"]
@@ -58,7 +58,8 @@ class ActivateActionBase(ABC):
         export_match = re.findall(self.export_regex, capture.out, re.MULTILINE)
         env = dict(export_match)
 
-        assert sorted(env.keys()) == sorted(("DDB_SOME", "DDB_ANOTHER_DEEP", "DDB_SHELL_ENVIRON_BACKUP"))
+        assert sorted(env.keys()) == sorted(
+            ("DDB_PROJECT_HOME", "DDB_SOME", "DDB_ANOTHER_DEEP", "DDB_SHELL_ENVIRON_BACKUP"))
 
     def test_run_activate_deactivate_project(self, capsys: CaptureFixture, project_loader):
         project_loader("project")
@@ -80,7 +81,8 @@ class ActivateActionBase(ABC):
         system_path = env.get('PATH', '')
         first = system_path.split(os.pathsep)[0]
 
-        assert first == os.path.normpath(os.path.join(os.getcwd(), "./bin"))
+        assert first == os.path.normpath(os.path.join(os.getcwd(), "./bin")) \
+               or first == os.path.normpath(os.path.join(os.getcwd(), "./.bin"))
 
         os.environ.update(env)
 
@@ -94,10 +96,11 @@ class ActivateActionBase(ABC):
         export_match = re.findall(self.export_regex, capture.out, re.MULTILINE)
         env = dict(export_match)
 
-        system_path = env.get('PATH', '')
-        first = system_path.split(os.pathsep)[0]
+        system_path = env.get('PATH', '').split(os.pathsep)
+        first = system_path[0]
 
-        assert first != os.path.normpath(os.path.join(os.getcwd(), "./bin"))
+        assert first != os.path.normpath(os.path.join(os.getcwd(), "./bin")) or \
+               first != os.path.normpath(os.path.join(os.getcwd(), "./.bin"))
 
     def test_run_activate_deactivate_project_prepend_false(self, capsys: CaptureFixture, project_loader):
         project_loader("project_prepend_false")
@@ -116,10 +119,11 @@ class ActivateActionBase(ABC):
         export_match = re.findall(self.export_regex, capture.out, re.MULTILINE)
         env = dict(export_match)
 
-        system_path = env.get('PATH', '')
-        last = system_path.split(os.pathsep)[-1]
+        system_path = env.get('PATH', '').split(os.pathsep)
+        last = system_path[-1]
 
-        assert last == os.path.normpath(os.path.join(os.getcwd(), "./bin"))
+        assert last == os.path.normpath(os.path.join(os.getcwd(), "./bin")) \
+               or last == os.path.normpath(os.path.join(os.getcwd(), "./.bin"))
 
         os.environ.update(env)
 
@@ -133,10 +137,11 @@ class ActivateActionBase(ABC):
         export_match = re.findall(self.export_regex, capture.out, re.MULTILINE)
         env = dict(export_match)
 
-        system_path = env.get('PATH', '')
-        last = system_path.split(os.pathsep)[-1]
+        system_path = env.get('PATH', '').split(os.pathsep)
+        last = system_path[-1]
 
-        assert last != os.path.normpath(os.path.join(os.getcwd(), "./bin"))
+        assert last != os.path.normpath(os.path.join(os.getcwd(), "./bin")) or \
+               last != os.path.normpath(os.path.join(os.getcwd(), "./.bin"))
 
 
 class TestBashActivateAction(ActivateActionBase):
@@ -171,7 +176,7 @@ class DeactivateActionBase(ABC):
         pass
 
     def test_run(self, capsys: CaptureFixture):
-        os.environ['DDB_SHELL_ENVIRON_BACKUP'] = json.dumps(dict(os.environ))
+        os.environ['DDB_SHELL_ENVIRON_BACKUP'] = encode_environ_backup(dict(os.environ))
 
         action = DeactivateAction(self.build_shell_integration())
         action.execute()
@@ -190,7 +195,11 @@ class DeactivateActionBase(ABC):
         assert 'DDB_SHELL_ENVIRON_BACKUP' in unset.keys()
 
     def test_run_with_empty_initial_env(self, capsys: CaptureFixture):
-        os.environ['DDB_SHELL_ENVIRON_BACKUP'] = json.dumps(dict())
+        expected_environ = dict()
+
+        os.environ.clear()
+        os.environ.update(expected_environ)
+        os.environ['DDB_SHELL_ENVIRON_BACKUP'] = encode_environ_backup(expected_environ)
 
         action = DeactivateAction(self.build_shell_integration())
         action.execute()
@@ -207,14 +216,18 @@ class DeactivateActionBase(ABC):
         unset = dict(unset_match)
         assert unset
 
-        assert os.environ.keys() == unset.keys()
+        assert sorted(unset.keys()) == sorted(("DDB_SHELL_ENVIRON_BACKUP",))
 
-    def test_run_with_removed_env_variable(self, capsys: CaptureFixture):
-        expected_environ = dict(os.environ)
+    def test_run_with_changed_env_variable(self, capsys: CaptureFixture):
+        expected_environ = {"DDB_CHANGE": "foo", "DDB_NO_CHANGE": "ok", "DDB_REMOVED": "removed"}
 
-        os.environ['DDB_SHELL_ENVIRON_BACKUP'] = json.dumps(expected_environ)
+        os.environ.clear()
+        os.environ.update(expected_environ)
+        os.environ['DDB_SHELL_ENVIRON_BACKUP'] = encode_environ_backup(expected_environ)
 
-        removed_item = os.environ.popitem()
+        removed_item = os.environ.pop("DDB_REMOVED")
+        os.environ["DDB_CHANGE"] = "bar"
+        os.environ["DDB_ADDED"] = "added"
 
         action = DeactivateAction(self.build_shell_integration())
         action.execute()
@@ -225,13 +238,14 @@ class DeactivateActionBase(ABC):
 
         export_match = re.findall(self.export_regex, capture.out, re.MULTILINE)
         exported = dict(export_match)
-        assert len(exported) == 1
-        assert list(exported.keys())[0] == removed_item[0]
+        assert len(exported) == 2
+        assert sorted(exported.keys()) == sorted(("DDB_CHANGE", "DDB_REMOVED"))
+        assert sorted(exported.values()) == sorted(("foo", removed_item))
 
         unset_match = re.findall(self.unset_regex, capture.out, re.MULTILINE)
         unset = dict(unset_match)
-        assert len(unset) == 1
-        assert 'DDB_SHELL_ENVIRON_BACKUP' in unset.keys()
+        assert len(unset) == 2
+        assert sorted(unset.keys()) == sorted(("DDB_SHELL_ENVIRON_BACKUP", "DDB_ADDED"))
 
 
 class TestBashDeactivateAction(DeactivateActionBase):

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 from typing import Iterable, ClassVar
 
 from dotty_dict import Dotty
@@ -37,14 +38,14 @@ class CoreFeature(Feature):
         return (
             DefaultPhase("configure", "Configure the environment"),
             DefaultPhase("create", "Create services"),
-            DefaultPhase("start", "Start services"),
-            DefaultPhase("init", "Initialize project",
+            DefaultPhase("start", "Start services",
                          lambda parser: parser.add_argument("--data", action="store_true",
-                                                            help="Load testing data into services")),
+                                                            help="Load data into services")),
+            DefaultPhase("init", "Initialize project", run_once=True),
             DefaultPhase("stop", "Stop services"),
             DefaultPhase("destroy", "Destroy services",
                          lambda parser: parser.add_argument("--purge", action="store_true",
-                                                            help="Purge data related to services")),
+                                                            help="Purge data from services")),
             DefaultPhase("info", "List enabled features and effective configuration"),
         )
 
@@ -52,14 +53,14 @@ class CoreFeature(Feature):
     def commands(self) -> Iterable[Command]:
         return (
             LifecycleCommand("configure", "Configure the environment",
-                             "configure"
+                             "init", "configure"
                              ),
 
             LifecycleCommand("up", "Configure the environment, create and start services",
-                             "configure", "create", "start"
+                             "init", "configure", "create", "start"
                              ),
 
-            LifecycleCommand("init", "Initialize project",
+            LifecycleCommand("init", "Initialize the environment",
                              "init"
                              ),
 
@@ -81,6 +82,13 @@ class CoreFeature(Feature):
         )
 
     def _configure_defaults(self, feature_config: Dotty):
+        if not feature_config.get('project.name'):
+            project_name = os.path.basename(config.paths.project_home)
+            feature_config['project.name'] = project_name
+
+        if not feature_config.get('domain.sub'):
+            feature_config['domain.sub'] = feature_config['project.name'].replace("_", "-").replace(" ", "-")
+
         if not feature_config.get('env.current') and feature_config.get('env.available'):
             feature_config['env.current'] = feature_config['env.available'][-1]
 

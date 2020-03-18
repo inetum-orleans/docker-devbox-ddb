@@ -63,22 +63,25 @@ class RenderAction(Action):
         if target_path in depends_files:
             depends_files.remove(target_path)
 
-        yaml_config_file = tempfile.NamedTemporaryFile("w", suffix=".yml", encoding="utf-8")
-
-        input_files = [template_path, yaml_config_file.name] + depends_files
         input_files_args = []
-        for input_file in input_files:
-            input_files_args += ["-f", input_file]
+        yaml_config_file = tempfile.NamedTemporaryFile("w", suffix=".yml", encoding="utf-8", delete=False)
 
         try:
-            yaml_config_file.write("#@data/values")
-            yaml_config_file.write(os.linesep)
-            yaml_config_file.write("---")
-            yaml_config_file.write(os.linesep)
-            yaml_config_file.write(yaml_config)
-            yaml_config_file.flush()
+            try:
+                input_files = [template_path, yaml_config_file.name] + depends_files
+                for input_file in input_files:
+                    input_files_args += ["-f", input_file]
 
-            rendered = run(["ytt"] + input_files_args + config.data["ytt.args"],
+                yaml_config_file.write("#@data/values")
+                yaml_config_file.write(os.linesep)
+                yaml_config_file.write("---")
+                yaml_config_file.write(os.linesep)
+                yaml_config_file.write(yaml_config)
+                yaml_config_file.flush()
+            finally:
+                yaml_config_file.close()
+
+            rendered = run([config.data["ytt.bin"]] + input_files_args + config.data["ytt.args"],
                            check=True,
                            stdout=PIPE, stderr=PIPE)
 
@@ -86,4 +89,4 @@ class RenderAction(Action):
                 output_file.write(rendered.stdout)
             bus.emit('event:file-generated', source=template_path, target=target_path)
         finally:
-            yaml_config_file.close()
+            os.unlink(yaml_config_file.name)

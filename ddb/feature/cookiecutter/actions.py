@@ -24,7 +24,7 @@ class ListTagsAction(Action):
 
     @property
     def event_name(self) -> str:
-        return "phase:configure"
+        return "phase:init"
 
     def execute(self, *args, **kwargs):
         context.data[self.name] = {}
@@ -93,7 +93,7 @@ class CookiecutterAction(Action):
 
     @property
     def event_name(self) -> str:
-        return "phase:configure"
+        return "phase:init"
 
     @property
     def dependencies(self) -> Iterable[str]:

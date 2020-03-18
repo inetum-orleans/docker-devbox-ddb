@@ -85,9 +85,10 @@ class Config:
         """
         Export configuration to environment dict.
         """
-        return self.flatten(self.env_prefix, "_", str.upper)
+        return self.flatten(self.env_prefix, "_", "_%s_", str.upper)
 
-    def flatten(self, prefix=None, sep=".", transformer=None, data=None, output=None) -> dict:
+    def flatten(self, prefix=None, sep=".", array_index_format="[%s]", transformer=None, data=None,
+                output=None) -> dict:
         """
         Export configuration to a flat dict.
         """
@@ -106,15 +107,15 @@ class Config:
                 key_prefix = (prefix + sep if prefix else "") + transformer(name)
                 key_prefix = transformer(key_prefix)
 
-                self.flatten(key_prefix, sep, transformer, value, output)
+                self.flatten(key_prefix, sep, array_index_format, transformer, value, output)
 
         elif isinstance(data, list):
             i = 0
             for value in data:
-                replace_prefix = (prefix if prefix else "") + "[" + str(i) + "]"
+                replace_prefix = (prefix if prefix else "") + (array_index_format % str(i))
                 replace_prefix = transformer(replace_prefix)
 
-                self.flatten(replace_prefix, sep, transformer, value, output)
+                self.flatten(replace_prefix, sep, array_index_format, transformer, value, output)
 
                 i += 1
         else:

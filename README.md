@@ -34,3 +34,15 @@ pytest
 ```
 pylint ddb
 ```
+
+### Windows note
+
+If you are running Windows, you need to follow those steps ...
+
+- Install [Build Tools for Visual Studio 2019](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=BuildTools&rel=16), 
+and choose Windows 10 SDK, C++ Build Tools and C++ CMake Tools for Windows in installer (last version only).
+- Install jsonnet python extension from [Toilal/jsonnet](https://github.com/Toilal/jsonnet) fork (this fix windows build)
+
+```
+pip install git+https://github.com/Toilal/jsonnet.git#egg=jsonnet
+```

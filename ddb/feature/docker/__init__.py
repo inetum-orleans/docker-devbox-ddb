@@ -6,11 +6,9 @@ from typing import Iterable, ClassVar
 import netifaces
 from dotty_dict import Dotty
 
-from .actions import CopyToBuildContextAction
 from .schema import DockerSchema
 from ..feature import Feature, FeatureConfigurationAutoConfigureError
 from ..schema import FeatureSchema
-from ...action import Action
 
 
 class DockerFeature(Feature):
@@ -30,13 +28,12 @@ class DockerFeature(Feature):
     def schema(self) -> ClassVar[FeatureSchema]:
         return DockerSchema
 
-    @property
-    def actions(self) -> Iterable[Action]:
-        return (
-            CopyToBuildContextAction(),
-        )
-
     def _configure_defaults(self, feature_config: Dotty):
+        self._configure_defaults_user(feature_config)
+        self._configure_defaults_ip(feature_config)
+        self._configure_defaults_registry(feature_config)
+
+    def _configure_defaults_user(self, feature_config):
         uid = feature_config.get('user.uid')
         if uid is None:
             try:
@@ -53,6 +50,7 @@ class DockerFeature(Feature):
                 raise FeatureConfigurationAutoConfigureError(self, 'user.gid', error)
             feature_config['user.gid'] = gid
 
+    def _configure_defaults_ip(self, feature_config):
         ip_address = feature_config.get('ip')
         if not ip_address:
             docker_host = os.environ.get('DOCKER_HOST')
@@ -77,3 +75,15 @@ class DockerFeature(Feature):
                                                              "from network interface configuration: " + interface)
 
         feature_config['ip'] = ip_address
+
+    @staticmethod
+    def _configure_defaults_registry(feature_config):
+        registry_name = feature_config.get('registry.name')
+        if registry_name and not registry_name.endswith('/'):
+            registry_name += '/'
+            feature_config['registry.name'] = registry_name
+
+        registry_repository = feature_config.get('registry.repository')
+        if registry_repository and not registry_repository.endswith('/'):
+            registry_repository += '/'
+            feature_config['registry.repository'] = registry_repository

@@ -51,8 +51,15 @@ class RenderAction(Action):
             self._render_template(template, target, env, **context)
 
     @staticmethod
+    def _normpath(path):
+        normpath = os.path.normpath(path)
+        if os.name == "nt":
+            normpath = normpath.replace("\\", "/")
+        return normpath
+
+    @staticmethod
     def _render_template(template_path: str, target_path: str, env: Environment, **context):
-        template = env.get_template(os.path.normpath(template_path))
+        template = env.get_template(RenderAction._normpath(template_path))
         template.render(**context)
 
         with open(target_path, 'w') as target:

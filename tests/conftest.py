@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 import os
-from typing import Callable, Union, Optional, Any
+import shutil
+from pathlib import Path
+from typing import Callable, Optional
 
 import pytest
-import shutil
 from _pytest.fixtures import FixtureRequest
-from pathlib import Path
-
 from _pytest.tmpdir import TempPathFactory
 
 from ddb.__main__ import reset
@@ -33,11 +32,13 @@ def data_dir(global_data_dir: str, request: FixtureRequest) -> str:
 def config_loader(data_dir: str) -> Callable[[Optional[str]], Config]:
     def load(name: str = None):
         return load_config(data_dir, name)
+
     return load
 
 
 @pytest.fixture()
-def project_loader(data_dir: str, tmp_path_factory: TempPathFactory, request: FixtureRequest) -> Callable[[Optional[str]], Config]:
+def project_loader(data_dir: str, tmp_path_factory: TempPathFactory, request: FixtureRequest) -> Callable[
+    [Optional[str]], Config]:
     def load(name: str = None):
         root_dir = os.path.join(data_dir, name) if name else data_dir
 

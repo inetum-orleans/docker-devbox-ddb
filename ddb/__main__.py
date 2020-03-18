@@ -164,13 +164,20 @@ def main(args: Optional[Sequence[str]] = None):
     handle_command_line(args)
 
 
+def clear_caches():
+    """
+    Clear all caches
+    """
+    for cache in caches.all():
+        cache.clear()
+        cache.flush()
+
+
 def reset():
     """
     Reset all caches and registries to run main method again
     """
-
-    for cache in caches.all():
-        cache.close()
+    clear_caches()
 
     caches.clear()
     bus.clear()

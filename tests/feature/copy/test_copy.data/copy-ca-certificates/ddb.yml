@@ -1,0 +1,6 @@
+copy:
+  specs:
+    - source: "ca-certificates/some-*.crt"
+      destination: "ca-certs"
+      dispatch:
+        - ".docker/*"

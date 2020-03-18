@@ -1,4 +1,0 @@
-docker:
-  copy_to_build_context:
-    - source: "ca-certificates/some-*.crt"
-      destination: "ca-certs"
