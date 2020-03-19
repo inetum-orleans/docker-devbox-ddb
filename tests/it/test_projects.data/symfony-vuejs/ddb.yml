@@ -13,3 +13,4 @@ docker:
   registry:
     name: gfiorleans.azurecr.io
     repository: gli-biometrie
+  fixuid: true

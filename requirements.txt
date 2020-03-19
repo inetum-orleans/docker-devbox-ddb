@@ -16,3 +16,6 @@ toposort
 cookiecutter
 jsonnet
 zgitignore
+cached-property
+docker[tls]
+dockerfile-parse

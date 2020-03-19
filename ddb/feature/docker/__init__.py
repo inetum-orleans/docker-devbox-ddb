@@ -6,9 +6,11 @@ from typing import Iterable, ClassVar
 import netifaces
 from dotty_dict import Dotty
 
+from .actions import FixuidAction
 from .schema import DockerSchema
 from ..feature import Feature, FeatureConfigurationAutoConfigureError
 from ..schema import FeatureSchema
+from ...action import Action
 
 
 class DockerFeature(Feature):
@@ -27,6 +29,12 @@ class DockerFeature(Feature):
     @property
     def schema(self) -> ClassVar[FeatureSchema]:
         return DockerSchema
+
+    @property
+    def actions(self) -> Iterable[Action]:
+        return (
+            FixuidAction(),
+        )
 
     def _configure_defaults(self, feature_config: Dotty):
         self._configure_defaults_user(feature_config)

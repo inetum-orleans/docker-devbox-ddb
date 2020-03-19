@@ -21,6 +21,7 @@ class TestSymfonyVuejs:
         with open(os.path.join(".docker", "php", "Dockerfile"), "r") as dockerfile:
             data = dockerfile.read()
             assert "COPY .ca-certificates/* /usr/local/share/ca-certificates/" in data
+            assert "ADD fixuid.tar.gz /usr/local/bin" in data
 
         assert os.path.exists(".gitignore")
         with open(".gitignore", "r") as gitignore_file:

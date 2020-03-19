@@ -6,14 +6,21 @@ matrix:
   include:
     - python: 3.7
       dist: xenial
-      sudo: true
     - python: 3.8
       dist: xenial
-      sudo: true
+before_install:
+  # It seems the mirror defined here (https://mirror.gcr.io) cause errors, so we are dropping it.
+  # See https://github.com/moby/moby/issues/39120
+  - sudo cat /etc/docker/daemon.json
+  - "echo '{\"mtu\": 1460}' | sudo dd of=/etc/docker/daemon.json"
+  - sudo cat /etc/docker/daemon.json
+  - .travis/docker-install.sh
 install:
   - curl -Lo $HOME/bin/ytt https://github.com/k14s/ytt/releases/download/v0.26.0/ytt-linux-amd64 && chmod +x $HOME/bin/ytt
-  - pip install -r requirements-dev.txt --upgrade
+  - pip freeze
+  - pip install -r requirements-dev.txt
   - pip install coveralls
+  - pip freeze
 script:
   - pylint ddb
   - coverage run --source=ddb -m pytest

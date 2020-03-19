@@ -1,0 +1,8 @@
+FROM php:cli
+RUN chown -R www-data:www-data /var/www
+ADD fixuid.tar.gz /usr/local/bin
+RUN chown root:root /usr/local/bin/fixuid && chmod 4755 /usr/local/bin/fixuid && mkdir -p /etc/fixuid
+COPY fixuid.yml /etc/fixuid/config.yml
+USER www-data
+ENTRYPOINT ["fixuid", "-q", "docker-php-entrypoint"]
+CMD ["php", "-a"]
