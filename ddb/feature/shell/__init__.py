@@ -52,11 +52,12 @@ class ShellFeature(Feature):
         return (
             LifecycleCommand("activate",
                              "Activate the environment and output a shell script to be executed",
-                             "init", "configure", "print-activate"
+                             "print-activate",
+                             parent="configure"
                              ),
             LifecycleCommand("deactivate",
                              "Deactivate the environment and output a shell script to be executed",
-                             "init", "configure", "print-deactivate"
+                             "print-deactivate"
                              ),
         )
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser
-from typing import Iterable, Union
+from typing import Iterable, Union, Optional
 
 from ..cache import caches
 from ..context import context
@@ -32,10 +32,35 @@ class DefaultCommand(DefaultRegistryObject, Command):
     A command is available in the program usage and can perform some action on the system.
     """
 
+    def __init__(self, name: str, description: str = None, parent: Optional[Union[Command, str]] = None):
+        super().__init__(name, description)
+        self._parent = parent
+
+    @property
+    def parent(self) -> Optional[Command]:
+        """
+        Parent command
+        """
+        if not self._parent:
+            return None
+
+        if isinstance(self._parent, Command):
+            return self._parent
+
+        # Inline import because of recursive imports if declared in module
+        from ..command import commands  # pylint:disable=import-outside-toplevel,cyclic-import
+        command = commands.get(self._parent)
+        if not command:
+            raise ValueError
+        return command
+
     def execute(self, *args, **kwargs):
         """
         Execute the command.
         """
+        if self.parent:
+            self.parent.execute(*args, **kwargs)
+
         clear_cache = kwargs.get("clear_cache")
         if clear_cache:
             for cache in caches.all():
@@ -55,8 +80,9 @@ class LifecycleCommand(DefaultCommand):
     Triggered events are named "phase:<phase.name>"
     """
 
-    def __init__(self, name: str, description: Union[str, None], *lifecycle: Union[str, Phase]):
-        super().__init__(name, description)
+    def __init__(self, name: str, description: Union[str, None], *lifecycle: Union[str, Phase],
+                 parent: Optional[Union[Command, str]] = None):
+        super().__init__(name, description, parent)
         self._lifecycle = list(map(lambda phase: phases.get(phase) if not isinstance(phase, Phase) else phase,
                                    lifecycle))  # type: Iterable[Phase]
 
