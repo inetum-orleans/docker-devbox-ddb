@@ -4,10 +4,13 @@ import os
 
 import yaml
 from _jsonnet import evaluate_file  # pylint: disable=no-name-in-module
+from marshmallow import Schema
+from marshmallow.fields import Nested, Dict, List
 
 from ddb.action import Action
 from ddb.config import config
 from ddb.event import bus
+from ddb.feature import features
 from ddb.utils.file import TemplateFinder
 
 
@@ -33,9 +36,41 @@ class RenderAction(Action):
             self._render_jsonnet(template, target)
 
     @staticmethod
+    def _get_stop_fields_from_schema(schema: Schema, stack, ret):
+        for field_name, field in schema.fields.items():
+            stack.append(field_name)
+            if isinstance(field, Dict):
+                ret.append(tuple(stack))
+            if isinstance(field, List):
+                ret.append(tuple(stack))
+            if isinstance(field, Nested):
+                RenderAction._get_stop_fields_from_schema(field.schema, stack, ret)
+            stack.pop()
+
+    @staticmethod
+    def _get_stop_fields():
+        ret = []
+        stack = []
+        for feature in features.all():
+            stack.append(feature.name)
+            RenderAction._get_stop_fields_from_schema(feature.schema(), stack, ret)
+            stack.pop()
+
+        return ret
+
+    @staticmethod
     def _render_jsonnet(template_path: str, target_path: str):
-        flatten_config = config.flatten()
-        evaluated = evaluate_file(template_path, ext_vars=flatten_config)
+        # TODO: Add support for jsonnet CLI if _jsonnet native module is not available.
+
+        flatten_config = config.flatten(stop_for=tuple(map(".".join, RenderAction._get_stop_fields())))
+        ext_vars = {k: v for (k, v) in flatten_config.items() if isinstance(v, str)}
+        ext_codes = {k: str(v).lower() if isinstance(v, bool) else str(v)
+                     for (k, v) in flatten_config.items() if not isinstance(v, str)}
+
+        evaluated = evaluate_file(template_path,
+                                  ext_vars=ext_vars,
+                                  ext_codes=ext_codes,
+                                  jpathdir=os.path.join(os.path.dirname(__file__), "lib"))
 
         multiple_file_output, multiple_file_dir = RenderAction._parse_multiple_header(template_path, target_path)
         if multiple_file_output:

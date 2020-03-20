@@ -1,0 +1,119 @@
+local _docker_registry_name = std.extVar("docker.registry.name");
+local _docker_registry_repository = std.extVar("docker.registry.repository");
+local _docker_restart_policy = std.extVar("docker.restart_policy");
+local _core_project_name = std.extVar("core.project.name");
+local _core_debug_host = std.extVar("core.debug.host");
+local _core_debug_disabled = std.extVar("core.debug.disabled");
+local _docker_cache_from_image = std.extVar("docker.cache_from_image");
+local _docker_directory = std.extVar("docker.directory");
+local _docker_reverse_proxy_type = std.extVar("docker.reverse_proxy.type");
+local _docker_reverse_proxy_network_id = std.extVar("docker.reverse_proxy.network_id");
+local _docker_reverse_proxy_network_names = std.extVar("docker.reverse_proxy.network_names");
+local _core_os = std.extVar("core.os");
+local _core_env_current = std.extVar("core.env.current");
+local _core_env_available = std.extVar("core.env.available");
+
+local sep = if _core_os == "nt" then std.char(92) else "/"; # Backslash can't be escaped properly, so use std.char
+
+local Service(restart_policy=_docker_restart_policy) = {
+    "init": true,
+    "restart": restart_policy,
+};
+
+local Image(image=null) = Service() + {
+    [if image != null then "image"]: image
+};
+
+local Build(name, image=name, cache_from_image=_docker_cache_from_image, directory=_docker_directory) = Image(image=_docker_registry_name + _docker_registry_repository + image) + {
+    "build": {
+        [if cache_from_image then "cache_from"]: [
+            _docker_registry_name + _docker_registry_repository + image
+        ],
+        "context": std.join(sep, ["/home/toilal/projects/GLI-APIBiometrie", directory, image])
+    }
+};
+
+local Volumes(services) = {
+        [key]: {} for key in
+        std.uniq(
+            std.filter(function(v) (!std.setMember(sep, v) && !std.setMember(std.char(92), v)),
+                std.map(function (v) std.split(v, ":")[0],
+                    std.flatMap(function (f) if std.objectHas(services[f], "volumes") then services[f].volumes else [],
+                        std.objectFields(services)
+                    )
+                )
+            )
+        )
+};
+
+local Networks(services, network_names=_docker_reverse_proxy_network_names) = {
+        [key]: {
+            "external": true,
+            "name": if std.objectHas(network_names, key) then network_names[key] else key
+        } for key in
+        std.uniq(
+            std.filter(function (n) n != "default",
+                std.flatMap(function (f) if std.objectHas(services[f], "networks") then std.objectFields(services[f].networks) else [],
+                    std.objectFields(services)
+                )
+            )
+        )
+};
+
+local Compose(network_names=_docker_reverse_proxy_network_names, version="3.7") = {
+	"version": version,
+	"networks": Networks(self.services, network_names),
+	"volumes": Volumes(self.services)
+};
+
+local TraefikLabels(port, hostname, name=null) = {
+    "traefik.enable": "true",
+    ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + "-tls.rule"]: "Host(`" + hostname + "`)",
+    ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + "-tls.service"]: std.join("-", std.prune([_core_project_name, name])),
+    ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + "-tls.tls"]: "true",
+    ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + ".rule"]: "Host(`" + hostname + "`)",
+    ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + ".service"]: std.join("-", std.prune([_core_project_name, name])),
+    ["traefik.http.services." + std.join("-", std.prune([_core_project_name, name])) + ".loadbalancer.server.port"]: port
+};
+
+local TraefikVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id) = {
+    "labels": TraefikLabels(port, hostname, name),
+    "networks": {
+        "default": {},
+        [network_id]: {}
+    }
+};
+
+local NoVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id) = {};
+
+local VirtualHost = if _docker_reverse_proxy_type == "traefik" then TraefikVirtualHost else NoVirtualHost;
+
+local XDebug() = {
+    [if !_core_debug_disabled then "environment"]: {
+        "PHP_IDE_CONFIG": "serverName=" + _core_project_name,
+        "XDEBUG_CONFIG": "remote_enable=on remote_autostart=off idekey=" + _core_project_name + " remote_host=" + _core_debug_host
+    }
+};
+
+local envIndex(env=_core_env_current) =
+    local indexes = std.find(env, _core_env_available);
+    local index = if std.length(indexes) > 0 then indexes[0] else null;
+    index;
+
+local envIs(env) =
+    env == _core_env_current;
+
+{
+    Image: Image,
+    Build: Build,
+    TraefikVirtualHost: TraefikVirtualHost,
+    NoVirtualHost: NoVirtualHost,
+    VirtualHost: VirtualHost,
+    XDebug: XDebug,
+    Compose: Compose,
+    Volumes: Volumes,
+    env: {
+      index: envIndex,
+      is: envIs
+    }
+}

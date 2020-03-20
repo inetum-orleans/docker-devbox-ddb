@@ -1,7 +1,10 @@
 core:
+  env:
+    current: ci
   project:
-    name: gli-apibiometrie
+    name: gli-biometrie
 docker:
+  cache_from_image: True
   registry:
     name: "gfiorleans.azurecr.io"
     repository: "gli-biometrie"

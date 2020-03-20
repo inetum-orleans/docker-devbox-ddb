@@ -2,8 +2,6 @@ version: '3.7'
 services:
   db:
     build:
-      cache_from:
-        - gfiorleans.azurecr.io/gli-biometrie/db
       context: /home/toilal/projects/GLI-APIBiometrie/.docker/db
     environment:
       POSTGRES_PASSWORD: biometrie
@@ -11,8 +9,7 @@ services:
     image: gfiorleans.azurecr.io/gli-biometrie/db
     init: true
     ports:
-      - published: 16032
-        target: 5432
+      - "16032:5432"
     restart: "no"
     user: 1000:1000
     volumes:
@@ -20,8 +17,6 @@ services:
       - /home/toilal/projects/GLI-APIBiometrie:/workdir:rw
   db-test:
     build:
-      cache_from:
-        - gfiorleans.azurecr.io/gli-biometrie/db
       context: /home/toilal/projects/GLI-APIBiometrie/.docker/db
     environment:
       POSTGRES_PASSWORD: biometrie
@@ -29,8 +24,7 @@ services:
     image: gfiorleans.azurecr.io/gli-biometrie/db
     init: true
     ports:
-      - published: 16033
-        target: 5432
+      - "16033:5432"
     restart: "no"
     user: 1000:1000
     volumes:
@@ -54,12 +48,12 @@ services:
     init: true
     labels:
       traefik.enable: "true"
-      traefik.http.routers.gli-apibiometrie-keycloak-tls.rule: Host(`keycloak.biometrie.test`)
-      traefik.http.routers.gli-apibiometrie-keycloak-tls.service: gli-apibiometrie-keycloak
-      traefik.http.routers.gli-apibiometrie-keycloak-tls.tls: "true"
-      traefik.http.routers.gli-apibiometrie-keycloak.rule: Host(`keycloak.biometrie.test`)
-      traefik.http.routers.gli-apibiometrie-keycloak.service: gli-apibiometrie-keycloak
-      traefik.http.services.gli-apibiometrie-keycloak.loadbalancer.server.port: '8080'
+      traefik.http.routers.gli-biometrie-keycloak-tls.rule: Host(`keycloak.biometrie.test`)
+      traefik.http.routers.gli-biometrie-keycloak-tls.service: gli-biometrie-keycloak
+      traefik.http.routers.gli-biometrie-keycloak-tls.tls: "true"
+      traefik.http.routers.gli-biometrie-keycloak.rule: Host(`keycloak.biometrie.test`)
+      traefik.http.routers.gli-biometrie-keycloak.service: gli-biometrie-keycloak
+      traefik.http.services.gli-biometrie-keycloak.loadbalancer.server.port: '8080'
     links:
       - keycloak-db:postgres
     networks:
@@ -71,8 +65,6 @@ services:
   keycloak-db:
     build:
       context: /home/toilal/projects/GLI-APIBiometrie/.docker/keycloak-db
-      cache_from:
-        - gfiorleans.azurecr.io/gli-biometrie/keycloak-db
     environment:
       POSTGRES_DB: biometrie
       POSTGRES_PASSWORD: biometrie
@@ -80,8 +72,7 @@ services:
     image: gfiorleans.azurecr.io/gli-biometrie/keycloak-db
     init: true
     ports:
-      - published: 16042
-        target: 5432
+      - "16042:5432"
     restart: "no"
     volumes:
       - /home/toilal/projects/GLI-APIBiometrie/keycloak/init.sql:/docker-entrypoint-initdb.d/init.sql:rw
@@ -89,8 +80,6 @@ services:
       - /home/toilal/projects/GLI-APIBiometrie:/workdir:rw
   ldap:
     build:
-      cache_from:
-        - gfiorleans.azurecr.io/gli-biometrie/ldap
       context: /home/toilal/projects/GLI-APIBiometrie/.docker/ldap
     command: --copy-service --loglevel debug
     environment:
@@ -100,26 +89,22 @@ services:
     image: gfiorleans.azurecr.io/gli-biometrie/ldap
     init: true
     ports:
-      - published: 16089
-        target: 389
-      - published: 16036
-        target: 636
+      - "16089:389"
+      - "16036:636"
     restart: "no"
   node:
     build:
-      cache_from:
-        - gfiorleans.azurecr.io/gli-biometrie/node
       context: /home/toilal/projects/GLI-APIBiometrie/.docker/node
     image: gfiorleans.azurecr.io/gli-biometrie/node
     init: true
     labels:
       traefik.enable: "true"
-      traefik.http.routers.gli-apibiometrie-tls.rule: Host(`biometrie.test`)
-      traefik.http.routers.gli-apibiometrie-tls.service: gli-apibiometrie
-      traefik.http.routers.gli-apibiometrie-tls.tls: "true"
-      traefik.http.routers.gli-apibiometrie.rule: Host(`biometrie.test`)
-      traefik.http.routers.gli-apibiometrie.service: gli-apibiometrie
-      traefik.http.services.gli-apibiometrie.loadbalancer.server.port: '8080'
+      traefik.http.routers.gli-biometrie-tls.rule: Host(`biometrie.test`)
+      traefik.http.routers.gli-biometrie-tls.service: gli-biometrie
+      traefik.http.routers.gli-biometrie-tls.tls: "true"
+      traefik.http.routers.gli-biometrie.rule: Host(`biometrie.test`)
+      traefik.http.routers.gli-biometrie.service: gli-biometrie
+      traefik.http.services.gli-biometrie.loadbalancer.server.port: '8080'
     networks:
       default: {}
       reverse-proxy: {}
@@ -131,12 +116,10 @@ services:
       - node-npm-packages:/home/node/.npm-packages:rw
   php:
     build:
-      cache_from:
-        - gfiorleans.azurecr.io/gli-biometrie/php
       context: /home/toilal/projects/GLI-APIBiometrie/.docker/php
     environment:
-      PHP_IDE_CONFIG: serverName=biometrie
-      XDEBUG_CONFIG: remote_enable=on remote_autostart=off idekey=biometrie remote_host=172.17.0.1
+      PHP_IDE_CONFIG: serverName=gli-biometrie
+      XDEBUG_CONFIG: remote_enable=on remote_autostart=off idekey=gli-biometrie remote_host=127.0.0.1
     image: gfiorleans.azurecr.io/gli-biometrie/php
     init: true
     restart: "no"
@@ -148,19 +131,17 @@ services:
       - /home/toilal/projects/GLI-APIBiometrie:/var/www/html:rw
   web:
     build:
-      cache_from:
-        - gfiorleans.azurecr.io/gli-biometrie/web
       context: /home/toilal/projects/GLI-APIBiometrie/.docker/web
     image: gfiorleans.azurecr.io/gli-biometrie/web
     init: true
     labels:
       traefik.enable: "true"
-      traefik.http.routers.gli-apibiometrie-api-tls.rule: Host(`api.biometrie.test`)
-      traefik.http.routers.gli-apibiometrie-api-tls.service: gli-apibiometrie-api
-      traefik.http.routers.gli-apibiometrie-api-tls.tls: "true"
-      traefik.http.routers.gli-apibiometrie-api.rule: Host(`api.biometrie.test`)
-      traefik.http.routers.gli-apibiometrie-api.service: gli-apibiometrie-api
-      traefik.http.services.gli-apibiometrie-api.loadbalancer.server.port: '80'
+      traefik.http.routers.gli-biometrie-api-tls.rule: Host(`api.biometrie.test`)
+      traefik.http.routers.gli-biometrie-api-tls.service: gli-biometrie-api
+      traefik.http.routers.gli-biometrie-api-tls.tls: "true"
+      traefik.http.routers.gli-biometrie-api.rule: Host(`api.biometrie.test`)
+      traefik.http.routers.gli-biometrie-api.service: gli-biometrie-api
+      traefik.http.services.gli-biometrie-api.loadbalancer.server.port: '80'
     networks:
       default: {}
       reverse-proxy: {}

@@ -1,5 +1,6 @@
 import os
 
+import pytest
 import yaml
 
 from ddb.__main__ import load_registered_features
@@ -188,8 +189,17 @@ class TestRenderAction:
 
         assert variables == variables_expected
 
-    def test_docker_compose_traefik(self, project_loader):
-        project_loader("docker_compose_traefik")
+    @pytest.mark.parametrize("variant", [
+        "dev",
+        "ci",
+        "prod",
+    ])
+    def test_docker_compose_traefik(self, project_loader, variant):
+        def before_load_config():
+            os.rename("ddb.%s.yml" % variant, "ddb.yml")
+            os.rename("docker-compose.expected.%s.yml" % variant, "docker-compose.expected.yml")
+
+        project_loader("docker_compose_traefik", before_load_config)
 
         features.register(CoreFeature())
         features.register(DockerFeature())

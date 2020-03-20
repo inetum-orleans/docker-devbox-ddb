@@ -113,5 +113,8 @@ class CoreFeature(Feature):
                 feature_config.get('env.current') not in feature_config['env.available']:
             raise FeatureConfigurationAutoConfigureError(self, 'env.current')
 
+        if feature_config.get('debug.disabled') is None:
+            feature_config['debug.disabled'] = feature_config['env.current'] != feature_config['env.available'][-1]
+
     def before_load(self):
         config.load()

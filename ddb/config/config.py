@@ -85,10 +85,11 @@ class Config:
         """
         Export configuration to environment dict.
         """
-        return self.flatten(self.env_prefix, "_", "_%s_", str.upper)
+        return self.flatten(self.env_prefix, "_", "_%s_", str.upper, str)
 
-    def flatten(self, prefix=None, sep=".", array_index_format="[%s]", transformer=None, data=None,
-                output=None) -> dict:
+    def flatten(self, prefix=None, sep=".", array_index_format="[%s]",
+                key_transformer=None, value_transformer=None,
+                stop_for=(), data=None, output=None) -> dict:
         """
         Export configuration to a flat dict.
         """
@@ -99,27 +100,37 @@ class Config:
             data = dict(self.data)
         if prefix is None:
             prefix = ""
-        if transformer is None:
-            transformer = lambda x: x
+        if key_transformer is None:
+            key_transformer = lambda x: x
+        if value_transformer is None:
+            value_transformer = lambda x: x
 
-        if isinstance(data, dict):
+        stop_recursion = False
+        if prefix in stop_for:
+            stop_recursion = True
+
+        if not stop_recursion and isinstance(data, dict):
             for (name, value) in data.items():
-                key_prefix = (prefix + sep if prefix else "") + transformer(name)
-                key_prefix = transformer(key_prefix)
+                key_prefix = (prefix + sep if prefix else "") + key_transformer(name)
+                key_prefix = key_transformer(key_prefix)
 
-                self.flatten(key_prefix, sep, array_index_format, transformer, value, output)
+                self.flatten(key_prefix, sep, array_index_format,
+                             key_transformer, value_transformer,
+                             stop_for, value, output)
 
-        elif isinstance(data, list):
+        elif not stop_recursion and isinstance(data, list):
             i = 0
             for value in data:
                 replace_prefix = (prefix if prefix else "") + (array_index_format % str(i))
-                replace_prefix = transformer(replace_prefix)
+                replace_prefix = key_transformer(replace_prefix)
 
-                self.flatten(replace_prefix, sep, array_index_format, transformer, value, output)
+                self.flatten(replace_prefix, sep, array_index_format,
+                             key_transformer, value_transformer,
+                             stop_for, value, output)
 
                 i += 1
         else:
-            output[prefix] = str(data)
+            output[prefix] = value_transformer(data)
 
         return output
 

@@ -30,6 +30,15 @@ class ComposeSchema(Schema):
     args = fields.List(fields.String(), default=[])
 
 
+class ReverseProxySchema(Schema):
+    """
+    Reverse proxy schema.
+    """
+    type = fields.String(required=True, default="traefik")
+    network_id = fields.String(required=True, default="reverse-proxy")
+    network_names = fields.Dict(required=True, default={"reverse-proxy": "reverse-proxy"})
+
+
 class DockerSchema(FeatureSchema):
     """
     Docker schema.
@@ -37,9 +46,11 @@ class DockerSchema(FeatureSchema):
     user = fields.Nested(UserSchema(), required=True, default=UserSchema())
     ip = fields.String(required=True, default=None)  # default is set in feature _configure_defaults
     restart_policy = fields.String(required=True, default="no")
-    port_prefix = fields.Integer(required=False)  # TODO: Generate value based on core.project.name for stability
+    port_prefix = fields.Integer(required=False)  # default is set in feature _configure_defaults
     registry = fields.Nested(RegistrySchema(), required=False)
     interface = fields.String(required=True, default="docker0")
     fixuid = fields.Boolean(required=False, default=False)
     directory = fields.String(required=True, default=".docker")
     compose = fields.Nested(ComposeSchema(), required=True, default=ComposeSchema())
+    cache_from_image = fields.Boolean(required=True, default=False)
+    reverse_proxy = fields.Nested(ReverseProxySchema(), required=True, default=ReverseProxySchema())

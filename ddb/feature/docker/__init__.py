@@ -82,6 +82,7 @@ class DockerFeature(Feature):
                                                              "Can't get ip address "
                                                              "from network interface configuration: " + interface)
 
+
         feature_config['ip'] = ip_address
 
     @staticmethod

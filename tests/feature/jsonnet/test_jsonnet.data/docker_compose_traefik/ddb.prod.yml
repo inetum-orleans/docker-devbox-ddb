@@ -1,0 +1,10 @@
+core:
+  env:
+    current: prod
+  project:
+    name: gli-biometrie
+docker:
+  restart_policy: "unless-stopped"
+  registry:
+    name: "gfiorleans.azurecr.io"
+    repository: "gli-biometrie"
