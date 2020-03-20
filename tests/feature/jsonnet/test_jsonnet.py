@@ -1,8 +1,11 @@
 import os
 
+import yaml
+
 from ddb.__main__ import load_registered_features
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
+from ddb.feature.docker import DockerFeature
 from ddb.feature.jsonnet import JsonnetFeature, RenderAction
 
 
@@ -184,3 +187,23 @@ class TestRenderAction:
             variables_expected = f.read()
 
         assert variables == variables_expected
+
+    def test_docker_compose_traefik(self, project_loader):
+        project_loader("docker_compose_traefik")
+
+        features.register(CoreFeature())
+        features.register(DockerFeature())
+        features.register(JsonnetFeature())
+        load_registered_features()
+
+        action = RenderAction()
+        action.execute()
+
+        assert os.path.exists('docker-compose.yml')
+        with open('docker-compose.yml', 'r') as f:
+            rendered = yaml.load(f.read(), yaml.SafeLoader)
+
+        with open('docker-compose.expected.yml', 'r') as f:
+            expected = yaml.load(f.read(), yaml.SafeLoader)
+
+        assert rendered == expected
