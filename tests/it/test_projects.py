@@ -1,11 +1,14 @@
 import os
 
-from ddb.__main__ import main
+from ddb.__main__ import main, reset
 
 
 class TestSymfonyVuejs:
     def test_activate(self, project_loader):
         project_loader("symfony-vuejs")
+
+        main(["configure"])
+        reset()
 
         main(["activate"])
 

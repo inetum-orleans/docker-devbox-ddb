@@ -51,12 +51,11 @@ class ShellFeature(Feature):
     def commands(self) -> Iterable[Command]:
         return (
             LifecycleCommand("activate",
-                             "Activate the environment and output a shell script to be executed",
-                             "print-activate",
-                             parent="configure"
+                             "Output a shell script to be executed to activate environment",
+                             "print-activate"
                              ),
             LifecycleCommand("deactivate",
-                             "Deactivate the environment and output a shell script to be executed",
+                             "Output a shell script to be executed to deactivate environment",
                              "print-deactivate"
                              ),
         )
