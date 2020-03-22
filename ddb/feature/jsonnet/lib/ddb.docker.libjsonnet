@@ -73,7 +73,8 @@ local TraefikLabels(port, hostname, name=null) = {
     ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + "-tls.tls"]: "true",
     ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + ".rule"]: "Host(`" + hostname + "`)",
     ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + ".service"]: std.join("-", std.prune([_core_project_name, name])),
-    ["traefik.http.services." + std.join("-", std.prune([_core_project_name, name])) + ".loadbalancer.server.port"]: port
+    ["traefik.http.services." + std.join("-", std.prune([_core_project_name, name])) + ".loadbalancer.server.port"]: port,
+    "ddb.event.bus.emit.certs:generate": hostname
 };
 
 local TraefikVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id) = {
