@@ -12,6 +12,8 @@ from ddb.__main__ import reset
 from ddb.config import Config
 from .utilstest import load_config
 
+pytest_plugins = ["docker_compose"]
+
 
 @pytest.fixture(scope="module")
 def global_data_dir(request: FixtureRequest) -> str:

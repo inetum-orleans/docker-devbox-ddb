@@ -25,6 +25,7 @@ entry_points = {
         'ddb = ddb.__main__:main'
     ],
     'ddb_features': [
+        'certs = ddb.feature.certs:CertsFeature',
         'copy = ddb.feature.copy:CopyFeature',
         'core = ddb.feature.core:CoreFeature',
         'docker = ddb.feature.docker:DockerFeature',

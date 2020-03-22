@@ -3,5 +3,6 @@ tox
 pylint
 pytest
 coverage
+pytest-docker-compose
 
 -r requirements.txt

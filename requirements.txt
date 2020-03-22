@@ -20,3 +20,5 @@ cached-property
 docker[tls]
 dockerfile-parse
 simpleeval
+cfssl>=0.0.3b243
+cryptography

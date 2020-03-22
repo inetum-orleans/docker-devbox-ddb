@@ -1,0 +1,10 @@
+version: '3.7'
+services:
+  cfssl:
+    image: gficentreouest/alpine-cfssl
+    environment:
+      - CFSSL_CSR=csr_intermediate_ca.json
+      - CFSSL_CONFIG=ca_intermediate_config.json
+      - DB_DISABLED=1
+    ports:
+      - 80
