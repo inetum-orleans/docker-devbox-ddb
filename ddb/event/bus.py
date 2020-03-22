@@ -53,3 +53,10 @@ class Bus:
         listeners = self._listeners
         for listener in listeners:
             listener(event_name, *args, **kwargs)
+
+    def has_named_listeners(self, event_name: str) -> bool:
+        """
+        Check if event_name has at least one named listener registered
+        """
+        named_listeners = self._named_listeners.get(event_name)
+        return bool(named_listeners)

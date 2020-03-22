@@ -49,7 +49,6 @@ class DockerSchema(FeatureSchema):
     port_prefix = fields.Integer(required=False)  # default is set in feature _configure_defaults
     registry = fields.Nested(RegistrySchema(), required=False)
     interface = fields.String(required=True, default="docker0")
-    fixuid = fields.Boolean(required=False, default=False)
     directory = fields.String(required=True, default=".docker")
     compose = fields.Nested(ComposeSchema(), required=True, default=ComposeSchema())
     cache_from_image = fields.Boolean(required=True, default=False)

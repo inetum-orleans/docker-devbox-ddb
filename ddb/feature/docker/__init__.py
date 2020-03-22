@@ -6,7 +6,7 @@ from typing import Iterable, ClassVar
 import netifaces
 from dotty_dict import Dotty
 
-from .actions import FixuidAction
+from .actions import EmitDockerComposeConfigAction
 from .schema import DockerSchema
 from ..feature import Feature, FeatureConfigurationAutoConfigureError
 from ..schema import FeatureSchema
@@ -33,7 +33,7 @@ class DockerFeature(Feature):
     @property
     def actions(self) -> Iterable[Action]:
         return (
-            FixuidAction(),
+            EmitDockerComposeConfigAction(),
         )
 
     def _configure_defaults(self, feature_config: Dotty):
@@ -81,7 +81,6 @@ class DockerFeature(Feature):
                 raise FeatureConfigurationAutoConfigureError(self, 'ip',
                                                              "Can't get ip address "
                                                              "from network interface configuration: " + interface)
-
 
         feature_config['ip'] = ip_address
 
