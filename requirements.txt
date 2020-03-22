@@ -19,3 +19,4 @@ zgitignore
 cached-property
 docker[tls]
 dockerfile-parse
+simpleeval

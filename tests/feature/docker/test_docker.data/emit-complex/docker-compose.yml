@@ -1,0 +1,14 @@
+version: "3.7"
+services:
+  docker:
+    image: ubuntu
+    labels:
+      ddb.event.bus.emit.some:test: emit-one-arg
+      ddb.event.bus.emit.some:test[2]: emit-some-arg|kw1=emit-one-kwarg|kw2=eval(3+4)|image=eval(service.get('image')) | version=eval(config.get('version'))
+      ddb.event.bus.emit.another:test: emit-another-arg
+      other.label: test
+  docker2:
+    image: ubuntu2
+    labels:
+      ddb.event.bus.emit.some:test: emit-one-arg-2
+      ddb.event.bus.emit.another:test: kw1=emit-another-kwarg

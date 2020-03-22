@@ -1,0 +1,6 @@
+version: "3.7"
+services:
+  docker:
+    image: ubuntu
+    labels:
+      ddb.event.bus.emit.some:test: eval(1 + 2)

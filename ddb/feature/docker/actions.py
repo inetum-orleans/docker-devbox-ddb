@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 import os
+import re
 from subprocess import run, PIPE
 from typing import Iterable
 
+import simpleeval
 import yaml
 from dotty_dict import Dotty
 
@@ -35,8 +37,14 @@ def run_docker_compose(*params: Iterable[str]):
 
 class EmitDockerComposeConfigAction(Action):
     """
-    Emit docker:docker-compose-config event with docker compose configuration
+    Emit docker:docker-compose-config event with docker compose configuration,
+    and events from ddb.event.bus.emit.<event-name>=prop1=prop1_value;prop2=int(prop2_value) labels.
+    To generate multiple events of same name in the same service, event-name can be suffixed with "[xxx]".
     """
+
+    def __init__(self):
+        self.key_re = re.compile(r"^\s*ddb\.event\.bus\.emit\.(.+?)(?:\[.*\])?\s*$")
+        self.eval_re = re.compile(r"^\s*eval\((.*)\)\s*$")
 
     @property
     def event_name(self) -> str:
@@ -46,15 +54,60 @@ class EmitDockerComposeConfigAction(Action):
     def name(self) -> str:
         return "docker:emit-docker-compose-config"
 
-    @property
-    def disabled(self) -> bool:
-        return bus.has_named_listeners("docker:docker-compose-config")
-
     def execute(self, *args, **kwargs):
         # TODO: Add support for custom docker-compose -f option (custom filename and multiple files)
-        if os.path.exists("docker-compose.yml"):
-            yaml_output = run_docker_compose("config")
-            parsed_config = yaml.load(yaml_output, yaml.SafeLoader)
-            docker_compose_config = Dotty(parsed_config)
+        if not os.path.exists("docker-compose.yml"):
+            return
 
-            bus.emit("docker:docker-compose-config", config=docker_compose_config)
+        yaml_output = run_docker_compose("config")
+        parsed_config = yaml.load(yaml_output, yaml.SafeLoader)
+        docker_compose_config = Dotty(parsed_config)
+
+        bus.emit("docker:docker-compose-config", config=docker_compose_config)
+
+        services = docker_compose_config.get('services')
+        if not services:
+            return
+
+        for service in services.values():
+            labels = service.get('labels')
+            if not labels:
+                continue
+
+            if not isinstance(labels, dict):
+                labels = {label.split("=", 1) for label in labels}
+
+            for key, value in labels.items():
+                match = self.key_re.match(key)
+                if not match:
+                    continue
+
+                event_name = match.group(1)
+                names = {"service": service, "config": docker_compose_config}
+                self.emit_event(event_name, value, names)
+
+    def emit_event(self, event_name, value, names=None):
+        """
+        Emit an event from raw value.
+        """
+        values = map(str.strip, value.split("|"))
+
+        args = []
+        kwargs = {}
+
+        for expression in values:
+            if "=" in expression:
+                var, val = expression.split("=", 1)
+            else:
+                var, val = None, expression
+
+            eval_match = self.eval_re.match(val)
+            if eval_match:
+                val = simpleeval.simple_eval(eval_match.group(1), names=names)
+
+            if var:
+                kwargs[var] = val
+            else:
+                args.append(val)
+
+        bus.emit(event_name, *args, **kwargs)
