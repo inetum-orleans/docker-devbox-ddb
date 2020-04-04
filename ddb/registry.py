@@ -23,13 +23,6 @@ class RegistryObject(ABC):
         """
         return inspect.getdoc(self.__class__)
 
-    @property
-    def dependencies(self) -> Iterable[str]:
-        """
-        The dependency names that should be registered before this one.
-        """
-        return []
-
 
 class DefaultRegistryObject(RegistryObject):
     """

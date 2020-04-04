@@ -6,6 +6,8 @@ from typing import List, Union, Optional
 
 from braceexpand import braceexpand
 
+from ddb.context import context
+
 
 def has_same_content(filename1: str, filename2: str) -> bool:
     """
@@ -24,12 +26,13 @@ class TemplateFinder:
     # pylint:disable=too-many-arguments
     def __init__(self, includes: List[str], excludes: List[str], suffixes: List[str],
                  rootpath: Union[Path, str] = Path('.'), recursive=True,
-                 first_only=True):
+                 skip_processed_sources=True, skip_processed_targets=True):
         self.includes, self.excludes = self._braceexpand(includes, excludes)
         self.suffixes = suffixes
         self.rootpath = rootpath if isinstance(rootpath, Path) else Path(rootpath)
         self.recursive = recursive
-        self.first_only = first_only
+        self.skip_processed_sources = skip_processed_sources
+        self.skip_processed_targets = skip_processed_targets
 
     @property
     def templates(self):
@@ -37,18 +40,41 @@ class TemplateFinder:
         Yields over a tuple (template, target) with found templates.
         """
 
-        processed = set()
-
         for source in self._walk(str(self.rootpath), recursive=self.recursive):
-            target = self._get_target(source, self.suffixes)
-
-            if self.first_only:
-                if target in processed:
+            if self.skip_processed_sources:
+                if source in context.processed_sources:
                     continue
-                processed.add(target)
 
+            target = self.get_target(source)
             if target:
+                if self.skip_processed_targets:
+                    if target in context.processed_targets:
+                        continue
                 yield source, target
+
+    def get_target(self, source):
+        """
+        Get the target of given source, or None if it doesn't match suffixes.
+        """
+        if self.skip_processed_sources:
+            if source in context.processed_sources:
+                return None
+
+        target = self._get_target(source, self.suffixes)
+
+        if self.skip_processed_targets:
+            if target in context.processed_targets:
+                return None
+
+        return target
+
+    @staticmethod
+    def mark_as_processed(source, target):
+        """
+        Mark sources and target as processed, for them to be skipped by other file template finders.
+        """
+        context.processed_sources.add(source)
+        context.processed_targets.add(target)
 
     def _walk(self, *args, recursive=True, **kwargs):
         _walk_generator = os.walk(*args, **kwargs)

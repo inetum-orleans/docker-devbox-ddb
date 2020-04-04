@@ -2,7 +2,7 @@
 import os
 import tempfile
 from subprocess import run, PIPE
-from typing import Union, Iterable
+from typing import Union, Iterable, Callable
 
 import yaml
 
@@ -21,14 +21,13 @@ class YttAction(Action):
         super().__init__()
         self.template_finder = None  # type: TemplateFinder
 
-
     @property
     def name(self) -> str:
         return "ytt:render"
 
     @property
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], str]]]:
-        return "phase:configure"
+    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
+        return "phase:configure", ("event:file-generated", self.on_file_generated)
 
     def initialize(self):
         self.template_finder = TemplateFinder(config.data["ytt.includes"],
@@ -37,6 +36,15 @@ class YttAction(Action):
 
     def execute(self, *args, **kwargs):
         for template, target in self.template_finder.templates:
+            self._render_ytt(template, target)
+
+    def on_file_generated(self, source: str, target: str):  # pylint:disable=unused-argument
+        """
+        Called when a file is generated.
+        """
+        template = target
+        target = self.template_finder.get_target(template)
+        if target:
             self._render_ytt(template, target)
 
     @staticmethod
@@ -54,8 +62,7 @@ class YttAction(Action):
             new[key] = value
         return new
 
-    @staticmethod
-    def _render_ytt(template_path: str, target_path: str):
+    def _render_ytt(self, template_path: str, target_path: str):
         yaml_config = yaml.dump(YttAction._escape_config(config.data.to_dict()))
 
         includes = TemplateFinder.build_default_includes_from_suffixes(
@@ -64,7 +71,7 @@ class YttAction(Action):
         )
         template_finder = TemplateFinder(includes, [], config.data["ytt.depends_suffixes"],
                                          os.path.dirname(target_path),
-                                         recursive=False, first_only=False)
+                                         recursive=False, skip_processed_targets=False)
 
         depends_files = [template[0] for template in template_finder.templates]
         if target_path in depends_files:
@@ -94,6 +101,7 @@ class YttAction(Action):
 
             with open(target_path, "wb") as output_file:
                 output_file.write(rendered.stdout)
+            self.template_finder.mark_as_processed(template_path, target_path)
             bus.emit('event:file-generated', source=template_path, target=target_path)
         finally:
             os.unlink(yaml_config_file.name)

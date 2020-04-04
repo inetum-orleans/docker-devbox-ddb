@@ -20,6 +20,8 @@ class Context:
         self.phase = None  # type: Optional[Phase]
         self.action = None  # type: Optional[Action]
         self.command = None  # type: Optional[Command]
+        self.processed_sources = set()
+        self.processed_targets = set()
         self.data = Dotty(dict())
 
     def reset(self):

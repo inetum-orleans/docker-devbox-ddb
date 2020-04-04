@@ -3,7 +3,7 @@ from typing import ClassVar, Iterable
 
 from ddb.action import Action
 from ddb.feature import Feature
-from .actions import ListTagsAction, CookiecutterAction
+from .actions import CookiecutterAction
 from .schema import CookiecutterFeatureSchema
 
 
@@ -27,6 +27,5 @@ class CookiecutterFeature(Feature):
     @property
     def actions(self) -> Iterable[Action]:
         return (
-            ListTagsAction(),
-            CookiecutterAction()
+            CookiecutterAction(),
         )

@@ -28,5 +28,5 @@ class TestSymfonyVuejs:
 
         assert os.path.exists(".gitignore")
         with open(".gitignore", "r") as gitignore_file:
-            gitignore_lines = gitignore_file.readlines()
+            gitignore_lines = gitignore_file.read().splitlines()
             assert gitignore_lines

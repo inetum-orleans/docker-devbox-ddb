@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-from typing import Union, Iterable
+from typing import Union, Iterable, Callable
 
 import zgitignore
 
@@ -31,7 +31,7 @@ class UpdateGitignoreAction(Action):
         return "git:update-gitignore"
 
     @property
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], str]]]:
+    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
         return "event:file-generated"
 
     def execute(self, *args, **kwargs):
@@ -43,7 +43,7 @@ class UpdateGitignoreAction(Action):
             gitignore_content = []
         else:
             with open(gitignore, "r", encoding="utf-8") as gitignore_file:
-                gitignore_content = gitignore_file.readlines()
+                gitignore_content = gitignore_file.read().splitlines()
 
         inversed_gitignore_content = []
         for pattern in gitignore_content:

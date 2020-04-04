@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import os
-from typing import Union, Iterable
+from typing import Union, Iterable, Callable
 
 import yaml
 from _jsonnet import evaluate_file  # pylint: disable=no-name-in-module
@@ -28,8 +28,8 @@ class JsonnetAction(Action):
         return "jsonnet:render"
 
     @property
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], str]]]:
-        return "phase:configure"
+    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
+        return "phase:configure", ("event:file-generated", self.on_file_generated)
 
     def initialize(self):
         self.template_finder = TemplateFinder(config.data["jsonnet.includes"],
@@ -38,6 +38,15 @@ class JsonnetAction(Action):
 
     def execute(self, *args, **kwargs):
         for template, target in self.template_finder.templates:
+            self._render_jsonnet(template, target)
+
+    def on_file_generated(self, source: str, target: str):  # pylint:disable=unused-argument
+        """
+        Called when a file is generated.
+        """
+        template = target
+        target = self.template_finder.get_target(template)
+        if target:
             self._render_jsonnet(template, target)
 
     @staticmethod
@@ -63,19 +72,10 @@ class JsonnetAction(Action):
 
         return ret
 
-    @staticmethod
-    def _render_jsonnet(template_path: str, target_path: str):
+    def _render_jsonnet(self, template_path: str, target_path: str):
         # TODO: Add support for jsonnet CLI if _jsonnet native module is not available.
 
-        flatten_config = config.flatten(stop_for=tuple(map(".".join, JsonnetAction._get_stop_fields())))
-        ext_vars = {k: v for (k, v) in flatten_config.items() if isinstance(v, str)}
-        ext_codes = {k: str(v).lower() if isinstance(v, bool) else str(v)
-                     for (k, v) in flatten_config.items() if not isinstance(v, str)}
-
-        evaluated = evaluate_file(template_path,
-                                  ext_vars=ext_vars,
-                                  ext_codes=ext_codes,
-                                  jpathdir=os.path.join(os.path.dirname(__file__), "lib"))
+        evaluated = self._evaluate_jsonnet(template_path)
 
         multiple_file_output, multiple_file_dir = JsonnetAction._parse_multiple_header(template_path, target_path)
         if multiple_file_output:
@@ -86,6 +86,7 @@ class JsonnetAction(Action):
                     os.makedirs(evaluated_target_parent_path)
                 with open(evaluated_target_path, 'w') as evaluated_target:
                     evaluated_target.write(content)
+                self.template_finder.mark_as_processed(template_path, evaluated_target_path)
                 bus.emit('event:file-generated', source=template_path, target=evaluated_target_path)
         else:
             ext = os.path.splitext(target_path)[-1]
@@ -93,7 +94,20 @@ class JsonnetAction(Action):
                 evaluated = yaml.dump(json.loads(evaluated), Dumper=yaml.SafeDumper)
             with open(target_path, 'w') as target:
                 target.write(evaluated)
+            self.template_finder.mark_as_processed(template_path, target_path)
             bus.emit('event:file-generated', source=template_path, target=target_path)
+
+    @staticmethod
+    def _evaluate_jsonnet(template_path):
+        flatten_config = config.flatten(stop_for=tuple(map(".".join, JsonnetAction._get_stop_fields())))
+        ext_vars = {k: v for (k, v) in flatten_config.items() if isinstance(v, str)}
+        ext_codes = {k: str(v).lower() if isinstance(v, bool) else str(v)
+                     for (k, v) in flatten_config.items() if not isinstance(v, str)}
+        evaluated = evaluate_file(template_path,
+                                  ext_vars=ext_vars,
+                                  ext_codes=ext_codes,
+                                  jpathdir=os.path.join(os.path.dirname(__file__), "lib"))
+        return evaluated
 
     @staticmethod
     def _parse_multiple_header(template_path, target_path):

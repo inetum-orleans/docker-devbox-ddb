@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-from typing import Union, Iterable
+from typing import Union, Iterable, Callable
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -36,8 +36,8 @@ class JinjaAction(Action):
         return "jinja:render"
 
     @property
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], str]]]:
-        return "phase:configure"
+    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
+        return "phase:configure", ("event:file-generated", self.on_file_generated)
 
     def initialize(self):
         self.template_finder = TemplateFinder(config.data["jinja.includes"],
@@ -57,6 +57,15 @@ class JinjaAction(Action):
         for template, target in self.template_finder.templates:
             self._render_template(template, target, self.env, **self.context)
 
+    def on_file_generated(self, source: str, target: str):  # pylint:disable=unused-argument
+        """
+        Called when a file is generated.
+        """
+        template = target
+        target = self.template_finder.get_target(template)
+        if target:
+            self._render_template(template, target, self.env, **self.context)
+
     @staticmethod
     def _normpath(path):
         normpath = os.path.normpath(path)
@@ -64,11 +73,11 @@ class JinjaAction(Action):
             normpath = normpath.replace("\\", "/")
         return normpath
 
-    @staticmethod
-    def _render_template(template_path: str, target_path: str, env: Environment, **context):
+    def _render_template(self, template_path: str, target_path: str, env: Environment, **context):
         template = env.get_template(JinjaAction._normpath(template_path))
         template.render(**context)
 
         with open(target_path, 'w') as target:
             target.write(template.render(**context))
+        self.template_finder.mark_as_processed(template_path, target_path)
         bus.emit('event:file-generated', source=template_path, target=target_path)

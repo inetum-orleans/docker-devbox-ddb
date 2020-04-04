@@ -33,9 +33,28 @@ def register_entrypoint_features():
         feature = entry_point.load()()
         entrypoint_features[feature.name] = feature
 
+    required_dependencies, toposort_data = _prepare_dependencies_data(entrypoint_features)
+    _check_missing_dependencies(entrypoint_features, required_dependencies)
+
+    dependencies = config.data.get('dependencies')
+    if dependencies:
+        for feat, feat_dependencies in dependencies.items():
+            if feat not in toposort_data:
+                toposort_data[feat] = set()
+            for feat_dependency in feat_dependencies:
+                toposort_data[feat].add(feat_dependency)
+
+    sorted_feature_names = toposort_flatten(toposort_data, sort=True)
+    for feature_name in sorted_feature_names:
+        features.register(entrypoint_features[feature_name])
+
+
+def _prepare_dependencies_data(entrypoint_features):
+    """
+    Compute required dependencies and toposort data.
+    """
     required_dependencies = {}
     toposort_data = {}
-
     for name, feat in entrypoint_features.items():
         feat_required_dependencies = []
         dependencies = set()
@@ -48,16 +67,18 @@ def register_entrypoint_features():
 
         toposort_data[name] = dependencies
         required_dependencies[name] = feat_required_dependencies
+    return required_dependencies, toposort_data
 
+
+def _check_missing_dependencies(entrypoint_features, required_dependencies):
+    """
+    Check missing required dependencies
+    """
     for name, feat_required_dependencies in required_dependencies.items():
         for required_dependency in feat_required_dependencies:
             if required_dependency not in entrypoint_features.keys():
                 raise ValueError("A required dependency is missing for " +
                                  name + " feature (" + required_dependency + ")")
-
-    sorted_feature_names = toposort_flatten(toposort_data, sort=False)
-    for feature_name in sorted_feature_names:
-        features.register(entrypoint_features[feature_name])
 
 
 def register_default_caches():
@@ -76,18 +97,13 @@ def register_objects(features_list: Iterable[Feature],
     """
     Register objects from features inside registry.
     """
-    all_objects = {}
-    toposort_data = {}
+    all_objects = []
 
     for feature in features_list:
         objects = objects_getter(feature)
-        for obj in objects:
-            toposort_data[obj.name] = set(obj.dependencies)
-            all_objects[obj.name] = obj
+        all_objects.extend(objects)
 
-    sorted_object_names = toposort_flatten(toposort_data)
-    for object_name in sorted_object_names:
-        obj = all_objects[object_name]
+    for obj in all_objects:
         registry.register(obj)
 
 
@@ -166,6 +182,7 @@ def main(args: Optional[Sequence[str]] = None):
     """
     Load all features and handle command line
     """
+    config.load()
     configure_context_logger()
     register_entrypoint_features()
     register_default_caches()
@@ -198,8 +215,8 @@ def reset():
     binaries.clear()
     services.clear()
 
-    config.reset()
     context.reset()
+    config.reset()
 
 
 if __name__ == '__main__':  # pragma: no cover

@@ -2,7 +2,7 @@
 import os
 import re
 from subprocess import run, PIPE
-from typing import Iterable, Union
+from typing import Iterable, Union, Callable
 
 import simpleeval
 import yaml
@@ -48,7 +48,7 @@ class EmitDockerComposeConfigAction(Action):
         self.eval_re = re.compile(r"^\s*eval\((.*)\)\s*$")
 
     @property
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], str]]]:
+    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
         return "phase:post-configure"
 
     @property

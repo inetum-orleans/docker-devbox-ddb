@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-from typing import Iterable, Union
+from typing import Iterable, Union, Callable
 
 import cfssl as cfssl_client
 
@@ -15,7 +15,7 @@ class GenerateCertAction(Action):
     """
 
     @property
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], str]]]:
+    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
         return "certs:generate"
 
     @property

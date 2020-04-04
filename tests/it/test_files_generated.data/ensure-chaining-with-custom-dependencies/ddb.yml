@@ -1,0 +1,2 @@
+dependencies:
+  jinja: ["jsonnet"]

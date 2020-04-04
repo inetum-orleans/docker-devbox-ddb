@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import Iterable, Union
+from typing import Iterable, Union, Callable
 
 from abc import abstractmethod, ABC
 
@@ -12,12 +12,13 @@ class Action(RegistryObject, ABC):
     Action can perform something on the system through it's run method.
     It is executed when a particular event occurs.
     """
+
     def __init__(self):
         self._initialized = False
 
     @property
     @abstractmethod
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], str]]]:
+    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
         """
         The event bindings that should trigger the action.
 
@@ -51,14 +52,12 @@ class Action(RegistryObject, ABC):
         """
         return 0
 
-    def execute_event_binding_factory(self, method_name=None):
+    def execute_event_binding_factory(self, to_call=None):
         """
         Factory to create a ready to register function on event bus.
         """
-        if method_name:
-            method = getattr(self.execute)
-        else:
-            method = self.execute
+        if not to_call:
+            to_call = self.execute
 
         def execute_event_binding(*args, **kwargs):
             context.action = self
@@ -66,9 +65,10 @@ class Action(RegistryObject, ABC):
                 if not self._initialized:
                     self.initialize()
                     self._initialized = True
-                method(*args, **kwargs)
+                to_call(*args, **kwargs)
             finally:
                 context.action = None
+
         return execute_event_binding
 
     @property

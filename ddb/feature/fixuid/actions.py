@@ -4,7 +4,7 @@ import os
 import re
 import shlex
 from collections import namedtuple
-from typing import Union, Iterable
+from typing import Union, Iterable, Callable
 
 import docker
 from dockerfile_parse import DockerfileParser
@@ -73,7 +73,7 @@ class FixuidDockerComposeAction(Action):
     """
 
     @property
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], str]]]:
+    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
         return "docker:docker-compose-config"
 
     @property

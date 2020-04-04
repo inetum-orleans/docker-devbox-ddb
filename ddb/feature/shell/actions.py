@@ -2,7 +2,7 @@
 import base64
 import json
 import os
-from typing import Union, Iterable
+from typing import Union, Iterable, Callable
 
 import zgitignore
 from dictdiffer import diff
@@ -79,7 +79,7 @@ class ActivateAction(Action):
         self.shell = shell
 
     @property
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], str]]]:
+    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
         return "phase:print-activate"
 
     @property
@@ -125,7 +125,7 @@ class DeactivateAction(Action):
         self.shell = shell
 
     @property
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], str]]]:
+    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
         return "phase:print-deactivate"
 
     @property
