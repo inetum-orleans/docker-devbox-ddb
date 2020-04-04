@@ -14,7 +14,7 @@ ddb.Compose() {
 			"user": "1000:1000",
 			"volumes": [
 				"db-data:/var/lib/postgresql/data:rw",
-				"/home/toilal/projects/GLI-APIBiometrie:/workdir:rw"
+				ddb.path.project + ":/workdir:rw"
 			]
 		},
 		[if ddb.env.index() >= ddb.env.index("ci") then "db-test"]: ddb.Build("db-test", "db") {
@@ -26,7 +26,7 @@ ddb.Compose() {
 			"user": "1000:1000",
 			"volumes": [
 				"db-test-data:/var/lib/postgresql/data:rw",
-				"/home/toilal/projects/GLI-APIBiometrie:/workdir:rw"
+				ddb.path.project + ":/workdir:rw"
 			]
 		},
 		"keycloak":  ddb.Image("jboss/keycloak:8.0.1") + ddb.VirtualHost("8080", "keycloak.biometrie.test", "keycloak") {
@@ -50,7 +50,7 @@ ddb.Compose() {
 				"keycloak-db:postgres"
 			],
 			"volumes": [
-				"/home/toilal/projects/GLI-APIBiometrie/keycloak:/opt/jboss/keycloak/keycloak:rw"
+				ddb.path.project + "/keycloak:/opt/jboss/keycloak/keycloak:rw"
 			]
 		},
 		"keycloak-db": ddb.Build("keycloak-db") {
@@ -61,9 +61,9 @@ ddb.Compose() {
 			},
 			[if ddb.env.is("dev") then "ports"]: ["16042:5432"],
 			"volumes": [
-				"/home/toilal/projects/GLI-APIBiometrie/keycloak/init.sql:/docker-entrypoint-initdb.d/init.sql:rw",
+				ddb.path.project + "/keycloak/init.sql:/docker-entrypoint-initdb.d/init.sql:rw",
 				"keycloak-db-data:/var/lib/postgresql/data:rw",
-				"/home/toilal/projects/GLI-APIBiometrie:/workdir:rw"
+				ddb.path.project + ":/workdir:rw"
 			]
 		},
 		[if ddb.env.is("dev") then "ldap"]: ddb.Build("ldap") {
@@ -81,7 +81,7 @@ ddb.Compose() {
 		"node": ddb.Build("node") + ddb.VirtualHost("8080", "biometrie.test") {
 			"user": "1000:1000",
 			"volumes": [
-				"/home/toilal/projects/GLI-APIBiometrie:/app:rw",
+				ddb.path.project + ":/app:rw",
 				"node-cache:/home/node/.cache:rw",
 				"node-npm-packages:/home/node/.npm-packages:rw"
 			]
@@ -91,14 +91,14 @@ ddb.Compose() {
 			"volumes": [
 				"php-composer-cache:/composer/cache:rw",
 				"php-composer-vendor:/composer/vendor:rw",
-				"/home/toilal/projects/GLI-APIBiometrie/.docker/php/conf.d/php-config.ini:/usr/local/etc/php/conf.d/php-config.ini:rw",
-				"/home/toilal/projects/GLI-APIBiometrie:/var/www/html:rw"
+				ddb.path.project + "/.docker/php/conf.d/php-config.ini:/usr/local/etc/php/conf.d/php-config.ini:rw",
+				ddb.path.project + ":/var/www/html:rw"
 			]
 		},
 		"web": ddb.Build("web") + ddb.VirtualHost("80", "api.biometrie.test", "api") {
 			"volumes": [
-				"/home/toilal/projects/GLI-APIBiometrie/.docker/web/nginx.conf:/etc/nginx/conf.d/default.conf:rw",
-				"/home/toilal/projects/GLI-APIBiometrie:/var/www/html:rw"
+				ddb.path.project + "/.docker/web/nginx.conf:/etc/nginx/conf.d/default.conf:rw",
+				ddb.path.project + ":/var/www/html:rw"
 			]
 		}
 	}

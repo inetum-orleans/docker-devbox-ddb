@@ -214,6 +214,8 @@ class TestRenderAction:
             rendered = yaml.load(f.read(), yaml.SafeLoader)
 
         with open('docker-compose.expected.yml', 'r') as f:
-            expected = yaml.load(f.read(), yaml.SafeLoader)
+            expected_data = f.read()
+            expected_data = expected_data.replace("%ddb.path.project%", os.getcwd())
+            expected = yaml.load(expected_data, yaml.SafeLoader)
 
         assert rendered == expected

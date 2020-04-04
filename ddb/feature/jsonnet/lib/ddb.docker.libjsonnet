@@ -12,6 +12,9 @@ local _docker_reverse_proxy_network_names = std.extVar("docker.reverse_proxy.net
 local _core_os = std.extVar("core.os");
 local _core_env_current = std.extVar("core.env.current");
 local _core_env_available = std.extVar("core.env.available");
+local _core_path_project_home = std.extVar("core.path.project_home");
+local _core_path_ddb_home = std.extVar("core.path.ddb_home");
+local _core_path_home = std.extVar("core.path.home");
 
 local sep = if _core_os == "nt" then std.char(92) else "/"; # Backslash can't be escaped properly, so use std.char
 
@@ -29,7 +32,7 @@ local Build(name, image=name, cache_from_image=_docker_cache_from_image, directo
         [if cache_from_image then "cache_from"]: [
             _docker_registry_name + _docker_registry_repository + image
         ],
-        "context": std.join(sep, ["/home/toilal/projects/GLI-APIBiometrie", directory, image])
+        "context": std.join(sep, [_core_path_project_home, directory, image])
     }
 };
 
@@ -116,5 +119,11 @@ local envIs(env) =
     env: {
       index: envIndex,
       is: envIs
+    },
+    path: {
+      project: _core_path_project_home,
+      project_home: _core_path_project_home,
+      ddb_home: _core_path_ddb_home,
+      home: _core_path_home
     }
 }

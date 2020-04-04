@@ -4,7 +4,7 @@ services:
     build:
       cache_from:
         - gfiorleans.azurecr.io/gli-biometrie/db
-      context: /home/toilal/projects/GLI-APIBiometrie/.docker/db
+      context: %ddb.path.project%/.docker/db
     environment:
       POSTGRES_PASSWORD: biometrie
       POSTGRES_USER: biometrie
@@ -14,12 +14,12 @@ services:
     user: 1000:1000
     volumes:
       - db-data:/var/lib/postgresql/data:rw
-      - /home/toilal/projects/GLI-APIBiometrie:/workdir:rw
+      - %ddb.path.project%:/workdir:rw
   db-test:
     build:
       cache_from:
         - gfiorleans.azurecr.io/gli-biometrie/db
-      context: /home/toilal/projects/GLI-APIBiometrie/.docker/db
+      context: %ddb.path.project%/.docker/db
     environment:
       POSTGRES_PASSWORD: biometrie
       POSTGRES_USER: biometrie
@@ -29,7 +29,7 @@ services:
     user: 1000:1000
     volumes:
       - db-test-data:/var/lib/postgresql/data:rw
-      - /home/toilal/projects/GLI-APIBiometrie:/workdir:rw
+      - %ddb.path.project%:/workdir:rw
   keycloak:
     command:
       - -b 0.0.0.0 -Dkeycloak.import=/opt/jboss/keycloak/keycloak/realm-export.json
@@ -62,10 +62,10 @@ services:
       reverse-proxy: {}
     restart: "no"
     volumes:
-      - /home/toilal/projects/GLI-APIBiometrie/keycloak:/opt/jboss/keycloak/keycloak:rw
+      - %ddb.path.project%/keycloak:/opt/jboss/keycloak/keycloak:rw
   keycloak-db:
     build:
-      context: /home/toilal/projects/GLI-APIBiometrie/.docker/keycloak-db
+      context: %ddb.path.project%/.docker/keycloak-db
       cache_from:
         - gfiorleans.azurecr.io/gli-biometrie/keycloak-db
     environment:
@@ -76,14 +76,14 @@ services:
     init: true
     restart: "no"
     volumes:
-      - /home/toilal/projects/GLI-APIBiometrie/keycloak/init.sql:/docker-entrypoint-initdb.d/init.sql:rw
+      - %ddb.path.project%/keycloak/init.sql:/docker-entrypoint-initdb.d/init.sql:rw
       - keycloak-db-data:/var/lib/postgresql/data:rw
-      - /home/toilal/projects/GLI-APIBiometrie:/workdir:rw
+      - %ddb.path.project%:/workdir:rw
   node:
     build:
       cache_from:
         - gfiorleans.azurecr.io/gli-biometrie/node
-      context: /home/toilal/projects/GLI-APIBiometrie/.docker/node
+      context: %ddb.path.project%/.docker/node
     image: gfiorleans.azurecr.io/gli-biometrie/node
     init: true
     labels:
@@ -101,14 +101,14 @@ services:
     restart: "no"
     user: 1000:1000
     volumes:
-      - /home/toilal/projects/GLI-APIBiometrie:/app:rw
+      - %ddb.path.project%:/app:rw
       - node-cache:/home/node/.cache:rw
       - node-npm-packages:/home/node/.npm-packages:rw
   php:
     build:
       cache_from:
         - gfiorleans.azurecr.io/gli-biometrie/php
-      context: /home/toilal/projects/GLI-APIBiometrie/.docker/php
+      context: %ddb.path.project%/.docker/php
     image: gfiorleans.azurecr.io/gli-biometrie/php
     init: true
     restart: "no"
@@ -116,13 +116,13 @@ services:
     volumes:
       - php-composer-cache:/composer/cache:rw
       - php-composer-vendor:/composer/vendor:rw
-      - /home/toilal/projects/GLI-APIBiometrie/.docker/php/conf.d/php-config.ini:/usr/local/etc/php/conf.d/php-config.ini:rw
-      - /home/toilal/projects/GLI-APIBiometrie:/var/www/html:rw
+      - %ddb.path.project%/.docker/php/conf.d/php-config.ini:/usr/local/etc/php/conf.d/php-config.ini:rw
+      - %ddb.path.project%:/var/www/html:rw
   web:
     build:
       cache_from:
         - gfiorleans.azurecr.io/gli-biometrie/web
-      context: /home/toilal/projects/GLI-APIBiometrie/.docker/web
+      context: %ddb.path.project%/.docker/web
     image: gfiorleans.azurecr.io/gli-biometrie/web
     init: true
     labels:
@@ -139,8 +139,8 @@ services:
       reverse-proxy: {}
     restart: "no"
     volumes:
-      - /home/toilal/projects/GLI-APIBiometrie/.docker/web/nginx.conf:/etc/nginx/conf.d/default.conf:rw
-      - /home/toilal/projects/GLI-APIBiometrie:/var/www/html:rw
+      - %ddb.path.project%/.docker/web/nginx.conf:/etc/nginx/conf.d/default.conf:rw
+      - %ddb.path.project%:/var/www/html:rw
 networks:
   reverse-proxy:
     external: true

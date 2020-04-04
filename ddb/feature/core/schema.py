@@ -6,6 +6,15 @@ from marshmallow import fields, Schema
 from ddb.feature.schema import FeatureSchema
 
 
+class PathSchema(Schema):
+    """
+    Path settings for core feature schema.
+    """
+    project_home = fields.String(default=None)  # default is set in feature _configure_defaults
+    home = fields.String(default=None)  # default is set in feature _configure_defaults
+    ddb_home = fields.String(default=None)  # default is set in feature _configure_defaults
+
+
 class EnvSchema(Schema):
     """
     Env settings for core feature schema.
@@ -46,3 +55,4 @@ class CoreFeatureSchema(FeatureSchema):
     project = fields.Nested(ProjectSchema(), default=ProjectSchema())
     debug = fields.Nested(DebugSchema(), default=DebugSchema())
     os = fields.String(required=True, default=os.name)
+    path = fields.Nested(PathSchema(), defalut=PathSchema())
