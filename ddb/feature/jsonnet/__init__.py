@@ -5,7 +5,7 @@ from dotty_dict import Dotty
 
 from ddb.action import Action
 from ddb.feature import Feature
-from .actions import RenderAction
+from .actions import JsonnetAction
 from .schema import JsonnetSchema
 from ...utils.file import TemplateFinder
 
@@ -30,7 +30,7 @@ class JsonnetFeature(Feature):
     @property
     def actions(self) -> Iterable[Action]:
         return (
-            RenderAction(),
+            JsonnetAction(),
         )
 
     def _configure_defaults(self, feature_config: Dotty):

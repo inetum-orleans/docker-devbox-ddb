@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import subprocess
-from typing import Iterable
+from typing import Iterable, Union
 
 from cookiecutter.config import DEFAULT_CONFIG
 from cookiecutter.exceptions import VCSNotInstalled, RepositoryNotFound
@@ -23,7 +23,7 @@ class ListTagsAction(Action):
         return "cookiecutter:list-tags"
 
     @property
-    def event_name(self) -> str:
+    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], str]]]:
         return "phase:init"
 
     def execute(self, *args, **kwargs):
@@ -92,7 +92,7 @@ class CookiecutterAction(Action):
         return "cookiecutter:download"
 
     @property
-    def event_name(self) -> str:
+    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], str]]]:
         return "phase:init"
 
     @property

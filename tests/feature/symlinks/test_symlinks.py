@@ -6,7 +6,7 @@ from ddb.__main__ import load_registered_features
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.feature import FeatureConfigurationError
-from ddb.feature.symlinks import CreateAction, SymlinksFeature
+from ddb.feature.symlinks import SymlinkAction, SymlinksFeature
 
 
 class TestConfigureAction:
@@ -24,7 +24,8 @@ class TestConfigureAction:
         features.register(SymlinksFeature())
         load_registered_features()
 
-        action = CreateAction()
+        action = SymlinkAction()
+        action.initialize()
         action.execute()
 
     def test_project_1(self, project_loader):
@@ -34,7 +35,8 @@ class TestConfigureAction:
         features.register(SymlinksFeature())
         load_registered_features()
 
-        action = CreateAction()
+        action = SymlinkAction()
+        action.initialize()
         action.execute()
 
         assert os.path.exists('test')
@@ -52,7 +54,8 @@ class TestConfigureAction:
         features.register(SymlinksFeature())
         load_registered_features()
 
-        action = CreateAction()
+        action = SymlinkAction()
+        action.initialize()
         action.execute()
 
         assert os.path.islink('test')
@@ -77,7 +80,8 @@ class TestConfigureAction:
         features.register(SymlinksFeature())
         load_registered_features()
 
-        action = CreateAction()
+        action = SymlinkAction()
+        action.initialize()
         action.execute()
 
         assert os.path.islink(os.path.join('subdirectory', 'test.yml'))

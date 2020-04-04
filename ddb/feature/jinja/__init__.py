@@ -5,7 +5,7 @@ from dotty_dict import Dotty
 
 from ddb.action import Action
 from ddb.feature import Feature
-from .actions import RenderAction
+from .actions import JinjaAction
 from .schema import JinjaSchema
 from ...utils.file import TemplateFinder
 
@@ -30,7 +30,7 @@ class JinjaFeature(Feature):
     @property
     def actions(self) -> Iterable[Action]:
         return (
-            RenderAction(),
+            JinjaAction(),
         )
 
     def _configure_defaults(self, feature_config: Dotty):

@@ -3,7 +3,7 @@ from typing import ClassVar, Iterable
 
 from dotty_dict import Dotty
 
-from .actions import CreateAction
+from .actions import SymlinkAction
 from .schema import SymlinksSchema
 from ..feature import Feature, FeatureConfigurationError
 from ...action import Action
@@ -31,7 +31,7 @@ class SymlinksFeature(Feature):
     @property
     def actions(self) -> Iterable[Action]:
         return (
-            CreateAction(),
+            SymlinkAction(),
         )
 
     def _configure_defaults(self, feature_config: Dotty):

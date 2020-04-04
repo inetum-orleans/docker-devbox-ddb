@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import os
+from typing import Union, Iterable
 
 import yaml
 from _jsonnet import evaluate_file  # pylint: disable=no-name-in-module
@@ -14,25 +15,29 @@ from ddb.feature import features
 from ddb.utils.file import TemplateFinder
 
 
-class RenderAction(Action):
+class JsonnetAction(Action):
     """
     Render jsonnet files based on filename suffixes.
     """
+    def __init__(self):
+        super().__init__()
+        self.template_finder = None  # type: TemplateFinder
 
     @property
     def name(self) -> str:
         return "jsonnet:render"
 
     @property
-    def event_name(self) -> str:
+    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], str]]]:
         return "phase:configure"
 
-    def execute(self, *args, **kwargs):
-        generator = TemplateFinder(config.data["jsonnet.includes"],
-                                   config.data["jsonnet.excludes"],
-                                   config.data["jsonnet.suffixes"])
+    def initialize(self):
+        self.template_finder = TemplateFinder(config.data["jsonnet.includes"],
+                                              config.data["jsonnet.excludes"],
+                                              config.data["jsonnet.suffixes"])
 
-        for template, target in generator.templates:
+    def execute(self, *args, **kwargs):
+        for template, target in self.template_finder.templates:
             self._render_jsonnet(template, target)
 
     @staticmethod
@@ -44,7 +49,7 @@ class RenderAction(Action):
             if isinstance(field, List):
                 ret.append(tuple(stack))
             if isinstance(field, Nested):
-                RenderAction._get_stop_fields_from_schema(field.schema, stack, ret)
+                JsonnetAction._get_stop_fields_from_schema(field.schema, stack, ret)
             stack.pop()
 
     @staticmethod
@@ -53,7 +58,7 @@ class RenderAction(Action):
         stack = []
         for feature in features.all():
             stack.append(feature.name)
-            RenderAction._get_stop_fields_from_schema(feature.schema(), stack, ret)
+            JsonnetAction._get_stop_fields_from_schema(feature.schema(), stack, ret)
             stack.pop()
 
         return ret
@@ -62,7 +67,7 @@ class RenderAction(Action):
     def _render_jsonnet(template_path: str, target_path: str):
         # TODO: Add support for jsonnet CLI if _jsonnet native module is not available.
 
-        flatten_config = config.flatten(stop_for=tuple(map(".".join, RenderAction._get_stop_fields())))
+        flatten_config = config.flatten(stop_for=tuple(map(".".join, JsonnetAction._get_stop_fields())))
         ext_vars = {k: v for (k, v) in flatten_config.items() if isinstance(v, str)}
         ext_codes = {k: str(v).lower() if isinstance(v, bool) else str(v)
                      for (k, v) in flatten_config.items() if not isinstance(v, str)}
@@ -72,7 +77,7 @@ class RenderAction(Action):
                                   ext_codes=ext_codes,
                                   jpathdir=os.path.join(os.path.dirname(__file__), "lib"))
 
-        multiple_file_output, multiple_file_dir = RenderAction._parse_multiple_header(template_path, target_path)
+        multiple_file_output, multiple_file_dir = JsonnetAction._parse_multiple_header(template_path, target_path)
         if multiple_file_output:
             for (filename, content) in json.loads(evaluated).items():
                 evaluated_target_path = os.path.join(multiple_file_dir, filename)

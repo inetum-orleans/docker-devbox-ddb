@@ -3,17 +3,18 @@ import os
 from ddb.__main__ import load_registered_features
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
-from ddb.feature.ytt import YttFeature, RenderAction
+from ddb.feature.ytt import YttFeature, YttAction
 
 
-class TestRenderAction:
+class TestYttAction:
     def test_empty_project_without_core(self, project_loader):
         project_loader("empty")
 
         features.register(YttFeature())
         load_registered_features()
 
-        action = RenderAction()
+        action = YttAction()
+        action.initialize()
         action.execute()
 
     def test_empty_project_with_core(self, project_loader):
@@ -23,7 +24,8 @@ class TestRenderAction:
         features.register(YttFeature())
         load_registered_features()
 
-        action = RenderAction()
+        action = YttAction()
+        action.initialize()
         action.execute()
 
     def test_plain(self, project_loader):
@@ -33,7 +35,8 @@ class TestRenderAction:
         features.register(YttFeature())
         load_registered_features()
 
-        action = RenderAction()
+        action = YttAction()
+        action.initialize()
         action.execute()
 
         assert os.path.exists('yaml.yml')
@@ -52,7 +55,8 @@ class TestRenderAction:
         features.register(YttFeature())
         load_registered_features()
 
-        action = RenderAction()
+        action = YttAction()
+        action.initialize()
         action.execute()
 
         assert os.path.exists('variables.yaml')
@@ -71,7 +75,8 @@ class TestRenderAction:
         features.register(YttFeature())
         load_registered_features()
 
-        action = RenderAction()
+        action = YttAction()
+        action.initialize()
         action.execute()
 
         assert not os.path.exists('yaml.txt')
@@ -84,7 +89,8 @@ class TestRenderAction:
         features.register(YttFeature())
         load_registered_features()
 
-        action = RenderAction()
+        action = YttAction()
+        action.initialize()
         action.execute()
 
         assert os.path.exists('variables.yaml')

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import Iterable
+from typing import Iterable, Union
 
 from abc import abstractmethod, ABC
 
@@ -12,18 +12,33 @@ class Action(RegistryObject, ABC):
     Action can perform something on the system through it's run method.
     It is executed when a particular event occurs.
     """
+    def __init__(self):
+        self._initialized = False
 
     @property
     @abstractmethod
-    def event_name(self) -> str:
+    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], str]]]:
         """
-        The event name that should trigger the action.
+        The event bindings that should trigger the action.
+
+        A binding can be defined as a string matching the event name and will register the "execute" method on event
+        bus.
+
+        A binding can also be defined as a 2-tuple of string, first value matching the event name and will register
+        the method named from second value on event bus.
+
+        This method returns an iterable of bindings.
         """
 
     @abstractmethod
     def execute(self, *args, **kwargs):
         """
         Action implementation. *args and **kwargs are coming from the provided command line arguments.
+        """
+
+    def initialize(self):
+        """
+        Initialize method, invoked before first event binding execution.
         """
 
     @property
@@ -36,11 +51,25 @@ class Action(RegistryObject, ABC):
         """
         return 0
 
-    def execute_in_context(self, *args, **kwargs):
+    def execute_event_binding_factory(self, method_name=None):
         """
-        Execute action implementation with context update.
+        Factory to create a ready to register function on event bus.
         """
-        execute_action(self, *args, **kwargs)
+        if method_name:
+            method = getattr(self.execute)
+        else:
+            method = self.execute
+
+        def execute_event_binding(*args, **kwargs):
+            context.action = self
+            try:
+                if not self._initialized:
+                    self.initialize()
+                    self._initialized = True
+                method(*args, **kwargs)
+            finally:
+                context.action = None
+        return execute_event_binding
 
     @property
     def disabled(self) -> bool:
@@ -48,15 +77,3 @@ class Action(RegistryObject, ABC):
         Check if the action is disabled.
         """
         return False
-
-
-def execute_action(action: Action, *args, **kwargs):
-    """
-    Execute an action with context update.
-    """
-
-    context.action = action
-    try:
-        action.execute(*args, **kwargs)
-    finally:
-        context.action = None

@@ -2,6 +2,7 @@
 import os
 import tempfile
 from subprocess import run, PIPE
+from typing import Union, Iterable
 
 import yaml
 
@@ -11,25 +12,31 @@ from ddb.event import bus
 from ddb.utils.file import TemplateFinder
 
 
-class RenderAction(Action):
+class YttAction(Action):
     """
     Render ytt files based on filename suffixes.
     """
+
+    def __init__(self):
+        super().__init__()
+        self.template_finder = None  # type: TemplateFinder
+
 
     @property
     def name(self) -> str:
         return "ytt:render"
 
     @property
-    def event_name(self) -> str:
+    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], str]]]:
         return "phase:configure"
 
-    def execute(self, *args, **kwargs):
-        generator = TemplateFinder(config.data["ytt.includes"],
-                                   config.data["ytt.excludes"],
-                                   config.data["ytt.suffixes"])
+    def initialize(self):
+        self.template_finder = TemplateFinder(config.data["ytt.includes"],
+                                              config.data["ytt.excludes"],
+                                              config.data["ytt.suffixes"])
 
-        for template, target in generator.templates:
+    def execute(self, *args, **kwargs):
+        for template, target in self.template_finder.templates:
             self._render_ytt(template, target)
 
     @staticmethod
@@ -39,7 +46,7 @@ class RenderAction(Action):
         keywords_escape_format = config.data["ytt.keywords_escape_format"]
         for key, value in input_config.items():
             if isinstance(value, dict):
-                value = RenderAction._escape_config(value)
+                value = YttAction._escape_config(value)
             if key in keywords:
                 escaped_k = keywords_escape_format % (key,)
                 if escaped_k not in value.keys():
@@ -49,7 +56,7 @@ class RenderAction(Action):
 
     @staticmethod
     def _render_ytt(template_path: str, target_path: str):
-        yaml_config = yaml.dump(RenderAction._escape_config(config.data.to_dict()))
+        yaml_config = yaml.dump(YttAction._escape_config(config.data.to_dict()))
 
         includes = TemplateFinder.build_default_includes_from_suffixes(
             config.data["ytt.depends_suffixes"],

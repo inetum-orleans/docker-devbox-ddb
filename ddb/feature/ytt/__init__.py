@@ -5,7 +5,7 @@ from dotty_dict import Dotty
 
 from ddb.action import Action
 from ddb.feature import Feature
-from .actions import RenderAction
+from .actions import YttAction
 from .schema import YttSchema
 from ...utils.file import TemplateFinder
 
@@ -30,7 +30,7 @@ class YttFeature(Feature):
     @property
     def actions(self) -> Iterable[Action]:
         return (
-            RenderAction(),
+            YttAction(),
         )
 
     def _configure_defaults(self, feature_config: Dotty):

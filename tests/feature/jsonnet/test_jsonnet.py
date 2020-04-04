@@ -8,17 +8,18 @@ from ddb.config import config
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.docker import DockerFeature
-from ddb.feature.jsonnet import JsonnetFeature, RenderAction
+from ddb.feature.jsonnet import JsonnetFeature, JsonnetAction
 
 
-class TestRenderAction:
+class TestJsonnetAction:
     def test_empty_project_without_core(self, project_loader):
         project_loader("empty")
 
         features.register(JsonnetFeature())
         load_registered_features()
 
-        action = RenderAction()
+        action = JsonnetAction()
+        action.initialize()
         action.execute()
 
     def test_empty_project_with_core(self, project_loader):
@@ -28,7 +29,8 @@ class TestRenderAction:
         features.register(JsonnetFeature())
         load_registered_features()
 
-        action = RenderAction()
+        action = JsonnetAction()
+        action.initialize()
         action.execute()
 
     def test_example1(self, project_loader):
@@ -38,7 +40,8 @@ class TestRenderAction:
         features.register(JsonnetFeature())
         load_registered_features()
 
-        action = RenderAction()
+        action = JsonnetAction()
+        action.initialize()
         action.execute()
 
         assert os.path.exists('example1.json')
@@ -57,7 +60,8 @@ class TestRenderAction:
         features.register(JsonnetFeature())
         load_registered_features()
 
-        action = RenderAction()
+        action = JsonnetAction()
+        action.initialize()
         action.execute()
 
         assert os.path.exists('example1.another')
@@ -85,7 +89,8 @@ class TestRenderAction:
         features.register(JsonnetFeature())
         load_registered_features()
 
-        action = RenderAction()
+        action = JsonnetAction()
+        action.initialize()
         action.execute()
 
         assert os.path.exists('example2.json')
@@ -104,7 +109,8 @@ class TestRenderAction:
         features.register(JsonnetFeature())
         load_registered_features()
 
-        action = RenderAction()
+        action = JsonnetAction()
+        action.initialize()
         action.execute()
 
         assert os.path.exists('uwsgi.ini')
@@ -141,7 +147,8 @@ class TestRenderAction:
         features.register(JsonnetFeature())
         load_registered_features()
 
-        action = RenderAction()
+        action = JsonnetAction()
+        action.initialize()
         action.execute()
 
         assert os.path.exists('./target/uwsgi.ini')
@@ -178,7 +185,8 @@ class TestRenderAction:
         features.register(JsonnetFeature())
         load_registered_features()
 
-        action = RenderAction()
+        action = JsonnetAction()
+        action.initialize()
         action.execute()
 
         assert os.path.exists('variables.json')
@@ -207,7 +215,8 @@ class TestRenderAction:
         features.register(JsonnetFeature())
         load_registered_features()
 
-        action = RenderAction()
+        action = JsonnetAction()
+        action.initialize()
         action.execute()
 
         assert os.path.exists('docker-compose.yml')

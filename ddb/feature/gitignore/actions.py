@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+from typing import Union, Iterable
 
 import zgitignore
 
@@ -30,7 +31,7 @@ class UpdateGitignoreAction(Action):
         return "git:update-gitignore"
 
     @property
-    def event_name(self) -> str:
+    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], str]]]:
         return "event:file-generated"
 
     def execute(self, *args, **kwargs):

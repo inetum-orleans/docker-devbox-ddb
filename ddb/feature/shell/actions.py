@@ -2,6 +2,7 @@
 import base64
 import json
 import os
+from typing import Union, Iterable
 
 import zgitignore
 from dictdiffer import diff
@@ -74,10 +75,11 @@ class ActivateAction(Action):
     """
 
     def __init__(self, shell: ShellIntegration):
+        super().__init__()
         self.shell = shell
 
     @property
-    def event_name(self) -> str:
+    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], str]]]:
         return "phase:print-activate"
 
     @property
@@ -119,10 +121,11 @@ class DeactivateAction(Action):
     """
 
     def __init__(self, shell: ShellIntegration):
+        super().__init__()
         self.shell = shell
 
     @property
-    def event_name(self) -> str:
+    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], str]]]:
         return "phase:print-deactivate"
 
     @property

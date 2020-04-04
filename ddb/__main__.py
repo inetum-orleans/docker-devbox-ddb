@@ -149,7 +149,17 @@ def register_actions_in_event_bus():
     sorted_actions = sorted(actions.all(), key=lambda x: x.order)
 
     for action in sorted_actions:
-        bus.on(action.event_name, action.execute_in_context)
+        if isinstance(action.event_bindings, str):
+            event_name = action.event_bindings
+            bus.on(event_name, action.execute_event_binding_factory())
+        else:
+            for event_binding in action.event_bindings:
+                if isinstance(event_binding, str):
+                    event_name = event_binding
+                    bus.on(event_name, action.execute_event_binding_factory())
+                else:
+                    event_name, method_name = event_binding
+                    bus.on(event_name, action.execute_event_binding_factory(method_name))
 
 
 def main(args: Optional[Sequence[str]] = None):

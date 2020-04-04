@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from typing import Union, Iterable
+
 import yaml
 
 from .. import features
@@ -12,7 +14,7 @@ class ListFeaturesAction(Action):
     """
 
     @property
-    def event_name(self) -> str:
+    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], str]]]:
         return "phase:info"
 
     @property

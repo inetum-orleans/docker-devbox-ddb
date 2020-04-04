@@ -3,17 +3,18 @@ import os
 from ddb.__main__ import load_registered_features
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
-from ddb.feature.jinja import JinjaFeature, RenderAction
+from ddb.feature.jinja import JinjaFeature, JinjaAction
 
 
-class TestRenderAction:
+class TestJinjaAction:
     def test_empty_project_without_core(self, project_loader):
         project_loader("empty")
 
         features.register(JinjaFeature())
         load_registered_features()
 
-        action = RenderAction()
+        action = JinjaAction()
+        action.initialize()
         action.execute()
 
     def test_empty_project_with_core(self, project_loader):
@@ -23,7 +24,8 @@ class TestRenderAction:
         features.register(JinjaFeature())
         load_registered_features()
 
-        action = RenderAction()
+        action = JinjaAction()
+        action.initialize()
         action.execute()
 
     def test_project1(self, project_loader):
@@ -33,7 +35,8 @@ class TestRenderAction:
         features.register(JinjaFeature())
         load_registered_features()
 
-        action = RenderAction()
+        action = JinjaAction()
+        action.initialize()
         action.execute()
 
         assert os.path.exists('foo.yml')
@@ -49,7 +52,8 @@ class TestRenderAction:
         features.register(JinjaFeature())
         load_registered_features()
 
-        action = RenderAction()
+        action = JinjaAction()
+        action.initialize()
         action.execute()
 
         assert os.path.exists('foo.yml')
@@ -68,7 +72,8 @@ class TestRenderAction:
         features.register(JinjaFeature())
         load_registered_features()
 
-        action = RenderAction()
+        action = JinjaAction()
+        action.initialize()
         action.execute()
 
         assert os.path.exists('.foo.yml')
@@ -84,7 +89,8 @@ class TestRenderAction:
         features.register(JinjaFeature())
         load_registered_features()
 
-        action = RenderAction()
+        action = JinjaAction()
+        action.initialize()
         action.execute()
 
         assert os.path.exists('foo')
@@ -100,7 +106,8 @@ class TestRenderAction:
         features.register(JinjaFeature())
         load_registered_features()
 
-        action = RenderAction()
+        action = JinjaAction()
+        action.initialize()
         action.execute()
 
         assert os.path.exists('foo')
