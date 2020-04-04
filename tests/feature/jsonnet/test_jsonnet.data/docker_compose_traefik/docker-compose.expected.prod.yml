@@ -9,7 +9,7 @@ services:
     image: gfiorleans.azurecr.io/gli-biometrie/db
     init: true
     restart: "unless-stopped"
-    user: 1000:1000
+    user: %uid%:%gid%
     volumes:
       - db-data:/var/lib/postgresql/data:rw
       - %ddb.path.project%:/workdir:rw
@@ -78,7 +78,7 @@ services:
       default: {}
       reverse-proxy: {}
     restart: "unless-stopped"
-    user: 1000:1000
+    user: %uid%:%gid%
     volumes:
       - %ddb.path.project%:/app:rw
       - node-cache:/home/node/.cache:rw
@@ -89,7 +89,7 @@ services:
     image: gfiorleans.azurecr.io/gli-biometrie/php
     init: true
     restart: "unless-stopped"
-    user: 1000:1000
+    user: %uid%:%gid%
     volumes:
       - php-composer-cache:/composer/cache:rw
       - php-composer-vendor:/composer/vendor:rw

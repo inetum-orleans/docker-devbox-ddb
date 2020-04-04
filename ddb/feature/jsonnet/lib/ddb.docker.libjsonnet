@@ -1,6 +1,8 @@
 local _docker_registry_name = std.extVar("docker.registry.name");
 local _docker_registry_repository = std.extVar("docker.registry.repository");
 local _docker_restart_policy = std.extVar("docker.restart_policy");
+local _docker_user_uid = std.extVar("docker.user.uid");
+local _docker_user_gid = std.extVar("docker.user.gid");
 local _core_project_name = std.extVar("core.project.name");
 local _core_debug_host = std.extVar("core.debug.host");
 local _core_debug_disabled = std.extVar("core.debug.disabled");
@@ -34,6 +36,10 @@ local Build(name, image=name, cache_from_image=_docker_cache_from_image, directo
         ],
         "context": std.join(sep, [_core_path_project_home, directory, image])
     }
+};
+
+local User(uid=_docker_user_uid, gid=_docker_user_gid) = {
+    "user": uid + ":" + gid
 };
 
 local Volumes(services) = {
@@ -116,6 +122,7 @@ local envIs(env) =
     XDebug: XDebug,
     Compose: Compose,
     Volumes: Volumes,
+    User: User,
     env: {
       index: envIndex,
       is: envIs

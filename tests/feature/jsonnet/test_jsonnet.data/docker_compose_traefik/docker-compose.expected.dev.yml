@@ -11,7 +11,7 @@ services:
     ports:
       - "16032:5432"
     restart: "no"
-    user: 1000:1000
+    user: %uid%:%gid%
     volumes:
       - db-data:/var/lib/postgresql/data:rw
       - %ddb.path.project%:/workdir:rw
@@ -26,7 +26,7 @@ services:
     ports:
       - "16033:5432"
     restart: "no"
-    user: 1000:1000
+    user: %uid%:%gid%
     volumes:
       - db-test-data:/var/lib/postgresql/data:rw
       - %ddb.path.project%:/workdir:rw
@@ -111,7 +111,7 @@ services:
       default: {}
       reverse-proxy: {}
     restart: "no"
-    user: 1000:1000
+    user: %uid%:%gid%
     volumes:
       - %ddb.path.project%:/app:rw
       - node-cache:/home/node/.cache:rw
@@ -125,7 +125,7 @@ services:
     image: gfiorleans.azurecr.io/gli-biometrie/php
     init: true
     restart: "no"
-    user: 1000:1000
+    user: %uid%:%gid%
     volumes:
       - php-composer-cache:/composer/cache:rw
       - php-composer-vendor:/composer/vendor:rw

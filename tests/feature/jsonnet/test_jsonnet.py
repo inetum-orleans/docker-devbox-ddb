@@ -4,6 +4,7 @@ import pytest
 import yaml
 
 from ddb.__main__ import load_registered_features
+from ddb.config import config
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.docker import DockerFeature
@@ -216,6 +217,8 @@ class TestRenderAction:
         with open('docker-compose.expected.yml', 'r') as f:
             expected_data = f.read()
             expected_data = expected_data.replace("%ddb.path.project%", os.getcwd())
+            expected_data = expected_data.replace("%uid%", str(config.data.get('docker.user.uid')))
+            expected_data = expected_data.replace("%gid%", str(config.data.get('docker.user.gid')))
             expected = yaml.load(expected_data, yaml.SafeLoader)
 
         assert rendered == expected

@@ -5,25 +5,23 @@ local password = "biometrie";
 
 ddb.Compose() {
 	"services": {
-		"db": ddb.Build("db") {
+		"db": ddb.Build("db") + ddb.User() + {
 			"environment": {
 				"POSTGRES_PASSWORD": password,
 				"POSTGRES_USER": user
 			},
 			[if ddb.env.is("dev") then "ports"]: ["16032:5432"],
-			"user": "1000:1000",
 			"volumes": [
 				"db-data:/var/lib/postgresql/data:rw",
 				ddb.path.project + ":/workdir:rw"
 			]
 		},
-		[if ddb.env.index() >= ddb.env.index("ci") then "db-test"]: ddb.Build("db-test", "db") {
+		[if ddb.env.index() >= ddb.env.index("ci") then "db-test"]: ddb.Build("db-test", "db") + ddb.User() {
 			"environment": {
 				"POSTGRES_PASSWORD": password,
 				"POSTGRES_USER": user
 			},
 			[if ddb.env.is("dev") then "ports"]: ["16033:5432"],
-			"user": "1000:1000",
 			"volumes": [
 				"db-test-data:/var/lib/postgresql/data:rw",
 				ddb.path.project + ":/workdir:rw"
@@ -78,16 +76,14 @@ ddb.Compose() {
 			    "16036:636"
 			],
 		},
-		"node": ddb.Build("node") + ddb.VirtualHost("8080", "biometrie.test") {
-			"user": "1000:1000",
+		"node": ddb.Build("node") + ddb.User() + ddb.VirtualHost("8080", "biometrie.test") {
 			"volumes": [
 				ddb.path.project + ":/app:rw",
 				"node-cache:/home/node/.cache:rw",
 				"node-npm-packages:/home/node/.npm-packages:rw"
 			]
 		},
-		"php": ddb.Build("php") + ddb.XDebug() {
-			"user": "1000:1000",
+		"php": ddb.Build("php") + ddb.User() + ddb.XDebug() {
 			"volumes": [
 				"php-composer-cache:/composer/cache:rw",
 				"php-composer-vendor:/composer/vendor:rw",
