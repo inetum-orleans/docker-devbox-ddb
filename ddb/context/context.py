@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Union
+from typing import Optional, Union, List
 from typing import TYPE_CHECKING
 
 import colorlog
@@ -18,8 +18,8 @@ class Context:
 
     def __init__(self):
         self.phase = None  # type: Optional[Phase]
-        self.action = None  # type: Optional[Action]
         self.command = None  # type: Optional[Command]
+        self.actions = []  # type: List[Action]
         self.processed_sources = set()
         self.processed_targets = set()
         self.data = Dotty(dict())
@@ -36,7 +36,8 @@ class Context:
         Logger for current context.
         """
         logger_name = ".".join(["context"] +
-                               list(map(lambda x: x.name, [x for x in [self.command, self.phase, self.action] if x]))
+                               list(map(lambda x: x.name,
+                                        [x for x in [self.command, self.phase, self.actions[-1]] if x]))
                                )
         return logging.getLogger(logger_name)
 

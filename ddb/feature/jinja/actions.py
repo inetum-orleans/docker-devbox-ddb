@@ -4,7 +4,7 @@ from typing import Union, Iterable, Callable
 
 from jinja2 import Environment, FileSystemLoader
 
-from ddb.action import Action
+from ddb.action import InitializableAction
 from ddb.config import config
 from ddb.event import bus
 from ddb.utils.file import TemplateFinder
@@ -21,7 +21,7 @@ for k in tuple(custom_tests.keys()):
         del custom_tests[k]
 
 
-class JinjaAction(Action):
+class JinjaAction(InitializableAction):
     """
     Render jinja templates based on filename suffixes.
     """

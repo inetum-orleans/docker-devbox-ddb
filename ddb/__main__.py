@@ -11,6 +11,7 @@ from ddb.command.command import execute_command
 from ddb.context import context
 from ddb.context.context import configure_context_logger
 from .action import actions
+from .action.runnerfactory import action_event_binding_runner_factory
 from .binary import binaries
 from .cache import caches, _project_cache_name, ShelveCache, _global_cache_name, _requests_cache_name
 from .command import commands
@@ -167,15 +168,15 @@ def register_actions_in_event_bus():
     for action in sorted_actions:
         if isinstance(action.event_bindings, str):
             event_name = action.event_bindings
-            bus.on(event_name, action.execute_event_binding_factory())
+            bus.on(event_name, action_event_binding_runner_factory(action, event_name).run)
         else:
             for event_binding in action.event_bindings:
                 if isinstance(event_binding, str):
                     event_name = event_binding
-                    bus.on(event_name, action.execute_event_binding_factory())
+                    bus.on(event_name, action_event_binding_runner_factory(action, event_name).run)
                 else:
                     event_name, method_name = event_binding
-                    bus.on(event_name, action.execute_event_binding_factory(method_name))
+                    bus.on(event_name, action_event_binding_runner_factory(action, event_name, method_name).run)
 
 
 def main(args: Optional[Sequence[str]] = None):

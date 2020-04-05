@@ -2,13 +2,13 @@
 import os
 from typing import Union, Iterable, Callable
 
-from ddb.action import Action
+from ddb.action import InitializableAction
 from ddb.config import config
 from ddb.event import bus
 from ddb.utils.file import TemplateFinder
 
 
-class SymlinkAction(Action):
+class SymlinkAction(InitializableAction):
     """
     Creates symbolic links based on filename suffixes.
     """

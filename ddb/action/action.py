@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
+from abc import abstractmethod, ABC
 from typing import Iterable, Union, Callable
 
-from abc import abstractmethod, ABC
-
-from ddb.context import context
 from ddb.registry import RegistryObject
 
 
@@ -12,9 +10,6 @@ class Action(RegistryObject, ABC):
     Action can perform something on the system through it's run method.
     It is executed when a particular event occurs.
     """
-
-    def __init__(self):
-        self._initialized = False
 
     @property
     @abstractmethod
@@ -37,11 +32,6 @@ class Action(RegistryObject, ABC):
         Action implementation. *args and **kwargs are coming from the provided command line arguments.
         """
 
-    def initialize(self):
-        """
-        Initialize method, invoked before first event binding execution.
-        """
-
     @property
     def order(self) -> int:
         """
@@ -52,28 +42,23 @@ class Action(RegistryObject, ABC):
         """
         return 0
 
-    def execute_event_binding_factory(self, to_call=None):
-        """
-        Factory to create a ready to register function on event bus.
-        """
-        if not to_call:
-            to_call = self.execute
-
-        def execute_event_binding(*args, **kwargs):
-            context.action = self
-            try:
-                if not self._initialized:
-                    self.initialize()
-                    self._initialized = True
-                to_call(*args, **kwargs)
-            finally:
-                context.action = None
-
-        return execute_event_binding
-
     @property
     def disabled(self) -> bool:
         """
         Check if the action is disabled.
         """
         return False
+
+
+class InitializableAction(Action, ABC):  # pylint:disable=abstract-method
+    """
+    An action supporting an initialize singleton method.
+    """
+
+    def __init__(self):
+        self.initialized = False
+
+    def initialize(self):
+        """
+        Initialize method, invoked before first event binding execution.
+        """

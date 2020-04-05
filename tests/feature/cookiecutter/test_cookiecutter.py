@@ -15,7 +15,6 @@ class TestCookiecutterAction:
         load_registered_features()
 
         action = CookiecutterAction()
-        action.initialize()
         action.execute()
 
     def test_github_django(self, project_loader):
@@ -25,7 +24,6 @@ class TestCookiecutterAction:
         load_registered_features()
 
         action = CookiecutterAction()
-        action.initialize()
         action.execute()
 
         assert os.path.isdir('my_awesome_project')

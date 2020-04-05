@@ -8,14 +8,14 @@ from _jsonnet import evaluate_file  # pylint: disable=no-name-in-module
 from marshmallow import Schema
 from marshmallow.fields import Nested, Dict, List
 
-from ddb.action import Action
+from ddb.action import InitializableAction
 from ddb.config import config
 from ddb.event import bus
 from ddb.feature import features
 from ddb.utils.file import TemplateFinder
 
 
-class JsonnetAction(Action):
+class JsonnetAction(InitializableAction):
     """
     Render jsonnet files based on filename suffixes.
     """

@@ -6,13 +6,13 @@ from typing import Union, Iterable, Callable
 
 import yaml
 
-from ddb.action import Action
+from ddb.action import InitializableAction
 from ddb.config import config
 from ddb.event import bus
 from ddb.utils.file import TemplateFinder
 
 
-class YttAction(Action):
+class YttAction(InitializableAction):
     """
     Render ytt files based on filename suffixes.
     """
