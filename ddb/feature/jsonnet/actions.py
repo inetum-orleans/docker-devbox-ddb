@@ -29,7 +29,9 @@ class JsonnetAction(InitializableAction):
 
     @property
     def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
-        return "phase:configure", ("event:file-generated", self.on_file_generated)
+        return "phase:configure", \
+               ("event:file-generated", self.on_file_generated), \
+               ("jsonnet:template-found", self.render_jsonnet)
 
     def initialize(self):
         self.template_finder = TemplateFinder(config.data["jsonnet.includes"],
@@ -38,7 +40,7 @@ class JsonnetAction(InitializableAction):
 
     def execute(self, *args, **kwargs):
         for template, target in self.template_finder.templates:
-            self._render_jsonnet(template, target)
+            bus.emit('jsonnet:template-found', template=template, target=target)
 
     def on_file_generated(self, source: str, target: str):  # pylint:disable=unused-argument
         """
@@ -47,7 +49,7 @@ class JsonnetAction(InitializableAction):
         template = target
         target = self.template_finder.get_target(template)
         if target:
-            self._render_jsonnet(template, target)
+            self.render_jsonnet(template, target)
 
     @staticmethod
     def _get_stop_fields_from_schema(schema: Schema, stack, ret):
@@ -72,12 +74,15 @@ class JsonnetAction(InitializableAction):
 
         return ret
 
-    def _render_jsonnet(self, template_path: str, target_path: str):
+    def render_jsonnet(self, template: str, target: str):
+        """
+        Render jsonnet template
+        """
         # TODO: Add support for jsonnet CLI if _jsonnet native module is not available.
 
-        evaluated = self._evaluate_jsonnet(template_path)
+        evaluated = self._evaluate_jsonnet(template)
 
-        multiple_file_output, multiple_file_dir = JsonnetAction._parse_multiple_header(template_path, target_path)
+        multiple_file_output, multiple_file_dir = JsonnetAction._parse_multiple_header(template, target)
         if multiple_file_output:
             for (filename, content) in json.loads(evaluated).items():
                 evaluated_target_path = os.path.join(multiple_file_dir, filename)
@@ -86,16 +91,16 @@ class JsonnetAction(InitializableAction):
                     os.makedirs(evaluated_target_parent_path)
                 with open(evaluated_target_path, 'w') as evaluated_target:
                     evaluated_target.write(content)
-                self.template_finder.mark_as_processed(template_path, evaluated_target_path)
-                bus.emit('event:file-generated', source=template_path, target=evaluated_target_path)
+                self.template_finder.mark_as_processed(template, evaluated_target_path)
+                bus.emit('event:file-generated', source=template, target=evaluated_target_path)
         else:
-            ext = os.path.splitext(target_path)[-1]
+            ext = os.path.splitext(target)[-1]
             if ext.lower() in ['.yaml', '.yml']:
                 evaluated = yaml.dump(json.loads(evaluated), Dumper=yaml.SafeDumper)
-            with open(target_path, 'w') as target:
-                target.write(evaluated)
-            self.template_finder.mark_as_processed(template_path, target_path)
-            bus.emit('event:file-generated', source=template_path, target=target_path)
+            with open(target, 'w') as target_file:
+                target_file.write(evaluated)
+            self.template_finder.mark_as_processed(template, target)
+            bus.emit('event:file-generated', source=template, target=target)
 
     @staticmethod
     def _evaluate_jsonnet(template_path):

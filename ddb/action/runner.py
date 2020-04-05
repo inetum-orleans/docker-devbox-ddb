@@ -51,13 +51,13 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
                 parameters_repr = self._build_parameters_repr(*args, **kwargs)
 
             context.exceptions.append(exception)
-            context.log.error("An unexpected error has occured [%s => %s.%s(%s)]: %s",
-                              self.event_name,
-                              type(self.action).__name__,
-                              self.to_call.__name__,
-                              parameters_repr,
-                              str(exception).strip())
-            context.log.debug("", exc_info=True)
+            log_error = context.log.exception if context.log.isEnabledFor(logging.DEBUG) else context.log.error
+            log_error("An unexpected error has occured [%s => %s.%s(%s)]: %s",
+                      self.event_name,
+                      type(self.action).__name__,
+                      self.to_call.__name__,
+                      parameters_repr,
+                      str(exception).strip())
 
         finally:
             context.actions.pop()
@@ -71,7 +71,7 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
     @staticmethod
     def _build_parameters_repr(*args, **kwargs):
         parameters_repr = ', '.join(args)
-        for key, value in kwargs.items():
+        for key, value in sorted(kwargs.items()):
             if parameters_repr:
                 parameters_repr += ', '
             parameters_repr += key + "=" + str(value)

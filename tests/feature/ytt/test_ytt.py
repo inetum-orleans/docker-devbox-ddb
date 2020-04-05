@@ -1,6 +1,6 @@
 import os
 
-from ddb.__main__ import load_registered_features
+from ddb.__main__ import load_registered_features, register_actions_in_event_bus
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.ytt import YttFeature, YttAction
@@ -12,6 +12,7 @@ class TestYttAction:
 
         features.register(YttFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
         action = YttAction()
         action.initialize()
@@ -23,6 +24,7 @@ class TestYttAction:
         features.register(CoreFeature())
         features.register(YttFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
         action = YttAction()
         action.initialize()
@@ -34,6 +36,7 @@ class TestYttAction:
         features.register(CoreFeature())
         features.register(YttFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
         action = YttAction()
         action.initialize()
@@ -54,6 +57,7 @@ class TestYttAction:
         features.register(CoreFeature())
         features.register(YttFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
         action = YttAction()
         action.initialize()
@@ -74,6 +78,7 @@ class TestYttAction:
         features.register(CoreFeature())
         features.register(YttFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
         action = YttAction()
         action.initialize()
@@ -88,6 +93,7 @@ class TestYttAction:
         features.register(CoreFeature())
         features.register(YttFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
         action = YttAction()
         action.initialize()

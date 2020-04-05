@@ -1,6 +1,6 @@
 import os
 
-from ddb.__main__ import load_registered_features
+from ddb.__main__ import load_registered_features, register_actions_in_event_bus
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.jinja import JinjaFeature, JinjaAction
@@ -12,6 +12,7 @@ class TestJinjaAction:
 
         features.register(JinjaFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
         action = JinjaAction()
         action.initialize()
@@ -23,6 +24,7 @@ class TestJinjaAction:
         features.register(CoreFeature())
         features.register(JinjaFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
         action = JinjaAction()
         action.initialize()
@@ -34,6 +36,7 @@ class TestJinjaAction:
         features.register(CoreFeature())
         features.register(JinjaFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
         action = JinjaAction()
         action.initialize()
@@ -51,6 +54,7 @@ class TestJinjaAction:
         features.register(CoreFeature())
         features.register(JinjaFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
         action = JinjaAction()
         action.initialize()
@@ -71,6 +75,7 @@ class TestJinjaAction:
         features.register(CoreFeature())
         features.register(JinjaFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
         action = JinjaAction()
         action.initialize()
@@ -88,6 +93,7 @@ class TestJinjaAction:
         features.register(CoreFeature())
         features.register(JinjaFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
         action = JinjaAction()
         action.initialize()
@@ -105,6 +111,7 @@ class TestJinjaAction:
         features.register(CoreFeature())
         features.register(JinjaFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
         action = JinjaAction()
         action.initialize()

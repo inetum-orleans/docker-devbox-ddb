@@ -1,4 +1,5 @@
 import logging
+import verboselogs
 from typing import Optional, Union, List
 from typing import TYPE_CHECKING
 
@@ -64,6 +65,8 @@ def configure_context_logger(level: Union[str, int] = logging.INFO):
     """
     Configure context logger.
     """
+    verboselogs.install()
+
     handler = logging.StreamHandler()
     handler.setFormatter(CustomFormatter('%(log_color)s[%(simplename)s] %(message)s'))
 

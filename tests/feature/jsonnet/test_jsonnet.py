@@ -3,7 +3,7 @@ import os
 import pytest
 import yaml
 
-from ddb.__main__ import load_registered_features
+from ddb.__main__ import load_registered_features, register_actions_in_event_bus
 from ddb.config import config
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
@@ -17,6 +17,7 @@ class TestJsonnetAction:
 
         features.register(JsonnetFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
         action = JsonnetAction()
         action.initialize()
@@ -28,6 +29,7 @@ class TestJsonnetAction:
         features.register(CoreFeature())
         features.register(JsonnetFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
         action = JsonnetAction()
         action.initialize()
@@ -39,6 +41,7 @@ class TestJsonnetAction:
         features.register(CoreFeature())
         features.register(JsonnetFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
         action = JsonnetAction()
         action.initialize()
@@ -59,6 +62,7 @@ class TestJsonnetAction:
         features.register(CoreFeature())
         features.register(JsonnetFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
         action = JsonnetAction()
         action.initialize()
@@ -88,6 +92,7 @@ class TestJsonnetAction:
         features.register(CoreFeature())
         features.register(JsonnetFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
         action = JsonnetAction()
         action.initialize()
@@ -108,6 +113,7 @@ class TestJsonnetAction:
         features.register(CoreFeature())
         features.register(JsonnetFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
         action = JsonnetAction()
         action.initialize()
@@ -146,6 +152,7 @@ class TestJsonnetAction:
         features.register(CoreFeature())
         features.register(JsonnetFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
         action = JsonnetAction()
         action.initialize()
@@ -184,6 +191,7 @@ class TestJsonnetAction:
         features.register(CoreFeature())
         features.register(JsonnetFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
         action = JsonnetAction()
         action.initialize()
@@ -214,6 +222,7 @@ class TestJsonnetAction:
         features.register(DockerFeature())
         features.register(JsonnetFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
         action = JsonnetAction()
         action.initialize()

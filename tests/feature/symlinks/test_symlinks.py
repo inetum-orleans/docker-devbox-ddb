@@ -2,20 +2,21 @@ import os
 
 import pytest
 
-from ddb.__main__ import load_registered_features
+from ddb.__main__ import load_registered_features, register_actions_in_event_bus
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.feature import FeatureConfigurationError
-from ddb.feature.symlinks import SymlinkAction, SymlinksFeature
+from ddb.feature.symlinks import SymlinksAction, SymlinksFeature
 
 
-class TestConfigureAction:
+class TestSymlinksAction:
     def test_empty_configuration_without_core(self, project_loader):
         project_loader("empty")
 
         with pytest.raises(FeatureConfigurationError):
             features.register(SymlinksFeature())
             load_registered_features()
+            register_actions_in_event_bus()
 
     def test_empty_configuration_with_core(self, project_loader):
         project_loader("empty")
@@ -23,8 +24,9 @@ class TestConfigureAction:
         features.register(CoreFeature())
         features.register(SymlinksFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
-        action = SymlinkAction()
+        action = SymlinksAction()
         action.initialize()
         action.execute()
 
@@ -34,8 +36,9 @@ class TestConfigureAction:
         features.register(CoreFeature())
         features.register(SymlinksFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
-        action = SymlinkAction()
+        action = SymlinksAction()
         action.initialize()
         action.execute()
 
@@ -53,8 +56,9 @@ class TestConfigureAction:
         features.register(CoreFeature())
         features.register(SymlinksFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
-        action = SymlinkAction()
+        action = SymlinksAction()
         action.initialize()
         action.execute()
 
@@ -79,8 +83,9 @@ class TestConfigureAction:
         features.register(CoreFeature())
         features.register(SymlinksFeature())
         load_registered_features()
+        register_actions_in_event_bus()
 
-        action = SymlinkAction()
+        action = SymlinksAction()
         action.initialize()
         action.execute()
 

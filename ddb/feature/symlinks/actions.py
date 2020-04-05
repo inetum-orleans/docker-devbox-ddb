@@ -8,7 +8,7 @@ from ddb.event import bus
 from ddb.utils.file import TemplateFinder
 
 
-class SymlinkAction(InitializableAction):
+class SymlinksAction(InitializableAction):
     """
     Creates symbolic links based on filename suffixes.
     """
@@ -23,7 +23,9 @@ class SymlinkAction(InitializableAction):
 
     @property
     def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
-        return "phase:configure", ("event:file-generated", self.on_file_generated)
+        return "phase:configure", \
+               ("event:file-generated", self.on_file_generated), \
+               ("symlinks:source-found", self.create_symlink)
 
     def initialize(self):
         self.template_finder = TemplateFinder(config.data["symlinks.includes"],
@@ -37,13 +39,16 @@ class SymlinkAction(InitializableAction):
         template = target
         target = self.template_finder.get_target(template)
         if target:
-            self._create_symlink(template, target)
+            self.create_symlink(template, target)
 
     def execute(self, *args, **kwargs):
         for source, target in self.template_finder.templates:
-            self._create_symlink(source, target)
+            bus.emit('symlinks:source-found', source=source, target=target)
 
-    def _create_symlink(self, source, target):
+    def create_symlink(self, source, target):
+        """
+        Create a symbolic link
+        """
         if os.path.islink(target):
             os.unlink(target)
         if os.path.exists(target):

@@ -165,15 +165,13 @@ class FixuidDockerComposeAction(Action):
         with open(dockerfile_path, "w", encoding="utf-8") as dockerfile_file:
             dockerfile_file.write(parser.content)
 
-    def execute(self, *args, **kwargs):
+    def execute(self, config: dict, *args, **kwargs):
         services = []
 
-        docker_compose_config = kwargs.pop("config")
-
-        if "services" not in docker_compose_config:
+        if "services" not in config:
             return
 
-        for _, service in docker_compose_config.get("services").items():
+        for _, service in config.get("services").items():
             if "build" not in service.keys():
                 continue
 

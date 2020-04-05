@@ -37,7 +37,9 @@ class JinjaAction(InitializableAction):
 
     @property
     def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
-        return "phase:configure", ("event:file-generated", self.on_file_generated)
+        return "phase:configure", \
+               ("event:file-generated", self.on_file_generated), \
+               ("jinja:template-found", self.render_jinja)
 
     def initialize(self):
         self.template_finder = TemplateFinder(config.data["jinja.includes"],
@@ -55,7 +57,7 @@ class JinjaAction(InitializableAction):
 
     def execute(self, *args, **kwargs):
         for template, target in self.template_finder.templates:
-            self._render_template(template, target, self.env, **self.context)
+            bus.emit("jinja:template-found", template=template, target=target)
 
     def on_file_generated(self, source: str, target: str):  # pylint:disable=unused-argument
         """
@@ -64,7 +66,7 @@ class JinjaAction(InitializableAction):
         template = target
         target = self.template_finder.get_target(template)
         if target:
-            self._render_template(template, target, self.env, **self.context)
+            self.render_jinja(template, target)
 
     @staticmethod
     def _normpath(path):
@@ -73,11 +75,13 @@ class JinjaAction(InitializableAction):
             normpath = normpath.replace("\\", "/")
         return normpath
 
-    def _render_template(self, template_path: str, target_path: str, env: Environment, **context):
-        template = env.get_template(JinjaAction._normpath(template_path))
-        template.render(**context)
+    def render_jinja(self, template: str, target: str):
+        """
+        Render jinja template
+        """
+        jinja = self.env.get_template(JinjaAction._normpath(template))
 
-        with open(target_path, 'w') as target:
-            target.write(template.render(**context))
-        self.template_finder.mark_as_processed(template_path, target_path)
-        bus.emit('event:file-generated', source=template_path, target=target_path)
+        with open(target, 'w') as target_file:
+            target_file.write(jinja.render(**self.context))
+        self.template_finder.mark_as_processed(template, target)
+        bus.emit('event:file-generated', source=template, target=target)

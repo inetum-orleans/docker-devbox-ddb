@@ -142,6 +142,10 @@ def handle_command_line(args: Optional[Sequence[str]] = None):
     opts = ArgumentParser()
     subparsers = opts.add_subparsers(dest="command", help='Available commands')
 
+    opts.add_argument('-v', '--verbose', action="store_true", default=False)
+    opts.add_argument('-vv', '--very-verbose', action="store_true", default=False)
+    opts.add_argument('-s', '--silent', action="store_true", default=False)
+
     command_parsers = {}
 
     for command in commands.all():
@@ -151,10 +155,21 @@ def handle_command_line(args: Optional[Sequence[str]] = None):
 
     parsed_args = opts.parse_args(args)
 
+    log_level = 'INFO'
+    if parsed_args.very_verbose:
+        log_level = 'DEBUG'
+    elif parsed_args.verbose:
+        log_level = 'VERBOSE'
+    elif parsed_args.silent:
+        log_level = 'CRITICAL'
+
+    configure_context_logger(log_level)
+
     if parsed_args.command:
         command = commands.get(parsed_args.command)
         kwargs = vars(parsed_args)
-        del kwargs['command']
+        for k in ('command', 'verbose', 'very_verbose', 'silent'):
+            del kwargs[k]
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
         execute_command(command, **kwargs)
     else:
@@ -186,7 +201,6 @@ def main(args: Optional[Sequence[str]] = None):
     Load all features and handle command line
     """
     config.load()
-    configure_context_logger()
     register_entrypoint_features()
     register_default_caches()
     load_registered_features()
