@@ -1,6 +1,7 @@
 -e .
 colorama
 colorlog
+verboselogs
 netifaces
 requests
 PyYAML

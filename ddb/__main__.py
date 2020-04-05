@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import sys
 from argparse import ArgumentParser
 from typing import Optional, Sequence, Iterable, Callable
 
@@ -154,6 +155,7 @@ def handle_command_line(args: Optional[Sequence[str]] = None):
         command = commands.get(parsed_args.command)
         kwargs = vars(parsed_args)
         del kwargs['command']
+        kwargs = {k: v for k, v in kwargs.items() if v is not None}
         execute_command(command, **kwargs)
     else:
         opts.print_help()
@@ -190,6 +192,7 @@ def main(args: Optional[Sequence[str]] = None):
     load_registered_features()
     register_actions_in_event_bus()
     handle_command_line(args)
+    return context.exceptions
 
 
 def clear_caches():
@@ -221,4 +224,6 @@ def reset():
 
 
 if __name__ == '__main__':  # pragma: no cover
-    main()
+    exceptions = main()
+    if exceptions:
+        sys.exit(1)

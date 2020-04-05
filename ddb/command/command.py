@@ -71,7 +71,7 @@ class DefaultCommand(DefaultRegistryObject, Command):
         Configure the argument parser.
         """
         super().configure_parser(parser)
-        parser.add_argument("--clear-cache", action="store_true", help="Clear all caches")
+        parser.add_argument("--clear-cache", action="store_true", default=None, help="Clear all caches")
 
 
 class LifecycleCommand(DefaultCommand):
