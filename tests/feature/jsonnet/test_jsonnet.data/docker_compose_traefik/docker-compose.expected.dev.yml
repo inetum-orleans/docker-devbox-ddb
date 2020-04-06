@@ -14,7 +14,8 @@ services:
     user: %uid%:%gid%
     volumes:
       - db-data:/var/lib/postgresql/data:rw
-      - %ddb.path.project%:/workdir:rw
+      - source: %ddb.path.project%
+        target: /workdir
   db-test:
     build:
       context: %ddb.path.project%/.docker/db
@@ -29,7 +30,7 @@ services:
     user: %uid%:%gid%
     volumes:
       - db-test-data:/var/lib/postgresql/data:rw
-      - %ddb.path.project%:/workdir:rw
+      - %ddb.path.project%:/workdir
   keycloak:
     command:
       - -b 0.0.0.0 -Dkeycloak.import=/opt/jboss/keycloak/keycloak/realm-export.json

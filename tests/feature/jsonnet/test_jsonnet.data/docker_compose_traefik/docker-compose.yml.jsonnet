@@ -13,7 +13,10 @@ ddb.Compose() {
 			[if ddb.env.is("dev") then "ports"]: ["16032:5432"],
 			"volumes": [
 				"db-data:/var/lib/postgresql/data:rw",
-				ddb.path.project + ":/workdir:rw"
+				{
+				    "source": ddb.path.project,
+				    "target": "/workdir"
+				}
 			]
 		},
 		[if ddb.env.index() >= ddb.env.index("ci") then "db-test"]: ddb.Build("db-test", "db") + ddb.User() {
@@ -24,7 +27,7 @@ ddb.Compose() {
 			[if ddb.env.is("dev") then "ports"]: ["16033:5432"],
 			"volumes": [
 				"db-test-data:/var/lib/postgresql/data:rw",
-				ddb.path.project + ":/workdir:rw"
+				ddb.path.project + ":/workdir"
 			]
 		},
 		"keycloak":  ddb.Image("jboss/keycloak:8.0.1") + ddb.VirtualHost("8080", "keycloak.biometrie.test", "keycloak") {

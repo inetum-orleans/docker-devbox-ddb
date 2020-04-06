@@ -65,9 +65,9 @@ local volume_source(v) =
         local splitted = std.split(mapPath(v), ":");
         local last = if std.length(splitted) >= 1 then splitted[std.length(splitted) - 1];
         if (last == 'rw' || last == 'ro') then
-            if std.length(splitted) >= 3 then std.join(":", splitted[0:std.length(splitted) - 2])
+            std.join(":", splitted[:std.length(splitted) - 2])
         else
-            if std.length(splitted) >= 2 then std.join(":", splitted[0:std.length(splitted) - 1]);
+            std.join(":", splitted[:std.length(splitted) - 1]);
 
 
 local Volumes(services) = {
