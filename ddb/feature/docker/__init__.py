@@ -89,15 +89,14 @@ class DockerFeature(Feature):
 
     @staticmethod
     def _configure_defaults_path_mapping(feature_config):
-        if config.data.get('core.os') != 'nt':
-            return
         path_mapping = feature_config.get('path_mapping')
         if path_mapping is None:
             path_mapping = {}
-            raw = config.data.get('core.path.project_home')
-            mapped = re.sub(r"^([a-zA-Z]):", r"/\1", raw)
-            mapped = pathlib.Path(mapped).as_posix()
-            path_mapping[raw] = mapped
+            if config.data.get('core.os') == 'nt':
+                raw = config.data.get('core.path.project_home')
+                mapped = re.sub(r"^([a-zA-Z]):", r"/\1", raw)
+                mapped = pathlib.Path(mapped).as_posix()
+                path_mapping[raw] = mapped
             feature_config['path_mapping'] = path_mapping
 
     @staticmethod
