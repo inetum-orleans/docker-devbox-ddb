@@ -8,6 +8,7 @@ from ddb.config import config
 from ddb.feature import features
 from ddb.feature.certs import CertsFeature, GenerateCertAction
 from ddb.feature.core import CoreFeature
+from tests.utilstest import get_docker_ip
 
 
 class TestCertsFeature:
@@ -31,7 +32,8 @@ class TestCertsFeature:
         load_registered_features()
 
         cfssl_service = module_scoped_container_getter.get('cfssl')
-        config.data['certs.cfssl.server.host'] = '127.0.0.1'
+
+        config.data['certs.cfssl.server.host'] = get_docker_ip()
         config.data['certs.cfssl.server.port'] = int(cfssl_service.network_info[0].host_port)
 
         self.wait_cfssl_ready()
@@ -50,7 +52,7 @@ class TestCertsFeature:
         load_registered_features()
 
         cfssl_service = module_scoped_container_getter.get('cfssl')
-        config.data['certs.cfssl.server.host'] = '127.0.0.1'
+        config.data['certs.cfssl.server.host'] = get_docker_ip()
         config.data['certs.cfssl.server.port'] = int(cfssl_service.network_info[0].host_port)
 
         self.wait_cfssl_ready()

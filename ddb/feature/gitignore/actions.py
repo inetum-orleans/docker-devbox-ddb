@@ -53,5 +53,5 @@ class UpdateGitignoreAction(Action):
         if not zgitignore_helper.is_ignored(target) and not inversed_zgitignore_helper.is_ignored(target):
             with open(gitignore, "a", encoding="utf-8") as gitignore_file:
                 if gitignore_content and gitignore_content[-1].strip():
-                    gitignore_file.write(os.linesep)
+                    gitignore_file.write('\n')  # no need for os.linesep because file is opened as text
                 gitignore_file.write(os.path.normpath(target))

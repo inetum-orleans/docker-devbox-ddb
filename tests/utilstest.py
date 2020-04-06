@@ -1,4 +1,5 @@
 import os
+import re
 
 from ddb.config import config
 from ddb.config.config import ConfigPaths
@@ -17,3 +18,14 @@ def load_config(data_dir: str = None, name: str = None):
     config.load()
 
     return config
+
+
+def get_docker_ip():
+    docker_host = os.environ.get('DOCKER_HOST')
+    if not docker_host:
+        return '127.0.0.1'
+
+    match = re.match(r"tcp:\/\/(.*?):(.*)", docker_host)
+    if match:
+        return match.group(1)
+
