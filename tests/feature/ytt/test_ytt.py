@@ -12,7 +12,7 @@ class TestYttAction:
 
         features.register(YttFeature())
         load_registered_features()
-        register_actions_in_event_bus()
+        register_actions_in_event_bus(True)
 
         action = YttAction()
         action.initialize()
@@ -24,7 +24,7 @@ class TestYttAction:
         features.register(CoreFeature())
         features.register(YttFeature())
         load_registered_features()
-        register_actions_in_event_bus()
+        register_actions_in_event_bus(True)
 
         action = YttAction()
         action.initialize()
@@ -36,7 +36,7 @@ class TestYttAction:
         features.register(CoreFeature())
         features.register(YttFeature())
         load_registered_features()
-        register_actions_in_event_bus()
+        register_actions_in_event_bus(True)
 
         action = YttAction()
         action.initialize()
@@ -57,7 +57,7 @@ class TestYttAction:
         features.register(CoreFeature())
         features.register(YttFeature())
         load_registered_features()
-        register_actions_in_event_bus()
+        register_actions_in_event_bus(True)
 
         action = YttAction()
         action.initialize()
@@ -78,7 +78,7 @@ class TestYttAction:
         features.register(CoreFeature())
         features.register(YttFeature())
         load_registered_features()
-        register_actions_in_event_bus()
+        register_actions_in_event_bus(True)
 
         action = YttAction()
         action.initialize()
@@ -93,7 +93,7 @@ class TestYttAction:
         features.register(CoreFeature())
         features.register(YttFeature())
         load_registered_features()
-        register_actions_in_event_bus()
+        register_actions_in_event_bus(True)
 
         action = YttAction()
         action.initialize()

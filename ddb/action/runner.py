@@ -32,6 +32,9 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
     """
     Runner for an action event binding.
     """
+    def __init__(self, action: A, event_name: str, to_call=None, fail_fast=False):
+        super().__init__(action, event_name, to_call)
+        self.fail_fast = fail_fast
 
     def run(self, *args, **kwargs):  # pylint:disable=missing-function-docstring
         context.actions.append(self.action)
@@ -58,6 +61,9 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
                       self.to_call.__name__,
                       parameters_repr,
                       str(exception).strip())
+
+            if self.fail_fast:
+                raise
 
         finally:
             context.actions.pop()

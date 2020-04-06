@@ -176,7 +176,7 @@ def handle_command_line(args: Optional[Sequence[str]] = None):
         opts.print_help()
 
 
-def register_actions_in_event_bus():
+def register_actions_in_event_bus(fail_fast=False):
     """
     Register registered actions into event bus.
     """
@@ -185,15 +185,23 @@ def register_actions_in_event_bus():
     for action in sorted_actions:
         if isinstance(action.event_bindings, str):
             event_name = action.event_bindings
-            bus.on(event_name, action_event_binding_runner_factory(action, event_name).run)
+            bus.on(event_name,
+                   action_event_binding_runner_factory(action,
+                                                       event_name,
+                                                       fail_fast=fail_fast).run)
         else:
             for event_binding in action.event_bindings:
                 if isinstance(event_binding, str):
                     event_name = event_binding
-                    bus.on(event_name, action_event_binding_runner_factory(action, event_name).run)
+                    bus.on(event_name, action_event_binding_runner_factory(action,
+                                                                           event_name,
+                                                                           fail_fast=fail_fast).run)
                 else:
                     event_name, method_name = event_binding
-                    bus.on(event_name, action_event_binding_runner_factory(action, event_name, method_name).run)
+                    bus.on(event_name, action_event_binding_runner_factory(action,
+                                                                           event_name,
+                                                                           method_name,
+                                                                           fail_fast=fail_fast).run)
 
 
 def main(args: Optional[Sequence[str]] = None):

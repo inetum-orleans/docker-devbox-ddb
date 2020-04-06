@@ -3,6 +3,7 @@ local _docker_registry_repository = std.extVar("docker.registry.repository");
 local _docker_restart_policy = std.extVar("docker.restart_policy");
 local _docker_user_uid = std.extVar("docker.user.uid");
 local _docker_user_gid = std.extVar("docker.user.gid");
+local _docker_path_mapping = std.extVar("docker.path_mapping");
 local _core_project_name = std.extVar("core.project.name");
 local _core_debug_host = std.extVar("core.debug.host");
 local _core_debug_disabled = std.extVar("core.debug.disabled");
@@ -18,7 +19,19 @@ local _core_path_project_home = std.extVar("core.path.project_home");
 local _core_path_ddb_home = std.extVar("core.path.ddb_home");
 local _core_path_home = std.extVar("core.path.home");
 
-local sep = if _core_os == "nt" then std.char(92) else "/"; # Backslash can't be escaped properly, so use std.char
+# local sep = if _core_os == "nt" then std.char(92) else "/"; # Backslash can't be escaped properly, so use std.char
+
+local mapPath(path) =
+  local key = std.filter(function(mapping_field) std.startsWith(path, mapping_field), std.objectFields(_docker_path_mapping));
+  if std.length(key) > 0 then _docker_path_mapping[key[0]] + std.substr(path, std.length(_docker_path_mapping[key[0]]), std.length(path)) else path;
+
+local path = {
+    map: mapPath,
+    project: mapPath(_core_path_project_home),
+    project_home: mapPath(_core_path_project_home),
+    ddb_home: mapPath(_core_path_ddb_home),
+    home: mapPath(_core_path_home)
+};
 
 local Service(restart_policy=_docker_restart_policy) = {
     "init": true,
@@ -34,7 +47,7 @@ local Build(name, image=name, cache_from_image=_docker_cache_from_image, directo
         [if cache_from_image then "cache_from"]: [
             _docker_registry_name + _docker_registry_repository + image
         ],
-        "context": std.join(sep, [_core_path_project_home, directory, image])
+        "context": std.join("/", [path.project_home, directory, image])
     }
 };
 
@@ -42,11 +55,26 @@ local User(uid=_docker_user_uid, gid=_docker_user_gid) = {
     "user": uid + ":" + gid
 };
 
+local volume_is_named(v) =
+    !std.setMember("/", v) && !std.setMember(std.char(92), v);
+
+local volume_source(v) =
+    if std.type(v) == 'object' then
+        mapPath(v.source)
+    else
+        local splitted = std.split(mapPath(v), ":");
+        local last = if std.length(splitted) >= 1 then splitted[std.length(splitted) - 1];
+        if (last == 'rw' || last == 'ro') then
+            if std.length(splitted) >= 3 then std.join(":", splitted[0:std.length(splitted) - 2])
+        else
+            if std.length(splitted) >= 2 then std.join(":", splitted[0:std.length(splitted) - 1]);
+
+
 local Volumes(services) = {
         [key]: {} for key in
         std.uniq(
-            std.filter(function(v) (!std.setMember(sep, v) && !std.setMember(std.char(92), v)),
-                std.map(function (v) std.split(v, ":")[0],
+            std.filter(volume_is_named,
+                std.map(volume_source,
                     std.flatMap(function (f) if std.objectHas(services[f], "volumes") then services[f].volumes else [],
                         std.objectFields(services)
                     )
@@ -127,10 +155,5 @@ local envIs(env) =
       index: envIndex,
       is: envIs
     },
-    path: {
-      project: _core_path_project_home,
-      project_home: _core_path_project_home,
-      ddb_home: _core_path_ddb_home,
-      home: _core_path_home
-    }
+    path: path
 }

@@ -16,7 +16,7 @@ class TestSymlinksAction:
         with pytest.raises(FeatureConfigurationError):
             features.register(SymlinksFeature())
             load_registered_features()
-            register_actions_in_event_bus()
+            register_actions_in_event_bus(True)
 
     def test_empty_configuration_with_core(self, project_loader):
         project_loader("empty")
@@ -24,7 +24,7 @@ class TestSymlinksAction:
         features.register(CoreFeature())
         features.register(SymlinksFeature())
         load_registered_features()
-        register_actions_in_event_bus()
+        register_actions_in_event_bus(True)
 
         action = SymlinksAction()
         action.initialize()
@@ -36,7 +36,7 @@ class TestSymlinksAction:
         features.register(CoreFeature())
         features.register(SymlinksFeature())
         load_registered_features()
-        register_actions_in_event_bus()
+        register_actions_in_event_bus(True)
 
         action = SymlinksAction()
         action.initialize()
@@ -56,7 +56,7 @@ class TestSymlinksAction:
         features.register(CoreFeature())
         features.register(SymlinksFeature())
         load_registered_features()
-        register_actions_in_event_bus()
+        register_actions_in_event_bus(True)
 
         action = SymlinksAction()
         action.initialize()
@@ -83,7 +83,7 @@ class TestSymlinksAction:
         features.register(CoreFeature())
         features.register(SymlinksFeature())
         load_registered_features()
-        register_actions_in_event_bus()
+        register_actions_in_event_bus(True)
 
         action = SymlinksAction()
         action.initialize()

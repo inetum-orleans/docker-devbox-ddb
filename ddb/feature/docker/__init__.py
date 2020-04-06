@@ -4,6 +4,7 @@ import re
 from typing import Iterable, ClassVar
 
 import netifaces
+import pathlib
 from dotty_dict import Dotty
 
 from .actions import EmitDockerComposeConfigAction
@@ -11,6 +12,7 @@ from .schema import DockerSchema
 from ..feature import Feature, FeatureConfigurationAutoConfigureError
 from ..schema import FeatureSchema
 from ...action import Action
+from ...config import config
 
 
 class DockerFeature(Feature):
@@ -40,6 +42,7 @@ class DockerFeature(Feature):
         self._configure_defaults_user(feature_config)
         self._configure_defaults_ip(feature_config)
         self._configure_defaults_registry(feature_config)
+        self._configure_defaults_path_mapping(feature_config)
 
     def _configure_defaults_user(self, feature_config):
         uid = feature_config.get('user.uid')
@@ -83,6 +86,19 @@ class DockerFeature(Feature):
                                                              "from network interface configuration: " + interface)
 
         feature_config['ip'] = ip_address
+
+    @staticmethod
+    def _configure_defaults_path_mapping(feature_config):
+        if config.data.get('core.os') != 'nt':
+            return
+        path_mapping = feature_config.get('path_mapping')
+        if path_mapping is None:
+            path_mapping = {}
+            raw = config.data.get('core.path.project_home')
+            mapped = re.sub(r"^([a-zA-Z]):", r"/\1", raw)
+            mapped = pathlib.Path(mapped).as_posix()
+            path_mapping[raw] = mapped
+            feature_config['path_mapping'] = path_mapping
 
     @staticmethod
     def _configure_defaults_registry(feature_config):

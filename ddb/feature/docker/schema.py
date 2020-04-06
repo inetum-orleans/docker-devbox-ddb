@@ -53,3 +53,4 @@ class DockerSchema(FeatureSchema):
     compose = fields.Nested(ComposeSchema(), required=True, default=ComposeSchema())
     cache_from_image = fields.Boolean(required=True, default=False)
     reverse_proxy = fields.Nested(ReverseProxySchema(), required=True, default=ReverseProxySchema())
+    path_mapping = fields.Dict(required=False)  # default is set in feature _configure_defaults

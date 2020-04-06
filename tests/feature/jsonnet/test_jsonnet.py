@@ -1,5 +1,7 @@
 import os
+import re
 
+import pathlib
 import pytest
 import yaml
 
@@ -17,7 +19,7 @@ class TestJsonnetAction:
 
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus()
+        register_actions_in_event_bus(True)
 
         action = JsonnetAction()
         action.initialize()
@@ -29,7 +31,7 @@ class TestJsonnetAction:
         features.register(CoreFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus()
+        register_actions_in_event_bus(True)
 
         action = JsonnetAction()
         action.initialize()
@@ -41,7 +43,7 @@ class TestJsonnetAction:
         features.register(CoreFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus()
+        register_actions_in_event_bus(True)
 
         action = JsonnetAction()
         action.initialize()
@@ -62,7 +64,7 @@ class TestJsonnetAction:
         features.register(CoreFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus()
+        register_actions_in_event_bus(True)
 
         action = JsonnetAction()
         action.initialize()
@@ -92,7 +94,7 @@ class TestJsonnetAction:
         features.register(CoreFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus()
+        register_actions_in_event_bus(True)
 
         action = JsonnetAction()
         action.initialize()
@@ -113,7 +115,7 @@ class TestJsonnetAction:
         features.register(CoreFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus()
+        register_actions_in_event_bus(True)
 
         action = JsonnetAction()
         action.initialize()
@@ -152,7 +154,7 @@ class TestJsonnetAction:
         features.register(CoreFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus()
+        register_actions_in_event_bus(True)
 
         action = JsonnetAction()
         action.initialize()
@@ -191,7 +193,7 @@ class TestJsonnetAction:
         features.register(CoreFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus()
+        register_actions_in_event_bus(True)
 
         action = JsonnetAction()
         action.initialize()
@@ -222,7 +224,7 @@ class TestJsonnetAction:
         features.register(DockerFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus()
+        register_actions_in_event_bus(True)
 
         action = JsonnetAction()
         action.initialize()
@@ -234,7 +236,14 @@ class TestJsonnetAction:
 
         with open('docker-compose.expected.yml', 'r') as f:
             expected_data = f.read()
-            expected_data = expected_data.replace("%ddb.path.project%", os.getcwd())
+
+            if os.name == 'nt':
+                mapped_cwd = re.sub(r"^([a-zA-Z]):", r"/\1", os.getcwd())
+                mapped_cwd = pathlib.Path(mapped_cwd).as_posix()
+
+                expected_data = expected_data.replace("%ddb.path.project%", mapped_cwd)
+            else:
+                expected_data = expected_data.replace("%ddb.path.project%", os.getcwd())
             expected_data = expected_data.replace("%uid%", str(config.data.get('docker.user.uid')))
             expected_data = expected_data.replace("%gid%", str(config.data.get('docker.user.gid')))
             expected = yaml.load(expected_data, yaml.SafeLoader)
