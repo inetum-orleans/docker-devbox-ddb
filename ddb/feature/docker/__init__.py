@@ -3,6 +3,7 @@ import os
 import re
 from typing import Iterable, ClassVar
 
+import hashlib
 import netifaces
 import pathlib
 from dotty_dict import Dotty
@@ -41,8 +42,9 @@ class DockerFeature(Feature):
     def _configure_defaults(self, feature_config: Dotty):
         self._configure_defaults_user(feature_config)
         self._configure_defaults_ip(feature_config)
-        self._configure_defaults_registry(feature_config)
         self._configure_defaults_path_mapping(feature_config)
+        self._configure_defaults_port_prefix(feature_config)
+        self._configure_defaults_compose_project_name(feature_config)
 
     @staticmethod
     def _configure_defaults_user(feature_config):
@@ -101,13 +103,35 @@ class DockerFeature(Feature):
             feature_config['path_mapping'] = path_mapping
 
     @staticmethod
-    def _configure_defaults_registry(feature_config):
-        registry_name = feature_config.get('registry.name')
-        if registry_name and not registry_name.endswith('/'):
-            registry_name += '/'
-            feature_config['registry.name'] = registry_name
+    def _configure_defaults_port_prefix(feature_config):
+        port_prefix = feature_config.get('port_prefix')
+        if port_prefix is None:
+            project_name = config.data.get('core.project.name')
+            if project_name:
+                port_prefix = int(hashlib.sha1(project_name.encode('utf-8')).hexdigest(), 16) % (10 ** 3)
+                feature_config['port_prefix'] = port_prefix
 
-        registry_repository = feature_config.get('registry.repository')
-        if registry_repository and not registry_repository.endswith('/'):
-            registry_repository += '/'
-            feature_config['registry.repository'] = registry_repository
+    @staticmethod
+    def _configure_defaults_compose_project_name(feature_config):
+        """
+        See https://github.com/docker/compose/blob/440c94ea7a7e62b3de50722120ca34c4e818205a/compose/cli/command.py#L181
+        """
+        compose_project_name = feature_config.get('compose.project_name')
+
+        def normalize_name(name):
+            return re.sub(r'[^-_a-z0-9]', '', name.lower())
+
+        if not compose_project_name:
+            compose_project_name = os.path.basename(os.path.abspath(config.paths.project_home))
+
+        compose_project_name = normalize_name(compose_project_name)
+        feature_config['compose.project_name'] = compose_project_name
+        os.environ['COMPOSE_PROJECT_NAME'] = compose_project_name
+
+        compose_network_name = feature_config.get('compose.network_name')
+        if not compose_network_name:
+            compose_network_name = compose_project_name + "_default"
+
+        compose_network_name = normalize_name(compose_network_name)
+        feature_config['compose.network_name'] = compose_network_name
+        os.environ['COMPOSE_NETWORK_NAME'] = compose_network_name + "_default"
