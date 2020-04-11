@@ -48,10 +48,13 @@ class UpdateGitignoreAction(Action):
             if pattern.startswith("!"):
                 inversed_gitignore_content.append(pattern[1:])
 
+        relative_target = os.path.normpath(os.path.relpath(target, os.path.dirname(gitignore)))
+
         zgitignore_helper = zgitignore.ZgitIgnore(gitignore_content)
         inversed_zgitignore_helper = zgitignore.ZgitIgnore(inversed_gitignore_content)
-        if not zgitignore_helper.is_ignored(target) and not inversed_zgitignore_helper.is_ignored(target):
+        if not zgitignore_helper.is_ignored(relative_target) and \
+                not inversed_zgitignore_helper.is_ignored(relative_target):
             with open(gitignore, "a", encoding="utf-8") as gitignore_file:
                 if gitignore_content and gitignore_content[-1].strip():
                     gitignore_file.write('\n')  # no need for os.linesep because file is opened as text
-                gitignore_file.write(os.path.normpath(target))
+                gitignore_file.write(relative_target)

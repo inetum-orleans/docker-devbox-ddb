@@ -81,3 +81,23 @@ class TestUpdateGitIgnoreAction:
         project_loader("templates")
 
         main(["configure"])
+
+        assert os.path.exists(os.path.join('.gitignore'))
+        with open(os.path.join('.gitignore'), 'r') as f:
+            gitignore = f.read()
+            assert gitignore == 'no/gitignore/directory/foo.txt'
+
+        assert os.path.exists(os.path.join('sub', '.gitignore'))
+        with open(os.path.join('sub', '.gitignore'), 'r') as f:
+            gitignore = f.read()
+            assert gitignore == 'directory/test.json\ndirectory/test.yaml'
+
+        assert os.path.exists(os.path.join('another', 'sub', '.gitignore'))
+        with open(os.path.join('another', 'sub', '.gitignore'), 'r') as f:
+            gitignore = f.read()
+            assert gitignore == 'foo\n!directory/forced.*\nbar'
+
+        assert os.path.exists(os.path.join('another', 'sub', 'directory', '.gitignore'))
+        with open(os.path.join('another', 'sub', 'directory', '.gitignore'), 'r') as f:
+            gitignore = f.read()
+            assert gitignore == 'test.yaml\nforced.yaml'
