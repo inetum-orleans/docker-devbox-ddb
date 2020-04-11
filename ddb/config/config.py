@@ -89,15 +89,20 @@ class Config:
 
     def flatten(self, prefix=None, sep=".", array_index_format="[%s]",
                 key_transformer=None, value_transformer=None,
-                stop_for=(), data=None, output=None) -> dict:
+                stop_for=()) -> dict:
         """
         Export configuration to a flat dict.
         """
+        return self._flatten(prefix, sep, array_index_format,
+                             key_transformer, value_transformer,
+                             stop_for, data=dict(self.data))
+
+    def _flatten(self, prefix=None, sep=".", array_index_format="[%s]",
+                 key_transformer=None, value_transformer=None,
+                 stop_for=(), data=None, output=None) -> dict:
         if output is None:
             output = dict()
 
-        if data is None:
-            data = dict(self.data)
         if prefix is None:
             prefix = ""
         if key_transformer is None:
@@ -114,9 +119,9 @@ class Config:
                 key_prefix = (prefix + sep if prefix else "") + key_transformer(name)
                 key_prefix = key_transformer(key_prefix)
 
-                self.flatten(key_prefix, sep, array_index_format,
-                             key_transformer, value_transformer,
-                             stop_for, value, output)
+                self._flatten(key_prefix, sep, array_index_format,
+                              key_transformer, value_transformer,
+                              stop_for, value, output)
 
         elif not stop_recursion and isinstance(data, list):
             i = 0
@@ -124,9 +129,9 @@ class Config:
                 replace_prefix = (prefix if prefix else "") + (array_index_format % str(i))
                 replace_prefix = key_transformer(replace_prefix)
 
-                self.flatten(replace_prefix, sep, array_index_format,
-                             key_transformer, value_transformer,
-                             stop_for, value, output)
+                self._flatten(replace_prefix, sep, array_index_format,
+                              key_transformer, value_transformer,
+                              stop_for, value, output)
 
                 i += 1
         else:

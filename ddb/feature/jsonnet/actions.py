@@ -106,7 +106,7 @@ class JsonnetAction(InitializableAction):
     def _evaluate_jsonnet(template_path):
         flatten_config = config.flatten(stop_for=tuple(map(".".join, JsonnetAction._get_stop_fields())))
         ext_vars = {k: v for (k, v) in flatten_config.items() if isinstance(v, str)}
-        ext_codes = {k: str(v).lower() if isinstance(v, bool) else str(v)
+        ext_codes = {k: str(v).lower() if isinstance(v, bool) else str(v) if v is not None else "null"
                      for (k, v) in flatten_config.items() if not isinstance(v, str)}
         evaluated = evaluate_file(template_path,
                                   ext_vars=ext_vars,
