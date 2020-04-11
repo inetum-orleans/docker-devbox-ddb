@@ -55,6 +55,8 @@ class TestFixuidFeature:
         action = FixuidDockerComposeAction()
         action.execute(docker_compose_config=config)
 
+        assert not os.path.exists("Dockerfile")
+
         with open(os.path.join("docker", "Dockerfile.expected"), "r") as f:
             expected = f.read()
         with open(os.path.join("docker", "Dockerfile"), "r") as f:

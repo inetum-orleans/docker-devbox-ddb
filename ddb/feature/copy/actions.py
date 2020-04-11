@@ -28,6 +28,7 @@ def copy_from_url(source, destination, filename=None):
     target_path = os.path.join(destination, filename)
     with open(target_path, 'wb') as output_file:
         output_file.write(response.content)
+    return target_path
 
 
 def get_dispatch_directories(dispatch):
