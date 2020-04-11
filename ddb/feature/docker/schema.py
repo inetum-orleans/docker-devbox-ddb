@@ -18,8 +18,8 @@ class RegistrySchema(Schema):
     """
     Docker registry schema
     """
-    name = fields.String(required=False)
-    repository = fields.String(required=False)
+    name = fields.String(required=False, allow_none=True, default=None)
+    repository = fields.String(required=False, allow_none=True, default=None)
 
 
 class ComposeSchema(Schema):
@@ -28,6 +28,8 @@ class ComposeSchema(Schema):
     """
     bin = fields.String(required=True, default="docker-compose" if os.name != "nt" else "docker-compose.exe")
     args = fields.List(fields.String(), default=[])
+    project_name = fields.String(required=True, default=None)  # default is set in feature _configure_defaults
+    network_name = fields.String(required=True, default=None)  # default is set in feature _configure_defaults
 
 
 class ReverseProxySchema(Schema):
@@ -47,7 +49,7 @@ class DockerSchema(FeatureSchema):
     ip = fields.String(required=True, default=None)  # default is set in feature _configure_defaults
     restart_policy = fields.String(required=True, default="no")
     port_prefix = fields.Integer(required=False)  # default is set in feature _configure_defaults
-    registry = fields.Nested(RegistrySchema(), required=False)
+    registry = fields.Nested(RegistrySchema(), required=True, default=RegistrySchema())
     interface = fields.String(required=True, default="docker0")
     directory = fields.String(required=True, default=".docker")
     compose = fields.Nested(ComposeSchema(), required=True, default=ComposeSchema())

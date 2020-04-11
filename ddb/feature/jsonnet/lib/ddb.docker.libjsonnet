@@ -42,13 +42,17 @@ local Image(image=null) = Service() + {
     [if image != null then "image"]: image
 };
 
-local Build(name, image=name, cache_from_image=_docker_cache_from_image, directory=_docker_directory) = Image(image=_docker_registry_name + _docker_registry_repository + image) + {
+local image_uri(image_name) =
+    std.join('/', std.filter(function(s) s != null, [_docker_registry_name, _docker_registry_repository, image_name]));
+
+local Build(name, image=name, cache_from_image=_docker_cache_from_image, directory=_docker_directory) = Service() + {
     "build": {
-        [if cache_from_image then "cache_from"]: [
-            _docker_registry_name + _docker_registry_repository + image
+        [if (cache_from_image && (_docker_registry_name != null || _docker_registry_repository != null) != null) then "cache_from"]: [
+            image_uri(image)
         ],
         "context": std.join("/", [path.project_home, directory, image])
-    }
+    },
+    [if (image != null && (_docker_registry_name != null || _docker_registry_repository != null)) then "image"]: image_uri(image)
 };
 
 local User(uid=_docker_user_uid, gid=_docker_user_gid) = {
