@@ -44,21 +44,22 @@ class DockerFeature(Feature):
         self._configure_defaults_registry(feature_config)
         self._configure_defaults_path_mapping(feature_config)
 
-    def _configure_defaults_user(self, feature_config):
+    @staticmethod
+    def _configure_defaults_user(feature_config):
         uid = feature_config.get('user.uid')
         if uid is None:
             try:
                 uid = os.getuid()  # pylint:disable=no-member
-            except AttributeError as error:
-                raise FeatureConfigurationAutoConfigureError(self, 'user.uid', error)
+            except AttributeError:
+                uid = 1000
             feature_config['user.uid'] = uid
 
         gid = feature_config.get('user.gid')
         if gid is None:
             try:
                 gid = os.getgid()  # pylint:disable=no-member
-            except AttributeError as error:
-                raise FeatureConfigurationAutoConfigureError(self, 'user.gid', error)
+            except AttributeError:
+                gid = 1000
             feature_config['user.gid'] = gid
 
     def _configure_defaults_ip(self, feature_config):
