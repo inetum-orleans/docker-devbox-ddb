@@ -22,7 +22,7 @@ package_data = []
 
 entry_points = {
     'console_scripts': [
-        'ddb = ddb.__main__:main'
+        'ddb = ddb.__main__:console_script'
     ],
     'ddb_features': [
         'certs = ddb.feature.certs:CertsFeature',

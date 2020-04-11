@@ -245,7 +245,14 @@ def reset():
     config.reset()
 
 
-if __name__ == '__main__':  # pragma: no cover
+def console_script():  # pragma: no cover
+    """
+    Console script entrypoint
+    """
     exceptions = main()
     if exceptions:
         sys.exit(1)
+
+
+if __name__ == '__main__':  # pragma: no cover
+    console_script()
