@@ -13,6 +13,7 @@ from dotty_dict import Dotty
 from ..copy.actions import copy_from_url
 from ...action import Action
 from ...cache import global_cache
+from ...config import config
 
 BuildServiceDef = namedtuple("BuildServiceDef", "context dockerfile")
 
@@ -143,7 +144,7 @@ class FixuidDockerComposeAction(Action):
         if cmd:
             parser.cmd = cmd
 
-        copy_from_url("https://github.com/boxboat/fixuid/releases/download/v0.4/fixuid-0.4-linux-amd64.tar.gz",
+        copy_from_url(config.data["fixuid.url"],
                       service.context,
                       "fixuid.tar.gz")
 
@@ -165,13 +166,13 @@ class FixuidDockerComposeAction(Action):
         with open(dockerfile_path, "w", encoding="utf-8") as dockerfile_file:
             dockerfile_file.write(parser.content)
 
-    def execute(self, config: dict, *args, **kwargs):
+    def execute(self, docker_compose_config: dict, *args, **kwargs):
         services = []
 
-        if "services" not in config:
+        if "services" not in docker_compose_config:
             return
 
-        for _, service in config.get("services").items():
+        for _, service in docker_compose_config.get("services").items():
             if "build" not in service.keys():
                 continue
 

@@ -64,7 +64,7 @@ class EmitDockerComposeConfigAction(Action):
         parsed_config = yaml.load(yaml_output, yaml.SafeLoader)
         docker_compose_config = Dotty(parsed_config)
 
-        bus.emit("docker:docker-compose-config", config=docker_compose_config)
+        bus.emit("docker:docker-compose-config", docker_compose_config=docker_compose_config)
 
         services = docker_compose_config.get('services')
         if not services:

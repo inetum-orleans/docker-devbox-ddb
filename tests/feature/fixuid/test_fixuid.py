@@ -18,7 +18,7 @@ class TestFixuidFeature:
         load_registered_features()
 
         action = FixuidDockerComposeAction()
-        action.execute(config={})
+        action.execute(docker_compose_config={})
 
     def test_empty_project_with_core(self, project_loader):
         project_loader("empty")
@@ -28,7 +28,7 @@ class TestFixuidFeature:
         load_registered_features()
 
         action = FixuidDockerComposeAction()
-        action.execute(config={})
+        action.execute(docker_compose_config={})
 
     @pytest.mark.parametrize("project", [
         "from-scratch-empty",
@@ -53,7 +53,7 @@ class TestFixuidFeature:
             config = yaml.load(config_file, yaml.SafeLoader)
 
         action = FixuidDockerComposeAction()
-        action.execute(config=config)
+        action.execute(docker_compose_config=config)
 
         with open(os.path.join("docker", "Dockerfile.expected"), "r") as f:
             expected = f.read()

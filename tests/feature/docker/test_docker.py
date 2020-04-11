@@ -33,8 +33,8 @@ class TestDockerFeature:
 
         custom_event_listeners = []
 
-        def listener(config):
-            custom_event_listeners.append(config)
+        def listener(docker_compose_config):
+            custom_event_listeners.append(docker_compose_config)
 
         bus.on("docker:docker-compose-config", listener)
 
