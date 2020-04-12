@@ -90,14 +90,14 @@ class TestUpdateGitIgnoreAction:
         assert os.path.exists(os.path.join('sub', '.gitignore'))
         with open(os.path.join('sub', '.gitignore'), 'r') as f:
             gitignore = f.read()
-            assert gitignore == 'directory/test.json\ndirectory/test.yaml'
+            assert set(gitignore.splitlines()) == {'directory/test.json', 'directory/test.yaml'}
 
         assert os.path.exists(os.path.join('another', 'sub', '.gitignore'))
         with open(os.path.join('another', 'sub', '.gitignore'), 'r') as f:
             gitignore = f.read()
-            assert gitignore == 'foo\n!directory/forced.*\nbar'
+            assert set(gitignore.splitlines()) == {'foo', '!directory/forced.*', 'bar'}
 
         assert os.path.exists(os.path.join('another', 'sub', 'directory', '.gitignore'))
         with open(os.path.join('another', 'sub', 'directory', '.gitignore'), 'r') as f:
             gitignore = f.read()
-            assert gitignore == 'test.yaml\nforced.yaml'
+            assert set(gitignore.splitlines()) == {'test.yaml', 'forced.yaml'}
