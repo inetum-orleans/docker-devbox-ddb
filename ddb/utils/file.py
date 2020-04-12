@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import fnmatch
 import os
+import re
 from pathlib import Path
 from typing import List, Union, Optional
 
@@ -27,7 +28,9 @@ class TemplateFinder:
     def __init__(self, includes: List[str], excludes: List[str], suffixes: List[str],
                  rootpath: Union[Path, str] = Path('.'), recursive=True,
                  skip_processed_sources=True, skip_processed_targets=True):
-        self.includes, self.excludes = self._braceexpand(includes, excludes)
+        includes, excludes = self._braceexpand(includes, excludes)
+        self.includes = list(map(lambda x: re.compile(fnmatch.translate(x)), includes))
+        self.excludes = list(map(lambda x: re.compile(fnmatch.translate(x)), excludes))
         self.suffixes = suffixes
         self.rootpath = rootpath if isinstance(rootpath, Path) else Path(rootpath)
         self.recursive = recursive
@@ -115,8 +118,11 @@ class TemplateFinder:
     @staticmethod
     def _is_excluded(candidate: str, *excludes: List[str]) -> bool:
         excluded = False
+        norm_candidate = None
         for exclude in excludes:
-            if fnmatch.fnmatch(candidate, exclude) or fnmatch.fnmatch(os.path.normpath(candidate), exclude):
+            if not norm_candidate:
+                norm_candidate = os.path.normpath(candidate)
+            if exclude.match(candidate) or exclude.match(norm_candidate):
                 excluded = True
                 break
         return excluded
@@ -124,8 +130,11 @@ class TemplateFinder:
     @staticmethod
     def _is_included(candidate: str, *includes: List[str]) -> bool:
         included = False
-        for includes in includes:
-            if fnmatch.fnmatch(candidate, includes) or fnmatch.fnmatch(os.path.normpath(candidate), includes):
+        norm_candidate = None
+        for include in includes:
+            if not norm_candidate:
+                norm_candidate = os.path.normpath(candidate)
+            if include.match(candidate) or include.match(norm_candidate):
                 included = True
                 break
         return included
