@@ -37,14 +37,14 @@ class JinjaAction(InitializableAction):
 
     @property
     def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
-        return "phase:configure", \
-               ("event:file-generated", self.on_file_generated), \
-               ("jinja:template-found", self.render_jinja)
+        return ("file:found", self.on_file_found), \
+               ("file:generated", self.on_file_generated), \
+               ("jinja:render", self.render_jinja)
 
     def initialize(self):
-        self.template_finder = TemplateFinder(config.data["jinja.includes"],
-                                              config.data["jinja.excludes"],
-                                              config.data["jinja.suffixes"])
+        self.template_finder = TemplateFinder(config.data.get("jinja.includes"),
+                                              config.data.get("jinja.excludes"),
+                                              config.data.get("jinja.suffixes"))
 
         self.env = Environment(
             loader=FileSystemLoader(str(self.template_finder.rootpath)),
@@ -55,9 +55,14 @@ class JinjaAction(InitializableAction):
 
         self.context = dict(config.data)
 
-    def execute(self, *args, **kwargs):
-        for template, target in self.template_finder.templates:
-            bus.emit("jinja:template-found", template=template, target=target)
+    def on_file_found(self, file: str):
+        """
+        Called when a file is found.
+        """
+        template = file
+        target = self.template_finder.get_target(template)
+        if target:
+            bus.emit("jinja:render", template=template, target=target)
 
     def on_file_generated(self, source: str, target: str):  # pylint:disable=unused-argument
         """
@@ -66,7 +71,7 @@ class JinjaAction(InitializableAction):
         template = target
         target = self.template_finder.get_target(template)
         if target:
-            self.render_jinja(template, target)
+            bus.emit("jinja:render", template=template, target=target)
 
     @staticmethod
     def _normpath(path):
@@ -84,4 +89,4 @@ class JinjaAction(InitializableAction):
         with open(target, 'w') as target_file:
             target_file.write(jinja.render(**self.context))
         self.template_finder.mark_as_processed(template, target)
-        bus.emit('event:file-generated', source=template, target=target)
+        bus.emit('file:generated', source=template, target=target)

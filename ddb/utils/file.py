@@ -3,7 +3,7 @@ import fnmatch
 import os
 import re
 from pathlib import Path
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Tuple
 
 from braceexpand import braceexpand
 
@@ -19,65 +19,44 @@ def has_same_content(filename1: str, filename2: str) -> bool:
             return file1.read() == file2.read()
 
 
-class TemplateFinder:
+class FileWalker:
     """
-    Find templates sources inside project directory.
+    Walk files inside project directory.
     """
 
     # pylint:disable=too-many-arguments
-    def __init__(self, includes: List[str], excludes: List[str], suffixes: List[str],
-                 rootpath: Union[Path, str] = Path('.'), recursive=True,
-                 skip_processed_sources=True, skip_processed_targets=True):
+    def __init__(self,
+                 includes: Optional[List[str]],
+                 excludes: Optional[List[str]],
+                 suffixes: Optional[List[str]],
+                 rootpath: Union[Path, str] = Path('.'),
+                 recursive=True,
+                 skip_processed_sources=True,
+                 skip_processed_targets=True):
+        if includes is None:
+            includes = []
+        if excludes is None:
+            excludes = []
         includes, excludes = self._braceexpand(includes, excludes)
         self.includes = list(map(lambda x: re.compile(fnmatch.translate(x)), includes))
         self.excludes = list(map(lambda x: re.compile(fnmatch.translate(x)), excludes))
-        self.suffixes = suffixes
+        self.suffixes = suffixes if suffixes is not None else []
         self.rootpath = rootpath if isinstance(rootpath, Path) else Path(rootpath)
         self.recursive = recursive
         self.skip_processed_sources = skip_processed_sources
         self.skip_processed_targets = skip_processed_targets
 
     @property
-    def templates(self):
+    def items(self):
         """
         Yields over a tuple (template, target) with found templates.
         """
 
         for source in self._walk(str(self.rootpath), recursive=self.recursive):
-            if self.skip_processed_sources:
-                if source in context.processed_sources:
-                    continue
+            yield from self._do_yield(source)
 
-            target = self.get_target(source)
-            if target:
-                if self.skip_processed_targets:
-                    if target in context.processed_targets:
-                        continue
-                yield source, target
-
-    def get_target(self, source):
-        """
-        Get the target of given source, or None if it doesn't match suffixes.
-        """
-        if self.skip_processed_sources:
-            if source in context.processed_sources:
-                return None
-
-        target = self._get_target(source, self.suffixes)
-
-        if self.skip_processed_targets:
-            if target in context.processed_targets:
-                return None
-
-        return target
-
-    @staticmethod
-    def mark_as_processed(source, target):
-        """
-        Mark sources and target as processed, for them to be skipped by other file template finders.
-        """
-        context.processed_sources.add(source)
-        context.processed_targets.add(target)
+    def _do_yield(self, source):  # pylint:disable=no-self-use
+        yield source
 
     def _walk(self, *args, recursive=True, **kwargs):
         _walk_generator = os.walk(*args, **kwargs)
@@ -92,16 +71,11 @@ class TemplateFinder:
                 if self._is_excluded(dirpath, *self.excludes):
                     dirs.remove(dirs_item)
 
-            ordered_files = []
-            for expand_include in self.includes:
-                for files_item in list(files):
-                    filepath = os.path.join(root, files_item)
-                    if self._is_included(filepath, expand_include) and \
-                            not self._is_excluded(filepath, *self.excludes):
-                        ordered_files.append(filepath)
-
-            for filepath in ordered_files:
-                yield filepath
+            for files_item in list(files):
+                filepath = os.path.join(root, files_item)
+                if self._is_included(filepath, *self.includes) and \
+                        not self._is_excluded(filepath, *self.excludes):
+                    yield filepath
 
     @staticmethod
     def _braceexpand(includes, excludes):
@@ -119,6 +93,8 @@ class TemplateFinder:
     def _is_excluded(candidate: str, *excludes: List[str]) -> bool:
         excluded = False
         norm_candidate = None
+        if not excludes:
+            return False
         for exclude in excludes:
             if not norm_candidate:
                 norm_candidate = os.path.normpath(candidate)
@@ -131,6 +107,8 @@ class TemplateFinder:
     def _is_included(candidate: str, *includes: List[str]) -> bool:
         included = False
         norm_candidate = None
+        if not includes:
+            return True
         for include in includes:
             if not norm_candidate:
                 norm_candidate = os.path.normpath(candidate)
@@ -138,22 +116,6 @@ class TemplateFinder:
                 included = True
                 break
         return included
-
-    @staticmethod
-    def _get_target(template_candidate: str, suffixes: List[str]) -> Optional[str]:
-        basename, ext = os.path.splitext(template_candidate)
-        if ext in suffixes:
-            return basename
-
-        if not ext and basename.startswith("."):
-            ext = basename
-            basename = ""
-
-        for suffix in suffixes:
-            if basename.endswith(suffix):
-                return template_candidate[:len(basename) - len(suffix)] + ext
-
-        return None
 
     @staticmethod
     def build_default_includes_from_suffixes(suffixes: List[str], extensions=(".*", "")):
@@ -168,4 +130,71 @@ class TemplateFinder:
         if len(suffixes) > 1:
             joined_suffixes = ','.join(suffixes)
             return ["**/*{" + joined_suffixes + "}" + extensions_pattern]
-        return ["**/*" + suffixes[0] + extensions_pattern]
+        if len(suffixes) > 0:
+            return ["**/*" + suffixes[0] + extensions_pattern]
+        if extensions_pattern:
+            return ["**/*" + suffixes[0] + extensions_pattern]
+        return []
+
+
+class TemplateFinder(FileWalker):
+    """
+    Find templates sources inside project directory.
+    """
+
+    def _do_yield(self, source):
+        target = self.get_target(source, check=False)
+        if target:
+            if self.skip_processed_targets:
+                if target in context.processed_targets:
+                    return
+            yield source, target
+
+    def get_target(self, source, check=True):
+        """
+        Get the target of given source, or None if it doesn't match suffixes.
+        """
+        if check:
+            if not self._is_included(source, *self.includes) or \
+                    self._is_excluded(source, *self.excludes):
+                return None
+
+        if self.skip_processed_sources:
+            if source in context.processed_sources.keys():
+                return None
+
+        target, suffix = self._get_target_and_suffix(source, self.suffixes)
+
+        if self.skip_processed_targets:
+            if target in context.processed_targets.keys():
+                previous_source = context.processed_targets[target]
+                _, previous_suffix = self._get_target_and_suffix(previous_source, self.suffixes)
+                if previous_suffix not in self.suffixes or \
+                        self.suffixes.index(previous_suffix) <= self.suffixes.index(suffix):
+                    return None
+
+        return target
+
+    @staticmethod
+    def mark_as_processed(source, target):
+        """
+        Mark sources and target as processed, for them to be skipped by other file template finders.
+        """
+        context.processed_sources[source] = target
+        context.processed_targets[target] = source
+
+    @staticmethod
+    def _get_target_and_suffix(template_candidate: str, suffixes: List[str]) -> Optional[Tuple[str, str]]:
+        basename, ext = os.path.splitext(template_candidate)
+        if ext in suffixes:
+            return basename, ext
+
+        if not ext and basename.startswith("."):
+            ext = basename
+            basename = ""
+
+        for suffix in suffixes:
+            if basename.endswith(suffix):
+                return template_candidate[:len(basename) - len(suffix)] + ext, suffix
+
+        return None, None

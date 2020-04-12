@@ -3,18 +3,20 @@ import os
 from ddb.__main__ import load_registered_features, register_actions_in_event_bus
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
-from ddb.feature.ytt import YttFeature, YttAction
+from ddb.feature.file import FileFeature, FileWalkAction
+from ddb.feature.ytt import YttFeature
 
 
 class TestYttAction:
     def test_empty_project_without_core(self, project_loader):
         project_loader("empty")
 
+        features.register(FileFeature())
         features.register(YttFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = YttAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 
@@ -22,11 +24,12 @@ class TestYttAction:
         project_loader("empty")
 
         features.register(CoreFeature())
+        features.register(FileFeature())
         features.register(YttFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = YttAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 
@@ -34,11 +37,12 @@ class TestYttAction:
         project_loader("plain")
 
         features.register(CoreFeature())
+        features.register(FileFeature())
         features.register(YttFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = YttAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 
@@ -55,11 +59,12 @@ class TestYttAction:
         project_loader("config_variables")
 
         features.register(CoreFeature())
+        features.register(FileFeature())
         features.register(YttFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = YttAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 
@@ -76,11 +81,12 @@ class TestYttAction:
         project_loader("ignore_invalid_extension")
 
         features.register(CoreFeature())
+        features.register(FileFeature())
         features.register(YttFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = YttAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 
@@ -91,11 +97,12 @@ class TestYttAction:
         project_loader("depends_suffixes")
 
         features.register(CoreFeature())
+        features.register(FileFeature())
         features.register(YttFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = YttAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 

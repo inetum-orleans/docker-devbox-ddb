@@ -69,7 +69,11 @@ class CopyAction(Action):
     def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
         return "phase:init"
 
-    def execute(self, *args, **kwargs):
+    @staticmethod
+    def execute():
+        """
+        Execute action
+        """
         specs = config.data.get("copy.specs")
         if not specs:
             return

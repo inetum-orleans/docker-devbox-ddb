@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+from argparse import Namespace
 from collections import namedtuple
 from os.path import exists
 from pathlib import Path
@@ -24,7 +25,7 @@ def get_default_config_paths(env_prefix) -> ConfigPaths:
     return ConfigPaths(ddb_home=ddb_home, home=home, project_home=project_home)
 
 
-class Config:
+class Config:  # pylint:disable=too-many-instance-attributes
     """
     Configuration
     """
@@ -41,6 +42,7 @@ class Config:
         self.extensions = extensions
         self.data = dotty()
         self.paths = paths if paths else get_default_config_paths(env_prefix)
+        self.args = Namespace()  # type: Namespace
 
     def reset(self, *args, **kwargs):
         """

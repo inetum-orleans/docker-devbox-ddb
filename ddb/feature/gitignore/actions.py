@@ -32,9 +32,13 @@ class UpdateGitignoreAction(Action):
 
     @property
     def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
-        return "event:file-generated"
+        return "file:generated"
 
-    def execute(self, target: str, *args, **kwargs):
+    @staticmethod
+    def execute(target: str, source: str = None):  # pylint:disable=unused-argument
+        """
+        Execute action
+        """
         gitignore = find_gitignore(target)
         if not gitignore:
             gitignore = ".gitignore"

@@ -19,6 +19,7 @@ class JsonnetAction(InitializableAction):
     """
     Render jsonnet files based on filename suffixes.
     """
+
     def __init__(self):
         super().__init__()
         self.template_finder = None  # type: TemplateFinder
@@ -29,18 +30,23 @@ class JsonnetAction(InitializableAction):
 
     @property
     def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
-        return "phase:configure", \
-               ("event:file-generated", self.on_file_generated), \
-               ("jsonnet:template-found", self.render_jsonnet)
+        return ("file:found", self.on_file_found), \
+               ("file:generated", self.on_file_generated), \
+               ("jsonnet:render", self.render_jsonnet)
 
     def initialize(self):
-        self.template_finder = TemplateFinder(config.data["jsonnet.includes"],
-                                              config.data["jsonnet.excludes"],
-                                              config.data["jsonnet.suffixes"])
+        self.template_finder = TemplateFinder(config.data.get("jsonnet.includes"),
+                                              config.data.get("jsonnet.excludes"),
+                                              config.data.get("jsonnet.suffixes"))
 
-    def execute(self, *args, **kwargs):
-        for template, target in self.template_finder.templates:
-            bus.emit('jsonnet:template-found', template=template, target=target)
+    def on_file_found(self, file: str):
+        """
+        Called when a file is found.
+        """
+        template = file
+        target = self.template_finder.get_target(template)
+        if target:
+            bus.emit('jsonnet:render', template=template, target=target)
 
     def on_file_generated(self, source: str, target: str):  # pylint:disable=unused-argument
         """
@@ -49,7 +55,7 @@ class JsonnetAction(InitializableAction):
         template = target
         target = self.template_finder.get_target(template)
         if target:
-            self.render_jsonnet(template, target)
+            bus.emit('jsonnet:render', template=template, target=target)
 
     @staticmethod
     def _get_stop_fields_from_schema(schema: Schema, stack, ret):
@@ -92,7 +98,7 @@ class JsonnetAction(InitializableAction):
                 with open(evaluated_target_path, 'w') as evaluated_target:
                     evaluated_target.write(content)
                 self.template_finder.mark_as_processed(template, evaluated_target_path)
-                bus.emit('event:file-generated', source=template, target=evaluated_target_path)
+                bus.emit('file:generated', source=template, target=evaluated_target_path)
         else:
             ext = os.path.splitext(target)[-1]
             if ext.lower() in ['.yaml', '.yml']:
@@ -100,7 +106,7 @@ class JsonnetAction(InitializableAction):
             with open(target, 'w') as target_file:
                 target_file.write(evaluated)
             self.template_finder.mark_as_processed(template, target)
-            bus.emit('event:file-generated', source=template, target=target)
+            bus.emit('file:generated', source=template, target=target)
 
     @staticmethod
     def _evaluate_jsonnet(template_path):

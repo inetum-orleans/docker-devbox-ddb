@@ -4,6 +4,7 @@ from argparse import ArgumentParser
 from typing import Iterable, Union, Optional
 
 from ..cache import caches
+from ..config import config
 from ..context import context
 from ..phase import phases, Phase
 from ..phase.phase import execute_phase
@@ -16,7 +17,7 @@ class Command(RegistryObject, ABC):
     """
 
     @abstractmethod
-    def execute(self, *args, **kwargs):
+    def execute(self):
         """
         Execute the command.
         """
@@ -54,14 +55,14 @@ class DefaultCommand(DefaultRegistryObject, Command):
             raise ValueError
         return command
 
-    def execute(self, *args, **kwargs):
+    def execute(self):
         """
         Execute the command.
         """
         if self.parent:
-            self.parent.execute(*args, **kwargs)
+            self.parent.execute()
 
-        clear_cache = kwargs.get("clear_cache")
+        clear_cache = config.args.clear_cache
         if clear_cache:
             for cache in caches.all():
                 cache.clear()
@@ -91,19 +92,19 @@ class LifecycleCommand(DefaultCommand):
         for phase in self._lifecycle:
             phase.configure_parser(parser)
 
-    def execute(self, *args, **kwargs):
-        super().execute(*args, **kwargs)
+    def execute(self):
+        super().execute()
         for phase in self._lifecycle:
-            execute_phase(phase, *args, **kwargs)
+            execute_phase(phase)
 
 
-def execute_command(command: Command, *args, **kwargs):
+def execute_command(command: Command):
     """
     Execute a command with context update.
     """
 
     context.command = command
     try:
-        command.execute(*args, **kwargs)
+        command.execute()
     finally:
         context.command = None

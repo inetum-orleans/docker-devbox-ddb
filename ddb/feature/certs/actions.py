@@ -22,7 +22,11 @@ class GenerateCertAction(Action):
     def name(self) -> str:
         return "certs:generate"
 
-    def execute(self, domain, wildcard=True):
+    @staticmethod
+    def execute(domain, wildcard=True):
+        """
+        Execute action
+        """
         if config.data.get('certs.type') == 'cfssl':
             GenerateCertAction.execute_cfssl(domain, wildcard)
 

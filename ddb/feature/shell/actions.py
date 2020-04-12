@@ -98,7 +98,10 @@ class ActivateAction(Action):
     def order(self) -> int:
         return -256
 
-    def execute(self, *args, **kwargs):
+    def execute(self):
+        """
+        Execute action
+        """
         initial_environ = dict(os.environ.items())
         config_environ = config.to_environ()
 
@@ -140,7 +143,10 @@ class DeactivateAction(Action):
     def disabled(self) -> bool:
         return config.data.get('shell.shell') != self.shell.name
 
-    def execute(self, *args, **kwargs):
+    def execute(self):
+        """
+        Execute action
+        """
         if os.environ.get(_env_environ_backup):
             environ_backup = decode_environ_backup(os.environ[_env_environ_backup])
             apply_diff_to_shell(self.shell, os.environ, environ_backup, config.data.get('shell.envignore'))

@@ -19,7 +19,7 @@ class Phase(RegistryObject, ABC):  # pylint:disable=abstract-method
         Configure the argument parser.
         """
 
-    def execute(self, *args, **kwargs):
+    def execute(self):
         """
         Execute the phase.
         """
@@ -43,22 +43,22 @@ class DefaultPhase(DefaultRegistryObject, Phase):
         if self._parser:
             self._parser(parser)
 
-    def execute(self, *args, **kwargs):
+    def execute(self):
         cache = project_cache()
         runned_cache_key = "phase.runned." + self.name
         if self.run_once and cache.get(runned_cache_key):
             return
-        bus.emit("phase:" + self.name, *args, **kwargs)
+        bus.emit("phase:" + self.name)
         cache.set(runned_cache_key, True)
         cache.flush()
 
 
-def execute_phase(phase: Phase, *args, **kwargs):
+def execute_phase(phase: Phase):
     """
     Execute a phase with context update.
     """
     context.phase = phase
     try:
-        phase.execute(*args, **kwargs)
+        phase.execute()
     finally:
         context.phase = None

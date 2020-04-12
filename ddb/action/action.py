@@ -7,8 +7,7 @@ from ddb.registry import RegistryObject
 
 class Action(RegistryObject, ABC):
     """
-    Action can perform something on the system through it's run method.
-    It is executed when a particular event occurs.
+    Action can perform something on the system through "execute" method, or any other.
     """
 
     @property
@@ -24,12 +23,6 @@ class Action(RegistryObject, ABC):
         the method named from second value on event bus.
 
         This method returns an iterable of bindings.
-        """
-
-    @abstractmethod
-    def execute(self, *args, **kwargs):
-        """
-        Action implementation. *args and **kwargs are coming from the provided command line arguments.
         """
 
     @property

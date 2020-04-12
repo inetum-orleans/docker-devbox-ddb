@@ -21,7 +21,7 @@ class YttFeature(Feature):
 
     @property
     def dependencies(self) -> Iterable[str]:
-        return ["core"]
+        return ["core", "file"]
 
     @property
     def schema(self) -> ClassVar[YttSchema]:
@@ -35,7 +35,7 @@ class YttFeature(Feature):
 
     def _configure_defaults(self, feature_config: Dotty):
         includes = feature_config.get("includes")
-        if not includes:
+        if includes is None:
             includes = TemplateFinder.build_default_includes_from_suffixes(
                 feature_config["suffixes"],
                 feature_config["extensions"]

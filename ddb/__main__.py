@@ -23,6 +23,7 @@ from ddb.feature.certs import CertsFeature
 from ddb.feature.copy import CopyFeature
 from ddb.feature.core import CoreFeature
 from ddb.feature.docker import DockerFeature
+from ddb.feature.file import FileFeature
 from ddb.feature.fixuid import FixuidFeature
 from ddb.feature.gitignore import GitignoreFeature
 from ddb.feature.jinja import JinjaFeature
@@ -45,6 +46,7 @@ def get_default_features():
         CopyFeature(),
         CoreFeature(),
         DockerFeature(),
+        FileFeature(),
         FixuidFeature(),
         GitignoreFeature(),
         JinjaFeature(),
@@ -201,11 +203,8 @@ def handle_command_line(args: Optional[Sequence[str]] = None):
 
     if parsed_args.command:
         command = commands.get(parsed_args.command)
-        kwargs = vars(parsed_args)
-        for k in ('command', 'verbose', 'very_verbose', 'silent'):
-            del kwargs[k]
-        kwargs = {k: v for k, v in kwargs.items() if v is not None}
-        execute_command(command, **kwargs)
+        config.args = parsed_args
+        execute_command(command)
     else:
         opts.print_help()
 

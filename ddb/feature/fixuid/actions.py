@@ -150,7 +150,7 @@ class FixuidDockerComposeAction(Action):
             target = copy_from_url(config.data["fixuid.url"],
                                    service.context,
                                    "fixuid.tar.gz")
-            bus.emit('event:file-generated', source=None, target=target)
+            bus.emit('file:generated', source=None, target=target)
 
             lines = ("ADD fixuid.tar.gz /usr/local/bin",
                      "RUN chown root:root /usr/local/bin/fixuid && "
@@ -167,7 +167,10 @@ class FixuidDockerComposeAction(Action):
             else:
                 parser.add_lines(*lines)
 
-    def execute(self, docker_compose_config: dict, *args, **kwargs):
+    def execute(self, docker_compose_config: dict):
+        """
+        Execute action
+        """
         services = []
 
         if "services" not in docker_compose_config:

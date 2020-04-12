@@ -23,27 +23,32 @@ class SymlinksAction(InitializableAction):
 
     @property
     def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
-        return "phase:configure", \
-               ("event:file-generated", self.on_file_generated), \
-               ("symlinks:source-found", self.create_symlink)
+        return ("file:found", self.on_file_found), \
+               ("file:generated", self.on_file_generated), \
+               ("symlinks:create", self.create_symlink)
 
     def initialize(self):
-        self.template_finder = TemplateFinder(config.data["symlinks.includes"],
-                                              config.data["symlinks.excludes"],
-                                              config.data["symlinks.suffixes"])
+        self.template_finder = TemplateFinder(config.data.get("symlinks.includes"),
+                                              config.data.get("symlinks.excludes"),
+                                              config.data.get("symlinks.suffixes"))
+
+    def on_file_found(self, file: str):
+        """
+        Called when a file is found.
+        """
+        source = file
+        target = self.template_finder.get_target(source)
+        if target:
+            bus.emit("symlinks:create", source=source, target=target)
 
     def on_file_generated(self, source: str, target: str):  # pylint:disable=unused-argument
         """
         Called when a file is generated.
         """
-        template = target
-        target = self.template_finder.get_target(template)
+        source = target
+        target = self.template_finder.get_target(source)
         if target:
-            self.create_symlink(template, target)
-
-    def execute(self, *args, **kwargs):
-        for source, target in self.template_finder.templates:
-            bus.emit('symlinks:source-found', source=source, target=target)
+            bus.emit("symlinks:create", source=source, target=target)
 
     def create_symlink(self, source, target):
         """
@@ -57,4 +62,4 @@ class SymlinksAction(InitializableAction):
         relsource = os.path.relpath(source, os.path.dirname(target))
         os.symlink(relsource, os.path.normpath(target))
         self.template_finder.mark_as_processed(source, target)
-        bus.emit('event:file-generated', source=source, target=target)
+        bus.emit('file:generated', source=source, target=target)

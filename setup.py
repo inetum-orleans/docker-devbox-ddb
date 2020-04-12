@@ -30,6 +30,7 @@ entry_points = {
     #     'copy = ddb.feature.copy:CopyFeature',
     #     'core = ddb.feature.core:CoreFeature',
     #     'docker = ddb.feature.docker:DockerFeature',
+    #     'file = ddb.feature.filee:FileFeature',
     #     'fixuid = ddb.feature.fixuid:FixuidFeature',
     #     'gitignore = ddb.feature.gitignore:GitignoreFeature',
     #     'jinja = ddb.feature.jinja:JinjaFeature',

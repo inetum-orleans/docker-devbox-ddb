@@ -8,7 +8,7 @@ from .schema import SymlinksSchema
 from ..feature import Feature, FeatureConfigurationError
 from ...action import Action
 from ...config import config
-from ...utils.file import TemplateFinder
+from ...utils.file import TemplateFinder, FileWalker
 
 
 class SymlinksFeature(Feature):
@@ -22,7 +22,7 @@ class SymlinksFeature(Feature):
 
     @property
     def dependencies(self) -> Iterable[str]:
-        return ["core", "jinja[optional]"]
+        return ["core", "file"]
 
     @property
     def schema(self) -> ClassVar[SymlinksSchema]:
@@ -54,6 +54,6 @@ class SymlinksFeature(Feature):
             feature_config["suffixes"] = suffixes
 
         includes = feature_config.get('includes')
-        if not includes:
-            includes = TemplateFinder.build_default_includes_from_suffixes(suffixes)
+        if includes is None:
+            includes = FileWalker.build_default_includes_from_suffixes(suffixes)
             feature_config["includes"] = includes

@@ -20,7 +20,10 @@ class CookiecutterAction(Action):
     def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
         return "phase:init"
 
-    def execute(self, *args, **kwargs):
+    def execute(self):
+        """
+        Execute action
+        """
         config_parameters = 'cookiecutters_dir', 'replay_dir', 'default_context'
 
         defaults = {}
@@ -39,7 +42,7 @@ class CookiecutterAction(Action):
             templates = cookiecutter_config.get('templates')
             if templates:
                 for template in templates:
-                    # TODO: Generate in a temporary dir to emit event:file-generated events.
+                    # TODO: Generate in a temporary dir to emit file:generated events.
                     self._generate_template(template)
         finally:
             for parameter in config_parameters:

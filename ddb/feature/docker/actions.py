@@ -55,7 +55,11 @@ class EmitDockerComposeConfigAction(Action):
     def name(self) -> str:
         return "docker:emit-docker-compose-config"
 
-    def execute(self, *args, **kwargs):
+    def execute(self):
+        """
+        Execute action
+        """
+
         # TODO: Add support for custom docker-compose -f option (custom filename and multiple files)
         if not os.path.exists("docker-compose.yml"):
             return

@@ -6,7 +6,8 @@ from ddb.__main__ import load_registered_features, register_actions_in_event_bus
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.feature import FeatureConfigurationError
-from ddb.feature.symlinks import SymlinksAction, SymlinksFeature
+from ddb.feature.file import FileFeature, FileWalkAction
+from ddb.feature.symlinks import SymlinksFeature
 
 
 class TestSymlinksAction:
@@ -22,11 +23,12 @@ class TestSymlinksAction:
         project_loader("empty")
 
         features.register(CoreFeature())
+        features.register(FileFeature())
         features.register(SymlinksFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = SymlinksAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 
@@ -34,11 +36,12 @@ class TestSymlinksAction:
         project_loader("project1")
 
         features.register(CoreFeature())
+        features.register(FileFeature())
         features.register(SymlinksFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = SymlinksAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 
@@ -54,11 +57,12 @@ class TestSymlinksAction:
         project_loader("project2")
 
         features.register(CoreFeature())
+        features.register(FileFeature())
         features.register(SymlinksFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = SymlinksAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 
@@ -81,11 +85,12 @@ class TestSymlinksAction:
         project_loader("project4")
 
         features.register(CoreFeature())
+        features.register(FileFeature())
         features.register(SymlinksFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = SymlinksAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 

@@ -3,6 +3,7 @@ import os
 from ddb.__main__ import load_registered_features, register_actions_in_event_bus
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
+from ddb.feature.file import FileFeature, FileWalkAction
 from ddb.feature.jinja import JinjaFeature, JinjaAction
 
 
@@ -10,11 +11,12 @@ class TestJinjaAction:
     def test_empty_project_without_core(self, project_loader):
         project_loader("empty")
 
+        features.register(FileFeature())
         features.register(JinjaFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = JinjaAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 
@@ -22,11 +24,12 @@ class TestJinjaAction:
         project_loader("empty")
 
         features.register(CoreFeature())
+        features.register(FileFeature())
         features.register(JinjaFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = JinjaAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 
@@ -34,11 +37,12 @@ class TestJinjaAction:
         project_loader("project1")
 
         features.register(CoreFeature())
+        features.register(FileFeature())
         features.register(JinjaFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = JinjaAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 
@@ -52,11 +56,12 @@ class TestJinjaAction:
         project_loader("project2")
 
         features.register(CoreFeature())
+        features.register(FileFeature())
         features.register(JinjaFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = JinjaAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 
@@ -73,11 +78,12 @@ class TestJinjaAction:
         project_loader("project3")
 
         features.register(CoreFeature())
+        features.register(FileFeature())
         features.register(JinjaFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = JinjaAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 
@@ -91,11 +97,12 @@ class TestJinjaAction:
         project_loader("project4")
 
         features.register(CoreFeature())
+        features.register(FileFeature())
         features.register(JinjaFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = JinjaAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 
@@ -109,11 +116,12 @@ class TestJinjaAction:
         project_loader("project5")
 
         features.register(CoreFeature())
+        features.register(FileFeature())
         features.register(JinjaFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = JinjaAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 

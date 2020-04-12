@@ -22,8 +22,8 @@ class Context:
         self.command = None  # type: Optional[Command]
         self.actions = []  # type: List[Action]
         self.exceptions = []  # type: List[Exception]
-        self.processed_sources = set()
-        self.processed_targets = set()
+        self.processed_sources = dict()
+        self.processed_targets = dict()
         self.data = Dotty(dict())
 
     def reset(self):

@@ -10,18 +10,20 @@ from ddb.config import config
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.docker import DockerFeature
-from ddb.feature.jsonnet import JsonnetFeature, JsonnetAction
+from ddb.feature.file import FileFeature, FileWalkAction
+from ddb.feature.jsonnet import JsonnetFeature
 
 
 class TestJsonnetAction:
     def test_empty_project_without_core(self, project_loader):
         project_loader("empty")
 
+        features.register(FileFeature())
         features.register(JsonnetFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = JsonnetAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 
@@ -29,11 +31,12 @@ class TestJsonnetAction:
         project_loader("empty")
 
         features.register(CoreFeature())
+        features.register(FileFeature())
         features.register(JsonnetFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = JsonnetAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 
@@ -41,11 +44,12 @@ class TestJsonnetAction:
         project_loader("example1")
 
         features.register(CoreFeature())
+        features.register(FileFeature())
         features.register(JsonnetFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = JsonnetAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 
@@ -62,11 +66,12 @@ class TestJsonnetAction:
         project_loader("example1.yaml")
 
         features.register(CoreFeature())
+        features.register(FileFeature())
         features.register(JsonnetFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = JsonnetAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 
@@ -92,11 +97,12 @@ class TestJsonnetAction:
         project_loader("example2")
 
         features.register(CoreFeature())
+        features.register(FileFeature())
         features.register(JsonnetFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = JsonnetAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 
@@ -113,11 +119,12 @@ class TestJsonnetAction:
         project_loader("example3")
 
         features.register(CoreFeature())
+        features.register(FileFeature())
         features.register(JsonnetFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = JsonnetAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 
@@ -152,11 +159,12 @@ class TestJsonnetAction:
         project_loader("example3.with_dir")
 
         features.register(CoreFeature())
+        features.register(FileFeature())
         features.register(JsonnetFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = JsonnetAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 
@@ -191,11 +199,12 @@ class TestJsonnetAction:
         project_loader("config_variables")
 
         features.register(CoreFeature())
+        features.register(FileFeature())
         features.register(JsonnetFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = JsonnetAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 
@@ -221,12 +230,13 @@ class TestJsonnetAction:
         project_loader("docker_compose_traefik", before_load_config)
 
         features.register(CoreFeature())
+        features.register(FileFeature())
         features.register(DockerFeature())
         features.register(JsonnetFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = JsonnetAction()
+        action = FileWalkAction()
         action.initialize()
         action.execute()
 
