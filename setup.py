@@ -24,20 +24,21 @@ entry_points = {
     'console_scripts': [
         'ddb = ddb.__main__:console_script'
     ],
-    'ddb_features': [
-        'certs = ddb.feature.certs:CertsFeature',
-        'copy = ddb.feature.copy:CopyFeature',
-        'core = ddb.feature.core:CoreFeature',
-        'docker = ddb.feature.docker:DockerFeature',
-        'fixuid = ddb.feature.fixuid:FixuidFeature',
-        'gitignore = ddb.feature.gitignore:GitignoreFeature',
-        'jinja = ddb.feature.jinja:JinjaFeature',
-        'jsonnet = ddb.feature.jsonnet:JsonnetFeature',
-        'plugins = ddb.feature.plugins:PluginsFeature',
-        'shell = ddb.feature.shell:ShellFeature',
-        'symlinks = ddb.feature.symlinks:SymlinksFeature',
-        'ytt = ddb.feature.ytt:YttFeature'
-    ]
+    # Disable internal entrypoint features for performance reason.
+    # 'ddb_features': [
+    #     'certs = ddb.feature.certs:CertsFeature',
+    #     'copy = ddb.feature.copy:CopyFeature',
+    #     'core = ddb.feature.core:CoreFeature',
+    #     'docker = ddb.feature.docker:DockerFeature',
+    #     'fixuid = ddb.feature.fixuid:FixuidFeature',
+    #     'gitignore = ddb.feature.gitignore:GitignoreFeature',
+    #     'jinja = ddb.feature.jinja:JinjaFeature',
+    #     'jsonnet = ddb.feature.jsonnet:JsonnetFeature',
+    #     'plugins = ddb.feature.plugins:PluginsFeature',
+    #     'shell = ddb.feature.shell:ShellFeature',
+    #     'symlinks = ddb.feature.symlinks:SymlinksFeature',
+    #     'ytt = ddb.feature.ytt:YttFeature'
+    # ]
 }
 
 with io.open('ddb/__version__.py', 'r') as f:

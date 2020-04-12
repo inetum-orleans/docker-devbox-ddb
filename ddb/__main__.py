@@ -8,29 +8,61 @@ import pkg_resources
 from slugify import slugify
 from toposort import toposort_flatten
 
+from ddb.action import actions
+from ddb.action.runnerfactory import action_event_binding_runner_factory
+from ddb.binary import binaries
+from ddb.cache import caches, _project_cache_name, ShelveCache, _global_cache_name, _requests_cache_name
+from ddb.command import commands
 from ddb.command.command import execute_command
+from ddb.config import config
 from ddb.context import context
 from ddb.context.context import configure_context_logger
-from .action import actions
-from .action.runnerfactory import action_event_binding_runner_factory
-from .binary import binaries
-from .cache import caches, _project_cache_name, ShelveCache, _global_cache_name, _requests_cache_name
-from .command import commands
-from .config import config
-from .event import bus
-from .feature import features, Feature
-from .phase import phases
-from .registry import Registry, RegistryObject
-from .service import services
+from ddb.event import bus
+from ddb.feature import features, Feature
+from ddb.feature.certs import CertsFeature
+from ddb.feature.copy import CopyFeature
+from ddb.feature.core import CoreFeature
+from ddb.feature.docker import DockerFeature
+from ddb.feature.fixuid import FixuidFeature
+from ddb.feature.gitignore import GitignoreFeature
+from ddb.feature.jinja import JinjaFeature
+from ddb.feature.jsonnet import JsonnetFeature
+from ddb.feature.plugins import PluginsFeature
+from ddb.feature.shell import ShellFeature
+from ddb.feature.symlinks import SymlinksFeature
+from ddb.feature.ytt import YttFeature
+from ddb.phase import phases
+from ddb.registry import Registry, RegistryObject
+from ddb.service import services
 
 
-def register_entrypoint_features():
+def get_default_features():
     """
-    Register setuptools entrypoint 'ddb_features' inside features registry.
+    Default features. Setuptools entrypoint are bypassed for those features to enhance bootstrap performance.
+    """
+    return (
+        CertsFeature(),
+        CopyFeature(),
+        CoreFeature(),
+        DockerFeature(),
+        FixuidFeature(),
+        GitignoreFeature(),
+        JinjaFeature(),
+        JsonnetFeature(),
+        PluginsFeature(),
+        ShellFeature(),
+        SymlinksFeature(),
+        YttFeature()
+    )
+
+
+def register_features(default_features: Iterable[Feature] = get_default_features()):
+    """
+    Register default features and setuptools entrypoint 'ddb_features' inside features registry.
     Features are registered in order for their dependency to be registered first with a topological sort.
     Withing a command phase, actions are executed in the order of their feature registration.
     """
-    entrypoint_features = {}
+    entrypoint_features = {f.name: f for f in default_features}
     for entry_point in pkg_resources.iter_entry_points('ddb_features'):
         feature = entry_point.load()()
         entrypoint_features[feature.name] = feature
@@ -48,7 +80,9 @@ def register_entrypoint_features():
 
     sorted_feature_names = toposort_flatten(toposort_data, sort=True)
     for feature_name in sorted_feature_names:
-        features.register(entrypoint_features[feature_name])
+        feature = entrypoint_features.get(feature_name)
+        if feature:
+            features.register(feature)
 
 
 def _prepare_dependencies_data(entrypoint_features):
@@ -209,7 +243,7 @@ def main(args: Optional[Sequence[str]] = None):
     Load all features and handle command line
     """
     config.load()
-    register_entrypoint_features()
+    register_features()
     register_default_caches()
     load_registered_features()
     register_actions_in_event_bus()
