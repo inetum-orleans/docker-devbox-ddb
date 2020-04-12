@@ -35,6 +35,13 @@ class GenerateCertAction(Action):
         """
         Generate CA certificate with CFSSL.
         """
+        certificate_path, private_key_path = writer.get_certs_path(domain,
+                                                                   config.data['certs.cfssl.writer'],
+                                                                   config.data['certs.destination'])
+
+        if os.path.exists(certificate_path) and os.path.exists(private_key_path):
+            return
+
         client_config = config.data.get('certs.cfssl.server')
 
         client = cfssl_client.CFSSL(**client_config)

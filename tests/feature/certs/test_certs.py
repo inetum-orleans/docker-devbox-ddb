@@ -62,3 +62,35 @@ class TestCertsFeature:
 
         assert os.path.exists(os.path.join(".certs", "testing.test.crt"))
         assert os.path.exists(os.path.join(".certs", "testing.test.key"))
+
+    def test_existing_does_nothing(self, project_loader, module_scoped_container_getter):
+        project_loader("existing")
+
+        features.register(CoreFeature())
+        features.register(CertsFeature())
+        load_registered_features()
+
+        cfssl_service = module_scoped_container_getter.get('cfssl')
+        config.data['certs.cfssl.server.host'] = get_docker_ip()
+        config.data['certs.cfssl.server.port'] = int(cfssl_service.network_info[0].host_port)
+
+        self.wait_cfssl_ready()
+
+        assert os.path.exists(os.path.join(".certs", "testing.test.crt"))
+        assert os.path.exists(os.path.join(".certs", "testing.test.key"))
+
+        with open(os.path.join(".certs", "testing.test.crt")) as crt_file:
+            crt = crt_file.read()
+
+        with open(os.path.join(".certs", "testing.test.key")) as key_file:
+            key = key_file.read()
+
+        action = GenerateCertAction()
+        action.execute(domain="testing.test")
+
+        with open(os.path.join(".certs", "testing.test.crt")) as crt_file:
+            assert crt == crt_file.read()
+
+        with open(os.path.join(".certs", "testing.test.key")) as key_file:
+            assert key == key_file.read()
+
