@@ -84,16 +84,21 @@ class FixuidDockerComposeAction(Action):
 
     @staticmethod
     def _load_image_attrs(image):
-        client = docker.from_env()
-        registry_data = client.images.get_registry_data(image)
+        registry_data_id_cache_key = "docker.image.name." + image + ".registry_data"
+        registry_data_id = global_cache().get(registry_data_id_cache_key)
+        if not registry_data_id:
+            client = docker.from_env()
+            registry_data = client.images.get_registry_data(image)
+            registry_data_id = registry_data.id
+            global_cache().set(registry_data_id_cache_key, registry_data_id)
 
-        cache_key = "docker.image." + registry_data.id + ".attrs"
-        image_attrs = global_cache().get(cache_key)
+        image_attrs_cache_key = "docker.image.id." + registry_data_id + ".attrs"
+        image_attrs = global_cache().get(image_attrs_cache_key)
 
         if not image_attrs:
             image = registry_data.pull()
             image_attrs = image.attrs
-            global_cache().set(cache_key, image_attrs)
+            global_cache().set(image_attrs_cache_key, image_attrs)
         return image_attrs
 
     @staticmethod
