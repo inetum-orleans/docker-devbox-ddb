@@ -51,7 +51,9 @@ def project_loader(data_dir: str, tmp_path_factory: TempPathFactory, request: Fi
         os.chdir(str(tmp_path))
         if before_load_config:
             before_load_config()
-        return load_config(str(tmp_path))
+        conf = load_config(str(tmp_path))
+        os.chdir(str(conf.paths.project_home))
+        return conf
 
     return load
 

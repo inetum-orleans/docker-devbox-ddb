@@ -31,6 +31,7 @@ from ddb.feature.jsonnet import JsonnetFeature
 from ddb.feature.plugins import PluginsFeature
 from ddb.feature.shell import ShellFeature
 from ddb.feature.symlinks import SymlinksFeature
+from ddb.feature.traefik import TraefikFeature
 from ddb.feature.ytt import YttFeature
 from ddb.phase import phases
 from ddb.registry import Registry, RegistryObject
@@ -54,6 +55,7 @@ def get_default_features():
         PluginsFeature(),
         ShellFeature(),
         SymlinksFeature(),
+        TraefikFeature(),
         YttFeature()
     )
 

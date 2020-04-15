@@ -38,6 +38,7 @@ entry_points = {
     #     'plugins = ddb.feature.plugins:PluginsFeature',
     #     'shell = ddb.feature.shell:ShellFeature',
     #     'symlinks = ddb.feature.symlinks:SymlinksFeature',
+    #     'traefik = ddb.feature.traefik:TraefikFeature',
     #     'ytt = ddb.feature.ytt:YttFeature'
     # ]
 }

@@ -3,8 +3,6 @@
 Writer module
 """
 
-from __future__ import print_function
-
 from os.path import normpath, expanduser, expandvars, join
 
 from .checksums import validate_checksum
@@ -16,6 +14,7 @@ def _write_file(path, binary, destination=None):
         path = join(normpath(expandvars(expanduser(destination))), path)
     with open(path, 'wb') as stream:
         stream.write(binary)
+    return path
 
 
 def get_certs_path(output, conf=None, destination=None):
@@ -66,9 +65,12 @@ def write_files(response, output, der, csr, conf=None, destination=None, append_
     if not destination:
         destination = conf.get('destination')
 
+    generated = {}
     if 'private_key' in response:
         private_key = response['private_key'].encode('ascii')
-        _write_file(filenames.get('private_key', '%s.key.pem') % output, private_key, destination=destination)
+        generated['private_key'] = \
+            _write_file(filenames.get('private_key', '%s.key.pem') % output, private_key, destination=destination)
+
     if 'certificate' in response:
         certificate = response['certificate'].encode('ascii')
         certificate_der = convert_pem_to_der('certificate', certificate)
@@ -84,31 +86,39 @@ def write_files(response, output, der, csr, conf=None, destination=None, append_
             certificate_der = convert_pem_to_der('certificate', certificate)
             should_verify_certificate_der = False
 
-        _write_file(filenames.get('certificate', '%s.pem') % output, certificate, destination=destination)
+        generated['certificate'] = \
+            _write_file(filenames.get('certificate', '%s.pem') % output, certificate, destination=destination)
     if csr and 'certificate_request' in response:
         certificate_request_der = convert_pem_to_der('certificate_request',
                                                      response['certificate_request'].encode('ascii'))
         if verify_checksum:
             validate_checksum('certificate_request', certificate_request_der,
                               response['sums']['certificate_request'], True)
-        _write_file(filenames.get('certificate_request', '%s.csr.pem') % output,
-                    response['certificate_request'].encode('ascii'),
-                    destination=destination)
+        generated['certificate_request'] = \
+            _write_file(filenames.get('certificate_request', '%s.csr.pem') % output,
+                        response['certificate_request'].encode('ascii'),
+                        destination=destination)
 
     if der:
         if 'certificate' in response:
-            _write_file(filenames.get('certificate_der', '%s.der') % output, certificate_der, destination=destination)
+            generated['certificate_der'] = \
+                _write_file(filenames.get('certificate_der', '%s.der') % output,
+                            certificate_der,
+                            destination=destination)
             if verify_checksum and should_verify_certificate_der:
                 with open(filenames.get('certificate_der', '%s.der') % output, 'rb') as der_file:
                     content = der_file.read()
                     validate_checksum('certificate', content, response['sums']['certificate'], True)
         if csr and 'certificate_request' in response:
-            _write_file(filenames.get('certificate_request_der', '%s.csr.der') % output, certificate_request_der,
-                        destination=destination)
+            generated['certificate_request_der'] = \
+                _write_file(filenames.get('certificate_request_der', '%s.csr.der') % output,
+                            certificate_request_der,
+                            destination=destination)
             if verify_checksum:
                 with open(filenames.get('certificate_request_der', '%s.csr.der') % output, 'rb') as der_file:
                     content = der_file.read()
                     validate_checksum('certificate_request', content, response['sums']['certificate_request'], True)
+    return generated
 
 
 def write_stdout(response, der, csr, append_ca_certificate, client=None):

@@ -10,8 +10,7 @@ def load_config(data_dir: str = None, name: str = None):
 
     paths = ConfigPaths(ddb_home=os.path.join(root_dir, 'ddb_home'), home=os.path.join(root_dir, 'home'), project_home=os.path.join(root_dir, 'project'))
 
-    paths = [path for path in paths if os.path.isdir(path)]
-    if not paths:
+    if not [path for path in paths if os.path.isdir(path)]:
         paths = ConfigPaths(ddb_home=None, home=None, project_home=root_dir)
 
     config.paths = paths

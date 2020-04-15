@@ -7,6 +7,7 @@ import cfssl as cfssl_client
 from .cfssl import checksums, writer
 from ...action import Action
 from ...config import config
+from ...event import bus
 
 
 class GenerateCertAction(Action):
@@ -39,30 +40,38 @@ class GenerateCertAction(Action):
                                                                    config.data['certs.cfssl.writer'],
                                                                    config.data['certs.destination'])
 
-        if os.path.exists(certificate_path) and os.path.exists(private_key_path):
-            return
+        if not os.path.exists(certificate_path) or not os.path.exists(private_key_path):
+            client_config = config.data.get('certs.cfssl.server')
 
-        client_config = config.data.get('certs.cfssl.server')
+            client = cfssl_client.CFSSL(**client_config)
 
-        client = cfssl_client.CFSSL(**client_config)
+            certificate_request = cfssl_client.CertificateRequest()
+            certificate_request.common_name = domain
+            certificate_request.hosts = (domain, "*.%s" % domain) if wildcard else domain
 
-        certificate_request = cfssl_client.CertificateRequest()
-        certificate_request.common_name = domain
-        certificate_request.hosts = (domain, "*.%s" % domain) if wildcard else domain
+            response = client.new_cert(certificate_request)
+            checksums.validate_checksums(response)
 
-        response = client.new_cert(certificate_request)
-        checksums.validate_checksums(response)
+            destination = config.data['certs.destination']
+            if not os.path.isdir(destination):
+                os.makedirs(destination)
 
-        destination = config.data['certs.destination']
-        if not os.path.isdir(destination):
-            os.makedirs(destination)
+            generated = writer.write_files(response,
+                                           domain,
+                                           None,
+                                           None,
+                                           config.data['certs.cfssl.writer'],
+                                           config.data['certs.destination'],
+                                           False,
+                                           client,
+                                           False)
 
-        writer.write_files(response,
-                           domain,
-                           None,
-                           None,
-                           config.data['certs.cfssl.writer'],
-                           config.data['certs.destination'],
-                           False,
-                           client,
-                           False)
+            for generated_file in generated.values():
+                bus.emit("file:generated", source=None, target=generated_file)
+
+            certificate_path, private_key_path = generated['private_key'], generated['certificate']
+            bus.emit("certs:generated", domain=domain, wildcard=wildcard,
+                     private_key=certificate_path, certificate=private_key_path)
+
+        bus.emit("certs:available", domain=domain, wildcard=wildcard,
+                 private_key=certificate_path, certificate=private_key_path)
