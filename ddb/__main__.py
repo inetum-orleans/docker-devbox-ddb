@@ -11,13 +11,15 @@ from toposort import toposort_flatten
 from ddb.action import actions
 from ddb.action.runnerfactory import action_event_binding_runner_factory
 from ddb.binary import binaries
-from ddb.cache import caches, _project_cache_name, ShelveCache, _global_cache_name, _requests_cache_name
+from ddb.cache import caches, _project_cache_name, ShelveCache, _global_cache_name, _requests_cache_name, \
+    _project_binary_cache_name
 from ddb.command import commands
 from ddb.command.command import execute_command
 from ddb.config import config
 from ddb.context import context
 from ddb.context.context import configure_context_logger
 from ddb.event import bus
+from ddb.exception import RestartWithArgs
 from ddb.feature import features, Feature
 from ddb.feature.certs import CertsFeature
 from ddb.feature.copy import CopyFeature
@@ -29,6 +31,7 @@ from ddb.feature.gitignore import GitignoreFeature
 from ddb.feature.jinja import JinjaFeature
 from ddb.feature.jsonnet import JsonnetFeature
 from ddb.feature.plugins import PluginsFeature
+from ddb.feature.run import RunFeature
 from ddb.feature.shell import ShellFeature
 from ddb.feature.symlinks import SymlinksFeature
 from ddb.feature.traefik import TraefikFeature
@@ -53,6 +56,7 @@ def get_default_features():
         JinjaFeature(),
         JsonnetFeature(),
         PluginsFeature(),
+        RunFeature(),
         ShellFeature(),
         SymlinksFeature(),
         TraefikFeature(),
@@ -125,10 +129,17 @@ def register_default_caches():
     """
     Register default caches.
     """
-    caches.register(ShelveCache(slugify(config.paths.project_home, regex_pattern=r'[^-a-z0-9_\.]+')),
-                    _project_cache_name)
-    caches.register(ShelveCache("__global__"), _global_cache_name)
+    caches.register(
+        ShelveCache(slugify(_project_cache_name + '.' + config.paths.project_home,
+                            regex_pattern=r'[^-a-z0-9_\.]+')),
+        _project_cache_name)
+    caches.register(ShelveCache(_global_cache_name), _global_cache_name)
     caches.register(ShelveCache(_requests_cache_name), _requests_cache_name)
+    caches.register(
+        ShelveCache(
+            slugify(_project_binary_cache_name + '.' + config.paths.project_home,
+                    regex_pattern=r'[^-a-z0-9_\.]+')), _project_binary_cache_name)
+    binaries.set_cache(caches.get(_project_binary_cache_name))
 
 
 def register_objects(features_list: Iterable[Feature],
@@ -191,7 +202,7 @@ def handle_command_line(args: Optional[Sequence[str]] = None):
         command.configure_parser(parser)
         command_parsers[command.name] = parser
 
-    parsed_args = opts.parse_args(args)
+    parsed_args, unknown_args = opts.parse_known_args(args)
 
     log_level = 'INFO'
     if parsed_args.very_verbose:
@@ -206,7 +217,12 @@ def handle_command_line(args: Optional[Sequence[str]] = None):
     if parsed_args.command:
         command = commands.get(parsed_args.command)
         config.args = parsed_args
-        execute_command(command)
+        config.unknown_args = unknown_args
+        try:
+            execute_command(command)
+        except RestartWithArgs as exc:
+            config.args = exc.restart_args
+            execute_command(command)
     else:
         opts.print_help()
 
@@ -244,8 +260,8 @@ def main(args: Optional[Sequence[str]] = None):
     Load all features and handle command line
     """
     config.load()
-    register_features()
     register_default_caches()
+    register_features()
     load_registered_features()
     register_actions_in_event_bus()
     handle_command_line(args)

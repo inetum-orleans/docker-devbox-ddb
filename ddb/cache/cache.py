@@ -17,9 +17,21 @@ class Cache(ABC):
         """
 
     @abstractmethod
+    def keys(self):
+        """
+        Get all cache keys
+        """
+
+    @abstractmethod
     def set(self, key: str, data):
         """
         Set a cache entry value
+        """
+
+    @abstractmethod
+    def pop(self, key: str):
+        """
+        Remove a cache entry
         """
 
     @abstractmethod

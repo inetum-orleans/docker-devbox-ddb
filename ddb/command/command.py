@@ -6,6 +6,7 @@ from typing import Iterable, Union, Optional
 from ..cache import caches
 from ..config import config
 from ..context import context
+from ..exception import RestartWithArgs
 from ..phase import phases, Phase
 from ..phase.phase import execute_phase
 from ..registry import RegistryObject, DefaultRegistryObject
@@ -66,6 +67,8 @@ class DefaultCommand(DefaultRegistryObject, Command):
         if clear_cache:
             for cache in caches.all():
                 cache.clear()
+            config.args.clear_cache = False
+            raise RestartWithArgs(config.args)
 
     def configure_parser(self, parser: ArgumentParser):
         """

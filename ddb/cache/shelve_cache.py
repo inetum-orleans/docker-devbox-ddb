@@ -28,8 +28,14 @@ class ShelveCache(Cache):
     def get(self, key: str, default=None):
         return self._shelf.get(key, default)
 
+    def keys(self):
+        return self._shelf.keys()
+
     def set(self, key: str, data):
         self._shelf[key] = data
+
+    def pop(self, key: str):
+        return self._shelf.pop(key)
 
     def clear(self):
         self._shelf.clear()

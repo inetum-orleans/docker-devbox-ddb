@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
+import hashlib
 import os
+import pathlib
 import re
 from typing import Iterable, ClassVar
 
-import hashlib
 import netifaces
-import pathlib
 from dotty_dict import Dotty
 
-from .actions import EmitDockerComposeConfigAction
+from .actions import EmitDockerComposeConfigAction, DockerComposeBinaryAction
 from .schema import DockerSchema
 from ..feature import Feature, FeatureConfigurationAutoConfigureError
 from ..schema import FeatureSchema
@@ -37,6 +37,7 @@ class DockerFeature(Feature):
     def actions(self) -> Iterable[Action]:
         return (
             EmitDockerComposeConfigAction(),
+            DockerComposeBinaryAction()
         )
 
     def _configure_defaults(self, feature_config: Dotty):

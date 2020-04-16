@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 import inspect
 from abc import abstractmethod, ABC
-from typing import TypeVar, Generic, Iterable, ClassVar
+from typing import TypeVar, Generic, Iterable, ClassVar, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ddb.cache import Cache  # pylint:disable=cyclic-import
 
 
 class RegistryObject(ABC):
@@ -55,6 +58,16 @@ class Registry(Generic[T]):
         self._type_name = type_name
         self._objects = []
         self._objects_dict = {}
+        self._cache = None
+
+    def set_cache(self, cache: 'Cache'):
+        """
+        Set a cache provider, and register cached entries into registry.
+        """
+        self._cache = cache
+        if self._cache:
+            for key in self._cache.keys():
+                self.register(self._cache.get(key), key)
 
     def _default_name(self, obj: T):  # pylint:disable=no-self-use
         """
@@ -81,6 +94,31 @@ class Registry(Generic[T]):
         self._objects_dict[name] = obj
         self._objects.append(obj)
 
+        if self._cache and self._cache.get(name) != obj:
+            self._cache.set(name, obj)
+            self._cache.flush()
+
+        return name
+
+    def has(self, name: str) -> bool:
+        """
+        Check if name is registered.
+        """
+        return name in self._objects_dict
+
+    def unregister(self, name):
+        """
+        Unregister an object instance
+        """
+        if name not in self._objects_dict:
+            raise ValueError(self._type_name + " name \"" + name + "\" is not registered")
+
+        item = self._objects_dict.pop(name)
+        self._objects.remove(item)
+        if self._cache:
+            self._cache.pop(name)
+        return item
+
     def get(self, name: str) -> T:
         """
         Get an object instance from it's unique name.
@@ -101,3 +139,5 @@ class Registry(Generic[T]):
         """
         self._objects_dict.clear()
         self._objects.clear()
+        if self._cache:
+            self._cache.clear()

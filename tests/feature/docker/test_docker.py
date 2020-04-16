@@ -1,4 +1,5 @@
-from ddb.__main__ import load_registered_features
+from ddb.__main__ import load_registered_features, register_actions_in_event_bus
+from ddb.binary import binaries
 from ddb.event import bus
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
@@ -52,7 +53,7 @@ class TestDockerFeature:
 
         custom_event_listeners = []
 
-        def listener(data):
+        def listener(data, docker_compose_service):
             custom_event_listeners.append(data)
 
         bus.on("some:test", listener)
@@ -71,7 +72,7 @@ class TestDockerFeature:
 
         custom_event_listeners = []
 
-        def listener(data):
+        def listener(data, docker_compose_service):
             custom_event_listeners.append(data)
 
         bus.on("some:test", listener)
@@ -104,11 +105,26 @@ class TestDockerFeature:
         action.execute()
 
         assert len(some_events) == 3
-        assert {"args": ("emit-one-arg",), "kwargs": {}} in some_events
-        assert {"args": ("emit-one-arg-2",), "kwargs": {}} in some_events
+        assert {"args": ("emit-one-arg",), "kwargs": {"docker_compose_service": "docker"}} in some_events
+        assert {"args": ("emit-one-arg-2",), "kwargs": {"docker_compose_service": "docker2"}} in some_events
         assert {"args": ("emit-some-arg",),
-                "kwargs": {'image': 'ubuntu', 'kw1': 'emit-one-kwarg', 'kw2': 7, 'version': '3.7'}} in some_events
+                "kwargs": {'image': 'ubuntu', 'kw1': 'emit-one-kwarg', 'kw2': 7, 'version': '3.7',
+                           "docker_compose_service": "docker"}} in some_events
 
         assert len(another_events) == 2
-        assert {"args": ("emit-another-arg",), "kwargs": {}} in another_events
-        assert {"args": (), "kwargs": {"kw1": "emit-another-kwarg"}} in another_events
+        assert {"args": ("emit-another-arg",), "kwargs": {"docker_compose_service": "docker"}} in another_events
+        assert {"args": (), "kwargs": {"kw1": "emit-another-kwarg", "docker_compose_service": "docker2"}} in another_events
+
+    def test_binary_workdir(self, project_loader):
+        project_loader("binary-workdir")
+
+        features.register(DockerFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
+
+        action = EmitDockerComposeConfigAction()
+        action.execute()
+
+        assert len(list(binaries.all())) == 2
+        assert binaries.has("npm")
+        assert binaries.has("node")

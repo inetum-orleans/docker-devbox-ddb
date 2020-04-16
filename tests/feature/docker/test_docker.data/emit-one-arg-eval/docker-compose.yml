@@ -3,4 +3,4 @@ services:
   docker:
     image: ubuntu
     labels:
-      ddb.event.bus.emit.some:test: eval(1 + 2)
+      ddb.emit.some:test: eval(1 + 2)

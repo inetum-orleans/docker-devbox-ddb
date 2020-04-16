@@ -8,7 +8,9 @@ import simpleeval
 import yaml
 from dotty_dict import Dotty
 
+from .binaries import DockerBinary
 from ...action import Action
+from ...binary import binaries
 from ...config import config
 from ...event import bus
 
@@ -44,7 +46,7 @@ class EmitDockerComposeConfigAction(Action):
 
     def __init__(self):
         super().__init__()
-        self.key_re = re.compile(r"^\s*ddb\.event\.bus\.emit\.(.+?)(?:\[.*\])?\s*$")
+        self.key_re = re.compile(r"^\s*ddb\.emit\.(.+?)(?:\[(.+?)\])?(?:\((.+?)\))?\s*$")
         self.eval_re = re.compile(r"^\s*eval\((.*)\)\s*$")
 
     @property
@@ -74,7 +76,7 @@ class EmitDockerComposeConfigAction(Action):
         if not services:
             return
 
-        for service in services.values():
+        for service_name, service in services.items():
             labels = service.get('labels')
             if not labels:
                 continue
@@ -82,37 +84,90 @@ class EmitDockerComposeConfigAction(Action):
             if not isinstance(labels, dict):
                 labels = {label.split("=", 1) for label in labels}
 
-            for key, value in labels.items():
-                match = self.key_re.match(key)
-                if not match:
-                    continue
+            event_data = self._build_event_data(docker_compose_config, labels, service, service_name)
 
-                event_name = match.group(1)
-                names = {"service": service, "config": docker_compose_config}
-                self.emit_event(event_name, value, names)
+            for (event_name, event_parsed_values) in event_data.items():
+                for _, (args, kwargs) in event_parsed_values.items():
+                    bus.emit(event_name, *args, **kwargs)
 
-    def emit_event(self, event_name, value, names=None):
-        """
-        Emit an event from raw value.
-        """
-        values = map(str.strip, value.split("|"))
+    def _build_event_data(self, docker_compose_config, labels, service, service_name):  # pylint:disable=too-many-locals
+        parsed_values = {}
+        for key, value in labels.items():
+            match = self.key_re.match(key)
+            if not match:
+                continue
+
+            event_name = match.group(1)
+            event_id = match.group(2)
+            property_name = match.group(3)
+
+            args, kwargs = self._parse_value(value,
+                                             {"service": service, "config": docker_compose_config},
+                                             property_name)
+            kwargs["docker_compose_service"] = service_name
+
+            event_parsed_values = parsed_values.get(event_name)
+            if not event_parsed_values:
+                event_parsed_values = dict()
+                parsed_values[event_name] = event_parsed_values
+
+            if event_id in event_parsed_values:
+                event_args, event_kwargs = event_parsed_values[event_id]
+                event_args.extend(args)
+                event_kwargs.update(kwargs)
+            else:
+                event_parsed_values[event_id] = args, kwargs
+        return parsed_values
+
+    def _parse_value(self, value, context, property_name=None):
+        values = map(str.strip, value.split("|")) if not property_name else [value]
 
         args = []
         kwargs = {}
 
         for expression in values:
-            if "=" in expression:
+            if not property_name and "=" in expression:
                 var, val = expression.split("=", 1)
             else:
-                var, val = None, expression
+                var, val = property_name, expression
 
             eval_match = self.eval_re.match(val)
             if eval_match:
-                val = simpleeval.simple_eval(eval_match.group(1), names=names)
+                val = simpleeval.simple_eval(eval_match.group(1), names=context)
 
             if var:
                 kwargs[var] = val
             else:
                 args.append(val)
 
-        bus.emit(event_name, *args, **kwargs)
+        return args, kwargs
+
+
+class DockerComposeBinaryAction(Action):
+    """
+    Convert ddb.event.bus.emit.docker:binary events to binary available from shell.
+    """
+
+    @property
+    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
+        return "docker:binary"
+
+    @property
+    def name(self) -> str:
+        return "docker:docker-compose-binary"
+
+    @staticmethod
+    def execute(name=None, workdir=None, options=None, args=None, docker_compose_service=None):
+        """
+        Execute action
+        """
+        if name is None and docker_compose_service:
+            name = docker_compose_service
+        if name is None:
+            raise ValueError("name should be defined")
+
+        if binaries.has(name):
+            binaries.unregister(name)
+
+        binary = DockerBinary(name, docker_compose_service, workdir, options, args)
+        binaries.register(binary)

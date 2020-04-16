@@ -1,0 +1,18 @@
+version: '3.7'
+services:
+  node:
+    image: node
+    init: true
+    labels:
+      ddb.emit.docker:binary(name): node
+      ddb.emit.docker:binary(workdir): /app
+      ddb.emit.docker:binary[npm](name): npm
+      ddb.emit.docker:binary[npm](args): npm
+      ddb.emit.docker:binary[npm](workdir): /app
+    restart: 'no'
+    user: 1000:1000
+    volumes:
+      - .:/app
+      - node-cache:/home/node/.cache
+volumes:
+  node-cache:

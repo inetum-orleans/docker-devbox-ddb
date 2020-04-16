@@ -24,7 +24,7 @@ class GenerateCertAction(Action):
         return "certs:generate"
 
     @staticmethod
-    def execute(domain, wildcard=True):
+    def execute(domain, *args, wildcard=True, **kwargs):  # pylint:disable=unused-argument
         """
         Execute action
         """

@@ -4,7 +4,7 @@ from argparse import Namespace
 from collections import namedtuple
 from os.path import exists
 from pathlib import Path
-from typing import Callable, Any, Union
+from typing import Callable, Any, Union, Iterable
 
 import yaml
 from deepmerge import always_merger
@@ -14,11 +14,36 @@ from marshmallow import Schema
 ConfigPaths = namedtuple('ConfigPaths', ['ddb_home', 'home', 'project_home'])
 
 
-def get_default_config_paths(env_prefix) -> ConfigPaths:
+def configuration_file_exists(path: str, filenames: Iterable[str], extensions: Iterable[str]):
+    """
+    Check if configuration file exists for given path and possible filename/extensions
+    """
+    for basename in filenames:
+        for ext in extensions:
+            file = os.path.join(path, basename + '.' + ext)
+            if exists(file):
+                return True
+    return False
+
+
+def get_default_config_paths(env_prefix, filenames, extensions) -> ConfigPaths:
     """
     Get configuration paths
     """
-    project_home = os.environ.get(env_prefix + '_PROJECT_HOME', os.getcwd())
+    if os.environ.get(env_prefix + '_PROJECT_HOME'):
+        project_home = os.environ.get(env_prefix + '_PROJECT_HOME')
+    else:
+        project_home_candidate = os.getcwd()
+        while not configuration_file_exists(project_home_candidate, filenames, extensions):
+            project_home_candidate_parent = str(Path(project_home_candidate).parent)
+            if project_home_candidate_parent == project_home_candidate:
+                project_home_candidate = os.getcwd()
+                break
+            project_home_candidate = project_home_candidate_parent
+        project_home = project_home_candidate
+
+        # TODO: Display warning if project_home still match os.getcwd() and this path has no configuration file.
+
     home = os.environ.get(env_prefix + '_HOME', os.path.join(str(Path.home()), '.docker-devbox'))
     ddb_home = os.environ.get(env_prefix + '_DDB_HOME', os.path.join(home, 'ddb'))
 
@@ -41,8 +66,9 @@ class Config:  # pylint:disable=too-many-instance-attributes
         self.filenames = filenames
         self.extensions = extensions
         self.data = dotty()
-        self.paths = paths if paths else get_default_config_paths(env_prefix)
-        self.args = Namespace()  # type: Namespace
+        self.paths = paths if paths else get_default_config_paths(env_prefix, filenames, extensions)
+        self.args = Namespace()
+        self.unknown_args = []
 
     def reset(self, *args, **kwargs):
         """
