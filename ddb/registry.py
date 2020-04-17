@@ -94,7 +94,7 @@ class Registry(Generic[T]):
         self._objects_dict[name] = obj
         self._objects.append(obj)
 
-        if self._cache and self._cache.get(name) != obj:
+        if self._cache and (name not in self._cache or self._cache.get(name) != obj):
             self._cache.set(name, obj)
             self._cache.flush()
 
@@ -115,7 +115,7 @@ class Registry(Generic[T]):
 
         item = self._objects_dict.pop(name)
         self._objects.remove(item)
-        if self._cache:
+        if self._cache and name in self._cache:
             self._cache.pop(name)
         return item
 

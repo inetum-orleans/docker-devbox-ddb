@@ -23,6 +23,7 @@ def has_same_content(filename1: str, filename2: str) -> bool:
 class FileWalker:
     """
     Walk files inside project directory.
+    TODO: Add a excludes_from_gitignore option to automatically exclude files based on gitignore behavior.
     """
 
     # pylint:disable=too-many-arguments

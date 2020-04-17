@@ -39,3 +39,6 @@ class ShelveCache(Cache):
 
     def clear(self):
         self._shelf.clear()
+
+    def __contains__(self, key):
+        return self._shelf.__contains__(key)

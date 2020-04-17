@@ -49,3 +49,8 @@ class Cache(ABC):
         """
         Synchronize the cache with persistent system.
         """
+
+    def __contains__(self, key):
+        """
+        Check if key exists.
+        """
