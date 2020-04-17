@@ -78,7 +78,6 @@ class TestSymlinksAction:
         assert os.readlink('test2') == 'test2.prod'
         assert os.path.exists('test2')
 
-
         assert not os.path.islink('test3')
 
     def test_project_4_subdirectory(self, project_loader):

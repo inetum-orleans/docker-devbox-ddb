@@ -5,14 +5,15 @@ from typing import Union, Iterable, Callable
 import zgitignore
 
 from ddb.action import Action
+from ddb.config import config
 
 
 def find_gitignore(target: str):
     """
-    Find the nearest writable .gitignore file, walking directories up to cwd.
+    Find the nearest writable .gitignore file, walking directories up to project home.
     """
     dirname = target
-    while os.path.abspath(dirname) != os.path.abspath(os.getcwd()):
+    while os.path.abspath(dirname) != os.path.abspath(config.paths.project_home):
         dirname = os.path.dirname(dirname)
         gitignore = os.path.join(dirname, ".gitignore")
         if os.path.exists(gitignore) and os.access(gitignore, os.W_OK):

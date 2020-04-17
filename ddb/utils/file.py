@@ -7,6 +7,7 @@ from typing import List, Union, Optional, Tuple
 
 from braceexpand import braceexpand
 
+from ddb.config import config
 from ddb.context import context
 
 
@@ -29,7 +30,7 @@ class FileWalker:
                  includes: Optional[List[str]],
                  excludes: Optional[List[str]],
                  suffixes: Optional[List[str]],
-                 rootpath: Union[Path, str] = Path('.'),
+                 rootpath: Optional[Union[Path, str]] = None,
                  recursive=True,
                  skip_processed_sources=True,
                  skip_processed_targets=True):
@@ -41,6 +42,8 @@ class FileWalker:
         self.includes = list(map(lambda x: re.compile(fnmatch.translate(x)), includes))
         self.excludes = list(map(lambda x: re.compile(fnmatch.translate(x)), excludes))
         self.suffixes = suffixes if suffixes is not None else []
+        if not rootpath:
+            rootpath = os.path.relpath(config.paths.project_home)
         self.rootpath = rootpath if isinstance(rootpath, Path) else Path(rootpath)
         self.recursive = recursive
         self.skip_processed_sources = skip_processed_sources

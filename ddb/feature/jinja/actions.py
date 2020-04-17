@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os
+import posixpath
 from typing import Union, Iterable, Callable
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
@@ -25,6 +25,7 @@ class JinjaAction(InitializableAction):
     """
     Render jinja templates based on filename suffixes.
     """
+
     def __init__(self):
         super().__init__()
         self.template_finder = None  # type: TemplateFinder
@@ -74,18 +75,13 @@ class JinjaAction(InitializableAction):
         if target:
             bus.emit("jinja:render", template=template, target=target)
 
-    @staticmethod
-    def _normpath(path):
-        normpath = os.path.normpath(path)
-        if os.name == "nt":
-            normpath = normpath.replace("\\", "/")
-        return normpath
-
     def render_jinja(self, template: str, target: str):
         """
         Render jinja template
         """
-        jinja = self.env.get_template(JinjaAction._normpath(template))
+        template_name = posixpath.relpath(posixpath.normpath(template),
+                                          posixpath.normpath(str(self.template_finder.rootpath)))
+        jinja = self.env.get_template(template_name)
 
         with open(target, 'w') as target_file:
             target_file.write(jinja.render(**self.context))

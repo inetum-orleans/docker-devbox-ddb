@@ -153,8 +153,9 @@ class ActivateAction(Action):
 
         path_directories = config.data.get('shell.path.directories')
         if path_directories:
-            path_additions = map(lambda path_addition: os.path.normpath(os.path.join(os.getcwd(), path_addition)),
-                                 path_directories)
+            path_additions = map(
+                lambda path_addition: os.path.normpath(os.path.join(config.paths.project_home, path_addition)),
+                path_directories)
             add_to_system_path(self.shell, path_additions)
 
         self.shell.footer()
