@@ -37,25 +37,8 @@ class CoreFeature(Feature):
     @property
     def phases(self) -> Iterable[Phase]:
         return (
-            DefaultPhase("pre-init", "Initialize project (pre)", run_once=True),
             DefaultPhase("init", "Initialize project", run_once=True),
-            DefaultPhase("post-init", "Initialize project (post)", run_once=True),
-
-            DefaultPhase("pre-configure", "Configure the environment (pre)"),
             DefaultPhase("configure", "Configure the environment"),
-            DefaultPhase("post-configure", "Configure the environment (post)"),
-
-            DefaultPhase("pre-create", "Create services (pre)"),
-            DefaultPhase("create", "Create services"),
-            DefaultPhase("post-create", "Create services (post)"),
-
-            DefaultPhase("start", "Start services",
-                         lambda parser: parser.add_argument("--data", action="store_true",
-                                                            help="Load data into services")),
-            DefaultPhase("stop", "Stop services"),
-            DefaultPhase("down", "Destroy services",
-                         lambda parser: parser.add_argument("--purge", action="store_true",
-                                                            help="Purge data from services")),
             DefaultPhase("info", "List enabled features and effective configuration"),
         )
 
@@ -63,40 +46,14 @@ class CoreFeature(Feature):
     def commands(self) -> Iterable[Command]:
         return (
             LifecycleCommand("init", "Initialize the environment",
-                             "pre-init", "init", "post-init"
-                             ),
+                             "init"),
 
             LifecycleCommand("configure", "Configure the environment",
-                             "pre-configure", "configure", "post-configure",
-                             parent="init"
-                             ),
-
-            LifecycleCommand("create", "Configure the environment and create services",
-                             "pre-create", "create", "post-create",
-                             parent="configure"
-                             ),
-
-            LifecycleCommand("up", "Configure the environment, create and start services",
-                             "start",
-                             parent="create"
-                             ),
-
-            LifecycleCommand("start", "Start services",
-                             "start",
-                             ),
-
-            LifecycleCommand("stop", "Stop services",
-                             "stop",
-                             ),
-
-            LifecycleCommand("down", "Stop and destroy services",
-                             "down",
-                             parent="stop"
-                             ),
+                             "configure",
+                             parent="init"),
 
             LifecycleCommand("info", "List enabled features and effective configuration",
-                             "info"
-                             ),
+                             "info"),
         )
 
     def _configure_defaults(self, feature_config: Dotty):

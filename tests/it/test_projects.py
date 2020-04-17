@@ -21,6 +21,7 @@ class TestSymfonyVuejs:
 
         assert os.path.exists(os.path.join(".docker", "db", "Dockerfile"))
         assert os.path.exists(os.path.join(".docker", "php", "Dockerfile"))
+        assert os.path.exists(os.path.join(".docker", "php", "fixuid.tar.gz"))
         with open(os.path.join(".docker", "php", "Dockerfile"), "r") as dockerfile:
             data = dockerfile.read()
             assert "COPY .ca-certificates/* /usr/local/share/ca-certificates/" in data

@@ -46,25 +46,41 @@ class EmitDockerComposeConfigAction(Action):
 
     def __init__(self):
         super().__init__()
+        self._executed = False
         self.key_re = re.compile(r"^\s*ddb\.emit\.(.+?)(?:\[(.+?)\])?(?:\((.+?)\))?\s*$")
         self.eval_re = re.compile(r"^\s*eval\((.*)\)\s*$")
 
     @property
     def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
-        return "phase:post-configure"
+        return (
+            "phase:configure",
+            ("file:generated", self.on_file_generated)
+        )
 
     @property
     def name(self) -> str:
         return "docker:emit-docker-compose-config"
+
+    def on_file_generated(self, source: str, target: str):  # pylint:disable=unused-argument
+        """
+        Execute action when docker-compose.yml is generated.
+        """
+        if target == "docker-compose.yml":
+            self.execute()
 
     def execute(self):
         """
         Execute action
         """
 
+        if self._executed:
+            return
+
         # TODO: Add support for custom docker-compose -f option (custom filename and multiple files)
         if not os.path.exists("docker-compose.yml"):
             return
+
+        self._executed = True
 
         yaml_output = run_docker_compose("config")
         parsed_config = yaml.load(yaml_output, yaml.SafeLoader)

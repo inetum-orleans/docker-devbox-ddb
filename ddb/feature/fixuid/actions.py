@@ -74,9 +74,15 @@ class FixuidDockerComposeAction(Action):
     build context
     """
 
+    def __init__(self):
+        self.docker_compose_config = dict()
+
     @property
     def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
-        return "docker:docker-compose-config"
+        return (
+            "docker:docker-compose-config",
+            ("file:generated", self.on_file_generated)
+        )
 
     @property
     def name(self) -> str:
@@ -171,12 +177,28 @@ class FixuidDockerComposeAction(Action):
         """
         Execute action
         """
-        services = []
+        self.docker_compose_config = docker_compose_config
 
-        if "services" not in docker_compose_config:
+        for service in self.fixuid_services:
+            self._apply_fixuid(service)
+
+    def on_file_generated(self, source: str, target: str):  # pylint:disable=unused-argument
+        """
+        Apply fixuid on generated Dockerfiles.
+        """
+        for service in self.fixuid_services:
+            if os.path.join(service.context, service.dockerfile) == os.path.abspath(target):
+                self._apply_fixuid(service)
+
+    @property
+    def fixuid_services(self) -> Iterable[BuildServiceDef]:
+        """
+        Services where fixuid.tar.gz is available in build context.
+        """
+        if "services" not in self.docker_compose_config:
             return
 
-        for _, service in docker_compose_config.get("services").items():
+        for _, service in self.docker_compose_config.get("services").items():
             if "build" not in service.keys():
                 continue
 
@@ -191,10 +213,7 @@ class FixuidDockerComposeAction(Action):
                 continue
 
             dockerfile = Dotty(service).get("build.dockerfile", "Dockerfile")
-            services.append(BuildServiceDef(context, dockerfile))
-
-        for service in services:
-            self._apply_fixuid(service)
+            yield BuildServiceDef(context, dockerfile)
 
     @staticmethod
     def _sanitize_entrypoint(entrypoint):
