@@ -41,12 +41,21 @@ class ReverseProxySchema(Schema):
     network_names = fields.Dict(required=True, default={"reverse-proxy": "reverse-proxy"})
 
 
+class DebugSchema(Schema):
+    """
+    Debug schema
+    """
+    disabled = fields.Boolean(required=False, default=None)  # default is set in feature _configure_defaults
+    host = fields.String(required=True, default=None)  # default is set in feature _configure_defaults
+
+
 class DockerSchema(FeatureSchema):
     """
     Docker schema.
     """
     user = fields.Nested(UserSchema(), required=True, default=UserSchema())
     ip = fields.String(required=True, default=None)  # default is set in feature _configure_defaults
+    debug = fields.Nested(DebugSchema(), default=DebugSchema())
     restart_policy = fields.String(required=True, default="no")
     port_prefix = fields.Integer(required=False)  # default is set in feature _configure_defaults
     registry = fields.Nested(RegistrySchema(), required=True, default=RegistrySchema())

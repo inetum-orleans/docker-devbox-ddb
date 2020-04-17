@@ -71,9 +71,6 @@ class CoreFeature(Feature):
                 feature_config.get('env.current') not in feature_config['env.available']:
             raise FeatureConfigurationAutoConfigureError(self, 'env.current')
 
-        if feature_config.get('debug.disabled') is None:
-            feature_config['debug.disabled'] = feature_config['env.current'] != feature_config['env.available'][-1]
-
         if not feature_config.get('path.project_home') and config.paths.project_home:
             feature_config['path.project_home'] = config.paths.project_home
 

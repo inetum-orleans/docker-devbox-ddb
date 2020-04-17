@@ -256,6 +256,8 @@ class TestJsonnetAction:
                 expected_data = expected_data.replace("%ddb.path.project%", os.getcwd())
             expected_data = expected_data.replace("%uid%", str(config.data.get('docker.user.uid')))
             expected_data = expected_data.replace("%gid%", str(config.data.get('docker.user.gid')))
+            expected_data = expected_data.replace("%docker.debug.host%", str(config.data.get('docker.debug.host')))
+
             expected = yaml.load(expected_data, yaml.SafeLoader)
 
         assert rendered == expected

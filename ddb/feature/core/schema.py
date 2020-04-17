@@ -38,14 +38,6 @@ class ProjectSchema(Schema):
     name = fields.String(required=True, default=None)  # default is set in feature _configure_defaults
 
 
-class DebugSchema(Schema):
-    """
-    Debug schema
-    """
-    disabled = fields.Boolean(required=False, default=None)  # default is set in feature _configure_defaults
-    host = fields.String(required=True, default="127.0.0.1")
-
-
 class CoreFeatureSchema(FeatureSchema):
     """
     Core feature schema.
@@ -53,6 +45,5 @@ class CoreFeatureSchema(FeatureSchema):
     env = fields.Nested(EnvSchema(), default=EnvSchema())
     domain = fields.Nested(DomainSchema(), default=DomainSchema())
     project = fields.Nested(ProjectSchema(), default=ProjectSchema())
-    debug = fields.Nested(DebugSchema(), default=DebugSchema())
     os = fields.String(required=True, default=os.name)
     path = fields.Nested(PathSchema(), defalut=PathSchema())

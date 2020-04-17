@@ -43,6 +43,7 @@ class DockerFeature(Feature):
     def _configure_defaults(self, feature_config: Dotty):
         self._configure_defaults_user(feature_config)
         self._configure_defaults_ip(feature_config)
+        self._configure_defaults_debug(feature_config)
         self._configure_defaults_path_mapping(feature_config)
         self._configure_defaults_port_prefix(feature_config)
         self._configure_defaults_compose_project_name(feature_config)
@@ -90,6 +91,18 @@ class DockerFeature(Feature):
                                                              "from network interface configuration: " + interface)
 
         feature_config['ip'] = ip_address
+
+    @staticmethod
+    def _configure_defaults_debug(feature_config):
+        if feature_config.get('debug.host') is None:
+            feature_config['debug.host'] = feature_config.get('ip')
+
+        if feature_config.get('debug.disabled') is None:
+            if 'core.env.current' in config.data and 'core.env.available' in config.data:
+                feature_config['debug.disabled'] = config.data['core.env.current'] != \
+                                                   config.data['core.env.available'][-1]
+            else:
+                feature_config['debug.disabled'] = False
 
     @staticmethod
     def _configure_defaults_path_mapping(feature_config):

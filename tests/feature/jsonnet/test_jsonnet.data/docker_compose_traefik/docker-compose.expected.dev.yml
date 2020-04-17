@@ -122,7 +122,7 @@ services:
       context: %ddb.path.project%/.docker/php
     environment:
       PHP_IDE_CONFIG: serverName=gli-biometrie
-      XDEBUG_CONFIG: remote_enable=on remote_autostart=off idekey=gli-biometrie remote_host=127.0.0.1
+      XDEBUG_CONFIG: remote_enable=on remote_autostart=off idekey=gli-biometrie remote_host=%docker.debug.host%
     image: gfiorleans.azurecr.io/gli-biometrie/php
     init: true
     restart: "no"
