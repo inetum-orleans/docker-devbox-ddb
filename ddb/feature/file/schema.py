@@ -11,4 +11,4 @@ class FileSchema(FeatureSchema):
     suffixes = fields.List(fields.String())
     extensions = fields.List(fields.String())
     includes = fields.List(fields.String())
-    excludes = fields.List(fields.String(), default=["**/_*", "**/node_modules", "**/vendor"])
+    excludes = fields.List(fields.String(), default=["**/_*", "**/.git", "**/node_modules", "**/vendor"])
