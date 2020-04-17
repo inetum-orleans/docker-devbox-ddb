@@ -187,3 +187,4 @@ class DockerComposeBinaryAction(Action):
 
         binary = DockerBinary(name, docker_compose_service, workdir, options, args)
         binaries.register(binary)
+        bus.emit("binary:registered", binary=binary)

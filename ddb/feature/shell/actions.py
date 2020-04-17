@@ -9,7 +9,9 @@ from dictdiffer import diff
 
 from .integrations import ShellIntegration
 from ...action import Action
+from ...binary import Binary
 from ...config import config
+from ...event import bus
 
 _env_environ_backup = config.env_prefix + "_SHELL_ENVIRON_BACKUP"
 
@@ -56,17 +58,52 @@ def apply_diff_to_shell(shell: ShellIntegration, source_environment: dict, targe
                 shell.set_environment_variable(key, value)
 
 
-def add_to_system_path(shell: ShellIntegration, path: str):
+def add_to_system_path(shell: ShellIntegration, paths: Iterable[str]):
     """
     Add given path to system PATH environment variable
     """
     system_path = os.environ.get('PATH', '')
-    if config.data.get('shell.path.prepend'):
-        system_path = path + os.pathsep + system_path
-    else:
-        system_path = system_path + os.pathsep + path
+    for path in paths:
+        if config.data.get('shell.path.prepend'):
+            system_path = path + os.pathsep + system_path
+        else:
+            system_path = system_path + os.pathsep + path
 
     shell.set_environment_variable('PATH', system_path)
+
+
+class CreateBinaryShim(Action):
+    """
+    Create binary shim for each generated binary
+    """
+
+    def __init__(self, shell: ShellIntegration):
+        super().__init__()
+        self.shell = shell
+
+    @property
+    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
+        return "binary:registered"
+
+    @property
+    def name(self) -> str:
+        return "shell:" + self.shell.name + ":create-binary-shim"
+
+    @property
+    def description(self) -> str:
+        return super().description + " for " + self.shell.description
+
+    @property
+    def disabled(self) -> bool:
+        return config.data.get('shell.shell') != self.shell.name
+
+    def execute(self, binary: Binary):
+        """
+        Execute action
+        """
+        directories = config.data.get('shell.path.directories')
+        shim = self.shell.create_binary_shim(directories[0], binary)
+        bus.emit("file:generated", source=None, target=shim)
 
 
 class ActivateAction(Action):
@@ -110,12 +147,17 @@ class ActivateAction(Action):
         os.environ[_env_environ_backup] = encode_environ_backup(to_encode_environ)
         os.environ[config.env_prefix + '_PROJECT_HOME'] = config.paths.project_home
 
+        self.shell.header()
+
         apply_diff_to_shell(self.shell, initial_environ, os.environ, config.data.get('shell.envignore'))
 
         path_directories = config.data.get('shell.path.directories')
         if path_directories:
-            for path_addition in path_directories:
-                add_to_system_path(self.shell, os.path.normpath(os.path.join(os.getcwd(), path_addition)))
+            path_additions = map(lambda path_addition: os.path.normpath(os.path.join(os.getcwd(), path_addition)),
+                                 path_directories)
+            add_to_system_path(self.shell, path_additions)
+
+        self.shell.footer()
 
 
 class DeactivateAction(Action):

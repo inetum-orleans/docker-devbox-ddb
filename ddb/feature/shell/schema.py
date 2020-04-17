@@ -8,7 +8,7 @@ class PathSchema(Schema):
     """
     Shell schema.
     """
-    directories = fields.List(fields.String(), required=False, default=["bin", ".bin"])
+    directories = fields.List(fields.String(), required=False, default=[".bin", "bin"])
     prepend = fields.Boolean(default=True)
 
 

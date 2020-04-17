@@ -113,7 +113,9 @@ class Config:  # pylint:disable=too-many-instance-attributes
         """
         Export configuration to environment dict.
         """
-        return self.flatten(self.env_prefix, "_", "_%s_", str.upper, str)
+        return self.flatten(self.env_prefix, "_", "_%s_",
+                            lambda x: str.upper(x).replace('-', '_'),
+                            str)
 
     def flatten(self, prefix=None, sep=".", array_index_format="[%s]",
                 key_transformer=None, value_transformer=None,

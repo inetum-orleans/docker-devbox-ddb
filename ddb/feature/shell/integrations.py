@@ -1,6 +1,9 @@
+import os
 import shlex
-
+import stat
 from abc import ABC, abstractmethod
+
+from ddb.binary import Binary
 
 
 class ShellIntegration(ABC):
@@ -24,6 +27,29 @@ class ShellIntegration(ABC):
         print an instruction that unset an environment variable to shell.
         """
 
+    @abstractmethod
+    def remove_binary_shims(self, shims_path: str):
+        """
+        Remove all executable files matching binary shims.
+        """
+
+    @abstractmethod
+    def create_binary_shim(self, shims_path: str, binary: Binary) -> str:
+        """
+        Add a binary shim for this shell.
+        :return created filepath
+        """
+
+    def header(self):
+        """
+        Header of script
+        """
+
+    def footer(self):
+        """
+        Footer of script
+        """
+
 
 class BashShellIntegration(ShellIntegration):
     """
@@ -39,6 +65,27 @@ class BashShellIntegration(ShellIntegration):
     def remove_environment_variable(self, key):
         print("unset " + key)
 
+    def remove_binary_shims(self, shims_path: str):
+        shims = []
+
+        for shim in os.listdir(shims_path):
+            with open(shim, "a", newline="\n") as shim_file:
+                lines = shim_file.readlines()
+                if len(lines) > 2 and lines[1] == "# ddb:shim":
+                    shims.append(shim)
+
+        for shim in shims:
+            os.remove(shim)
+
+    def create_binary_shim(self, shims_path: str, binary: Binary):
+        os.makedirs(shims_path, exist_ok=True)
+        shim = os.path.join(os.path.normpath(shims_path), binary.name)
+        with open(shim, "w", newline="\n") as shim_file:
+            shim_file.writelines(["#!/usr/bin/env bash\n", "# ddb:shim\n", "$(ddb run %s) $@\n" % binary.name])
+        shim_stat = os.stat(shim)
+        os.chmod(shim, shim_stat.st_mode | stat.S_IEXEC)
+        return shim
+
 
 class CmdShellIntegration(ShellIntegration):
     """
@@ -53,3 +100,11 @@ class CmdShellIntegration(ShellIntegration):
 
     def remove_environment_variable(self, key):
         print("set " + key + "=")
+
+    def remove_binary_shims(self, shims_path: str):
+        # TODO
+        pass
+
+    def create_binary_shim(self, shims_path: str, binary: Binary):
+        # TODO
+        pass
