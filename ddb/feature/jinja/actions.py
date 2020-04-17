@@ -2,7 +2,7 @@
 import os
 from typing import Union, Iterable, Callable
 
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 from ddb.action import InitializableAction
 from ddb.config import config
@@ -48,6 +48,7 @@ class JinjaAction(InitializableAction):
 
         self.env = Environment(
             loader=FileSystemLoader(str(self.template_finder.rootpath)),
+            undefined=StrictUndefined
         )
 
         self.env.filters.update(custom_filters)
