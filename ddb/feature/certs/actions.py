@@ -74,4 +74,4 @@ class GenerateCertAction(Action):
                      private_key=certificate_path, certificate=private_key_path)
 
         bus.emit("certs:available", domain=domain, wildcard=wildcard,
-                 private_key=certificate_path, certificate=private_key_path)
+                 private_key=private_key_path, certificate=certificate_path)

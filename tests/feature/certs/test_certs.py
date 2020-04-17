@@ -63,6 +63,12 @@ class TestCertsFeature:
         assert os.path.exists(os.path.join(".certs", "testing.test.crt"))
         assert os.path.exists(os.path.join(".certs", "testing.test.key"))
 
+        with open(os.path.join(".certs", "testing.test.crt")) as crt_file:
+            assert 'CERTIFICATE' in crt_file.read()
+
+        with open(os.path.join(".certs", "testing.test.key")) as key_file:
+            assert 'PRIVATE KEY' in key_file.read()
+
     def test_existing_does_nothing(self, project_loader, module_scoped_container_getter):
         project_loader("existing")
 

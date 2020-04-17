@@ -33,6 +33,7 @@ class TraefikFeature(Feature):
     def actions(self) -> Iterable[Action]:
         return (
             TraefikInstalllCertsAction(),
+            # TODO: Add action to install custom traefik configuration
         )
 
     def _configure_defaults(self, feature_config: Dotty):

@@ -41,4 +41,10 @@ class TestTraefikFeature:
         assert os.path.exists(os.path.join(config.paths.home, "certs", "dummy.tld.key"))
         assert os.path.exists(os.path.join(config.paths.home, "certs", "dummy.tld.crt"))
 
+        with open(os.path.join(config.paths.home, "certs", "dummy.tld.crt")) as crt_file:
+            assert 'crt' == crt_file.read()
+
+        with open(os.path.join(config.paths.home, "certs", "dummy.tld.key")) as key_file:
+            assert 'key' == key_file.read()
+
         assert os.path.exists(os.path.join(config.paths.home, "traefik", "config", "dummy.tld.ssl.toml"))
