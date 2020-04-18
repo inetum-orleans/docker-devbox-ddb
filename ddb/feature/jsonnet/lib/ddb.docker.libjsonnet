@@ -107,7 +107,7 @@ local Compose(network_names=_docker_reverse_proxy_network_names, version="3.7") 
 	"volumes": Volumes(self.services)
 };
 
-local TraefikLabels(port, hostname, name=null) = {
+local TraefikLabels(port, hostname, name=null, certresolver=null) = {
     "traefik.enable": "true",
     ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + "-tls.rule"]: "Host(`" + hostname + "`)",
     ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + "-tls.service"]: std.join("-", std.prune([_core_project_name, name])),
@@ -115,18 +115,19 @@ local TraefikLabels(port, hostname, name=null) = {
     ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + ".rule"]: "Host(`" + hostname + "`)",
     ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + ".service"]: std.join("-", std.prune([_core_project_name, name])),
     ["traefik.http.services." + std.join("-", std.prune([_core_project_name, name])) + ".loadbalancer.server.port"]: port,
-    "ddb.emit.certs:generate": hostname
+    [if certresolver == null then "ddb.emit.certs:generate"]: hostname,
+    [if certresolver != null then "traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + "-tls.tls.certresolver"]: certresolver
 };
 
-local TraefikVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id) = {
-    "labels": TraefikLabels(port, hostname, name),
+local TraefikVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id, certresolver=null) = {
+    "labels": TraefikLabels(port, hostname, name, certresolver),
     "networks": {
         "default": {},
         [network_id]: {}
     }
 };
 
-local NoVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id) = {};
+local NoVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id, certresolver=null) = {};
 
 local VirtualHost = if _docker_reverse_proxy_type == "traefik" then TraefikVirtualHost else NoVirtualHost;
 

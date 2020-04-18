@@ -30,7 +30,7 @@ ddb.Compose() {
 				ddb.path.project + ":/workdir"
 			]
 		},
-		"keycloak":  ddb.Image("jboss/keycloak:8.0.1") + ddb.VirtualHost("8080", "keycloak.biometrie.test", "keycloak") {
+		"keycloak":  ddb.Image("jboss/keycloak:8.0.1") + ddb.VirtualHost("8080", "keycloak.biometrie.test", "keycloak", certresolver=if ddb.env.is("prod") then "letsencrypt" else null) {
 			"command": [
 				"-b 0.0.0.0 -Dkeycloak.import=/opt/jboss/keycloak/keycloak/realm-export.json"
 			],
@@ -79,7 +79,7 @@ ddb.Compose() {
 			    "16036:636"
 			],
 		},
-		"node": ddb.Build("node") + ddb.User() + ddb.VirtualHost("8080", "biometrie.test") {
+		"node": ddb.Build("node") + ddb.User() + ddb.VirtualHost("8080", "biometrie.test", certresolver=if ddb.env.is("prod") then "letsencrypt" else null) {
 			"volumes": [
 				ddb.path.project + ":/app:rw",
 				"node-cache:/home/node/.cache:rw",
@@ -94,7 +94,7 @@ ddb.Compose() {
 				ddb.path.project + ":/var/www/html:rw"
 			]
 		},
-		"web": ddb.Build("web") + ddb.VirtualHost("80", "api.biometrie.test", "api") {
+		"web": ddb.Build("web") + ddb.VirtualHost("80", "api.biometrie.test", "api", certresolver=if ddb.env.is("prod") then "letsencrypt" else null) {
 			"volumes": [
 				ddb.path.project + "/.docker/web/nginx.conf:/etc/nginx/conf.d/default.conf:rw",
 				ddb.path.project + ":/var/www/html:rw"

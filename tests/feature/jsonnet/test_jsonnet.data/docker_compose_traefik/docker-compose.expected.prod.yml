@@ -35,10 +35,10 @@ services:
       traefik.http.routers.gli-biometrie-keycloak-tls.rule: Host(`keycloak.biometrie.test`)
       traefik.http.routers.gli-biometrie-keycloak-tls.service: gli-biometrie-keycloak
       traefik.http.routers.gli-biometrie-keycloak-tls.tls: "true"
+      traefik.http.routers.gli-biometrie-keycloak-tls.tls.certresolver: letsencrypt
       traefik.http.routers.gli-biometrie-keycloak.rule: Host(`keycloak.biometrie.test`)
       traefik.http.routers.gli-biometrie-keycloak.service: gli-biometrie-keycloak
       traefik.http.services.gli-biometrie-keycloak.loadbalancer.server.port: '8080'
-      ddb.emit.certs:generate: keycloak.biometrie.test
     links:
       - keycloak-db:postgres
     networks:
@@ -71,10 +71,10 @@ services:
       traefik.http.routers.gli-biometrie-tls.rule: Host(`biometrie.test`)
       traefik.http.routers.gli-biometrie-tls.service: gli-biometrie
       traefik.http.routers.gli-biometrie-tls.tls: "true"
+      traefik.http.routers.gli-biometrie-tls.tls.certresolver: letsencrypt
       traefik.http.routers.gli-biometrie.rule: Host(`biometrie.test`)
       traefik.http.routers.gli-biometrie.service: gli-biometrie
       traefik.http.services.gli-biometrie.loadbalancer.server.port: '8080'
-      ddb.emit.certs:generate: biometrie.test
     networks:
       default: {}
       reverse-proxy: {}
@@ -106,10 +106,10 @@ services:
       traefik.http.routers.gli-biometrie-api-tls.rule: Host(`api.biometrie.test`)
       traefik.http.routers.gli-biometrie-api-tls.service: gli-biometrie-api
       traefik.http.routers.gli-biometrie-api-tls.tls: "true"
+      traefik.http.routers.gli-biometrie-api-tls.tls.certresolver: letsencrypt
       traefik.http.routers.gli-biometrie-api.rule: Host(`api.biometrie.test`)
       traefik.http.routers.gli-biometrie-api.service: gli-biometrie-api
       traefik.http.services.gli-biometrie-api.loadbalancer.server.port: '80'
-      ddb.emit.certs:generate: api.biometrie.test
     networks:
       default: {}
       reverse-proxy: {}
