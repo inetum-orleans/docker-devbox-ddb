@@ -9,7 +9,7 @@ from ddb.action import InitializableAction
 from ddb.action.action import EventBinding
 from ddb.config import config
 from ddb.event import bus
-from ddb.utils.file import TemplateFinder
+from ddb.utils.file import TemplateFinder, write_if_different
 
 
 class YttAction(InitializableAction):
@@ -110,9 +110,11 @@ class YttAction(InitializableAction):
                            check=True,
                            stdout=PIPE, stderr=PIPE)
 
-            with open(target, "wb") as output_file:
-                output_file.write(rendered.stdout)
+            written = write_if_different(target, rendered.stdout, read_mode='rb', write_mode='wb', log_source=template)
+
             self.template_finder.mark_as_processed(template, target)
-            bus.emit('file:generated', source=template, target=target)
+
+            if written:
+                bus.emit('file:generated', source=template, target=target)
         finally:
             os.unlink(yaml_config_file.name)

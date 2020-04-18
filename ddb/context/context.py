@@ -5,18 +5,18 @@ from typing import TYPE_CHECKING
 
 import colorlog
 import verboselogs
+from colorlog import default_log_colors
 from dotty_dict import Dotty
 
 if TYPE_CHECKING:
     from ..action import Action  # pylint:disable=cyclic-import
-    from ..phase import Phase  # pylint:disable=cyclic-import
-    from ..command import Command  # pylint:disable=cyclic-import
 
 
 class ContextStackItem:
     """
     A stack item inside context
     """
+
     def __init__(self, event_name: str, action: 'Action', to_call: Callable, args: list, kwargs: dict):
         self.event_name = event_name
         self.action = action
@@ -66,21 +66,21 @@ class Context:
         """
         Current event name in stack.
         """
-        return self.stack[-1].event_name
+        return self.stack[-1].event_name if self.stack else None
 
     @property
     def action(self) -> 'Action':
         """
         Current action in stack.
         """
-        return self.stack[-1].action
+        return self.stack[-1].action if self.stack else None
 
     @property
     def to_call(self) -> Callable:
         """
         Current callable in stack
         """
-        return self.stack[-1].to_call
+        return self.stack[-1].to_call if self.stack else None
 
     @property
     def log(self):
@@ -105,7 +105,6 @@ class CustomFormatter(colorlog.ColoredFormatter):
     """
     Custom context logger formatter.
     """
-
     def format(self, record):
         record.simplename = record.name.rsplit(".", 1)[-1]
         return super().format(record)
@@ -117,8 +116,17 @@ def configure_context_logger(level: Union[str, int] = logging.INFO):
     """
     verboselogs.install()
 
+    log_colors = dict(default_log_colors)
+    log_colors['NOTICE'] = 'thin_white'
+    log_colors['VERBOSE'] = 'thin_white'
+    log_colors['DEBUG'] = 'thin_cyan'
+    log_colors['SUCCESS'] = 'bold_green'
+    log_colors['SPAM'] = 'bold_red'
+
     handler = logging.StreamHandler()
-    handler.setFormatter(CustomFormatter('%(log_color)s[%(simplename)s] %(message)s'))
+    handler.setFormatter(CustomFormatter(
+        '%(log_color)s[%(simplename)s] %(message)s',
+        log_colors=log_colors))
 
     logger = logging.getLogger('context')
     logger.setLevel(level)

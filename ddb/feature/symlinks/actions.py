@@ -4,6 +4,7 @@ import os
 from ddb.action import InitializableAction
 from ddb.action.action import EventBinding
 from ddb.config import config
+from ddb.context import context
 from ddb.event import bus
 from ddb.utils.file import TemplateFinder
 
@@ -55,12 +56,17 @@ class SymlinksAction(InitializableAction):
         """
         Create a symbolic link
         """
-        if os.path.islink(target):
-            os.unlink(target)
+        relsource = os.path.relpath(source, os.path.dirname(target))
+
+        if os.path.islink(target) and os.readlink(target) == relsource:
+            context.log.notice("%s -> %s", source, target)
+            return
+
         if os.path.exists(target):
             os.remove(target)
 
-        relsource = os.path.relpath(source, os.path.dirname(target))
         os.symlink(relsource, os.path.normpath(target))
+        context.log.success("%s -> %s", source, target)
+
         self.template_finder.mark_as_processed(source, target)
         bus.emit('file:generated', source=source, target=target)

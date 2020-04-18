@@ -67,7 +67,9 @@ class DefaultCommand(DefaultRegistryObject, Command):
         if clear_cache:
             for cache in caches.all():
                 cache.clear()
+            context.log.success("Cache cleared")
             config.args.clear_cache = False
+
             raise RestartWithArgs(config.args)
 
     def configure_parser(self, parser: ArgumentParser):

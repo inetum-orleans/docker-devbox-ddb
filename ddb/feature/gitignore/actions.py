@@ -5,6 +5,7 @@ import zgitignore
 
 from ddb.action import Action
 from ddb.config import config
+from ddb.context import context
 
 
 def find_gitignore(target: str):
@@ -62,3 +63,4 @@ class UpdateGitignoreAction(Action):
                 if gitignore_content and gitignore_content[-1].strip():
                     gitignore_file.write('\n')  # no need for os.linesep because file is opened as text
                 gitignore_file.write(relative_target)
+            context.log.success("%s added to %s", relative_target, gitignore)

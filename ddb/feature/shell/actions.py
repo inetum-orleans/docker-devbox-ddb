@@ -11,6 +11,7 @@ from .integrations import ShellIntegration
 from ...action import Action
 from ...binary import Binary
 from ...config import config
+from ...context import context
 from ...event import bus
 
 _env_environ_backup = config.env_prefix + "_SHELL_ENVIRON_BACKUP"
@@ -103,6 +104,8 @@ class CreateBinaryShim(Action):
         """
         directories = config.data.get('shell.path.directories')
         shim = self.shell.create_binary_shim(directories[0], binary)
+
+        context.log.success("Shim created: %s", shim)
         bus.emit("file:generated", source=None, target=shim)
 
 

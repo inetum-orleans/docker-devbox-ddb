@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import re
-from subprocess import run, PIPE
+from subprocess import run, PIPE, CalledProcessError
 from typing import Iterable
 
 import simpleeval
@@ -13,6 +13,7 @@ from ...action import Action
 from ...action.action import EventBinding
 from ...binary import binaries
 from ...config import config
+from ...context import context
 from ...event import bus
 
 
@@ -75,11 +76,17 @@ class EmitDockerComposeConfigAction(Action):
         if not os.path.exists("docker-compose.yml"):
             return
 
-        self._executed = True
+        try:
+            yaml_output = run_docker_compose("config")
+        except CalledProcessError as exc:
+            context.log.error(str(exc))
+            context.log.error(exc.stderr)
+            return
 
-        yaml_output = run_docker_compose("config")
         parsed_config = yaml.load(yaml_output, yaml.SafeLoader)
         docker_compose_config = Dotty(parsed_config)
+
+        self._executed = True
 
         bus.emit("docker:docker-compose-config", docker_compose_config=docker_compose_config)
 
@@ -130,7 +137,7 @@ class EmitDockerComposeConfigAction(Action):
                 event_parsed_values[event_id] = args, kwargs
         return parsed_values
 
-    def _parse_value(self, value, context, property_name=None):
+    def _parse_value(self, value, names, property_name=None):
         values = map(str.strip, value.split("|")) if not property_name else [value]
 
         args = []
@@ -144,7 +151,7 @@ class EmitDockerComposeConfigAction(Action):
 
             eval_match = self.eval_re.match(val)
             if eval_match:
-                val = simpleeval.simple_eval(eval_match.group(1), names=context)
+                val = simpleeval.simple_eval(eval_match.group(1), names=names)
 
             if var:
                 kwargs[var] = val
@@ -177,9 +184,17 @@ class DockerComposeBinaryAction(Action):
         if name is None:
             raise ValueError("name should be defined")
 
+        binary = DockerBinary(name, docker_compose_service, workdir, options, args)
+
         if binaries.has(name):
+            existing_binary = binaries.get(name)
+            if existing_binary.command() == binary.command():
+                context.log.notice("Binary registered: %s" % (name,))
+                return
+
             binaries.unregister(name)
 
-        binary = DockerBinary(name, docker_compose_service, workdir, options, args)
         binaries.register(binary)
+
+        context.log.success("Binary registered: %s", name)
         bus.emit("binary:registered", binary=binary)

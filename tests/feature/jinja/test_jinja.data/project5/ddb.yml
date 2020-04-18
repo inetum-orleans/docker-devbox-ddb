@@ -1,3 +1,2 @@
 jinja:
-  includes: ['**/*.custom*']
   suffixes: ['.custom']

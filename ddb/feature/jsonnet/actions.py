@@ -12,7 +12,7 @@ from ddb.action.action import EventBinding
 from ddb.config import config
 from ddb.event import bus
 from ddb.feature import features
-from ddb.utils.file import TemplateFinder
+from ddb.utils.file import TemplateFinder, write_if_different
 
 
 class JsonnetAction(InitializableAction):
@@ -86,7 +86,6 @@ class JsonnetAction(InitializableAction):
         Render jsonnet template
         """
         # TODO: Add support for jsonnet CLI if _jsonnet native module is not available.
-
         evaluated = self._evaluate_jsonnet(template)
 
         multiple_file_output, multiple_file_dir = JsonnetAction._parse_multiple_header(template, target)
@@ -94,20 +93,23 @@ class JsonnetAction(InitializableAction):
             for (filename, content) in json.loads(evaluated).items():
                 evaluated_target_path = os.path.join(multiple_file_dir, filename)
                 evaluated_target_parent_path = os.path.dirname(evaluated_target_path)
-                if not os.path.exists(evaluated_target_parent_path):
+                if evaluated_target_parent_path and not os.path.exists(evaluated_target_parent_path):
                     os.makedirs(evaluated_target_parent_path)
-                with open(evaluated_target_path, 'w') as evaluated_target:
-                    evaluated_target.write(content)
+
+                written = write_if_different(evaluated_target_path, content, log_source=template)
                 self.template_finder.mark_as_processed(template, evaluated_target_path)
-                bus.emit('file:generated', source=template, target=evaluated_target_path)
+                if written:
+                    bus.emit('file:generated', source=template, target=evaluated_target_path)
         else:
             ext = os.path.splitext(target)[-1]
             if ext.lower() in ['.yaml', '.yml']:
                 evaluated = yaml.dump(json.loads(evaluated), Dumper=yaml.SafeDumper)
-            with open(target, 'w') as target_file:
-                target_file.write(evaluated)
+
+            written = write_if_different(target, evaluated, log_source=template)
             self.template_finder.mark_as_processed(template, target)
-            bus.emit('file:generated', source=template, target=target)
+
+            if written:
+                bus.emit('file:generated', source=template, target=target)
 
     @staticmethod
     def _evaluate_jsonnet(template_path):

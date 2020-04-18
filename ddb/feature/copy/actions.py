@@ -2,13 +2,13 @@
 import glob
 import os
 import re
-import shutil
 
 import requests
 
 from ddb.action import Action
 from ddb.cache import caches, _requests_cache_name
 from ddb.config import config
+from ddb.utils.file import write_if_different, copy_if_different
 
 
 def copy_from_url(source, destination, filename=None):
@@ -25,8 +25,7 @@ def copy_from_url(source, destination, filename=None):
         content_disposition = response.headers['content-disposition']
         filename = re.findall("filename=(.+)", content_disposition)[0]
     target_path = os.path.join(destination, filename)
-    with open(target_path, 'wb') as output_file:
-        output_file.write(response.content)
+    write_if_different(target_path, response.content, 'rb', 'wb', log_source=source)
     return target_path
 
 
@@ -99,8 +98,8 @@ class CopyAction(Action):
                 elif os.path.exists(source):
                     filename = spec.get('filename', os.path.basename(source))
                     target_path = os.path.join(file_destination, filename)
-                    shutil.copy(source, target_path)
+                    copy_if_different(source, target_path, 'rb', 'wb', log=True)
                 else:
                     for file in glob.glob(source):
                         target_path = os.path.join(file_destination, os.path.basename(file))
-                        shutil.copy(file, target_path)
+                        copy_if_different(file, target_path, 'rb', 'wb', log=True)

@@ -6,6 +6,7 @@ import cfssl as cfssl_client
 from .cfssl import checksums, writer
 from ...action import Action
 from ...config import config
+from ...context import context
 from ...event import bus
 
 
@@ -38,7 +39,6 @@ class GenerateCertAction(Action):
         certificate_path, private_key_path = writer.get_certs_path(domain,
                                                                    config.data['certs.cfssl.writer'],
                                                                    config.data['certs.destination'])
-
         if not os.path.exists(certificate_path) or not os.path.exists(private_key_path):
             client_config = config.data.get('certs.cfssl.server')
 
@@ -65,12 +65,16 @@ class GenerateCertAction(Action):
                                            client,
                                            False)
 
+            context.log.success("TLS certificates generated for domain %s", domain)
+
             for generated_file in generated.values():
                 bus.emit("file:generated", source=None, target=generated_file)
 
             certificate_path, private_key_path = generated['private_key'], generated['certificate']
             bus.emit("certs:generated", domain=domain, wildcard=wildcard,
                      private_key=certificate_path, certificate=private_key_path)
+        else:
+            context.log.notice("TLS certificates exists for domain %s", domain)
 
         bus.emit("certs:available", domain=domain, wildcard=wildcard,
                  private_key=private_key_path, certificate=certificate_path)

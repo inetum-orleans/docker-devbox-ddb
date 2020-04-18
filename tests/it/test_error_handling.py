@@ -18,6 +18,5 @@ class TestErrorHandling:
         assert record.message == \
                'An unexpected error has occured ' + \
                '[phase:configure => FileWalkAction.execute(), ' + \
-               'file:found => JsonnetAction.render_jsonnet(target=' + os.path.join('.', 'invalid') + ', ' + \
-               'template=' + os.path.join('.', 'invalid.jsonnet') + ')]: ' + \
-               'STATIC ERROR: ' + os.path.join('.', 'invalid.jsonnet') + ':1:1-9: Unknown variable: trololol'
+               'file:found => JsonnetAction.render_jsonnet(target=invalid, template=invalid.jsonnet)]: ' + \
+               'STATIC ERROR: invalid.jsonnet:1:1-9: Unknown variable: trololol'

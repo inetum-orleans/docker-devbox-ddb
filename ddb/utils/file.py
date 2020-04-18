@@ -11,13 +11,67 @@ from ddb.config import config
 from ddb.context import context
 
 
-def has_same_content(filename1: str, filename2: str) -> bool:
+def has_same_content(filename1: str, filename2: str, read_mode='rb') -> bool:
     """
     Check if the content of two files are same
     """
-    with open(filename1, 'rb') as file1:
-        with open(filename2, 'rb') as file2:
+    with open(filename1, mode=read_mode) as file1:
+        with open(filename2, mode=read_mode) as file2:
             return file1.read() == file2.read()
+
+
+def write_if_different(file, data, read_mode='r', write_mode='w', log_source=None, **kwargs) -> bool:
+    """
+    Write the file if existing data is different than given data.
+    """
+    if os.path.exists(file):
+        with open(file, mode=read_mode, **kwargs) as read_file:
+            existing_data = read_file.read()
+    else:
+        existing_data = None
+
+    if existing_data == data:
+        if log_source:
+            context.log.notice("%s -> %s", log_source, file)
+        return False
+
+    with open(file, mode=write_mode, **kwargs) as write_file:
+        write_file.write(data)
+
+    if log_source:
+        context.log.success("%s -> %s", log_source, file)
+
+    return True
+
+
+def copy_if_different(source, target, read_mode='r', write_mode='w', log=False, **kwargs) -> bool:
+    """
+    Copy source to target if existing source data is different than target data.
+    """
+    if os.path.exists(source):
+        with open(source, mode=read_mode, **kwargs) as read_file:
+            source_data = read_file.read()
+    else:
+        source_data = None
+
+    if os.path.exists(target):
+        with open(target, mode=read_mode, **kwargs) as read_file:
+            target_data = read_file.read()
+    else:
+        target_data = None
+
+    if source_data == target_data:
+        if log:
+            context.log.notice("%s -> %s", source, target)
+        return False
+
+    with open(target, mode=write_mode, **kwargs) as write_file:
+        write_file.write(source_data)
+
+    if log:
+        context.log.success("%s -> %s", source, target)
+
+    return True
 
 
 class FileWalker:
@@ -76,7 +130,7 @@ class FileWalker:
                     dirs.remove(dirs_item)
 
             for files_item in list(files):
-                filepath = os.path.join(root, files_item)
+                filepath = os.path.relpath(os.path.join(root, files_item))
                 if self._is_included(filepath, *self.includes) and \
                         not self._is_excluded(filepath, *self.excludes):
                     yield filepath
@@ -133,11 +187,11 @@ class FileWalker:
 
         if len(suffixes) > 1:
             joined_suffixes = ','.join(suffixes)
-            return ["**/*{" + joined_suffixes + "}" + extensions_pattern]
+            return ["*{" + joined_suffixes + "}" + extensions_pattern]
         if len(suffixes) > 0:
-            return ["**/*" + suffixes[0] + extensions_pattern]
+            return ["*" + suffixes[0] + extensions_pattern]
         if extensions_pattern:
-            return ["**/*" + suffixes[0] + extensions_pattern]
+            return ["*" + suffixes[0] + extensions_pattern]
         return []
 
 

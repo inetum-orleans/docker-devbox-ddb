@@ -15,6 +15,7 @@ from ...action import Action
 from ...action.action import EventBinding
 from ...cache import global_cache
 from ...config import config
+from ...context import context
 from ...event import bus
 
 BuildServiceDef = namedtuple("BuildServiceDef", "context dockerfile")
@@ -102,18 +103,26 @@ class FixuidDockerComposeAction(Action):
         registry_data_id_cache_key = "docker.image.name." + image + ".registry_data"
         registry_data_id = global_cache().get(registry_data_id_cache_key)
         if not registry_data_id:
+            context.log.warning("Loading registry data id for image %s...", image)
             client = docker.from_env()
             registry_data = client.images.get_registry_data(image)
             registry_data_id = registry_data.id
             global_cache().set(registry_data_id_cache_key, registry_data_id)
+            context.log.success("Id retrieved for image %s (%s)", image, registry_data_id)
+        else:
+            context.log.notice("Id retrieved for image %s (%s) (from cache)", image, registry_data_id)
 
         image_attrs_cache_key = "docker.image.id." + registry_data_id + ".attrs"
         image_attrs = global_cache().get(image_attrs_cache_key)
 
         if not image_attrs:
-            image = registry_data.pull()
-            image_attrs = image.attrs
+            context.log.warning("Loading attributes for image %s...", image)
+            pulled_image = registry_data.pull()
+            image_attrs = pulled_image.attrs
             global_cache().set(image_attrs_cache_key, image_attrs)
+            context.log.success("Attributes retrieved for image %s", image)
+        else:
+            context.log.notice("Attributes retrieved for image %s (from cache)", image)
         return image_attrs
 
     @staticmethod
@@ -130,7 +139,6 @@ class FixuidDockerComposeAction(Action):
         Apply fixuid to given service
         """
         dockerfile_path = os.path.join(service.context, service.dockerfile)
-
         with open(dockerfile_path, "ba+") as dockerfile_file:
             parser = CustomDockerfileParser(fileobj=dockerfile_file)
 
@@ -176,6 +184,9 @@ class FixuidDockerComposeAction(Action):
                      "mkdir -p /etc/fixuid",
                      "COPY fixuid.yml /etc/fixuid/config.yml")
 
+            if "ADD fixuid.tar.gz /usr/local/bin\n" in parser.lines:
+                return
+
             last_instruction_user = parser.get_last_instruction("USER")
             last_instruction_entrypoint = parser.get_last_instruction("ENTRYPOINT")
             if last_instruction_user:
@@ -184,6 +195,8 @@ class FixuidDockerComposeAction(Action):
                 parser.add_lines_at(last_instruction_entrypoint, *lines)
             else:
                 parser.add_lines(*lines)
+
+            context.log.success("Fixuid applied to %s", os.path.relpath(dockerfile_path, config.paths.project_home))
 
     def execute(self, docker_compose_config: dict):
         """
@@ -216,17 +229,17 @@ class FixuidDockerComposeAction(Action):
                 continue
 
             if isinstance(service["build"], dict):
-                context = Dotty(service).get("build.context")
+                build_context = Dotty(service).get("build.context")
             elif isinstance(service["build"], str):
-                context = service["build"]
+                build_context = service["build"]
             else:
                 continue
 
-            if not os.path.exists(os.path.join(context, "fixuid.yml")):
+            if not os.path.exists(os.path.join(build_context, "fixuid.yml")):
                 continue
 
             dockerfile = Dotty(service).get("build.dockerfile", "Dockerfile")
-            yield BuildServiceDef(context, dockerfile)
+            yield BuildServiceDef(build_context, dockerfile)
 
     @staticmethod
     def _sanitize_entrypoint(entrypoint):

@@ -6,7 +6,7 @@ from jinja2 import Environment, FileSystemLoader, StrictUndefined
 from ddb.action import InitializableAction
 from ddb.config import config
 from ddb.event import bus
-from ddb.utils.file import TemplateFinder
+from ddb.utils.file import TemplateFinder, write_if_different
 from . import filters, tests
 from ...action.action import EventBinding
 
@@ -78,7 +78,8 @@ class JinjaAction(InitializableAction):
                                           posixpath.normpath(str(self.template_finder.rootpath)))
         jinja = self.env.get_template(template_name)
 
-        with open(target, 'w') as target_file:
-            target_file.write(jinja.render(**self.context))
+        written = write_if_different(target, jinja.render(**self.context), 'r', 'w', log_source=template)
+
         self.template_finder.mark_as_processed(template, target)
-        bus.emit('file:generated', source=template, target=target)
+        if written:
+            bus.emit('file:generated', source=template, target=target)

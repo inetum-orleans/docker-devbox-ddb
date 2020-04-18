@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import os
-import shutil
 
 from ddb.config import config
 from ...action import Action
+from ...context import context
+from ...utils.file import write_if_different, copy_if_different
 
 
 class TraefikInstalllCertsAction(Action):
@@ -30,11 +31,11 @@ class TraefikInstalllCertsAction(Action):
 
         private_key_filename = "%s.key" % (domain,)
         private_key_filename_target = os.path.join(certs_directory, private_key_filename)
-        shutil.copy(private_key, private_key_filename_target)
+        copy_if_different(private_key, private_key_filename_target, log=True)
 
         certificate_filename = "%s.crt" % (domain,)
         certificate_filename_target = os.path.join(certs_directory, certificate_filename)
-        shutil.copy(certificate, certificate_filename_target)
+        copy_if_different(certificate, certificate_filename_target, log=True)
 
         ssl_config_template = config.data.get('traefik.ssl_config_template') % (
             '/'.join([mapped_certs_directory, certificate_filename]),
@@ -42,5 +43,7 @@ class TraefikInstalllCertsAction(Action):
         )
 
         config_target = os.path.join(config_directory, "%s.ssl.toml" % (domain,))
-        with open(config_target, "w") as config_file:
-            config_file.write(ssl_config_template)
+        if write_if_different(config_target, ssl_config_template, 'r', 'w'):
+            context.log.success("SSL Configuration file written for domain %s" % (domain,))
+        else:
+            context.log.notice("SSL Configuration file exists for domain %s" % (domain,))
