@@ -2,7 +2,7 @@
 import os
 import re
 from subprocess import run, PIPE
-from typing import Iterable, Union, Callable
+from typing import Iterable
 
 import simpleeval
 import yaml
@@ -10,6 +10,7 @@ from dotty_dict import Dotty
 
 from .binaries import DockerBinary
 from ...action import Action
+from ...action.action import EventBinding
 from ...binary import binaries
 from ...config import config
 from ...event import bus
@@ -51,22 +52,16 @@ class EmitDockerComposeConfigAction(Action):
         self.eval_re = re.compile(r"^\s*eval\((.*)\)\s*$")
 
     @property
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
+    def event_bindings(self):
         return (
             "phase:configure",
-            ("file:generated", self.on_file_generated)
+            EventBinding("file:generated",
+                         processor=lambda source, target: ((), {}) if target == "docker-compose.yml" else False)
         )
 
     @property
     def name(self) -> str:
         return "docker:emit-docker-compose-config"
-
-    def on_file_generated(self, source: str, target: str):  # pylint:disable=unused-argument
-        """
-        Execute action when docker-compose.yml is generated.
-        """
-        if target == "docker-compose.yml":
-            self.execute()
 
     def execute(self):
         """
@@ -165,7 +160,7 @@ class DockerComposeBinaryAction(Action):
     """
 
     @property
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
+    def event_bindings(self):
         return "docker:binary"
 
     @property

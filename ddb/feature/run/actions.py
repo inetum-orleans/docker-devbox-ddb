@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import subprocess
-from typing import Union, Iterable, Callable
 
 from ...action import Action
 from ...binary import binaries
@@ -13,7 +12,7 @@ class RunAction(Action):
     """
 
     @property
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
+    def event_bindings(self):
         return "phase:run"
 
     @property

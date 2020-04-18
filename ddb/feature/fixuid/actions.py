@@ -4,7 +4,7 @@ import os
 import re
 import shlex
 from collections import namedtuple
-from typing import Union, Iterable, Callable
+from typing import Iterable
 
 import docker
 from dockerfile_parse import DockerfileParser
@@ -12,6 +12,7 @@ from dotty_dict import Dotty
 
 from ..copy.actions import copy_from_url
 from ...action import Action
+from ...action.action import EventBinding
 from ...cache import global_cache
 from ...config import config
 from ...event import bus
@@ -78,10 +79,18 @@ class FixuidDockerComposeAction(Action):
         self.docker_compose_config = dict()
 
     @property
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
+    def event_bindings(self):
+        def file_generated_processor(source: str, target: str):
+            service = self.find_fixuid_service(target)
+            if service:
+                return (), {"service": service}
+            return None
+
         return (
             "docker:docker-compose-config",
-            ("file:generated", self.on_file_generated)
+            EventBinding("file:generated",
+                         call=self.apply_fixuid,
+                         processor=file_generated_processor)
         )
 
     @property
@@ -116,7 +125,10 @@ class FixuidDockerComposeAction(Action):
         return None
 
     @staticmethod
-    def _apply_fixuid(service: BuildServiceDef):
+    def apply_fixuid(service: BuildServiceDef):
+        """
+        Apply fixuid to given service
+        """
         dockerfile_path = os.path.join(service.context, service.dockerfile)
 
         with open(dockerfile_path, "ba+") as dockerfile_file:
@@ -180,15 +192,16 @@ class FixuidDockerComposeAction(Action):
         self.docker_compose_config = docker_compose_config
 
         for service in self.fixuid_services:
-            self._apply_fixuid(service)
+            self.apply_fixuid(service)
 
-    def on_file_generated(self, source: str, target: str):  # pylint:disable=unused-argument
+    def find_fixuid_service(self, filepath: str):
         """
-        Apply fixuid on generated Dockerfiles.
+        Find related fixuid service from filepath
         """
         for service in self.fixuid_services:
-            if os.path.join(service.context, service.dockerfile) == os.path.abspath(target):
-                self._apply_fixuid(service)
+            if os.path.join(service.context, service.dockerfile) == os.path.abspath(filepath):
+                return service
+        return None
 
     @property
     def fixuid_services(self) -> Iterable[BuildServiceDef]:

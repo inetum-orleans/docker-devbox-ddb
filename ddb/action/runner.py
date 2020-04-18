@@ -4,6 +4,7 @@ from typing import TypeVar, Generic
 
 from ddb.action import Action, InitializableAction
 from ddb.context import context
+from ddb.context.context import ContextStackItem
 
 A = TypeVar('A', bound=Action)  # pylint:disable=invalid-name
 
@@ -32,41 +33,40 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
     """
     Runner for an action event binding.
     """
-    def __init__(self, action: A, event_name: str, to_call=None, fail_fast=False):
+    def __init__(self, action: A, event_name: str, to_call=None, event_processor=None, fail_fast=False):
         super().__init__(action, event_name, to_call)
+        self.event_processor = event_processor
         self.fail_fast = fail_fast
 
     def run(self, *args, **kwargs):  # pylint:disable=missing-function-docstring
-        context.actions.append(self.action)
-        parameters_repr = None
+        if self.event_processor:
+            resp = self.event_processor(*args, **kwargs)
+            if resp is False or resp is None:
+                return None
+            try:
+                args, kwargs = resp
+            except ValueError:
+                pass
+
+        context.stack.append(ContextStackItem(self.event_name, self.action, self.to_call, args, kwargs))
         try:
             if context.log.isEnabledFor(logging.DEBUG):
-                parameters_repr = self._build_parameters_repr(*args, **kwargs)
-                context.log.debug("Execute action [%s => %s.%s(%s)]",
-                                  self.event_name,
-                                  type(self.action).__name__,
-                                  self.to_call.__name__,
-                                  parameters_repr)
+                context.log.debug("Execute action %s", context.stack)
 
             self._execute_action(*args, **kwargs)
+            return True
         except Exception as exception:  # pylint:disable=broad-except
-            if not parameters_repr:
-                parameters_repr = self._build_parameters_repr(*args, **kwargs)
-
             context.exceptions.append(exception)
             log_error = context.log.exception if context.log.isEnabledFor(logging.DEBUG) else context.log.error
-            log_error("An unexpected error has occured [%s => %s.%s(%s)]: %s",
-                      self.event_name,
-                      type(self.action).__name__,
-                      self.to_call.__name__,
-                      parameters_repr,
+            log_error("An unexpected error has occured %s: %s",
+                      context.stack,
                       str(exception).strip())
 
             if self.fail_fast:
                 raise
 
         finally:
-            context.actions.pop()
+            context.stack.pop()
 
     def _execute_action(self, *args, **kwargs):
         """
@@ -74,23 +74,17 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
         """
         self.to_call(*args, **kwargs)
 
-    @staticmethod
-    def _build_parameters_repr(*args, **kwargs):
-        parameters_repr = ', '.join(args)
-        for key, value in sorted(kwargs.items()):
-            if parameters_repr:
-                parameters_repr += ', '
-            parameters_repr += key + "=" + str(value)
-        return parameters_repr
-
 
 class InitializableActionEventBindingRunner(ActionEventBindingRunner[InitializableAction]):
     """
     Runner for an initializable action event binding
     """
 
-    def _execute_action(self, *args, **kwargs):
+    def run(self, *args, **kwargs):
+        """
+        Initialize if required and run
+        """
         if not self.action.initialized:
             self.action.initialize()
             self.action.initialized = True
-        super()._execute_action(*args, **kwargs)
+        return super().run(*args, **kwargs)

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from typing import Union, Iterable, Callable
 
 from ddb.action import InitializableAction
 from ddb.config import config
@@ -21,7 +20,7 @@ class FileWalkAction(InitializableAction):
         return "file:walk"
 
     @property
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
+    def event_bindings(self):
         return "phase:configure"
 
     def initialize(self):

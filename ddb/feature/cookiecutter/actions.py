@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from typing import Iterable, Union, Callable
 
 from cookiecutter.config import DEFAULT_CONFIG
 from cookiecutter.main import cookiecutter
@@ -12,12 +11,13 @@ class CookiecutterAction(Action):
     """
     Download a cookiecutter template.
     """
+
     @property
     def name(self) -> str:
         return "cookiecutter:download"
 
     @property
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
+    def event_bindings(self):
         return "phase:init"
 
     def execute(self):

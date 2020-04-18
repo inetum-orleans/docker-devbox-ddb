@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
-from typing import Union, Iterable, Callable
 
 from ddb.action import InitializableAction
+from ddb.action.action import EventBinding
 from ddb.config import config
 from ddb.event import bus
 from ddb.utils.file import TemplateFinder
@@ -22,33 +22,34 @@ class SymlinksAction(InitializableAction):
         return "symlinks:create"
 
     @property
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
-        return ("file:found", self.on_file_found), \
-               ("file:generated", self.on_file_generated), \
-               ("symlinks:create", self.create_symlink)
+    def event_bindings(self):
+        def file_found_processor(file: str):
+            """
+            Called when a file is found.
+            """
+            source = file
+            target = self.template_finder.get_target(source)
+            if target:
+                return (), {"source": source, "target": target}
+            return None
+
+        def file_generated_processor(source: str, target: str):
+            """
+            Called when a file is generated.
+            """
+            source = target
+            target = self.template_finder.get_target(source)
+            if target:
+                return (), {"source": source, "target": target}
+            return None
+
+        return (EventBinding("file:found", self.create_symlink, file_found_processor), \
+                EventBinding("file:generated", self.create_symlink, file_generated_processor))
 
     def initialize(self):
         self.template_finder = TemplateFinder(config.data.get("symlinks.includes"),
                                               config.data.get("symlinks.excludes"),
                                               config.data.get("symlinks.suffixes"))
-
-    def on_file_found(self, file: str):
-        """
-        Called when a file is found.
-        """
-        source = file
-        target = self.template_finder.get_target(source)
-        if target:
-            bus.emit("symlinks:create", source=source, target=target)
-
-    def on_file_generated(self, source: str, target: str):  # pylint:disable=unused-argument
-        """
-        Called when a file is generated.
-        """
-        source = target
-        target = self.template_finder.get_target(source)
-        if target:
-            bus.emit("symlinks:create", source=source, target=target)
 
     def create_symlink(self, source, target):
         """

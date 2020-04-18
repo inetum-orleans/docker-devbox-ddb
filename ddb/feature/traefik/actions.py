@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 import shutil
-from typing import Iterable, Union, Callable
 
 from ddb.config import config
 from ...action import Action
@@ -13,7 +12,7 @@ class TraefikInstalllCertsAction(Action):
     """
 
     @property
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
+    def event_bindings(self):
         return "certs:available"
 
     @property
@@ -21,7 +20,7 @@ class TraefikInstalllCertsAction(Action):
         return "traefik:install-certs"
 
     @staticmethod
-    def execute(domain: str, private_key: str, certificate: str, *args, **kwargs):  # pylint:disable=unused-argument
+    def execute(domain: str, private_key: str, certificate: str, *args, **kwargs):
         """
         Execute action
         """

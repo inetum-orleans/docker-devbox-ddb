@@ -2,7 +2,7 @@
 import base64
 import json
 import os
-from typing import Union, Iterable, Callable
+from typing import Iterable
 
 import zgitignore
 from dictdiffer import diff
@@ -82,7 +82,7 @@ class CreateBinaryShim(Action):
         self.shell = shell
 
     @property
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
+    def event_bindings(self):
         return "binary:registered"
 
     @property
@@ -116,7 +116,7 @@ class ActivateAction(Action):
         self.shell = shell
 
     @property
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
+    def event_bindings(self):
         return "phase:print-activate"
 
     @property
@@ -171,7 +171,7 @@ class DeactivateAction(Action):
         self.shell = shell
 
     @property
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
+    def event_bindings(self):
         return "phase:print-deactivate"
 
     @property

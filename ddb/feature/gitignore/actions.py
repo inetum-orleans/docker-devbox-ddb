@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import os
-from typing import Union, Iterable, Callable
 
 import zgitignore
 
@@ -32,11 +31,11 @@ class UpdateGitignoreAction(Action):
         return "git:update-gitignore"
 
     @property
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
+    def event_bindings(self):
         return "file:generated"
 
     @staticmethod
-    def execute(target: str, source: str = None):  # pylint:disable=unused-argument
+    def execute(target: str, source: str = None):
         """
         Execute action
         """

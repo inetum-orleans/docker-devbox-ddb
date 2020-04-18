@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 import sys
 from argparse import ArgumentParser
-from typing import Optional, Sequence, Iterable, Callable
+from typing import Optional, Sequence, Iterable, Callable, Union
 
 import pkg_resources
 from slugify import slugify
 from toposort import toposort_flatten
 
 from ddb.action import actions
+from ddb.action.action import EventBinding, Action
 from ddb.action.runnerfactory import action_event_binding_runner_factory
 from ddb.binary import binaries
 from ddb.cache import caches, _project_cache_name, ShelveCache, _global_cache_name, _requests_cache_name, \
@@ -227,6 +228,20 @@ def handle_command_line(args: Optional[Sequence[str]] = None):
         opts.print_help()
 
 
+def _register_action_in_event_bus(action: Action, binding: Union[str, EventBinding], fail_fast=False):
+    """
+    Register a single event binding
+    """
+    if isinstance(binding, str):
+        binding = EventBinding(binding)
+
+    bus.on(binding.event, action_event_binding_runner_factory(action,
+                                                              binding.event,
+                                                              to_call=binding.call,
+                                                              event_processor=binding.processor,
+                                                              fail_fast=fail_fast).run)
+
+
 def register_actions_in_event_bus(fail_fast=False):
     """
     Register registered actions into event bus.
@@ -234,25 +249,11 @@ def register_actions_in_event_bus(fail_fast=False):
     sorted_actions = sorted(actions.all(), key=lambda x: x.order)
 
     for action in sorted_actions:
-        if isinstance(action.event_bindings, str):
-            event_name = action.event_bindings
-            bus.on(event_name,
-                   action_event_binding_runner_factory(action,
-                                                       event_name,
-                                                       fail_fast=fail_fast).run)
+        if isinstance(action.event_bindings, (str, EventBinding)):
+            _register_action_in_event_bus(action, action.event_bindings, fail_fast)
         else:
             for event_binding in action.event_bindings:
-                if isinstance(event_binding, str):
-                    event_name = event_binding
-                    bus.on(event_name, action_event_binding_runner_factory(action,
-                                                                           event_name,
-                                                                           fail_fast=fail_fast).run)
-                else:
-                    event_name, method_name = event_binding
-                    bus.on(event_name, action_event_binding_runner_factory(action,
-                                                                           event_name,
-                                                                           method_name,
-                                                                           fail_fast=fail_fast).run)
+                _register_action_in_event_bus(action, event_binding, fail_fast)
 
 
 def main(args: Optional[Sequence[str]] = None):

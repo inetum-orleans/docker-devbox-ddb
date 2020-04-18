@@ -3,7 +3,6 @@ import glob
 import os
 import re
 import shutil
-from typing import Iterable, Union, Callable
 
 import requests
 
@@ -66,7 +65,7 @@ class CopyAction(Action):
         return "copy:copy"
 
     @property
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
+    def event_bindings(self):
         return "phase:init"
 
     @staticmethod

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
 import os
-from typing import Union, Iterable, Callable
 
 import yaml
 from _jsonnet import evaluate_file  # pylint: disable=no-name-in-module
@@ -9,6 +8,7 @@ from marshmallow import Schema
 from marshmallow.fields import Nested, Dict, List
 
 from ddb.action import InitializableAction
+from ddb.action.action import EventBinding
 from ddb.config import config
 from ddb.event import bus
 from ddb.feature import features
@@ -29,33 +29,34 @@ class JsonnetAction(InitializableAction):
         return "jsonnet:render"
 
     @property
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
-        return ("file:found", self.on_file_found), \
-               ("file:generated", self.on_file_generated), \
-               ("jsonnet:render", self.render_jsonnet)
+    def event_bindings(self):
+        def file_found_processor(file: str):
+            """
+            Called when a file is found.
+            """
+            template = file
+            target = self.template_finder.get_target(template)
+            if target:
+                return (), {"template": template, "target": target}
+            return None
+
+        def file_generated_processor(source: str, target: str):
+            """
+            Called when a file is generated.
+            """
+            template = target
+            target = self.template_finder.get_target(template)
+            if target:
+                return (), {"template": template, "target": target}
+            return None
+
+        return (EventBinding("file:found", self.render_jsonnet, file_found_processor),
+                EventBinding("file:generated", self.render_jsonnet, file_generated_processor))
 
     def initialize(self):
         self.template_finder = TemplateFinder(config.data.get("jsonnet.includes"),
                                               config.data.get("jsonnet.excludes"),
                                               config.data.get("jsonnet.suffixes"))
-
-    def on_file_found(self, file: str):
-        """
-        Called when a file is found.
-        """
-        template = file
-        target = self.template_finder.get_target(template)
-        if target:
-            bus.emit('jsonnet:render', template=template, target=target)
-
-    def on_file_generated(self, source: str, target: str):  # pylint:disable=unused-argument
-        """
-        Called when a file is generated.
-        """
-        template = target
-        target = self.template_finder.get_target(template)
-        if target:
-            bus.emit('jsonnet:render', template=template, target=target)
 
     @staticmethod
     def _get_stop_fields_from_schema(schema: Schema, stack, ret):

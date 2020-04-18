@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import posixpath
-from typing import Union, Iterable, Callable
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
@@ -9,6 +8,7 @@ from ddb.config import config
 from ddb.event import bus
 from ddb.utils.file import TemplateFinder
 from . import filters, tests
+from ...action.action import EventBinding
 
 custom_filters = vars(filters)
 for k in tuple(custom_filters.keys()):
@@ -37,10 +37,23 @@ class JinjaAction(InitializableAction):
         return "jinja:render"
 
     @property
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
-        return ("file:found", self.on_file_found), \
-               ("file:generated", self.on_file_generated), \
-               ("jinja:render", self.render_jinja)
+    def event_bindings(self):
+        def file_found_processor(file: str):
+            template = file
+            target = self.template_finder.get_target(template)
+            if target:
+                return (), {"template": template, "target": target}
+            return None
+
+        def file_generated_processor(source: str, target: str):
+            template = target
+            target = self.template_finder.get_target(template)
+            if target:
+                return (), {"template": template, "target": target}
+            return None
+
+        return (EventBinding("file:found", processor=file_found_processor),
+                EventBinding("file:generated", processor=file_generated_processor))
 
     def initialize(self):
         self.template_finder = TemplateFinder(config.data.get("jinja.includes"),
@@ -57,25 +70,7 @@ class JinjaAction(InitializableAction):
 
         self.context = dict(config.data)
 
-    def on_file_found(self, file: str):
-        """
-        Called when a file is found.
-        """
-        template = file
-        target = self.template_finder.get_target(template)
-        if target:
-            bus.emit("jinja:render", template=template, target=target)
-
-    def on_file_generated(self, source: str, target: str):  # pylint:disable=unused-argument
-        """
-        Called when a file is generated.
-        """
-        template = target
-        target = self.template_finder.get_target(template)
-        if target:
-            bus.emit("jinja:render", template=template, target=target)
-
-    def render_jinja(self, template: str, target: str):
+    def execute(self, template: str, target: str):
         """
         Render jinja template
         """

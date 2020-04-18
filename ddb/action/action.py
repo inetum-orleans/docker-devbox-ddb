@@ -1,8 +1,19 @@
 # -*- coding: utf-8 -*-
 from abc import abstractmethod, ABC
-from typing import Iterable, Union, Callable
+from typing import Callable
 
 from ddb.registry import RegistryObject
+
+
+class EventBinding:
+    """
+    A configured event binding on action.
+    """
+
+    def __init__(self, event: str, call: Callable = None, processor: Callable = None):
+        self.event = event
+        self.call = call
+        self.processor = processor
 
 
 class Action(RegistryObject, ABC):
@@ -12,15 +23,22 @@ class Action(RegistryObject, ABC):
 
     @property
     @abstractmethod
-    def event_bindings(self) -> Union[str, Iterable[Union[Iterable[str], Callable]]]:
+    def event_bindings(self):
         """
         The event bindings that should trigger the action.
 
         A binding can be defined as a string matching the event name and will register the "execute" method on event
         bus.
 
-        A binding can also be defined as a 2-tuple of string, first value matching the event name and will register
-        the method named from second value on event bus.
+        A binding can also be defined as a tuple.
+
+        First value is the event name
+
+        Second value is a callable that will be invoked with event *args, **kwargs.
+
+        A third value may be present to process the event before invoking the callable.
+        If processor returns False, callable will not be invoked.
+        If processor returns a 2-tuple, it will use those as *args, **kwargs to invoke the method.
 
         This method returns an iterable of bindings.
         """
