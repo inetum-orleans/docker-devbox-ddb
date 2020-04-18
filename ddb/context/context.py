@@ -1,11 +1,8 @@
 import logging
 from collections import Callable
-from typing import Optional, Union, List
+from typing import Optional, List
 from typing import TYPE_CHECKING
 
-import colorlog
-import verboselogs
-from colorlog import default_log_colors
 from dotty_dict import Dotty
 
 if TYPE_CHECKING:
@@ -87,7 +84,7 @@ class Context:
         """
         Logger for current context.
         """
-        logger_name = ".".join(["context"] +
+        logger_name = ".".join(["ddb.context"] +
                                list(map(lambda x: x.name,
                                         [x for x in [self.command, self.phase, self.action] if x]))
                                )
@@ -99,35 +96,3 @@ class Context:
         Logger for current context.
         """
         return self.log
-
-
-class CustomFormatter(colorlog.ColoredFormatter):
-    """
-    Custom context logger formatter.
-    """
-    def format(self, record):
-        record.simplename = record.name.rsplit(".", 1)[-1]
-        return super().format(record)
-
-
-def configure_context_logger(level: Union[str, int] = logging.INFO):
-    """
-    Configure context logger.
-    """
-    verboselogs.install()
-
-    log_colors = dict(default_log_colors)
-    log_colors['NOTICE'] = 'thin_white'
-    log_colors['VERBOSE'] = 'thin_white'
-    log_colors['DEBUG'] = 'thin_cyan'
-    log_colors['SUCCESS'] = 'bold_green'
-    log_colors['SPAM'] = 'bold_red'
-
-    handler = logging.StreamHandler()
-    handler.setFormatter(CustomFormatter(
-        '%(log_color)s[%(simplename)s] %(message)s',
-        log_colors=log_colors))
-
-    logger = logging.getLogger('context')
-    logger.setLevel(level)
-    logger.addHandler(handler)

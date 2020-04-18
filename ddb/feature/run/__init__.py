@@ -26,7 +26,9 @@ class RunFeature(Feature):
     @property
     def phases(self) -> Iterable[Phase]:
         return (
-            DefaultPhase("run", "Display command to run project binary", lambda parser: parser.add_argument("name")),
+            DefaultPhase("run", "Display command to run project binary",
+                         lambda parser: parser.add_argument("name"),
+                         allow_unknown_args=True),
         )
 
     @property

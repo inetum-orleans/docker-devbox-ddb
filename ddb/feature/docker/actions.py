@@ -48,7 +48,7 @@ class EmitDockerComposeConfigAction(Action):
 
     def __init__(self):
         super().__init__()
-        self._executed = False
+        self.current_yaml_output = None
         self.key_re = re.compile(r"^\s*ddb\.emit\.(.+?)(?:\[(.+?)\])?(?:\((.+?)\))?\s*$")
         self.eval_re = re.compile(r"^\s*eval\((.*)\)\s*$")
 
@@ -68,10 +68,6 @@ class EmitDockerComposeConfigAction(Action):
         """
         Execute action
         """
-
-        if self._executed:
-            return
-
         # TODO: Add support for custom docker-compose -f option (custom filename and multiple files)
         if not os.path.exists("docker-compose.yml"):
             return
@@ -86,7 +82,9 @@ class EmitDockerComposeConfigAction(Action):
         parsed_config = yaml.load(yaml_output, yaml.SafeLoader)
         docker_compose_config = Dotty(parsed_config)
 
-        self._executed = True
+        if self.current_yaml_output == yaml_output:
+            return
+        self.current_yaml_output = yaml_output
 
         bus.emit("docker:docker-compose-config", docker_compose_config=docker_compose_config)
 

@@ -10,9 +10,8 @@ from _pytest.tmpdir import TempPathFactory
 from colorlog import logging
 from verboselogs import VerboseLogger, SPAM
 
-from ddb.__main__ import reset
+from ddb.__main__ import reset, configure_logging
 from ddb.config import Config
-from ddb.context.context import configure_context_logger
 from .utilstest import load_config
 
 pytest_plugins = ["docker_compose"]
@@ -76,7 +75,7 @@ def configure():
             os.environ['DDB_OVERRIDE_DOCKER_USER_GID'] = '1000'
             os.environ['DDB_OVERRIDE_DOCKER_IP'] = '127.0.0.1'
 
-        configure_context_logger(SPAM)
+        configure_logging(SPAM)
 
         yield
     finally:

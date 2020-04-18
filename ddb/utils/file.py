@@ -161,6 +161,13 @@ class FileWalker:
                 break
         return excluded
 
+    def is_source_filtered(self, candidate: str):
+        """
+        Check if a source path is filtered out by includes/excludes
+        """
+        return not self._is_included(candidate, *self.includes) or \
+               self._is_excluded(candidate, *self.excludes)
+
     @staticmethod
     def _is_included(candidate: str, *includes: List[str]) -> bool:
         included = False
@@ -213,8 +220,7 @@ class TemplateFinder(FileWalker):
         Get the target of given source, or None if it doesn't match suffixes.
         """
         if check:
-            if not self._is_included(source, *self.includes) or \
-                    self._is_excluded(source, *self.excludes):
+            if self.is_source_filtered(source):
                 return None
 
         if self.skip_processed_sources:
@@ -240,6 +246,21 @@ class TemplateFinder(FileWalker):
         """
         context.processed_sources[source] = target
         context.processed_targets[target] = source
+
+    @staticmethod
+    def mark_as_unprocessed(filepath=None):
+        """
+        Mark sources and target as processed, for them to be skipped by other file template finders.
+        """
+        if filepath and filepath in context.processed_sources.keys():
+            linked_target = context.processed_sources.pop(filepath)
+            if linked_target in context.processed_targets.keys():
+                context.processed_targets.pop(linked_target)
+
+        if filepath in context.processed_targets:
+            linked_source = context.processed_targets.pop(filepath)
+            if linked_source in context.processed_sources.keys():
+                context.processed_sources.pop(linked_source)
 
     @staticmethod
     def _get_target_and_suffix(template_candidate: str, suffixes: List[str]) -> Optional[Tuple[str, str]]:

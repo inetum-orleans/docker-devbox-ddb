@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from abc import abstractmethod, ABC
-from typing import Callable
+from typing import Callable, Iterable, Union
 
 from ddb.registry import RegistryObject
 
@@ -8,6 +8,14 @@ from ddb.registry import RegistryObject
 class EventBinding:
     """
     A configured event binding on action.
+
+    event is the event name
+
+    call is a callable that will be invoked with event *args, **kwargs.
+
+    processor is used to process the event before invoking the callable.
+    If processor returns False, callable will not be invoked.
+    If processor returns a 2-tuple, it will use those as *args, **kwargs to invoke the method.
     """
 
     def __init__(self, event: str, call: Callable = None, processor: Callable = None):
@@ -23,24 +31,14 @@ class Action(RegistryObject, ABC):
 
     @property
     @abstractmethod
-    def event_bindings(self):
+    def event_bindings(self) -> Iterable[Union[str, EventBinding]]:
         """
         The event bindings that should trigger the action.
 
         A binding can be defined as a string matching the event name and will register the "execute" method on event
         bus.
 
-        A binding can also be defined as a tuple.
-
-        First value is the event name
-
-        Second value is a callable that will be invoked with event *args, **kwargs.
-
-        A third value may be present to process the event before invoking the callable.
-        If processor returns False, callable will not be invoked.
-        If processor returns a 2-tuple, it will use those as *args, **kwargs to invoke the method.
-
-        This method returns an iterable of bindings.
+        A binding can also be defined as EventBinding instance.
         """
 
     @property
@@ -72,4 +70,28 @@ class InitializableAction(Action, ABC):  # pylint:disable=abstract-method
     def initialize(self):
         """
         Initialize method, invoked before first event binding execution.
+        """
+
+
+class WatchSupport(ABC):
+    """
+    Watch support
+    """
+
+    @abstractmethod
+    def start_watching(self):
+        """
+        Start watching
+        """
+
+    @abstractmethod
+    def stop_watching(self):
+        """
+        Stop watching
+        """
+
+    @abstractmethod
+    def join_watching(self):
+        """
+        Join watching
         """

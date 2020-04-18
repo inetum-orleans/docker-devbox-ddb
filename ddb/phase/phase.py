@@ -24,6 +24,13 @@ class Phase(RegistryObject, ABC):  # pylint:disable=abstract-method
         Execute the phase.
         """
 
+    @property
+    def allow_unknown_args(self):
+        """
+        Check if this phase allow unkown args.
+        """
+        return False
+
 
 class DefaultPhase(DefaultRegistryObject, Phase):
     """
@@ -34,10 +41,16 @@ class DefaultPhase(DefaultRegistryObject, Phase):
                  name: str,
                  description: Union[str, None] = None,
                  parser: Callable[[ArgumentParser], Any] = None,
-                 run_once: bool = False):
+                 run_once: bool = False,
+                 allow_unknown_args: bool = False):
         super().__init__(name, description)
         self.run_once = run_once
         self._parser = parser
+        self._allow_unknown_args = allow_unknown_args
+
+    @property
+    def allow_unknown_args(self):
+        return self._allow_unknown_args
 
     def configure_parser(self, parser: ArgumentParser):
         if self._parser:

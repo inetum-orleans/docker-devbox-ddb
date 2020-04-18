@@ -3,10 +3,7 @@ from abc import ABC, abstractmethod
 from argparse import ArgumentParser
 from typing import Iterable, Union, Optional
 
-from ..cache import caches
-from ..config import config
 from ..context import context
-from ..exception import RestartWithArgs
 from ..phase import phases, Phase
 from ..phase.phase import execute_phase
 from ..registry import RegistryObject, DefaultRegistryObject
@@ -16,6 +13,13 @@ class Command(RegistryObject, ABC):
     """
     A command is available in the program usage and can perform some action on the system.
     """
+
+    @property
+    @abstractmethod
+    def allow_unknown_args(self):
+        """
+        Check if this command allow unknown args.
+        """
 
     @abstractmethod
     def execute(self):
@@ -34,9 +38,15 @@ class DefaultCommand(DefaultRegistryObject, Command):
     A command is available in the program usage and can perform some action on the system.
     """
 
-    def __init__(self, name: str, description: str = None, parent: Optional[Union[Command, str]] = None):
+    def __init__(self, name: str, description: str = None, parent: Optional[Union[Command, str]] = None,
+                 allow_unknown_args=False):
         super().__init__(name, description)
         self._parent = parent
+        self._allow_unknown_args = allow_unknown_args
+
+    @property
+    def allow_unknown_args(self):
+        return self._allow_unknown_args
 
     @property
     def parent(self) -> Optional[Command]:
@@ -63,22 +73,6 @@ class DefaultCommand(DefaultRegistryObject, Command):
         if self.parent:
             self.parent.execute()
 
-        clear_cache = config.args.clear_cache
-        if clear_cache:
-            for cache in caches.all():
-                cache.clear()
-            context.log.success("Cache cleared")
-            config.args.clear_cache = False
-
-            raise RestartWithArgs(config.args)
-
-    def configure_parser(self, parser: ArgumentParser):
-        """
-        Configure the argument parser.
-        """
-        super().configure_parser(parser)
-        parser.add_argument("--clear-cache", action="store_true", default=None, help="Clear all caches")
-
 
 class LifecycleCommand(DefaultCommand):
     """
@@ -91,6 +85,9 @@ class LifecycleCommand(DefaultCommand):
         super().__init__(name, description, parent)
         self._lifecycle = list(map(lambda phase: phases.get(phase) if not isinstance(phase, Phase) else phase,
                                    lifecycle))  # type: Iterable[Phase]
+        for phase in self._lifecycle:
+            if phase.allow_unknown_args:
+                self._allow_unknown_args = True
 
     def configure_parser(self, parser: ArgumentParser):
         super().configure_parser(parser)

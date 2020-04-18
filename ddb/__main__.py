@@ -1,15 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import logging
 import sys
+import time
 from argparse import ArgumentParser
-from typing import Optional, Sequence, Iterable, Callable, Union
+from gettext import gettext as _
+from typing import Optional, Sequence, Iterable, Callable, Union, List
 
 import pkg_resources
+import verboselogs
+from colorlog import default_log_colors, ColoredFormatter
 from slugify import slugify
 from toposort import toposort_flatten
 
 from ddb.action import actions
-from ddb.action.action import EventBinding, Action
+from ddb.action.action import EventBinding, Action, WatchSupport
 from ddb.action.runnerfactory import action_event_binding_runner_factory
 from ddb.binary import binaries
 from ddb.cache import caches, _project_cache_name, ShelveCache, _global_cache_name, _requests_cache_name, \
@@ -18,9 +23,7 @@ from ddb.command import commands
 from ddb.command.command import execute_command
 from ddb.config import config
 from ddb.context import context
-from ddb.context.context import configure_context_logger
 from ddb.event import bus
-from ddb.exception import RestartWithArgs
 from ddb.feature import features, Feature
 from ddb.feature.certs import CertsFeature
 from ddb.feature.copy import CopyFeature
@@ -185,6 +188,69 @@ def load_registered_features():
     return enabled_features
 
 
+def configure_logging(level: Union[str, int] = logging.INFO):
+    """
+    Configure context logger.
+    """
+    verboselogs.install()
+
+    log_colors = dict(default_log_colors)
+    log_colors['NOTICE'] = 'thin_white'
+    log_colors['VERBOSE'] = 'thin_white'
+    log_colors['DEBUG'] = 'thin_cyan'
+    log_colors['SUCCESS'] = 'bold_green'
+    log_colors['SPAM'] = 'bold_red'
+
+    class CustomFormatter(ColoredFormatter):
+        """
+        Custom context logger formatter.
+        """
+
+        def format(self, record):
+            record.simplename = record.name.rsplit(".", 1)[-1]
+            return super().format(record)
+
+    handler = logging.StreamHandler()
+    handler.setFormatter(CustomFormatter(
+        '%(log_color)s[%(simplename)s] %(message)s',
+        log_colors=log_colors))
+
+    logger = logging.getLogger("ddb")
+    logger.setLevel(level)
+    logger.addHandler(handler)
+
+
+def handle_watch():
+    """
+    Handle watch option
+    """
+    watch_supports = []  # type:List[Union[Action, WatchSupport]]
+    for action in actions.all():
+        if isinstance(action, WatchSupport):
+            watch_supports.append(action)
+
+    if watch_supports:
+        for watch_support in watch_supports:
+            logging.getLogger("ddb.watch").info("Initializing %s watcher ...", watch_support.name)
+            watch_support.start_watching()
+
+        try:
+            logging.getLogger("ddb.watch").warning("Watching ... (CTRL+C to terminate)")
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            logging.getLogger("ddb.watch").warning("Terminating ...")
+            for action in actions.all():
+                if isinstance(action, WatchSupport):
+                    action.stop_watching()
+
+        for action in actions.all():
+            if isinstance(action, WatchSupport):
+                action.join_watching()
+    else:
+        logging.getLogger("ddb.watch").warning("Watching is supported by none enabled features")
+
+
 def handle_command_line(args: Optional[Sequence[str]] = None):
     """
     Handle command line arguments.
@@ -192,9 +258,16 @@ def handle_command_line(args: Optional[Sequence[str]] = None):
     opts = ArgumentParser()
     subparsers = opts.add_subparsers(dest="command", help='Available commands')
 
-    opts.add_argument('-v', '--verbose', action="store_true", default=False)
-    opts.add_argument('-vv', '--very-verbose', action="store_true", default=False)
-    opts.add_argument('-s', '--silent', action="store_true", default=False)
+    opts.add_argument('-v', '--verbose', action="store_true", default=False,
+                      help="Enable more logs")
+    opts.add_argument('-vv', '--very-verbose', action="store_true", default=False,
+                      help="Enable even more logs")
+    opts.add_argument('-s', '--silent', action="store_true", default=False,
+                      help="Disable all logs")
+    opts.add_argument("-c", "--clear-cache", action="store_true", default=None,
+                      help="Clear all caches")
+    opts.add_argument('-w', '--watch', action="store_true", default=False,
+                      help="Enable watch mode (hot reload of generated files")
 
     command_parsers = {}
 
@@ -213,17 +286,27 @@ def handle_command_line(args: Optional[Sequence[str]] = None):
     elif parsed_args.silent:
         log_level = 'CRITICAL'
 
-    configure_context_logger(log_level)
+    configure_logging(log_level)
+
+    clear_cache = parsed_args.clear_cache
+    if clear_cache:
+        for cache in caches.all():
+            cache.clear()
+        logging.getLogger("ddb.cache").success("Cache cleared")
 
     if parsed_args.command:
         command = commands.get(parsed_args.command)
+
+        if unknown_args and not command.allow_unknown_args:
+            msg = _('unrecognized arguments: %s')
+            opts.error(msg % ' '.join(unknown_args))
+
         config.args = parsed_args
         config.unknown_args = unknown_args
-        try:
-            execute_command(command)
-        except RestartWithArgs as exc:
-            config.args = exc.restart_args
-            execute_command(command)
+        execute_command(command)
+
+        if parsed_args.watch:
+            handle_watch()
     else:
         opts.print_help()
 
