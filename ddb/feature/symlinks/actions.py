@@ -13,10 +13,6 @@ class SymlinksAction(AbstractTemplateAction):
     Creates symbolic links based on filename suffixes.
     """
 
-    def __init__(self):
-        super().__init__()
-        self.template_finder = None  # type: TemplateFinder
-
     @property
     def name(self) -> str:
         return "symlinks:create"
