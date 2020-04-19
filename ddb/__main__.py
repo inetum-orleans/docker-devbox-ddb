@@ -367,11 +367,12 @@ def clear_caches():
         cache.flush()
 
 
-def reset():
+def reset(keep_caches=False):
     """
     Reset all caches and registries to run main method again
     """
-    clear_caches()
+    if not keep_caches:
+        clear_caches()
 
     caches.clear()
     bus.clear()

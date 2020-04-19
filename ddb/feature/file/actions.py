@@ -2,12 +2,14 @@
 import logging
 import os
 
+from slugify import slugify
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 from watchdog.utils.delayed_queue import DelayedQueue
 
 from ddb.action import InitializableAction
 from ddb.action.action import WatchSupport
+from ddb.cache import caches, _project_cache_name, ShelveCache
 from ddb.config import config
 from ddb.context import context
 from ddb.event import bus
@@ -38,12 +40,29 @@ class FileWalkAction(InitializableAction, WatchSupport):
                                       config.data.get("file.excludes"),
                                       config.data.get("file.suffixes"))
 
+        caches.register(
+            ShelveCache(slugify(_project_cache_name + '.' + config.paths.project_home + ".file",
+                                regex_pattern=r'[^-a-z0-9_\.]+')),
+            _project_cache_name + ".file")
+
     def execute(self):
         """
         Execute action
         """
+        cache = caches.get(_project_cache_name + ".file")
+        found_files = set()
+
+        event_name = "file:found"
+
         for file in self.file_walker.items:
-            bus.emit("file:found", file=file)
+            cache.set(file, None)
+            found_files.add(file)
+            bus.emit(event_name, file=file)
+
+        for cached_file in cache.keys():
+            if cached_file not in found_files:
+                cache.pop(cached_file)
+                bus.emit("file:deleted", file=cached_file)
 
     def start_watching(self):
         self.observer = Observer()
