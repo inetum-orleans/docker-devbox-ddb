@@ -9,6 +9,7 @@ from ddb.event import bus
 from ddb.utils.file import TemplateFinder, write_if_different
 from . import filters, tests
 from ...action.action import EventBinding
+from ...context import context
 
 custom_filters = vars(filters)
 for k in tuple(custom_filters.keys()):
@@ -80,6 +81,6 @@ class JinjaAction(InitializableAction):
 
         written = write_if_different(target, jinja.render(**self.context), 'r', 'w', log_source=template)
 
-        self.template_finder.mark_as_processed(template, target)
+        context.mark_as_processed(template, target)
         if written:
             bus.emit('file:generated', source=template, target=target)

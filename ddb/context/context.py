@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, List, Callable
+from typing import Optional, List, Callable, Dict
 from typing import TYPE_CHECKING
 
 from dotty_dict import Dotty
@@ -47,8 +47,8 @@ class Context:
         self.command = None  # type: Optional['Command']
         self.stack = []  # type: List[ContextStackItem]
         self.exceptions = []  # type: List[Exception]
-        self.processed_sources = dict()
-        self.processed_targets = dict()
+        self.processed_sources = dict()  # type: Dict[str, str]
+        self.processed_targets = dict()  # type: Dict[str, str]
         self.data = Dotty(dict())
 
     def reset(self):
@@ -95,3 +95,24 @@ class Context:
         Logger for current context.
         """
         return self.log
+
+    def mark_as_processed(self, source, target):
+        """
+        Mark sources and target as processed, for them to be skipped by other file template finders.
+        """
+        self.processed_sources[source] = target
+        self.processed_targets[target] = source
+
+    def mark_as_unprocessed(self, filepath=None):
+        """
+        Mark sources and target as processed, for them to be skipped by other file template finders.
+        """
+        if filepath and filepath in self.processed_sources.keys():
+            linked_target = self.processed_sources.pop(filepath)
+            if linked_target in self.processed_targets.keys():
+                self.processed_targets.pop(linked_target)
+
+        if filepath in self.processed_targets:
+            linked_source = self.processed_targets.pop(filepath)
+            if linked_source in self.processed_sources.keys():
+                self.processed_sources.pop(linked_source)

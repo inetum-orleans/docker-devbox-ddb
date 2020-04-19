@@ -44,15 +44,16 @@ class SymlinksAction(InitializableAction):
                 return (), {"source": source, "target": target}
             return None
 
-        return (EventBinding("file:found", self.create_symlink, file_found_processor), \
-                EventBinding("file:generated", self.create_symlink, file_generated_processor))
+        return (EventBinding("file:found", processor=file_found_processor),
+                EventBinding("file:generated", processor=file_generated_processor))
 
     def initialize(self):
         self.template_finder = TemplateFinder(config.data.get("symlinks.includes"),
                                               config.data.get("symlinks.excludes"),
                                               config.data.get("symlinks.suffixes"))
 
-    def create_symlink(self, source, target):
+    @staticmethod
+    def execute(source, target):
         """
         Create a symbolic link
         """
@@ -68,5 +69,5 @@ class SymlinksAction(InitializableAction):
         os.symlink(relsource, os.path.normpath(target))
         context.log.success("%s -> %s", source, target)
 
-        self.template_finder.mark_as_processed(source, target)
+        context.mark_as_processed(source, target)
         bus.emit('file:generated', source=source, target=target)

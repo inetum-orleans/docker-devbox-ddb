@@ -8,6 +8,7 @@ import yaml
 from ddb.action import InitializableAction
 from ddb.action.action import EventBinding
 from ddb.config import config
+from ddb.context import context
 from ddb.event import bus
 from ddb.utils.file import TemplateFinder, write_if_different
 
@@ -47,8 +48,8 @@ class YttAction(InitializableAction):
                 return (), {"template": template, "target": target}
             return None
 
-        return (EventBinding("file:found", self.render_ytt, file_found_processor),
-                EventBinding("file:generated", self.render_ytt, file_generated_processor))
+        return (EventBinding("file:found", processor=file_found_processor),
+                EventBinding("file:generated", processor=file_generated_processor))
 
     def initialize(self):
         self.template_finder = TemplateFinder(config.data.get("ytt.includes"),
@@ -70,7 +71,8 @@ class YttAction(InitializableAction):
             new[key] = value
         return new
 
-    def render_ytt(self, template: str, target: str):
+    @staticmethod
+    def execute(template: str, target: str):
         """
         Render a YTT template
         """
@@ -112,7 +114,7 @@ class YttAction(InitializableAction):
 
             written = write_if_different(target, rendered.stdout, read_mode='rb', write_mode='wb', log_source=template)
 
-            self.template_finder.mark_as_processed(template, target)
+            context.mark_as_processed(template, target)
 
             if written:
                 bus.emit('file:generated', source=template, target=target)

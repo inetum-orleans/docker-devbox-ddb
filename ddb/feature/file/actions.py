@@ -9,8 +9,9 @@ from watchdog.utils.delayed_queue import DelayedQueue
 from ddb.action import InitializableAction
 from ddb.action.action import WatchSupport
 from ddb.config import config
+from ddb.context import context
 from ddb.event import bus
-from ddb.utils.file import FileWalker, TemplateFinder
+from ddb.utils.file import FileWalker
 
 
 class FileWalkAction(InitializableAction, WatchSupport):
@@ -70,7 +71,7 @@ class ObserverHandler(FileSystemEventHandler):
         """
         if not file.endswith('~') and not self.action.file_walker.is_source_filtered(file):
             logging.getLogger("ddb.watch").debug("%s", file)
-            TemplateFinder.mark_as_unprocessed(file)
+            context.mark_as_unprocessed(file)
             bus.emit(event, file=file)
 
     def on_modified(self, event):

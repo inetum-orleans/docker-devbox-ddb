@@ -9,6 +9,7 @@ from ddb.action import InitializableAction
 from ddb.action.action import EventBinding
 from ddb.config import config
 from ddb.config.flatten import flatten
+from ddb.context import context
 from ddb.event import bus
 from ddb.feature import features
 from ddb.utils.file import TemplateFinder, write_if_different
@@ -49,15 +50,15 @@ class JsonnetAction(InitializableAction):
                 return (), {"template": template, "target": target}
             return None
 
-        return (EventBinding("file:found", self.render_jsonnet, file_found_processor),
-                EventBinding("file:generated", self.render_jsonnet, file_generated_processor))
+        return (EventBinding("file:found", processor=file_found_processor),
+                EventBinding("file:generated", processor=file_generated_processor))
 
     def initialize(self):
         self.template_finder = TemplateFinder(config.data.get("jsonnet.includes"),
                                               config.data.get("jsonnet.excludes"),
                                               config.data.get("jsonnet.suffixes"))
 
-    def render_jsonnet(self, template: str, target: str):
+    def execute(self, template: str, target: str):
         """
         Render jsonnet template
         """
@@ -73,7 +74,7 @@ class JsonnetAction(InitializableAction):
                     os.makedirs(evaluated_target_parent_path)
 
                 written = write_if_different(evaluated_target_path, content, log_source=template)
-                self.template_finder.mark_as_processed(template, evaluated_target_path)
+                context.mark_as_processed(template, evaluated_target_path)
                 if written:
                     bus.emit('file:generated', source=template, target=evaluated_target_path)
         else:
@@ -82,7 +83,7 @@ class JsonnetAction(InitializableAction):
                 evaluated = yaml.dump(json.loads(evaluated), Dumper=yaml.SafeDumper)
 
             written = write_if_different(target, evaluated, log_source=template)
-            self.template_finder.mark_as_processed(template, target)
+            context.mark_as_processed(template, target)
 
             if written:
                 bus.emit('file:generated', source=template, target=target)
