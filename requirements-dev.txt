@@ -4,5 +4,6 @@ pylint
 pytest
 coverage
 pytest-docker-compose
+waiting
 
 -r requirements.txt

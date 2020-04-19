@@ -1,5 +1,4 @@
 import os
-import zgitignore
 
 from ddb.__main__ import load_registered_features, main
 from ddb.feature import features
@@ -21,7 +20,7 @@ class TestUpdateGitIgnoreAction:
         with open('.gitignore', 'r') as f:
             gitignore = f.read()
 
-        assert gitignore == 'to-ignore.yml'
+        assert gitignore == 'to-ignore.yml\n'
 
     def test_empty_project_with_core(self, project_loader):
         project_loader("empty")
@@ -37,7 +36,7 @@ class TestUpdateGitIgnoreAction:
         with open('.gitignore', 'r') as f:
             gitignore = f.read()
 
-        assert gitignore == 'to-ignore.yml'
+        assert gitignore == 'to-ignore.yml\n'
 
     def test_already_ignored(self, project_loader):
         project_loader("already_ignored")
@@ -85,7 +84,7 @@ class TestUpdateGitIgnoreAction:
         assert os.path.exists(os.path.join('.gitignore'))
         with open(os.path.join('.gitignore'), 'r') as f:
             gitignore = f.read()
-            assert gitignore == 'no/gitignore/directory/foo.txt'
+            assert gitignore == 'no/gitignore/directory/foo.txt\n'
 
         assert os.path.exists(os.path.join('sub', '.gitignore'))
         with open(os.path.join('sub', '.gitignore'), 'r') as f:

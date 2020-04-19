@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import posixpath
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
@@ -54,6 +55,7 @@ class JinjaAction(InitializableAction):
             return None
 
         return (EventBinding("file:found", processor=file_found_processor),
+                EventBinding("file:deleted", call=self.delete, processor=file_found_processor),
                 EventBinding("file:generated", processor=file_generated_processor))
 
     def initialize(self):
@@ -70,6 +72,16 @@ class JinjaAction(InitializableAction):
         self.env.tests.update(custom_tests)
 
         self.context = dict(config.data)
+
+    @staticmethod
+    def delete(template: str, target: str):
+        """
+        Delete a rendered jinja template
+        """
+        if os.path.exists(target):
+            os.remove(target)
+            context.log.warning("%s removed", target)
+            bus.emit("file:deleted", file=target)
 
     def execute(self, template: str, target: str):
         """

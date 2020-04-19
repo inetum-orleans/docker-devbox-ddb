@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import sys
-import time
+import threading
 from argparse import ArgumentParser
 from gettext import gettext as _
 from typing import Optional, Sequence, Iterable, Callable, Union, List
@@ -221,7 +221,7 @@ def configure_logging(level: Union[str, int] = logging.INFO):
     logger.addHandler(handler)
 
 
-def handle_watch():
+def handle_watch(watch_started_event=threading.Event(), watch_stop_event=threading.Event()):
     """
     Handle watch option
     """
@@ -234,16 +234,17 @@ def handle_watch():
         for watch_support in watch_supports:
             logging.getLogger("ddb.watch").info("Initializing %s watcher ...", watch_support.name)
             watch_support.start_watching()
-
+        watch_started_event.set()
         try:
             logging.getLogger("ddb.watch").warning("Watching ... (CTRL+C to terminate)")
-            while True:
-                time.sleep(1)
+            while not watch_stop_event.wait(1):
+                pass
         except KeyboardInterrupt:
-            logging.getLogger("ddb.watch").warning("Terminating ...")
-            for action in actions.all():
-                if isinstance(action, WatchSupport):
-                    action.stop_watching()
+            pass
+        logging.getLogger("ddb.watch").warning("Terminating ...")
+        for action in actions.all():
+            if isinstance(action, WatchSupport):
+                action.stop_watching()
 
         for action in actions.all():
             if isinstance(action, WatchSupport):
@@ -252,7 +253,9 @@ def handle_watch():
         logging.getLogger("ddb.watch").warning("Watching is supported by none enabled features")
 
 
-def handle_command_line(args: Optional[Sequence[str]] = None):
+def handle_command_line(args: Optional[Sequence[str]] = None,
+                        watch_started_event=threading.Event(),
+                        watch_stop_event=threading.Event()):
     """
     Handle command line arguments.
     """
@@ -307,7 +310,7 @@ def handle_command_line(args: Optional[Sequence[str]] = None):
         execute_command(command)
 
         if parsed_args.watch:
-            handle_watch()
+            handle_watch(watch_started_event, watch_stop_event)
     else:
         opts.print_help()
 
@@ -340,7 +343,9 @@ def register_actions_in_event_bus(fail_fast=False):
                 _register_action_in_event_bus(action, event_binding, fail_fast)
 
 
-def main(args: Optional[Sequence[str]] = None):
+def main(args: Optional[Sequence[str]] = None,
+         watch_started_event=threading.Event(),
+         watch_stop_event=threading.Event()):
     """
     Load all features and handle command line
     """
@@ -349,7 +354,7 @@ def main(args: Optional[Sequence[str]] = None):
     register_features()
     load_registered_features()
     register_actions_in_event_bus()
-    handle_command_line(args)
+    handle_command_line(args, watch_started_event, watch_stop_event)
     return context.exceptions
 
 

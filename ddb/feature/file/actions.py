@@ -93,5 +93,5 @@ class ObserverHandler(FileSystemEventHandler):
         if not event.is_directory:
             source = os.path.relpath(event.src_path)
             destination = os.path.relpath(event.dest_path)
-            self.emit_if_not_filtered("file:deleted", source)
             self.emit_if_not_filtered("file:found", destination)
+            self.emit_if_not_filtered("file:deleted", source)
