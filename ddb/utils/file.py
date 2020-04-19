@@ -3,6 +3,7 @@ import fnmatch
 import os
 import re
 from pathlib import Path
+from stat import S_IRUSR, S_IWUSR, S_IRGRP, S_IROTH
 from typing import List, Union, Optional, Tuple
 
 from braceexpand import braceexpand
@@ -20,58 +21,72 @@ def has_same_content(filename1: str, filename2: str, read_mode='rb') -> bool:
             return file1.read() == file2.read()
 
 
-def write_if_different(file, data, read_mode='r', write_mode='w', log_source=None, **kwargs) -> bool:
+def write_if_different(file, data, read_mode='r', write_mode='w', log_source=None, readonly=True, **kwargs) -> bool:
     """
     Write the file if existing data is different than given data.
     """
-    if os.path.exists(file):
-        with open(file, mode=read_mode, **kwargs) as read_file:
-            existing_data = read_file.read()
-    else:
-        existing_data = None
+    try:
+        if os.path.exists(file):
+            with open(file, mode=read_mode, **kwargs) as read_file:
+                existing_data = read_file.read()
+        else:
+            existing_data = None
 
-    if existing_data == data:
+        if existing_data == data:
+            if log_source:
+                context.log.notice("%s -> %s", log_source, file)
+            return False
+
+        if not os.access(file, os.W_OK) and os.path.isfile(file):
+            target_stat = os.stat(file)
+            os.chmod(file, target_stat.st_mode | S_IWUSR)
+        with open(file, mode=write_mode, **kwargs) as write_file:
+            write_file.write(data)
+
         if log_source:
-            context.log.notice("%s -> %s", log_source, file)
-        return False
+            context.log.success("%s -> %s", log_source, file)
 
-    with open(file, mode=write_mode, **kwargs) as write_file:
-        write_file.write(data)
-
-    if log_source:
-        context.log.success("%s -> %s", log_source, file)
-
-    return True
+        return True
+    finally:
+        if readonly and os.path.isfile(file):
+            os.chmod(file, S_IRUSR | S_IRGRP | S_IROTH)
 
 
-def copy_if_different(source, target, read_mode='r', write_mode='w', log=False, **kwargs) -> bool:
+def copy_if_different(source, target, read_mode='r', write_mode='w', log=False, readonly=True, **kwargs) -> bool:
     """
     Copy source to target if existing source data is different than target data.
     """
-    if os.path.exists(source):
-        with open(source, mode=read_mode, **kwargs) as read_file:
-            source_data = read_file.read()
-    else:
-        source_data = None
+    try:
+        if os.path.exists(source):
+            with open(source, mode=read_mode, **kwargs) as read_file:
+                source_data = read_file.read()
+        else:
+            source_data = None
 
-    if os.path.exists(target):
-        with open(target, mode=read_mode, **kwargs) as read_file:
-            target_data = read_file.read()
-    else:
-        target_data = None
+        if os.path.exists(target):
+            with open(target, mode=read_mode, **kwargs) as read_file:
+                target_data = read_file.read()
+        else:
+            target_data = None
 
-    if source_data == target_data:
+        if source_data == target_data:
+            if log:
+                context.log.notice("%s -> %s", source, target)
+            return False
+
+        if not os.access(target, os.W_OK) and os.path.exists(target):
+            target_stat = os.stat(target)
+            os.chmod(target, target_stat.st_mode | S_IWUSR)
+        with open(target, mode=write_mode, **kwargs) as write_file:
+            write_file.write(source_data)
+
         if log:
-            context.log.notice("%s -> %s", source, target)
-        return False
+            context.log.success("%s -> %s", source, target)
 
-    with open(target, mode=write_mode, **kwargs) as write_file:
-        write_file.write(source_data)
-
-    if log:
-        context.log.success("%s -> %s", source, target)
-
-    return True
+        return True
+    finally:
+        if readonly and os.path.isfile(target):
+            os.chmod(target, S_IRUSR | S_IRGRP | S_IROTH)
 
 
 class FileWalker:

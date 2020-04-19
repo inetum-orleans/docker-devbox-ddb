@@ -4,6 +4,7 @@ import os
 import re
 import shlex
 from collections import namedtuple
+from stat import S_IWUSR
 from typing import Iterable
 
 import docker
@@ -139,64 +140,74 @@ class FixuidDockerComposeAction(Action):
         Apply fixuid to given service
         """
         dockerfile_path = os.path.join(service.context, service.dockerfile)
-        with open(dockerfile_path, "ba+") as dockerfile_file:
-            parser = CustomDockerfileParser(fileobj=dockerfile_file)
 
-            entrypoint = parser.entrypoint
-            cmd = parser.cmd
+        dockerfile_path_stat = None
+        if not os.access(dockerfile_path, os.W_OK) and os.path.isfile(dockerfile_path):
+            dockerfile_path_stat = os.stat(dockerfile_path)
+            os.chmod(dockerfile_path, dockerfile_path_stat.st_mode | S_IWUSR)
 
-            # if entrypoint is defined in Dockerfile, we should not grab cmd from base image
-            # and reset CMD to empty value to stay consistent with docker behavior.
-            # see https://github.com/docker/docker.github.io/issues/6142
-            reset_cmd = False
-            if entrypoint and not cmd:
-                reset_cmd = True
+        try:
+            with open(dockerfile_path, "ba+") as dockerfile_file:
+                parser = CustomDockerfileParser(fileobj=dockerfile_file)
 
-            if not entrypoint:
-                baseimage_config = FixuidDockerComposeAction._get_image_config(parser.baseimage)
-                if baseimage_config and 'Entrypoint' in baseimage_config:
-                    entrypoint = baseimage_config['Entrypoint']
-                    entrypoint = json.dumps(entrypoint)
+                entrypoint = parser.entrypoint
+                cmd = parser.cmd
 
-            if not cmd and not reset_cmd:
-                baseimage_config = FixuidDockerComposeAction._get_image_config(parser.baseimage)
-                if baseimage_config and 'Cmd' in baseimage_config:
-                    cmd = baseimage_config['Cmd']
-                    cmd = json.dumps(cmd)
+                # if entrypoint is defined in Dockerfile, we should not grab cmd from base image
+                # and reset CMD to empty value to stay consistent with docker behavior.
+                # see https://github.com/docker/docker.github.io/issues/6142
+                reset_cmd = False
+                if entrypoint and not cmd:
+                    reset_cmd = True
 
-            if not cmd:
-                cmd = None
+                if not entrypoint:
+                    baseimage_config = FixuidDockerComposeAction._get_image_config(parser.baseimage)
+                    if baseimage_config and 'Entrypoint' in baseimage_config:
+                        entrypoint = baseimage_config['Entrypoint']
+                        entrypoint = json.dumps(entrypoint)
 
-            if entrypoint:
-                parser.entrypoint = FixuidDockerComposeAction._sanitize_entrypoint(entrypoint)
+                if not cmd and not reset_cmd:
+                    baseimage_config = FixuidDockerComposeAction._get_image_config(parser.baseimage)
+                    if baseimage_config and 'Cmd' in baseimage_config:
+                        cmd = baseimage_config['Cmd']
+                        cmd = json.dumps(cmd)
 
-            if cmd:
-                parser.cmd = cmd
+                if not cmd:
+                    cmd = None
 
-            target = copy_from_url(config.data["fixuid.url"],
-                                   service.context,
-                                   "fixuid.tar.gz")
-            bus.emit('file:generated', source=None, target=target)
+                if entrypoint:
+                    parser.entrypoint = FixuidDockerComposeAction._sanitize_entrypoint(entrypoint)
 
-            lines = ("ADD fixuid.tar.gz /usr/local/bin",
-                     "RUN chown root:root /usr/local/bin/fixuid && "
-                     "chmod 4755 /usr/local/bin/fixuid && "
-                     "mkdir -p /etc/fixuid",
-                     "COPY fixuid.yml /etc/fixuid/config.yml")
+                if cmd:
+                    parser.cmd = cmd
 
-            if "ADD fixuid.tar.gz /usr/local/bin\n" in parser.lines:
-                return
+                target = copy_from_url(config.data["fixuid.url"],
+                                       service.context,
+                                       "fixuid.tar.gz")
+                bus.emit('file:generated', source=None, target=target)
 
-            last_instruction_user = parser.get_last_instruction("USER")
-            last_instruction_entrypoint = parser.get_last_instruction("ENTRYPOINT")
-            if last_instruction_user:
-                parser.add_lines_at(last_instruction_user, *lines)
-            elif last_instruction_entrypoint:
-                parser.add_lines_at(last_instruction_entrypoint, *lines)
-            else:
-                parser.add_lines(*lines)
+                lines = ("ADD fixuid.tar.gz /usr/local/bin",
+                         "RUN chown root:root /usr/local/bin/fixuid && "
+                         "chmod 4755 /usr/local/bin/fixuid && "
+                         "mkdir -p /etc/fixuid",
+                         "COPY fixuid.yml /etc/fixuid/config.yml")
 
-            context.log.success("Fixuid applied to %s", os.path.relpath(dockerfile_path, config.paths.project_home))
+                if "ADD fixuid.tar.gz /usr/local/bin\n" in parser.lines:
+                    return
+
+                last_instruction_user = parser.get_last_instruction("USER")
+                last_instruction_entrypoint = parser.get_last_instruction("ENTRYPOINT")
+                if last_instruction_user:
+                    parser.add_lines_at(last_instruction_user, *lines)
+                elif last_instruction_entrypoint:
+                    parser.add_lines_at(last_instruction_entrypoint, *lines)
+                else:
+                    parser.add_lines(*lines)
+
+                context.log.success("Fixuid applied to %s", os.path.relpath(dockerfile_path, config.paths.project_home))
+        finally:
+            if dockerfile_path_stat is not None:
+                os.chmod(dockerfile_path, dockerfile_path_stat.st_mode)
 
     def execute(self, docker_compose_config: dict):
         """
