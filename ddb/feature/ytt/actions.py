@@ -2,18 +2,16 @@
 import os
 import tempfile
 from subprocess import run, PIPE
+from typing import Union, Iterable, Tuple
 
 import yaml
 
-from ddb.action import InitializableAction
-from ddb.action.action import EventBinding
+from ddb.action.action import AbstractTemplateAction
 from ddb.config import config
-from ddb.context import context
-from ddb.event import bus
-from ddb.utils.file import TemplateFinder, write_if_different
+from ddb.utils.file import TemplateFinder
 
 
-class YttAction(InitializableAction):
+class YttAction(AbstractTemplateAction):
     """
     Render ytt files based on filename suffixes.
     """
@@ -26,35 +24,10 @@ class YttAction(InitializableAction):
     def name(self) -> str:
         return "ytt:render"
 
-    @property
-    def event_bindings(self):
-        def file_found_processor(file: str):
-            """
-            Called when a file is found.
-            """
-            template = file
-            target = self.template_finder.get_target(template)
-            if target:
-                return (), {"template": template, "target": target}
-            return None
-
-        def file_generated_processor(source: str, target: str):
-            """
-            Called when a file is generated.
-            """
-            template = target
-            target = self.template_finder.get_target(template)
-            if target:
-                return (), {"template": template, "target": target}
-            return None
-
-        return (EventBinding("file:found", processor=file_found_processor),
-                EventBinding("file:generated", processor=file_generated_processor))
-
-    def initialize(self):
-        self.template_finder = TemplateFinder(config.data.get("ytt.includes"),
-                                              config.data.get("ytt.excludes"),
-                                              config.data.get("ytt.suffixes"))
+    def _build_template_finder(self):
+        return TemplateFinder(config.data.get("ytt.includes"),
+                              config.data.get("ytt.excludes"),
+                              config.data.get("ytt.suffixes"))
 
     @staticmethod
     def _escape_config(input_config: dict):
@@ -71,11 +44,7 @@ class YttAction(InitializableAction):
             new[key] = value
         return new
 
-    @staticmethod
-    def execute(template: str, target: str):
-        """
-        Render a YTT template
-        """
+    def _render_template(self, template: str, target: str) -> Iterable[Tuple[Union[str, bytes, bool], str]]:
         yaml_config = yaml.dump(YttAction._escape_config(config.data.to_dict()))
 
         includes = TemplateFinder.build_default_includes_from_suffixes(
@@ -112,11 +81,6 @@ class YttAction(InitializableAction):
                            check=True,
                            stdout=PIPE, stderr=PIPE)
 
-            written = write_if_different(target, rendered.stdout, read_mode='rb', write_mode='wb', log_source=template)
-
-            context.mark_as_processed(template, target)
-
-            if written:
-                bus.emit('file:generated', source=template, target=target)
+            yield rendered.stdout, target
         finally:
             os.unlink(yaml_config_file.name)

@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 import os
+from typing import Union, Iterable, Tuple
 
-from ddb.action import InitializableAction
-from ddb.action.action import EventBinding
+from ddb.action.action import AbstractTemplateAction
 from ddb.config import config
 from ddb.context import context
-from ddb.event import bus
 from ddb.utils.file import TemplateFinder
 
 
-class SymlinksAction(InitializableAction):
+class SymlinksAction(AbstractTemplateAction):
     """
     Creates symbolic links based on filename suffixes.
     """
@@ -22,52 +21,25 @@ class SymlinksAction(InitializableAction):
     def name(self) -> str:
         return "symlinks:create"
 
-    @property
-    def event_bindings(self):
-        def file_found_processor(file: str):
-            """
-            Called when a file is found.
-            """
-            source = file
-            target = self.template_finder.get_target(source)
-            if target:
-                return (), {"source": source, "target": target}
-            return None
+    def _build_template_finder(self) -> TemplateFinder:
+        return TemplateFinder(config.data.get("symlinks.includes"),
+                              config.data.get("symlinks.excludes"),
+                              config.data.get("symlinks.suffixes"))
 
-        def file_generated_processor(source: str, target: str):
-            """
-            Called when a file is generated.
-            """
-            source = target
-            target = self.template_finder.get_target(source)
-            if target:
-                return (), {"source": source, "target": target}
-            return None
-
-        return (EventBinding("file:found", processor=file_found_processor),
-                EventBinding("file:generated", processor=file_generated_processor))
-
-    def initialize(self):
-        self.template_finder = TemplateFinder(config.data.get("symlinks.includes"),
-                                              config.data.get("symlinks.excludes"),
-                                              config.data.get("symlinks.suffixes"))
-
-    @staticmethod
-    def execute(source, target):
+    def _render_template(self, template: str, target: str) -> Iterable[Tuple[Union[str, bytes, bool], str]]:
         """
         Create a symbolic link
         """
-        relsource = os.path.relpath(source, os.path.dirname(target))
+        reltemplate = os.path.relpath(template, os.path.dirname(target))
 
-        if os.path.islink(target) and os.readlink(target) == relsource:
-            context.log.notice("%s -> %s", source, target)
-            return
+        if os.path.islink(target) and os.readlink(target) == reltemplate:
+            context.log.notice("%s -> %s", template, target)
+            yield False, target
+        else:
+            if os.path.exists(target):
+                os.remove(target)
 
-        if os.path.exists(target):
-            os.remove(target)
+            os.symlink(reltemplate, os.path.normpath(target))
+            context.log.success("%s -> %s", template, target)
 
-        os.symlink(relsource, os.path.normpath(target))
-        context.log.success("%s -> %s", source, target)
-
-        context.mark_as_processed(source, target)
-        bus.emit('file:generated', source=source, target=target)
+            yield True, target
