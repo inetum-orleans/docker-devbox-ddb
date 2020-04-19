@@ -1,6 +1,5 @@
 import logging
-from collections import Callable
-from typing import Optional, List
+from typing import Optional, List, Callable
 from typing import TYPE_CHECKING
 
 from dotty_dict import Dotty
