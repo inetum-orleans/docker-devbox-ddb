@@ -216,6 +216,7 @@ def configure_logging(level: Union[str, int] = logging.INFO):
         log_colors=log_colors))
 
     logger = logging.getLogger("ddb")
+    logger.handlers.clear()
     logger.setLevel(level)
     logger.addHandler(handler)
 

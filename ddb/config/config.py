@@ -109,66 +109,6 @@ class Config:  # pylint:disable=too-many-instance-attributes
         loaded_data = self.apply_environ_overrides(loaded_data)
         self.data = dotty(always_merger.merge(self.data, loaded_data))
 
-    def to_environ(self) -> dict:
-        """
-        Export configuration to environment dict.
-        """
-        return self.flatten(self.env_prefix, "_", "_%s_",
-                            lambda x: str.upper(x).replace('-', '_'),
-                            str)
-
-    def flatten(self, prefix=None, sep=".", array_index_format="[%s]",
-                key_transformer=None, value_transformer=None,
-                stop_for=()) -> dict:
-        """
-        Export configuration to a flat dict.
-        """
-        return self._flatten(prefix, sep, array_index_format,
-                             key_transformer, value_transformer,
-                             stop_for, data=dict(self.data))
-
-    def _flatten(self, prefix=None, sep=".", array_index_format="[%s]",
-                 key_transformer=None, value_transformer=None,
-                 stop_for=(), data=None, output=None) -> dict:
-        if output is None:
-            output = dict()
-
-        if prefix is None:
-            prefix = ""
-        if key_transformer is None:
-            key_transformer = lambda x: x
-        if value_transformer is None:
-            value_transformer = lambda x: x
-
-        stop_recursion = False
-        if prefix in stop_for:
-            stop_recursion = True
-
-        if not stop_recursion and isinstance(data, dict):
-            for (name, value) in data.items():
-                key_prefix = (prefix + sep if prefix else "") + key_transformer(name)
-                key_prefix = key_transformer(key_prefix)
-
-                self._flatten(key_prefix, sep, array_index_format,
-                              key_transformer, value_transformer,
-                              stop_for, value, output)
-
-        elif not stop_recursion and isinstance(data, list):
-            i = 0
-            for value in data:
-                replace_prefix = (prefix if prefix else "") + (array_index_format % str(i))
-                replace_prefix = key_transformer(replace_prefix)
-
-                self._flatten(replace_prefix, sep, array_index_format,
-                              key_transformer, value_transformer,
-                              stop_for, value, output)
-
-                i += 1
-        else:
-            output[prefix] = value_transformer(data)
-
-        return output
-
     def sanitize_and_validate(self, schema: Schema, key: str, auto_configure: Callable[[Dotty], Any] = None):
         """
         Sanitize and validate using given schema part of the configuration given by configuration key.

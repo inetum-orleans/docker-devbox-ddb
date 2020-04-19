@@ -11,6 +11,7 @@ from .integrations import ShellIntegration
 from ...action import Action
 from ...binary import Binary
 from ...config import config
+from ...config.flatten import to_environ
 from ...context import context
 from ...event import bus
 
@@ -143,7 +144,7 @@ class ActivateAction(Action):
         Execute action
         """
         initial_environ = dict(os.environ.items())
-        config_environ = config.to_environ()
+        config_environ = to_environ(config.data, config.env_prefix)
 
         to_encode_environ = dict(initial_environ)
         os.environ.update(config_environ)

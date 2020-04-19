@@ -88,10 +88,10 @@ class CopyAction(Action):
 
             for dispatch_directory in dispatch_directories:
                 if destination:
-                    file_destination = os.path.join(dispatch_directory, destination)
+                    file_destination = os.path.relpath(os.path.join(dispatch_directory, destination))
                     os.makedirs(file_destination, exist_ok=True)
                 else:
-                    file_destination = dispatch_directory
+                    file_destination = os.path.relpath(dispatch_directory)
 
                 if source.startswith('http://') or source.startswith('https://'):
                     copy_from_url(source, file_destination, spec.get('filename'))

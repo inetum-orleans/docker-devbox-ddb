@@ -23,24 +23,7 @@ package_data = []
 entry_points = {
     'console_scripts': [
         'ddb = ddb.__main__:console_script'
-    ],
-    # Disable internal entrypoint features for performance reason.
-    # 'ddb_features': [
-    #     'certs = ddb.feature.certs:CertsFeature',
-    #     'copy = ddb.feature.copy:CopyFeature',
-    #     'core = ddb.feature.core:CoreFeature',
-    #     'docker = ddb.feature.docker:DockerFeature',
-    #     'file = ddb.feature.filee:FileFeature',
-    #     'fixuid = ddb.feature.fixuid:FixuidFeature',
-    #     'gitignore = ddb.feature.gitignore:GitignoreFeature',
-    #     'jinja = ddb.feature.jinja:JinjaFeature',
-    #     'jsonnet = ddb.feature.jsonnet:JsonnetFeature',
-    #     'plugins = ddb.feature.plugins:PluginsFeature',
-    #     'shell = ddb.feature.shell:ShellFeature',
-    #     'symlinks = ddb.feature.symlinks:SymlinksFeature',
-    #     'traefik = ddb.feature.traefik:TraefikFeature',
-    #     'ytt = ddb.feature.ytt:YttFeature'
-    # ]
+    ]
 }
 
 with io.open('ddb/__version__.py', 'r') as f:
@@ -64,7 +47,7 @@ args = dict(name='ddb',
                          'Topic :: Multimedia',
                          'Topic :: Software Development :: Libraries :: Python Modules'
                          ],
-            keywords='docker docker-compose development environment devops',
+            keywords='docker docker-compose development environment devops templates jsonnet jinja watch',
             author='Rémi Alvergnat',
             author_email='remi.alvergnat@gfi.fr',
             url='https://github.com/gfi-centre-ouest/docker-devbox-ddb',

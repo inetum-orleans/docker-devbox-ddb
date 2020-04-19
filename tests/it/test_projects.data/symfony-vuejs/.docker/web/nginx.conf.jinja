@@ -1,5 +1,5 @@
 server {
-    server_name api.{{DOCKER_DEVBOX_DOMAIN_PREFIX}}.{{DOCKER_DEVBOX_DOMAIN}};
+    server_name api.{{core.domain.sub}}.{{core.domain.ext}};
     root /var/www/html/backend/public;
 
     client_max_body_size 0;
@@ -10,7 +10,7 @@ server {
     }
 
     location ~ ^/index\.php(/|$) {
-        fastcgi_pass php.{{COMPOSE_NETWORK_NAME}}:9000;
+        fastcgi_pass php.{{docker.compose.network_name}}:9000;
         fastcgi_split_path_info ^(.+\.php)(/.*)$;
         include fastcgi_params;
 

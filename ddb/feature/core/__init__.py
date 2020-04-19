@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 import os
+from argparse import ArgumentParser
 from typing import Iterable, ClassVar
 
 from dotty_dict import Dotty
 
-from .actions import ListFeaturesAction
+from .actions import FeaturesAction, ConfigAction
 from .schema import CoreFeatureSchema
 from ..feature import Feature, FeatureConfigurationAutoConfigureError
 from ..schema import FeatureSchema
@@ -31,15 +32,21 @@ class CoreFeature(Feature):
     @property
     def actions(self) -> Iterable[Action]:
         return (
-            ListFeaturesAction(),
+            FeaturesAction(),
+            ConfigAction()
         )
 
     @property
     def phases(self) -> Iterable[Phase]:
+        def config_parser(parser: ArgumentParser):
+            parser.add_argument("--variables", action="store_true",
+                                help="Output as a flat list of variables available in template engines")
+
         return (
             DefaultPhase("init", "Initialize project", run_once=True),
             DefaultPhase("configure", "Configure the environment"),
-            DefaultPhase("info", "List enabled features and effective configuration"),
+            DefaultPhase("features", "Display enabled features"),
+            DefaultPhase("config", "Display effective configuration", config_parser),
         )
 
     @property
@@ -52,8 +59,11 @@ class CoreFeature(Feature):
                              "configure",
                              parent="init"),
 
-            LifecycleCommand("info", "List enabled features and effective configuration",
-                             "info"),
+            LifecycleCommand("features", "List enabled features",
+                             "features"),
+
+            LifecycleCommand("config", "Display effective configuration",
+                             "config"),
         )
 
     def _configure_defaults(self, feature_config: Dotty):

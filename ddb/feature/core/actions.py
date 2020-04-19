@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
-
 import yaml
 
 from .. import features
 from ...action import Action
 from ...config import config
+from ...config.flatten import flatten
 
 
-class ListFeaturesAction(Action):
+class FeaturesAction(Action):
     """
-    Display all features and their effective configuration
+    Display all features
     """
 
     @property
     def event_bindings(self):
-        return "phase:info"
+        return "phase:features"
 
     @property
     def name(self) -> str:
-        return "core:list-features"
+        return "core:features"
 
     @staticmethod
     def execute():
@@ -27,9 +27,31 @@ class ListFeaturesAction(Action):
         """
         enabled_features = [f for f in features.all() if not f.disabled]
 
-        print("-" * 64)
         for feature in enabled_features:
-            print("name: " + feature.name)
-            print("description: " + feature.description)
-            print(yaml.dump(config.data.get(feature.name)), end="")
-            print("-" * 64)
+            print("%s: %s" % (feature.name, feature.description))
+
+
+class ConfigAction(Action):
+    """
+    Dump configuration
+    """
+
+    @property
+    def event_bindings(self):
+        return "phase:config"
+
+    @property
+    def name(self) -> str:
+        return "core:config"
+
+    @staticmethod
+    def execute():
+        """
+        Execute action
+        """
+        if config.args.variables:
+            flat = flatten(config.data, stop_for_features=features.all())
+            for key in sorted(flat.keys()):
+                print("%s: %s" % (key, flat[key]))
+        else:
+            print(yaml.dump(dict(config.data)))

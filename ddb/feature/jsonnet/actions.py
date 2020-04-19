@@ -4,12 +4,11 @@ import os
 
 import yaml
 from _jsonnet import evaluate_file  # pylint: disable=no-name-in-module
-from marshmallow import Schema
-from marshmallow.fields import Nested, Dict, List
 
 from ddb.action import InitializableAction
 from ddb.action.action import EventBinding
 from ddb.config import config
+from ddb.config.flatten import flatten
 from ddb.event import bus
 from ddb.feature import features
 from ddb.utils.file import TemplateFinder, write_if_different
@@ -58,29 +57,6 @@ class JsonnetAction(InitializableAction):
                                               config.data.get("jsonnet.excludes"),
                                               config.data.get("jsonnet.suffixes"))
 
-    @staticmethod
-    def _get_stop_fields_from_schema(schema: Schema, stack, ret):
-        for field_name, field in schema.fields.items():
-            stack.append(field_name)
-            if isinstance(field, Dict):
-                ret.append(tuple(stack))
-            if isinstance(field, List):
-                ret.append(tuple(stack))
-            if isinstance(field, Nested):
-                JsonnetAction._get_stop_fields_from_schema(field.schema, stack, ret)
-            stack.pop()
-
-    @staticmethod
-    def _get_stop_fields():
-        ret = []
-        stack = []
-        for feature in features.all():
-            stack.append(feature.name)
-            JsonnetAction._get_stop_fields_from_schema(feature.schema(), stack, ret)
-            stack.pop()
-
-        return ret
-
     def render_jsonnet(self, template: str, target: str):
         """
         Render jsonnet template
@@ -113,7 +89,7 @@ class JsonnetAction(InitializableAction):
 
     @staticmethod
     def _evaluate_jsonnet(template_path):
-        flatten_config = config.flatten(stop_for=tuple(map(".".join, JsonnetAction._get_stop_fields())))
+        flatten_config = flatten(config.data, stop_for_features=features.all())
         ext_vars = {k: v for (k, v) in flatten_config.items() if isinstance(v, str)}
         ext_codes = {k: str(v).lower() if isinstance(v, bool) else str(v) if v is not None else "null"
                      for (k, v) in flatten_config.items() if not isinstance(v, str)}

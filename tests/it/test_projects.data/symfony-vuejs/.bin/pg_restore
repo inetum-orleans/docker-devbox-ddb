@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-. "$DOCKER_DEVBOX_SCRIPTS_PATH/.bash.lib.d/50-docker"
-
-run --workdir="$(_docker_workdir "/workdir")" db pg_restore --dbname=postgres://biometrie:biometrie@db/biometrie "$@"
