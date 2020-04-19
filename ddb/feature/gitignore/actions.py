@@ -56,8 +56,8 @@ class UpdateGitignoreAction(Action):
             zgitignore_helper = zgitignore.ZgitIgnore(gitignore_content)
             inversed_zgitignore_helper = zgitignore.ZgitIgnore(inversed_gitignore_content)
             if zgitignore_helper.is_ignored(relative_file) or inversed_zgitignore_helper.is_ignored(relative_file):
-                return True, gitignore, gitignore_content
-        return False, None, None
+                return True, relative_file, gitignore, gitignore_content
+        return False, None, None, None
 
     @staticmethod
     def remove(file: str):
@@ -66,11 +66,11 @@ class UpdateGitignoreAction(Action):
         :param file:
         :return:
         """
-        ignored, gitignore, gitignore_content = UpdateGitignoreAction.is_file_ignored(file)
+        ignored, relative_file, gitignore, gitignore_content = UpdateGitignoreAction.is_file_ignored(file)
         if not ignored:
             return
 
-        new_gitignore_content = list(filter(lambda line: file != line, gitignore_content))
+        new_gitignore_content = list(filter(lambda line: relative_file != line, gitignore_content))
 
         if new_gitignore_content:
             with open(gitignore, "w", encoding="utf-8") as gitignore_file:
@@ -87,29 +87,29 @@ class UpdateGitignoreAction(Action):
         """
         Execute action
         """
-        gitignores = list(UpdateGitignoreAction.find_gitignores(target))
-        if not gitignores:
-            gitignores = [".gitignore"]
+        ignored, _, _, _ = UpdateGitignoreAction.is_file_ignored(target)
+        if ignored:
+            return
 
-        for gitignore in gitignores:
-            relative_target = os.path.normpath(os.path.relpath(target, os.path.dirname(gitignore)))
+        try:
+            gitignore = next(UpdateGitignoreAction.find_gitignores(target))
+        except StopIteration:
+            gitignore = ".gitignore"
 
-            ignored, _, _ = UpdateGitignoreAction.is_file_ignored(relative_target)
-            if not ignored:
-                last_character = None
-                if os.path.exists(gitignore):
-                    with open(gitignore, 'rb+') as gitignore_file:
-                        gitignore_file.seek(0, 2)
-                        size = gitignore_file.tell()
-                        if size > 0:
-                            gitignore_file.seek(0 - 1, 2)
-                            last_character = gitignore_file.read()
+        last_character = None
+        if os.path.exists(gitignore):
+            with open(gitignore, 'rb+') as gitignore_file:
+                gitignore_file.seek(0, 2)
+                size = gitignore_file.tell()
+                if size > 0:
+                    gitignore_file.seek(0 - 1, 2)
+                    last_character = gitignore_file.read()
 
-                with open(gitignore, "a", encoding="utf-8") as gitignore_file:
-                    if last_character and last_character != b"\n":
-                        gitignore_file.write("\n")
-                    gitignore_file.write(relative_target)
-                    gitignore_file.write("\n")
-                context.log.success("%s added to %s", relative_target, gitignore)
+        relative_target = os.path.normpath(os.path.relpath(target, os.path.dirname(gitignore)))
 
-                return
+        with open(gitignore, "a", encoding="utf-8") as gitignore_file:
+            if last_character and last_character != b"\n":
+                gitignore_file.write("\n")
+            gitignore_file.write(relative_target)
+            gitignore_file.write("\n")
+        context.log.success("%s added to %s", relative_target, gitignore)

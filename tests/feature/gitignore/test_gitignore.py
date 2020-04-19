@@ -99,4 +99,4 @@ class TestUpdateGitIgnoreAction:
         assert os.path.exists(os.path.join('another', 'sub', 'directory', '.gitignore'))
         with open(os.path.join('another', 'sub', 'directory', '.gitignore'), 'r') as f:
             gitignore = f.read()
-            assert set(gitignore.splitlines()) == {'test.yaml', 'forced.yaml'}
+            assert set(gitignore.splitlines()) == {'test.yaml'}

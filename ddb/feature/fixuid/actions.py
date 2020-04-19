@@ -150,64 +150,59 @@ class FixuidDockerComposeAction(Action):
             with open(dockerfile_path, "ba+") as dockerfile_file:
                 parser = CustomDockerfileParser(fileobj=dockerfile_file)
 
-                entrypoint = parser.entrypoint
-                cmd = parser.cmd
-
-                # if entrypoint is defined in Dockerfile, we should not grab cmd from base image
-                # and reset CMD to empty value to stay consistent with docker behavior.
-                # see https://github.com/docker/docker.github.io/issues/6142
-                reset_cmd = False
-                if entrypoint and not cmd:
-                    reset_cmd = True
-
-                if not entrypoint:
-                    baseimage_config = FixuidDockerComposeAction._get_image_config(parser.baseimage)
-                    if baseimage_config and 'Entrypoint' in baseimage_config:
-                        entrypoint = baseimage_config['Entrypoint']
-                        entrypoint = json.dumps(entrypoint)
-
-                if not cmd and not reset_cmd:
-                    baseimage_config = FixuidDockerComposeAction._get_image_config(parser.baseimage)
-                    if baseimage_config and 'Cmd' in baseimage_config:
-                        cmd = baseimage_config['Cmd']
-                        cmd = json.dumps(cmd)
-
-                if not cmd:
-                    cmd = None
-
-                if entrypoint:
-                    parser.entrypoint = FixuidDockerComposeAction._sanitize_entrypoint(entrypoint)
-
-                if cmd:
-                    parser.cmd = cmd
-
-                target = copy_from_url(config.data["fixuid.url"],
-                                       service.context,
-                                       "fixuid.tar.gz")
-                bus.emit('file:generated', source=None, target=target)
-
-                lines = ("ADD fixuid.tar.gz /usr/local/bin",
-                         "RUN chown root:root /usr/local/bin/fixuid && "
-                         "chmod 4755 /usr/local/bin/fixuid && "
-                         "mkdir -p /etc/fixuid",
-                         "COPY fixuid.yml /etc/fixuid/config.yml")
-
-                if "ADD fixuid.tar.gz /usr/local/bin\n" in parser.lines:
-                    return
-
-                last_instruction_user = parser.get_last_instruction("USER")
-                last_instruction_entrypoint = parser.get_last_instruction("ENTRYPOINT")
-                if last_instruction_user:
-                    parser.add_lines_at(last_instruction_user, *lines)
-                elif last_instruction_entrypoint:
-                    parser.add_lines_at(last_instruction_entrypoint, *lines)
-                else:
-                    parser.add_lines(*lines)
-
-                context.log.success("Fixuid applied to %s", os.path.relpath(dockerfile_path, config.paths.project_home))
+                if FixuidDockerComposeAction._apply_fixuid_from_parser(parser, service):
+                    context.log.success("Fixuid applied to %s",
+                                        os.path.relpath(dockerfile_path, config.paths.project_home))
         finally:
             if dockerfile_path_stat is not None:
                 os.chmod(dockerfile_path, dockerfile_path_stat.st_mode)
+
+    @staticmethod
+    def _apply_fixuid_from_parser(parser: CustomDockerfileParser, service: BuildServiceDef):
+        entrypoint = parser.entrypoint
+        cmd = parser.cmd
+        # if entrypoint is defined in Dockerfile, we should not grab cmd from base image
+        # and reset CMD to empty value to stay consistent with docker behavior.
+        # see https://github.com/docker/docker.github.io/issues/6142
+        reset_cmd = False
+        if entrypoint and not cmd:
+            reset_cmd = True
+        if not entrypoint:
+            baseimage_config = FixuidDockerComposeAction._get_image_config(parser.baseimage)
+            if baseimage_config and 'Entrypoint' in baseimage_config:
+                entrypoint = baseimage_config['Entrypoint']
+                entrypoint = json.dumps(entrypoint)
+        if not cmd and not reset_cmd:
+            baseimage_config = FixuidDockerComposeAction._get_image_config(parser.baseimage)
+            if baseimage_config and 'Cmd' in baseimage_config:
+                cmd = baseimage_config['Cmd']
+                cmd = json.dumps(cmd)
+        if not cmd:
+            cmd = None
+        if entrypoint:
+            parser.entrypoint = FixuidDockerComposeAction._sanitize_entrypoint(entrypoint)
+        if cmd:
+            parser.cmd = cmd
+        target = copy_from_url(config.data["fixuid.url"],
+                               service.context,
+                               "fixuid.tar.gz")
+        bus.emit('file:generated', source=None, target=target)
+        lines = ("ADD fixuid.tar.gz /usr/local/bin",
+                 "RUN chown root:root /usr/local/bin/fixuid && "
+                 "chmod 4755 /usr/local/bin/fixuid && "
+                 "mkdir -p /etc/fixuid",
+                 "COPY fixuid.yml /etc/fixuid/config.yml")
+        if "ADD fixuid.tar.gz /usr/local/bin\n" not in parser.lines:
+            last_instruction_user = parser.get_last_instruction("USER")
+            last_instruction_entrypoint = parser.get_last_instruction("ENTRYPOINT")
+            if last_instruction_user:
+                parser.add_lines_at(last_instruction_user, *lines)
+            elif last_instruction_entrypoint:
+                parser.add_lines_at(last_instruction_entrypoint, *lines)
+            else:
+                parser.add_lines(*lines)
+            return True
+        return False
 
     def execute(self, docker_compose_config: dict):
         """

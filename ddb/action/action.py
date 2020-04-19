@@ -157,7 +157,7 @@ class AbstractTemplateAction(InitializableAction, ABC):  # pylint:disable=abstra
                                              log_source=template)
             context.mark_as_processed(template, destination)
 
-            if written or rendered:
+            if written or rendered is True:
                 bus.emit('file:generated', source=template, target=destination)
 
     @abstractmethod
