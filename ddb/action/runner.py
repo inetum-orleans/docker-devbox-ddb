@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from typing import TypeVar, Generic
 
 from ddb.action import Action, InitializableAction
+from ddb.config import config
 from ddb.context import context
 from ddb.context.context import ContextStackItem
 
@@ -33,6 +34,7 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
     """
     Runner for an action event binding.
     """
+
     def __init__(self, action: A, event_name: str, to_call=None, event_processor=None, fail_fast=False):
         super().__init__(action, event_name, to_call)
         self.event_processor = event_processor
@@ -57,7 +59,9 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
             return True
         except Exception as exception:  # pylint:disable=broad-except
             context.exceptions.append(exception)
-            log_error = context.log.exception if context.log.isEnabledFor(logging.DEBUG) else context.log.error
+            log_error = context.log.exception if \
+                context.log.isEnabledFor(logging.DEBUG) or config.args.exceptions \
+                else context.log.error
             log_error("An unexpected error has occured %s: %s",
                       context.stack,
                       str(exception).strip())

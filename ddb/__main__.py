@@ -268,6 +268,8 @@ def handle_command_line(args: Optional[Sequence[str]] = None,
                       help="Enable even more logs")
     opts.add_argument('-s', '--silent', action="store_true", default=False,
                       help="Disable all logs")
+    opts.add_argument('-x', '--exceptions', action="store_true", default=False,
+                      help="Display exceptions on errors")
     opts.add_argument("-c", "--clear-cache", action="store_true", default=None,
                       help="Clear all caches")
     opts.add_argument('-w', '--watch', action="store_true", default=False,
