@@ -14,9 +14,16 @@ with io.open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
 
 dependency_links = []
 
-install_requires = ['vyper-config>=0.5', 'colorama', 'netifaces', 'requests', 'PyYAML']
+project_dir = os.path.dirname(os.path.realpath(__file__))
 
-dev_require = ['zest.releaser[recommended]', 'tox', 'pylint', 'pytest']
+requirements = os.path.join(project_dir, 'requirements.txt')
+requirements_dev = os.path.join(project_dir, 'requirements-dev.txt')
+
+with open(requirements) as f:
+    install_requires = list(map(str.strip, f.read().splitlines()))[1:]
+
+with open(requirements_dev) as f:
+    dev_require = list(map(str.strip, f.read().splitlines()))[:-1]
 
 package_data = []
 
