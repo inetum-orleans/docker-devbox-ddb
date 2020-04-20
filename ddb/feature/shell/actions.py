@@ -2,6 +2,7 @@
 import base64
 import json
 import os
+from tempfile import NamedTemporaryFile, gettempdir
 from typing import Iterable
 
 import zgitignore
@@ -32,9 +33,12 @@ def decode_environ_backup(encoded_environ_backup: str) -> dict:
     return json.loads(base64.b64decode(encoded_environ_backup).decode("utf-8"))
 
 
-def apply_diff_to_shell(shell: ShellIntegration, source_environment: dict, target_environment: dict, envignore=None):
+def apply_diff_to_shell(shell: ShellIntegration,
+                        source_environment: dict,
+                        target_environment: dict,
+                        envignore=None) -> Iterable[str]:
     """
-    Compute and apply environment diff for given shell.
+    Compute and apply environment diff for given shell, returning a list of shell instruction to run.
     """
     variables = []
 
@@ -55,12 +59,12 @@ def apply_diff_to_shell(shell: ShellIntegration, source_environment: dict, targe
     for key, value in sorted(variables, key=lambda variable: variable[0]):
         if not envignore_helper or not envignore_helper.is_ignored(key):
             if value is None:
-                shell.remove_environment_variable(key)
+                yield from shell.remove_environment_variable(key)
             else:
-                shell.set_environment_variable(key, value)
+                yield from shell.set_environment_variable(key, value)
 
 
-def add_to_system_path(shell: ShellIntegration, paths: Iterable[str]):
+def add_to_system_path(shell: ShellIntegration, paths: Iterable[str]) -> Iterable[str]:
     """
     Add given path to system PATH environment variable
     """
@@ -71,7 +75,7 @@ def add_to_system_path(shell: ShellIntegration, paths: Iterable[str]):
         else:
             system_path = system_path + os.pathsep + path
 
-    shell.set_environment_variable('PATH', system_path)
+    yield from shell.set_environment_variable('PATH', system_path)
 
 
 class CreateBinaryShim(Action):
@@ -126,7 +130,7 @@ class ActivateAction(Action):
 
     @property
     def event_bindings(self):
-        return "phase:print-activate"
+        return "phase:activate"
 
     @property
     def name(self) -> str:
@@ -156,18 +160,44 @@ class ActivateAction(Action):
         os.environ[_env_environ_backup] = encode_environ_backup(to_encode_environ)
         os.environ[config.env_prefix + '_PROJECT_HOME'] = config.paths.project_home
 
-        self.shell.header()
+        tempdir = os.path.join(gettempdir(), "ddb", "activate")
+        os.makedirs(tempdir, exist_ok=True)
 
-        apply_diff_to_shell(self.shell, initial_environ, os.environ, config.data.get('shell.envignore'))
+        with NamedTemporaryFile(mode='w',
+                                dir=tempdir,
+                                prefix="",
+                                suffix="." + self.shell.name,
+                                delete=False,
+                                **self.shell.temporary_file_kwargs) as file:
+            script_filepath = file.name
+            file.writelines('\n'.join(self.shell.header()))
+            file.write('\n')
 
-        path_directories = config.data.get('shell.path.directories')
-        if path_directories:
-            path_additions = map(
-                lambda path_addition: os.path.normpath(os.path.join(config.paths.project_home, path_addition)),
-                path_directories)
-            add_to_system_path(self.shell, path_additions)
+            file.writelines('\n'.join(apply_diff_to_shell(
+                self.shell,
+                initial_environ,
+                os.environ,
+                config.data.get('shell.envignore'))))
+            file.write('\n')
 
-        self.shell.footer()
+            path_directories = config.data.get('shell.path.directories')
+            if path_directories:
+                path_additions = map(
+                    lambda path_addition: os.path.normpath(os.path.join(config.paths.project_home, path_addition)),
+                    path_directories)
+                file.writelines('\n'.join(add_to_system_path(self.shell, path_additions)))
+                file.write('\n')
+
+            file.writelines('\n'.join(self.shell.footer()))
+            file.write('\n')
+
+        for ins in self.shell.evaluate_script(script_filepath):
+            print(ins)
+
+        for previous_temporary_file in os.listdir(tempdir):
+            previous_temporary_filepath = os.path.join(tempdir, previous_temporary_file)
+            if previous_temporary_filepath != script_filepath:
+                os.remove(previous_temporary_filepath)
 
 
 class DeactivateAction(Action):
@@ -181,7 +211,7 @@ class DeactivateAction(Action):
 
     @property
     def event_bindings(self):
-        return "phase:print-deactivate"
+        return "phase:deactivate"
 
     @property
     def name(self) -> str:
@@ -201,4 +231,34 @@ class DeactivateAction(Action):
         """
         if os.environ.get(_env_environ_backup):
             environ_backup = decode_environ_backup(os.environ[_env_environ_backup])
-            apply_diff_to_shell(self.shell, os.environ, environ_backup, config.data.get('shell.envignore'))
+
+            tempdir = os.path.join(gettempdir(), "ddb", "deactivate")
+            os.makedirs(tempdir, exist_ok=True)
+
+            with NamedTemporaryFile(mode='w',
+                                    dir=tempdir,
+                                    prefix="",
+                                    suffix="." + self.shell.name,
+                                    delete=False,
+                                    **self.shell.temporary_file_kwargs) as file:
+                script_filepath = file.name
+                file.writelines('\n'.join(self.shell.header()))
+                file.write('\n')
+
+                file.writelines('\n'.join(apply_diff_to_shell(
+                    self.shell,
+                    os.environ,
+                    environ_backup,
+                    config.data.get('shell.envignore'))))
+                file.write('\n')
+
+                file.writelines('\n'.join(self.shell.footer()))
+                file.write('\n')
+
+            for ins in self.shell.evaluate_script(script_filepath):
+                print(ins)
+
+            for previous_temporary_file in os.listdir(tempdir):
+                previous_temporary_filepath = os.path.join(tempdir, previous_temporary_file)
+                if previous_temporary_filepath != script_filepath:
+                    os.remove(previous_temporary_filepath)

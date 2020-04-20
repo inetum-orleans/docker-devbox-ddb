@@ -45,20 +45,20 @@ class ShellFeature(Feature):
     @property
     def phases(self) -> Iterable[Phase]:
         return (
-            DefaultPhase("print-activate", "Print activate script for configured shell"),
-            DefaultPhase("print-deactivate", "Print deactivate script for configured shell"),
+            DefaultPhase("activate", "Write a shell script to be executed to activate environment"),
+            DefaultPhase("deactivate", "Write a shell script to be executed to deactivate environment")
         )
 
     @property
     def commands(self) -> Iterable[Command]:
         return (
             LifecycleCommand("activate",
-                             "Output a shell script to be executed to activate environment",
-                             "print-activate"
+                             "Write a shell script to be executed to activate environment",
+                             "activate"
                              ),
             LifecycleCommand("deactivate",
-                             "Output a shell script to be executed to deactivate environment",
-                             "print-deactivate"
+                             "Write a shell script to be executed to deactivate environment",
+                             "deactivate"
                              ),
         )
 

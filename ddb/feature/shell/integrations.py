@@ -2,7 +2,7 @@ import os
 import shlex
 import stat
 from abc import ABC, abstractmethod
-from typing import Tuple
+from typing import Tuple, Iterable, Dict, Any
 
 from ddb.binary import Binary
 from ddb.utils.file import force_remove, write_if_different
@@ -18,15 +18,15 @@ class ShellIntegration(ABC):
         self.description = description
 
     @abstractmethod
-    def set_environment_variable(self, key, value):
+    def set_environment_variable(self, key, value) -> Iterable[str]:
         """
-        print an instruction that set an environment variable to shell.
+        Returns an instruction that set an environment variable to shell.
         """
 
     @abstractmethod
-    def remove_environment_variable(self, key):
+    def remove_environment_variable(self, key) -> Iterable[str]:
         """
-        print an instruction that unset an environment variable to shell.
+        Returns an instruction that unset an environment variable to shell.
         """
 
     @abstractmethod
@@ -42,15 +42,30 @@ class ShellIntegration(ABC):
         :return created filepath
         """
 
-    def header(self):
+    @abstractmethod
+    def evaluate_script(self, script_filepath) -> Iterable[str]:
         """
-        Header of script
+        Get the command to evaluate the script inside the current shell context.
         """
 
-    def footer(self):
+    def header(self) -> Iterable[str]:  # pylint:disable=no-self-use
         """
-        Footer of script
+        Returns header of script
         """
+        yield from ()
+
+    def footer(self) -> Iterable[str]:  # pylint:disable=no-self-use
+        """
+        Returns footer of script
+        """
+        yield from ()
+
+    @property
+    def temporary_file_kwargs(self) -> Dict[str, Any]:
+        """
+        Additional options for temporary file
+        """
+        return {}
 
 
 class BashShellIntegration(ShellIntegration):
@@ -62,10 +77,10 @@ class BashShellIntegration(ShellIntegration):
         super().__init__("bash", "Bash")
 
     def set_environment_variable(self, key, value):
-        print("export " + key + "=" + shlex.quote(value))
+        yield "export " + key + "=" + shlex.quote(value)
 
     def remove_environment_variable(self, key):
-        print("unset " + key)
+        yield "unset " + key
 
     def remove_binary_shims(self, shims_path: str):
         shims = []
@@ -89,6 +104,13 @@ class BashShellIntegration(ShellIntegration):
         os.chmod(shim, shim_stat.st_mode | stat.S_IXUSR)
         return written, shim
 
+    @property
+    def temporary_file_kwargs(self) -> Dict[str, Any]:
+        return {"encoding": "utf-8", "newline": '\n'}
+
+    def evaluate_script(self, script_filepath) -> Iterable[str]:
+        yield "source %s" % (script_filepath,)
+
 
 class CmdShellIntegration(ShellIntegration):
     """
@@ -99,10 +121,10 @@ class CmdShellIntegration(ShellIntegration):
         super().__init__("cmd", "Windows cmd.exe")
 
     def set_environment_variable(self, key, value):
-        print("set " + key + "=" + shlex.quote(value))  # TODO: Maybe use subprocess.list2cmdline for Windows ?
+        yield "set " + key + "=" + shlex.quote(value)  # TODO: Maybe use subprocess.list2cmdline for Windows ?
 
     def remove_environment_variable(self, key):
-        print("set " + key + "=")
+        yield "set " + key + "="
 
     def remove_binary_shims(self, shims_path: str):
         # TODO
@@ -111,3 +133,6 @@ class CmdShellIntegration(ShellIntegration):
     def create_binary_shim(self, shims_path: str, binary: Binary):
         # TODO
         pass
+
+    def evaluate_script(self, script_filepath) -> Iterable[str]:
+        yield "source %s" % (script_filepath,)

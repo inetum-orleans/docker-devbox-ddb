@@ -28,6 +28,11 @@ class ActivateActionBase(ABC):
     def unset_regex(self):
         pass
 
+    @property
+    @abstractmethod
+    def filepath_regex(self):
+        pass
+
     def test_run(self, capsys: CaptureFixture):
         action = ActivateAction(self.build_shell_integration())
         action.execute()
@@ -36,7 +41,11 @@ class ActivateActionBase(ABC):
         assert capture.out
         assert not capture.err
 
-        export_match = re.findall(self.export_regex, capture.out, re.MULTILINE)
+        filepath = re.match(self.filepath_regex, capture.out).group(1)
+        with open(filepath, 'r', encoding='utf-8') as file:
+            script = file.read()
+
+        export_match = re.findall(self.export_regex, script, re.MULTILINE)
         env = dict(export_match)
 
         assert sorted(env.keys()) == sorted(("DDB_PROJECT_HOME", "DDB_SHELL_ENVIRON_BACKUP"))
@@ -55,7 +64,11 @@ class ActivateActionBase(ABC):
         assert capture.out
         assert not capture.err
 
-        export_match = re.findall(self.export_regex, capture.out, re.MULTILINE)
+        filepath = re.match(self.filepath_regex, capture.out).group(1)
+        with open(filepath, 'r', encoding='utf-8') as file:
+            script = file.read()
+
+        export_match = re.findall(self.export_regex, script, re.MULTILINE)
         env = dict(export_match)
 
         assert sorted(env.keys()) == sorted(
@@ -75,7 +88,11 @@ class ActivateActionBase(ABC):
         assert capture.out
         assert not capture.err
 
-        export_match = re.findall(self.export_regex, capture.out, re.MULTILINE)
+        filepath = re.match(self.filepath_regex, capture.out).group(1)
+        with open(filepath, 'r', encoding='utf-8') as file:
+            script = file.read()
+
+        export_match = re.findall(self.export_regex, script, re.MULTILINE)
         env = dict(export_match)
 
         system_path = env.get('PATH', '')
@@ -93,7 +110,11 @@ class ActivateActionBase(ABC):
         assert capture.out
         assert not capture.err
 
-        export_match = re.findall(self.export_regex, capture.out, re.MULTILINE)
+        filepath = re.match(self.filepath_regex, capture.out).group(1)
+        with open(filepath, 'r', encoding='utf-8') as file:
+            script = file.read()
+
+        export_match = re.findall(self.export_regex, script, re.MULTILINE)
         env = dict(export_match)
 
         system_path = env.get('PATH', '').split(os.pathsep)
@@ -116,7 +137,11 @@ class ActivateActionBase(ABC):
         assert capture.out
         assert not capture.err
 
-        export_match = re.findall(self.export_regex, capture.out, re.MULTILINE)
+        filepath = re.match(self.filepath_regex, capture.out).group(1)
+        with open(filepath, 'r', encoding='utf-8') as file:
+            script = file.read()
+
+        export_match = re.findall(self.export_regex, script, re.MULTILINE)
         env = dict(export_match)
 
         system_path = env.get('PATH', '').split(os.pathsep)
@@ -134,7 +159,11 @@ class ActivateActionBase(ABC):
         assert capture.out
         assert not capture.err
 
-        export_match = re.findall(self.export_regex, capture.out, re.MULTILINE)
+        filepath = re.match(self.filepath_regex, capture.out).group(1)
+        with open(filepath, 'r', encoding='utf-8') as file:
+            script = file.read()
+
+        export_match = re.findall(self.export_regex, script, re.MULTILINE)
         env = dict(export_match)
 
         system_path = env.get('PATH', '').split(os.pathsep)
@@ -147,6 +176,7 @@ class ActivateActionBase(ABC):
 class TestBashActivateAction(ActivateActionBase):
     export_regex = r"^export (.+?)=[\'\"]?(.+?)[\'\"]?$"
     unset_regex = r"^unset (.+)()$"
+    filepath_regex = r"^(?:.* )?(.+)$"
 
     def build_shell_integration(self) -> ShellIntegration:
         return BashShellIntegration()
@@ -155,6 +185,7 @@ class TestBashActivateAction(ActivateActionBase):
 class TestCmdActivateAction(ActivateActionBase):
     export_regex = r"^set (.+?)=[\'\"]?(.+?)[\'\"]?$"
     unset_regex = r"^set (.+)=()$"
+    filepath_regex = r"^(?:.* )?(.+)$"
 
     def build_shell_integration(self) -> ShellIntegration:
         return CmdShellIntegration()
@@ -175,6 +206,11 @@ class DeactivateActionBase(ABC):
     def unset_regex(self):
         pass
 
+    @property
+    @abstractmethod
+    def filepath_regex(self):
+        pass
+
     def test_run(self, capsys: CaptureFixture):
         os.environ['DDB_SHELL_ENVIRON_BACKUP'] = encode_environ_backup(dict(os.environ))
 
@@ -185,11 +221,15 @@ class DeactivateActionBase(ABC):
         assert capture.out
         assert not capture.err
 
-        export_match = re.findall(self.export_regex, capture.out, re.MULTILINE)
+        filepath = re.match(self.filepath_regex, capture.out).group(1)
+        with open(filepath, 'r', encoding='utf-8') as file:
+            script = file.read()
+
+        export_match = re.findall(self.export_regex, script, re.MULTILINE)
         exported = dict(export_match)
         assert not exported
 
-        unset_match = re.findall(self.unset_regex, capture.out, re.MULTILINE)
+        unset_match = re.findall(self.unset_regex, script, re.MULTILINE)
         unset = dict(unset_match)
         assert len(unset) == 1
         assert 'DDB_SHELL_ENVIRON_BACKUP' in unset.keys()
@@ -208,11 +248,15 @@ class DeactivateActionBase(ABC):
         assert capture.out
         assert not capture.err
 
-        export_match = re.findall(self.export_regex, capture.out, re.MULTILINE)
+        filepath = re.match(self.filepath_regex, capture.out).group(1)
+        with open(filepath, 'r', encoding='utf-8') as file:
+            script = file.read()
+
+        export_match = re.findall(self.export_regex, script, re.MULTILINE)
         exported = dict(export_match)
         assert not exported
 
-        unset_match = re.findall(self.unset_regex, capture.out, re.MULTILINE)
+        unset_match = re.findall(self.unset_regex, script, re.MULTILINE)
         unset = dict(unset_match)
         assert unset
 
@@ -236,13 +280,17 @@ class DeactivateActionBase(ABC):
         assert capture.out
         assert not capture.err
 
-        export_match = re.findall(self.export_regex, capture.out, re.MULTILINE)
+        filepath = re.match(self.filepath_regex, capture.out).group(1)
+        with open(filepath, 'r', encoding='utf-8') as file:
+            script = file.read()
+
+        export_match = re.findall(self.export_regex, script, re.MULTILINE)
         exported = dict(export_match)
         assert len(exported) == 2
         assert sorted(exported.keys()) == sorted(("DDB_CHANGE", "DDB_REMOVED"))
         assert sorted(exported.values()) == sorted(("foo", removed_item))
 
-        unset_match = re.findall(self.unset_regex, capture.out, re.MULTILINE)
+        unset_match = re.findall(self.unset_regex, script, re.MULTILINE)
         unset = dict(unset_match)
         assert len(unset) == 2
         assert sorted(unset.keys()) == sorted(("DDB_SHELL_ENVIRON_BACKUP", "DDB_ADDED"))
@@ -251,6 +299,7 @@ class DeactivateActionBase(ABC):
 class TestBashDeactivateAction(DeactivateActionBase):
     export_regex = r"^export (.+?)=[\'\"]?(.+?)[\'\"]?$"
     unset_regex = r"^unset (.+)()$"
+    filepath_regex = r"^(?:.* )?(.+)$"
 
     def build_shell_integration(self) -> ShellIntegration:
         return BashShellIntegration()
@@ -259,6 +308,7 @@ class TestBashDeactivateAction(DeactivateActionBase):
 class TestCmdDeactivateAction(DeactivateActionBase):
     export_regex = r"^set (.+?)=[\'\"]?(.+?)[\'\"]?$"
     unset_regex = r"^set (.+)=()$"
+    filepath_regex = r"^(?:.* )?(.+)$"
 
     def build_shell_integration(self) -> ShellIntegration:
         return CmdShellIntegration()
