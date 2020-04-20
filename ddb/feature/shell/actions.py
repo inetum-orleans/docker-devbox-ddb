@@ -85,7 +85,8 @@ class CreateBinaryShim(Action):
 
     @property
     def event_bindings(self):
-        return "binary:registered"
+        return "binary:registered", \
+               "binary:found"
 
     @property
     def name(self) -> str:
@@ -104,10 +105,14 @@ class CreateBinaryShim(Action):
         Execute action
         """
         directories = config.data.get('shell.path.directories')
-        shim = self.shell.create_binary_shim(directories[0], binary)
+        written, shim = self.shell.create_binary_shim(directories[0], binary)
+        if written:
+            context.log.success("Shim created: %s", shim)
+        else:
+            context.log.notice("Shim exists: %s", shim)
 
-        context.log.success("Shim created: %s", shim)
-        bus.emit("file:generated", source=None, target=shim)
+        if written:
+            bus.emit("file:generated", source=None, target=shim)
 
 
 class ActivateAction(Action):

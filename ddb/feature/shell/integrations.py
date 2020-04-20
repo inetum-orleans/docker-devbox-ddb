@@ -2,9 +2,10 @@ import os
 import shlex
 import stat
 from abc import ABC, abstractmethod
+from typing import Tuple
 
 from ddb.binary import Binary
-from ddb.utils.file import force_remove
+from ddb.utils.file import force_remove, write_if_different
 
 
 class ShellIntegration(ABC):
@@ -35,7 +36,7 @@ class ShellIntegration(ABC):
         """
 
     @abstractmethod
-    def create_binary_shim(self, shims_path: str, binary: Binary) -> str:
+    def create_binary_shim(self, shims_path: str, binary: Binary) -> Tuple[bool, str]:
         """
         Add a binary shim for this shell.
         :return created filepath
@@ -81,11 +82,12 @@ class BashShellIntegration(ShellIntegration):
     def create_binary_shim(self, shims_path: str, binary: Binary):
         os.makedirs(shims_path, exist_ok=True)
         shim = os.path.join(os.path.normpath(shims_path), binary.name)
-        with open(shim, "w", newline="\n") as shim_file:
-            shim_file.writelines(["#!/usr/bin/env bash\n", "# ddb:shim\n", "$(ddb run %s) $@\n" % binary.name])
+        data = ''.join(["#!/usr/bin/env bash\n", "# ddb:shim\n", "$(ddb run %s) $@\n" % binary.name])
+        written = write_if_different(shim, data)
+
         shim_stat = os.stat(shim)
-        os.chmod(shim, shim_stat.st_mode | stat.S_IEXEC)
-        return shim
+        os.chmod(shim, shim_stat.st_mode | stat.S_IXUSR)
+        return written, shim
 
 
 class CmdShellIntegration(ShellIntegration):

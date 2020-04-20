@@ -187,7 +187,8 @@ class DockerComposeBinaryAction(Action):
         if binaries.has(name):
             existing_binary = binaries.get(name)
             if existing_binary.command() == binary.command():
-                context.log.notice("Binary registered: %s" % (name,))
+                context.log.notice("Binary exists: %s" % (name,))
+                bus.emit("binary:found", binary=binary)
                 return
 
             binaries.unregister(name)
