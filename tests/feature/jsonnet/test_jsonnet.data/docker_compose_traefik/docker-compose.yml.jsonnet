@@ -15,7 +15,8 @@ ddb.Compose() {
 				"db-data:/var/lib/postgresql/data:rw",
 				{
 				    "source": ddb.path.project,
-				    "target": "/workdir"
+				    "target": "/workdir",
+				    "type": "bind"
 				}
 			]
 		},

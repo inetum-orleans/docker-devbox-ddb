@@ -16,6 +16,7 @@ services:
       - db-data:/var/lib/postgresql/data:rw
       - source: %ddb.path.project%
         target: /workdir
+        type: bind
   db-test:
     build:
       cache_from:

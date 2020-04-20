@@ -14,6 +14,7 @@ services:
       - db-data:/var/lib/postgresql/data:rw
       - source: %ddb.path.project%
         target: /workdir
+        type: bind
   keycloak:
     command:
       - -b 0.0.0.0 -Dkeycloak.import=/opt/jboss/keycloak/keycloak/realm-export.json
