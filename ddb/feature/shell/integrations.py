@@ -71,7 +71,7 @@ class BashShellIntegration(ShellIntegration):
         shims = []
 
         for shim in os.listdir(shims_path):
-            with open(shim, "a", newline="\n") as shim_file:
+            with open(shim, "a", encoding="utf-8", newline="\n") as shim_file:
                 lines = shim_file.readlines()
                 if len(lines) > 2 and lines[1] == "# ddb:shim":
                     shims.append(shim)
@@ -83,7 +83,7 @@ class BashShellIntegration(ShellIntegration):
         os.makedirs(shims_path, exist_ok=True)
         shim = os.path.join(os.path.normpath(shims_path), binary.name)
         data = ''.join(["#!/usr/bin/env bash\n", "# ddb:shim\n", "$(ddb run %s) \"$@\"\n" % binary.name])
-        written = write_if_different(shim, data)
+        written = write_if_different(shim, data, newline="\n")
 
         shim_stat = os.stat(shim)
         os.chmod(shim, shim_stat.st_mode | stat.S_IXUSR)

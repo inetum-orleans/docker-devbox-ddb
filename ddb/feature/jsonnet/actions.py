@@ -65,7 +65,7 @@ class JsonnetAction(AbstractTemplateAction):
     def _parse_multiple_header(template_path, target_path):
         multiple_file_output = False
         multiple_file_dir = None
-        with open(template_path, 'r') as template:
+        with open(template_path, 'r', encoding="utf-8") as template:
             first_line = template.readline()
             if first_line.startswith('// multiple-file-output'):
                 multiple_file_output = True
