@@ -7,7 +7,6 @@ from stat import S_IRUSR, S_IWUSR, S_IRGRP, S_IROTH
 from typing import List, Union, Optional, Tuple
 
 from braceexpand import braceexpand
-
 from ddb.config import config
 from ddb.context import context
 
@@ -26,8 +25,11 @@ def write_if_different(file, data, read_mode='r', write_mode='w', log_source=Non
     Write the file if existing data is different than given data.
     """
     try:
+        read_encoding = "utf-8" if 'b' not in read_mode else None  # TODO: make default encoding configurable
+        write_encoding = "utf-8" if 'b' not in write_mode else None
+
         if os.path.exists(file):
-            with open(file, mode=read_mode, **kwargs) as read_file:
+            with open(file, mode=read_mode, encoding=read_encoding, **kwargs) as read_file:
                 existing_data = read_file.read()
         else:
             existing_data = None
@@ -40,7 +42,7 @@ def write_if_different(file, data, read_mode='r', write_mode='w', log_source=Non
         if not os.access(file, os.W_OK) and os.path.isfile(file):
             target_stat = os.stat(file)
             os.chmod(file, target_stat.st_mode | S_IWUSR)
-        with open(file, mode=write_mode, **kwargs) as write_file:
+        with open(file, mode=write_mode, encoding=write_encoding, **kwargs) as write_file:
             write_file.write(data)
 
         if log_source:
@@ -57,14 +59,17 @@ def copy_if_different(source, target, read_mode='r', write_mode='w', log=False, 
     Copy source to target if existing source data is different than target data.
     """
     try:
+        read_encoding = "utf-8" if 'b' not in read_mode else None  # TODO: make default encoding configurable
+        write_encoding = "utf-8" if 'b' not in write_mode else None
+
         if os.path.exists(source):
-            with open(source, mode=read_mode, **kwargs) as read_file:
+            with open(source, mode=read_mode, encoding=read_encoding, **kwargs) as read_file:
                 source_data = read_file.read()
         else:
             source_data = None
 
         if os.path.exists(target):
-            with open(target, mode=read_mode, **kwargs) as read_file:
+            with open(target, mode=read_mode, encoding=read_encoding, **kwargs) as read_file:
                 target_data = read_file.read()
         else:
             target_data = None
@@ -77,7 +82,7 @@ def copy_if_different(source, target, read_mode='r', write_mode='w', log=False, 
         if not os.access(target, os.W_OK) and os.path.exists(target):
             target_stat = os.stat(target)
             os.chmod(target, target_stat.st_mode | S_IWUSR)
-        with open(target, mode=write_mode, **kwargs) as write_file:
+        with open(target, mode=write_mode, encoding=write_encoding, **kwargs) as write_file:
             write_file.write(source_data)
 
         if log:
@@ -87,6 +92,18 @@ def copy_if_different(source, target, read_mode='r', write_mode='w', log=False, 
     finally:
         if readonly and os.path.isfile(target):
             os.chmod(target, S_IRUSR | S_IRGRP | S_IROTH)
+
+
+def force_remove(file: str):
+    """
+    Remove a file, trying to unset readonly flag if a PermissionError occurs.
+    """
+    try:
+        os.remove(file)
+    except PermissionError:
+        target_stat = os.stat(file)
+        os.chmod(file, target_stat.st_mode | S_IWUSR)
+        os.remove(file)
 
 
 class FileWalker:
@@ -170,7 +187,7 @@ class FileWalker:
             return False
         for exclude in excludes:
             if not norm_candidate:
-                norm_candidate = os.path.normpath(candidate)
+                norm_candidate = Path(os.path.normpath(candidate)).as_posix()
             if exclude.match(candidate) or exclude.match(norm_candidate):
                 excluded = True
                 break
@@ -191,7 +208,7 @@ class FileWalker:
             return True
         for include in includes:
             if not norm_candidate:
-                norm_candidate = os.path.normpath(candidate)
+                norm_candidate = Path(os.path.normpath(candidate)).as_posix()
             if include.match(candidate) or include.match(norm_candidate):
                 included = True
                 break

@@ -4,6 +4,7 @@ import stat
 from abc import ABC, abstractmethod
 
 from ddb.binary import Binary
+from ddb.utils.file import force_remove
 
 
 class ShellIntegration(ABC):
@@ -75,7 +76,7 @@ class BashShellIntegration(ShellIntegration):
                     shims.append(shim)
 
         for shim in shims:
-            os.remove(shim)
+            force_remove(shim)
 
     def create_binary_shim(self, shims_path: str, binary: Binary):
         os.makedirs(shims_path, exist_ok=True)

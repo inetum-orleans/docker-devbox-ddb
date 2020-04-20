@@ -5,7 +5,7 @@ from typing import Union, Iterable, Tuple
 from ddb.action.action import AbstractTemplateAction
 from ddb.config import config
 from ddb.context import context
-from ddb.utils.file import TemplateFinder
+from ddb.utils.file import TemplateFinder, force_remove
 
 
 class SymlinksAction(AbstractTemplateAction):
@@ -33,7 +33,7 @@ class SymlinksAction(AbstractTemplateAction):
             yield False, target
         else:
             if os.path.exists(target):
-                os.remove(target)
+                force_remove(target)
 
             os.symlink(reltemplate, os.path.normpath(target))
             context.log.success("%s -> %s", template, target)

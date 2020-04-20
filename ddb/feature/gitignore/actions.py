@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 import os
+import pathlib
 
 import zgitignore
-
 from ddb.action import Action
 from ddb.action.action import EventBinding
 from ddb.config import config
 from ddb.context import context
+from ddb.utils.file import force_remove
 
 
 class UpdateGitignoreAction(Action):
@@ -78,7 +79,7 @@ class UpdateGitignoreAction(Action):
                     gitignore_file.write(line)
                     gitignore_file.write("\n")
         else:
-            os.remove(gitignore)
+            force_remove(gitignore)
 
         context.log.warning("%s removed from %s", file, gitignore)
 
@@ -105,7 +106,7 @@ class UpdateGitignoreAction(Action):
                     gitignore_file.seek(0 - 1, 2)
                     last_character = gitignore_file.read()
 
-        relative_target = os.path.normpath(os.path.relpath(target, os.path.dirname(gitignore)))
+        relative_target = pathlib.Path(os.path.relpath(target, os.path.dirname(gitignore))).as_posix()
 
         with open(gitignore, "a", encoding="utf-8") as gitignore_file:
             if last_character and last_character != b"\n":

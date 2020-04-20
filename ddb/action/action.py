@@ -6,7 +6,7 @@ from typing import Callable, Iterable, Union, Tuple
 from ddb.context import context
 from ddb.event import bus
 from ddb.registry import RegistryObject
-from ddb.utils.file import write_if_different, TemplateFinder
+from ddb.utils.file import write_if_different, TemplateFinder, force_remove
 
 
 class EventBinding:
@@ -139,7 +139,7 @@ class AbstractTemplateAction(InitializableAction, ABC):  # pylint:disable=abstra
         Delete a rendered template
         """
         if os.path.exists(target):
-            os.remove(target)
+            force_remove(target)
             context.log.warning("%s removed", target)
             bus.emit("file:deleted", file=target)
 

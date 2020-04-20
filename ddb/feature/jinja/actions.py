@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-import posixpath
+import os
+from pathlib import Path
 from typing import Union, Iterable, Tuple
-
-from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 from ddb.config import config
 from ddb.utils.file import TemplateFinder
+from jinja2 import Environment, FileSystemLoader, StrictUndefined
+
 from . import filters, tests
 from ...action.action import AbstractTemplateAction
 
@@ -53,7 +54,9 @@ class JinjaAction(AbstractTemplateAction):
         self.context = dict(config.data)
 
     def _render_template(self, template: str, target: str) -> Iterable[Tuple[Union[str, bytes, bool], str]]:
-        template_name = posixpath.relpath(posixpath.normpath(template),
-                                          posixpath.normpath(str(self.template_finder.rootpath)))
+        template_name = os.path.relpath(os.path.normpath(template),
+                                        os.path.normpath(str(self.template_finder.rootpath)))
+
+        template_name = Path(template_name).as_posix()
         jinja = self.env.get_template(template_name)
         yield jinja.render(**self.context), target
