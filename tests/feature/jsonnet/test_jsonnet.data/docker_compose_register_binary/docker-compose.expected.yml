@@ -134,12 +134,12 @@ services:
       - %ddb.path.project%/.docker/php/conf.d/php-config.ini:/usr/local/etc/php/conf.d/php-config.ini:rw
       - %ddb.path.project%:/var/www/html:rw
     labels:
-      ddb.emit.docker:binary[composer](args): composer
-      ddb.emit.docker:binary[composer](name): composer
-      ddb.emit.docker:binary[composer](workdir): /var/www/html
-      ddb.emit.docker:binary[php](args): php
-      ddb.emit.docker:binary[php](name): php
-      ddb.emit.docker:binary[php](workdir): /var/www/html
+      ddb.emit.docker:binary[gli-biometrie-composer](args): composer
+      ddb.emit.docker:binary[gli-biometrie-composer](name): composer
+      ddb.emit.docker:binary[gli-biometrie-composer](workdir): /var/www/html
+      ddb.emit.docker:binary[gli-biometrie-php](args): php
+      ddb.emit.docker:binary[gli-biometrie-php](name): php
+      ddb.emit.docker:binary[gli-biometrie-php](workdir): /var/www/html
   web:
     build:
       context: %ddb.path.project%/.docker/web

@@ -87,16 +87,17 @@ ddb.Compose() {
 				"node-npm-packages:/home/node/.npm-packages:rw"
 			]
 		},
-		"php": ddb.Build("php") + ddb.User() + ddb.XDebug() {
+		"php": ddb.Build("php")
+		       + ddb.User()
+		       + ddb.XDebug()
+		       + ddb.Binary("php", "php", "/var/www/html")
+               + ddb.Binary("composer", "composer", "/var/www/html") {
 			"volumes": [
 				"php-composer-cache:/composer/cache:rw",
 				"php-composer-vendor:/composer/vendor:rw",
 				ddb.path.project + "/.docker/php/conf.d/php-config.ini:/usr/local/etc/php/conf.d/php-config.ini:rw",
 				ddb.path.project + ":/var/www/html:rw"
 			],
-            labels+:
-                ddb.Binary("php", "php", "/var/www/html") +
-                ddb.Binary("composer", "composer", "/var/www/html")
 		},
 		"web": ddb.Build("web") + ddb.VirtualHost("80", "api.biometrie.test", "api", certresolver=if ddb.env.is("prod") then "letsencrypt" else null) {
 			"volumes": [
