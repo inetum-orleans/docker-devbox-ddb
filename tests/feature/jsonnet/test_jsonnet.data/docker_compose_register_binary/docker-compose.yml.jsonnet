@@ -95,8 +95,8 @@ ddb.Compose() {
 				ddb.path.project + ":/var/www/html:rw"
 			],
             labels+:
-                ddb.RegisterBinary("php", "php", "/var/www/html") +
-                ddb.RegisterBinary("composer", "composer", "/var/www/html")
+                ddb.Binary("php", "php", "/var/www/html") +
+                ddb.Binary("composer", "composer", "/var/www/html")
 		},
 		"web": ddb.Build("web") + ddb.VirtualHost("80", "api.biometrie.test", "api", certresolver=if ddb.env.is("prod") then "letsencrypt" else null) {
 			"volumes": [

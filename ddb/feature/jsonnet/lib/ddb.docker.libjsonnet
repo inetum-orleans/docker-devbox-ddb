@@ -88,7 +88,7 @@ local Volumes(services) = {
 };
 
 
-local RegisterBinary(name, args, workdir)= {
+local Binary(name, args, workdir)= {
     ["ddb.emit.docker:binary[" + name + "](name)"]: name,
     ["ddb.emit.docker:binary[" + name + "](args)"]: args,
     ["ddb.emit.docker:binary[" + name + "](workdir)"]: workdir,
@@ -159,7 +159,7 @@ local envIs(env) =
     TraefikVirtualHost: TraefikVirtualHost,
     NoVirtualHost: NoVirtualHost,
     VirtualHost: VirtualHost,
-    RegisterBinary: RegisterBinary,
+    Binary: Binary,
     XDebug: XDebug,
     Compose: Compose,
     Volumes: Volumes,
