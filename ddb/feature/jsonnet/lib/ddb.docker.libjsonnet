@@ -87,6 +87,13 @@ local Volumes(services) = {
         )
 };
 
+
+local RegisterBinary(name, args, workdir)= {
+    ["ddb.emit.docker:binary[" + name + "](name)"]: name,
+    ["ddb.emit.docker:binary[" + name + "](args)"]: args,
+    ["ddb.emit.docker:binary[" + name + "](workdir)"]: workdir,
+};
+
 local Networks(services, network_names=_docker_reverse_proxy_network_names) = {
         [key]: {
             "external": true,
@@ -152,6 +159,7 @@ local envIs(env) =
     TraefikVirtualHost: TraefikVirtualHost,
     NoVirtualHost: NoVirtualHost,
     VirtualHost: VirtualHost,
+    RegisterBinary: RegisterBinary,
     XDebug: XDebug,
     Compose: Compose,
     Volumes: Volumes,

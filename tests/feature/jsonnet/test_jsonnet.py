@@ -261,3 +261,39 @@ class TestJsonnetAction:
             expected = yaml.load(expected_data, yaml.SafeLoader)
 
         assert rendered == expected
+
+    def test_docker_compose_register_binary(self, project_loader):
+        project_loader("docker_compose_register_binary")
+
+        features.register(CoreFeature())
+        features.register(FileFeature())
+        features.register(DockerFeature())
+        features.register(JsonnetFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
+
+        action = FileWalkAction()
+        action.initialize()
+        action.execute()
+
+        assert os.path.exists('docker-compose.yml')
+        with open('docker-compose.yml', 'r') as f:
+            rendered = yaml.load(f.read(), yaml.SafeLoader)
+
+        with open('docker-compose.expected.yml', 'r') as f:
+            expected_data = f.read()
+
+            if os.name == 'nt':
+                mapped_cwd = re.sub(r"^([a-zA-Z]):", r"/\1", os.getcwd())
+                mapped_cwd = pathlib.Path(mapped_cwd).as_posix()
+
+                expected_data = expected_data.replace("%ddb.path.project%", mapped_cwd)
+            else:
+                expected_data = expected_data.replace("%ddb.path.project%", os.getcwd())
+            expected_data = expected_data.replace("%uid%", str(config.data.get('docker.user.uid')))
+            expected_data = expected_data.replace("%gid%", str(config.data.get('docker.user.gid')))
+            expected_data = expected_data.replace("%docker.debug.host%", str(config.data.get('docker.debug.host')))
+
+            expected = yaml.load(expected_data, yaml.SafeLoader)
+
+        assert rendered == expected
