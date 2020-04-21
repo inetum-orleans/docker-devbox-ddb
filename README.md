@@ -12,4 +12,4 @@ Here are differents documentation in relation to the project :
 * [Changing the default configuration](./docs/10-default_configuration.md)
 * [Managing your project configuration](./docs/11-project_configuration.md)
 
-* N.B : Documentations is under construction, more will be added over time * 
+*N.B : Documentations is under construction, more will be added over time* 

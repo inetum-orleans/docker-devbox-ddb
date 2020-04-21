@@ -3,7 +3,7 @@ Default Configuration
 
 docker-devbox-ddb provide a complete configuration from scratch. 
 You can see the current configuration by launching the given command : 
-```shell script
+```
 ddb config
 ```
 

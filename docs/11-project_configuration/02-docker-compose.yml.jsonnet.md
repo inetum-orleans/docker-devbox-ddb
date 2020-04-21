@@ -12,12 +12,12 @@ If you choose the second options, you will need to use the [Jsonnet syntax](http
 If you want more details on functions provided by ddb, you can check the [lib](../ddb/feature/jsonnet/lib) folder of the jsonnet feature
 
 Once you have created the file, you need to run the following command to generate the docker-compose : 
-```shell script
+```
 ddb configure
 ```
 
 If you are working on a template file such as the docker-compose.yml.jsonnet, you can even use the watch option as following :
-```shell script
+```
 ddb --watch configure
 ```
 This command will auto-recompile the templates file each time you update one 

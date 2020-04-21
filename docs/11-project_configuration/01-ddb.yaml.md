@@ -3,7 +3,7 @@ ddb.yaml
 
 docker-devbox-ddb provide a complete configuration from scratch which can be override in your project. 
 You can see the current configuration by launching the given command : 
-```shell script
+```
 ddb config
 ``` 
 

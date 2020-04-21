@@ -7,12 +7,12 @@ Three types of files are usefull for your project :
 3. [Dockerfile.jinja](11-project_configuration/03-Dockerfile.jinja.md)
 
 Once you have configure the files you need and want, you will need to activate ddb in your current shell : 
-```shell script
+```
 $(ddb activate)
 ```
 
 If you need to switch to another project, don't forget to deactivate it : 
-```shell script
+```
 $(ddb deactivate)
 ```
 
