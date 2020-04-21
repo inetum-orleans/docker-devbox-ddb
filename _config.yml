@@ -5,6 +5,4 @@ relative_links:
   collections: true
 include:
   - README.md
-  - docs
-
 theme: jekyll-theme-hacker
