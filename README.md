@@ -3,46 +3,13 @@ docker-devbox-ddb
 [![Build Status](https://img.shields.io/travis/gfi-centre-ouest/docker-devbox-ddb.svg)](https://travis-ci.org/gfi-centre-ouest/docker-devbox-ddb)
 [![Code coverage](https://img.shields.io/coveralls/github/gfi-centre-ouest/docker-devbox-ddb)](https://coveralls.io/github/gfi-centre-ouest/docker-devbox-ddb)
 
-Development
------------
+docker-devbox-ddb is a toolbox designed to provide an handful list of functionality to simplify docker-compose management in a project.
 
-- Create virtualenv from Python `3.5.x`.
+# Documentations
 
-You should consider [pyenv](https://github.com/pyenv/pyenv) or [pyenv-win](https://github.com/pyenv-win/pyenv-win).
+Here are differents documentation in relation to the project : 
+* [How to participate ?](./docs/00-development.md)
+* [Changing the default configuration](./docs/10-default_configuration.md)
+* [Managing your project configuration](./docs/11-project_configuration.md)
 
-```
-pyenv install 3.5.9
-pyenv rehash
-python -m venv ~/.pyenv/versions/3.5.9-ddb
-pyenv local 3.5.9-ddb
-```
-
-- Install development dependencies
-
-```
-pip install -r requirements-dev.txt
-```
-
-- Run pytest
-
-```
-pytest
-```
-
-- Run pylint
-
-```
-pylint ddb
-```
-
-### Windows note
-
-If you are running Windows, you need to follow those steps ...
-
-- Install [Build Tools for Visual Studio 2019](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=BuildTools&rel=16), 
-and choose Windows 10 SDK, C++ Build Tools and C++ CMake Tools for Windows in installer (last version only).
-- Install jsonnet python extension from [Toilal/jsonnet](https://github.com/Toilal/jsonnet) fork (this fix windows build)
-
-```
-pip install git+https://github.com/Toilal/jsonnet.git#egg=jsonnet
-```
+* N.B : Documentations is under construction, more will be added over time * 
