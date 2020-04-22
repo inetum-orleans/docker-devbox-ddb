@@ -101,6 +101,9 @@ services:
     image: gfiorleans.azurecr.io/gli-biometrie/node
     init: true
     labels:
+      ddb.emit.docker:binary[npm](args): npm
+      ddb.emit.docker:binary[npm](name): npm
+      ddb.emit.docker:binary[npm](workdir): /app
       traefik.enable: "true"
       traefik.http.routers.gli-biometrie-tls.rule: Host(`biometrie.test`)
       traefik.http.routers.gli-biometrie-tls.service: gli-biometrie

@@ -163,6 +163,7 @@ local envIs(env) =
     NoVirtualHost: NoVirtualHost,
     VirtualHost: VirtualHost,
     Binary: Binary,
+    BinaryLabels: BinaryLabels,
     XDebug: XDebug,
     Compose: Compose,
     Volumes: Volumes,
