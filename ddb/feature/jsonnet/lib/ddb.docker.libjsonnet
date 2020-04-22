@@ -162,7 +162,7 @@ local envIs(env) =
     TraefikVirtualHost: TraefikVirtualHost,
     NoVirtualHost: NoVirtualHost,
     VirtualHost: VirtualHost,
-    BinaryLabels: BinaryLabels,
+    BinaryLabels: BinaryLabels
     Binary: Binary,
     XDebug: XDebug,
     Compose: Compose,
