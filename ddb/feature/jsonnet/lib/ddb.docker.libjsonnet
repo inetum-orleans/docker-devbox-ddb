@@ -87,6 +87,16 @@ local Volumes(services) = {
         )
 };
 
+local BinaryLabels(name, args, workdir)= {
+    ["ddb.emit.docker:binary[" + name + "](name)"]: name,
+    ["ddb.emit.docker:binary[" + name + "](args)"]: args,
+    ["ddb.emit.docker:binary[" + name + "](workdir)"]: workdir
+};
+
+local Binary(name, args, workdir)= {
+    labels +: BinaryLabels(name, args, workdir),
+};
+
 local Networks(services, network_names=_docker_reverse_proxy_network_names) = {
         [key]: {
             "external": true,
@@ -120,8 +130,8 @@ local TraefikLabels(port, hostname, name=null, certresolver=null) = {
 };
 
 local TraefikVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id, certresolver=null) = {
-    "labels": TraefikLabels(port, hostname, name, certresolver),
-    "networks": {
+    labels +: TraefikLabels(port, hostname, name, certresolver),
+    networks +: {
         "default": {},
         [network_id]: {}
     }
@@ -152,6 +162,7 @@ local envIs(env) =
     TraefikVirtualHost: TraefikVirtualHost,
     NoVirtualHost: NoVirtualHost,
     VirtualHost: VirtualHost,
+    Binary: Binary,
     XDebug: XDebug,
     Compose: Compose,
     Volumes: Volumes,
