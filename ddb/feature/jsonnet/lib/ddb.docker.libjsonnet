@@ -88,9 +88,9 @@ local Volumes(services) = {
 };
 
 local BinaryLabels(name, args, workdir)= {
-    ["ddb.emit.docker:binary[" + std.join("-", std.prune([_core_project_name, name])) + "](name)"]: name,
-    ["ddb.emit.docker:binary[" + std.join("-", std.prune([_core_project_name, name])) + "](args)"]: args,
-    ["ddb.emit.docker:binary[" + std.join("-", std.prune([_core_project_name, name])) + "](workdir)"]: workdir
+    ["ddb.emit.docker:binary[" + name + "](name)"]: name,
+    ["ddb.emit.docker:binary[" + name + "](args)"]: args,
+    ["ddb.emit.docker:binary[" + name + "](workdir)"]: workdir
 };
 
 local Binary(name, args, workdir)= {
