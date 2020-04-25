@@ -64,6 +64,8 @@ class FileWalkAction(InitializableAction, WatchSupport):
                 cache.pop(cached_file)
                 bus.emit("file:deleted", file=cached_file)
 
+        cache.flush()
+
     def start_watching(self):
         self.observer = Observer()
         self.observer.schedule(ObserverHandler(self), str(self.file_walker.rootpath), self.file_walker.recursive)
