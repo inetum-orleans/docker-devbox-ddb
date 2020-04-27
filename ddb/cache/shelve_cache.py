@@ -4,6 +4,7 @@ import shelve
 import tempfile
 
 from .cache import Cache
+from ..config import config
 
 
 class ShelveCache(Cache):
@@ -14,7 +15,10 @@ class ShelveCache(Cache):
     def __init__(self, namespace: str):
         super().__init__(namespace)
 
-        path = os.path.join(tempfile.gettempdir(), "ddb", "cache")
+        if config.paths.home:
+            path = os.path.join(config.paths.home, "cache")
+        else:
+            path = os.path.join(tempfile.gettempdir(), "ddb", "cache")
         os.makedirs(path, exist_ok=True)
 
         self._shelf = shelve.open(os.path.join(path, self._namespace))

@@ -72,9 +72,9 @@ class Config:  # pylint:disable=too-many-instance-attributes
 
     def reset(self, *args, **kwargs):
         """
-        Reset the configuration object.
+        Reset the configuration object, while keeping configured paths.
         """
-        self.__init__(*args, **kwargs)
+        self.__init__(*args, paths=self.paths, **kwargs)
 
     def clear(self):
         """
