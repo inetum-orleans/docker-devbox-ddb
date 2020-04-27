@@ -50,7 +50,7 @@ local Build(name, image=name, cache_from_image=_docker_cache_from_image, directo
         [if (cache_from_image && (_docker_registry_name != null || _docker_registry_repository != null) != null) then "cache_from"]: [
             image_uri(image)
         ],
-        "context": std.join("/", [path.project_home, directory, image])
+        "context": std.join("/", [directory, image])
     },
     [if (image != null && (_docker_registry_name != null || _docker_registry_repository != null)) then "image"]: image_uri(image)
 };

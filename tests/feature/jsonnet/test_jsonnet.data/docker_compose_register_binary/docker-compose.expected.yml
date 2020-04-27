@@ -2,7 +2,7 @@ version: '3.7'
 services:
   db:
     build:
-      context: %ddb.path.project%/.docker/db
+      context: .docker/db
     environment:
       POSTGRES_PASSWORD: biometrie
       POSTGRES_USER: biometrie
@@ -19,7 +19,7 @@ services:
         type: bind
   db-test:
     build:
-      context: %ddb.path.project%/.docker/db
+      context: .docker/db
     environment:
       POSTGRES_PASSWORD: biometrie
       POSTGRES_USER: biometrie
@@ -67,7 +67,7 @@ services:
       - %ddb.path.project%/keycloak:/opt/jboss/keycloak/keycloak:rw
   keycloak-db:
     build:
-      context: %ddb.path.project%/.docker/keycloak-db
+      context: .docker/keycloak-db
     environment:
       POSTGRES_DB: biometrie
       POSTGRES_PASSWORD: biometrie
@@ -83,7 +83,7 @@ services:
       - %ddb.path.project%:/workdir:rw
   ldap:
     build:
-      context: %ddb.path.project%/.docker/ldap
+      context: .docker/ldap
     command: --copy-service --loglevel debug
     environment:
       LDAP_ADMIN_PASSWORD: biometrie
@@ -97,7 +97,7 @@ services:
     restart: "no"
   node:
     build:
-      context: %ddb.path.project%/.docker/node
+      context: .docker/node
     image: gfiorleans.azurecr.io/gli-biometrie/node
     init: true
     labels:
@@ -123,7 +123,7 @@ services:
       - node-npm-packages:/home/node/.npm-packages:rw
   php:
     build:
-      context: %ddb.path.project%/.docker/php
+      context: .docker/php
     environment:
       PHP_IDE_CONFIG: serverName=gli-biometrie
       XDEBUG_CONFIG: remote_enable=on remote_autostart=off idekey=gli-biometrie remote_host=%docker.debug.host%
@@ -145,7 +145,7 @@ services:
       ddb.emit.docker:binary[php](workdir): /var/www/html
   web:
     build:
-      context: %ddb.path.project%/.docker/web
+      context: .docker/web
     image: gfiorleans.azurecr.io/gli-biometrie/web
     init: true
     labels:

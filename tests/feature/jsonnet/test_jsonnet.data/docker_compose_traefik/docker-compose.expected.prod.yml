@@ -2,7 +2,7 @@ version: '3.7'
 services:
   db:
     build:
-      context: %ddb.path.project%/.docker/db
+      context: .docker/db
     environment:
       POSTGRES_PASSWORD: biometrie
       POSTGRES_USER: biometrie
@@ -50,7 +50,7 @@ services:
       - %ddb.path.project%/keycloak:/opt/jboss/keycloak/keycloak:rw
   keycloak-db:
     build:
-      context: %ddb.path.project%/.docker/keycloak-db
+      context: .docker/keycloak-db
     environment:
       POSTGRES_DB: biometrie
       POSTGRES_PASSWORD: biometrie
@@ -64,7 +64,7 @@ services:
       - %ddb.path.project%:/workdir:rw
   node:
     build:
-      context: %ddb.path.project%/.docker/node
+      context: .docker/node
     image: gfiorleans.azurecr.io/gli-biometrie/node
     init: true
     labels:
@@ -87,7 +87,7 @@ services:
       - node-npm-packages:/home/node/.npm-packages:rw
   php:
     build:
-      context: %ddb.path.project%/.docker/php
+      context: .docker/php
     image: gfiorleans.azurecr.io/gli-biometrie/php
     init: true
     restart: "unless-stopped"
@@ -99,7 +99,7 @@ services:
       - %ddb.path.project%:/var/www/html:rw
   web:
     build:
-      context: %ddb.path.project%/.docker/web
+      context: .docker/web
     image: gfiorleans.azurecr.io/gli-biometrie/web
     init: true
     labels:
