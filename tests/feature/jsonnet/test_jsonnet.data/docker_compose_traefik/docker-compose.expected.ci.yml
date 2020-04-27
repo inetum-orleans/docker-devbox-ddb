@@ -4,7 +4,7 @@ services:
     build:
       cache_from:
         - gfiorleans.azurecr.io/gli-biometrie/db
-      context: %ddb.path.project%/.docker/db
+      context: .docker/db
     environment:
       POSTGRES_PASSWORD: biometrie
       POSTGRES_USER: biometrie
@@ -21,7 +21,7 @@ services:
     build:
       cache_from:
         - gfiorleans.azurecr.io/gli-biometrie/db
-      context: %ddb.path.project%/.docker/db
+      context: .docker/db
     environment:
       POSTGRES_PASSWORD: biometrie
       POSTGRES_USER: biometrie
@@ -67,7 +67,7 @@ services:
       - %ddb.path.project%/keycloak:/opt/jboss/keycloak/keycloak:rw
   keycloak-db:
     build:
-      context: %ddb.path.project%/.docker/keycloak-db
+      context: .docker/keycloak-db
       cache_from:
         - gfiorleans.azurecr.io/gli-biometrie/keycloak-db
     environment:
@@ -85,7 +85,7 @@ services:
     build:
       cache_from:
         - gfiorleans.azurecr.io/gli-biometrie/node
-      context: %ddb.path.project%/.docker/node
+      context: .docker/node
     image: gfiorleans.azurecr.io/gli-biometrie/node
     init: true
     labels:
@@ -110,7 +110,7 @@ services:
     build:
       cache_from:
         - gfiorleans.azurecr.io/gli-biometrie/php
-      context: %ddb.path.project%/.docker/php
+      context: .docker/php
     image: gfiorleans.azurecr.io/gli-biometrie/php
     init: true
     restart: "no"
@@ -124,7 +124,7 @@ services:
     build:
       cache_from:
         - gfiorleans.azurecr.io/gli-biometrie/web
-      context: %ddb.path.project%/.docker/web
+      context: .docker/web
     image: gfiorleans.azurecr.io/gli-biometrie/web
     init: true
     labels:
