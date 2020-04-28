@@ -10,6 +10,7 @@ from ddb.config import config
 from ddb.context import context
 from ddb.utils.file import force_remove
 
+repository = "gfi-centre-ouest/docker-devbox"
 
 class UpdateGitignoreAction(Action):
     """
@@ -100,11 +101,17 @@ class UpdateGitignoreAction(Action):
             gitignore = ".gitignore"
 
         relative_target = pathlib.Path(os.path.relpath(target, os.path.dirname(gitignore))).as_posix()
-        UpdateGitignoreAction.append_to_block(gitignore, relative_target)
+        UpdateGitignoreAction.add_file(gitignore, relative_target)
         context.log.success("%s added to %s", relative_target, gitignore)
 
     @staticmethod
-    def append_to_block(gitignore: str, relative_target: str):
+    def add_file(gitignore: str, relative_target: str):
+        """
+        Add a file to the gitignore block
+        :param gitignore: the file to update
+        :param relative_target: the file to add into the block
+        :return:
+        """
         # Retrieval of file content
         gitignore_file_content = ''
         if os.path.exists(gitignore):
@@ -138,6 +145,11 @@ class UpdateGitignoreAction(Action):
 
     @staticmethod
     def get_block(gitignore_file_content: str):
+        """
+        Retrieve the gitignore block generated in the file if exist
+        :param gitignore_file_content: the gitignore content
+        :return:
+        """
         started = False
         ended = False
         lines = []
@@ -153,7 +165,11 @@ class UpdateGitignoreAction(Action):
 
     @staticmethod
     def get_block_limit(start: bool):
-        repository = "gfi-centre-ouest/docker-devbox"
+        """
+        Generate the gitignore block limit
+        :param start: if it is the start of the block or not
+        :return:
+        """
         if start:
             return '###> {} ###'.format(repository)
         return '###< {} ###'.format(repository)
