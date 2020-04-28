@@ -74,7 +74,8 @@ class UpdateGitignoreAction(Action):
 
         new_gitignore_content = list(filter(lambda line: relative_file != line, gitignore_content))
 
-        if new_gitignore_content:
+        excluded = [UpdateGitignoreAction.get_block_limit(True), UpdateGitignoreAction.get_block_limit(False)]
+        if new_gitignore_content and new_gitignore_content != excluded:
             with open(gitignore, "w", encoding="utf-8") as gitignore_file:
                 for line in new_gitignore_content:
                     gitignore_file.write(line)
