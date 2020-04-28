@@ -15,12 +15,18 @@ class TestUpdateGitIgnoreAction:
 
         action = UpdateGitignoreAction()
         action.execute(target="./to-ignore.yml")
+        action.execute(target="./to-ignore-2.yml")
 
         assert os.path.exists('.gitignore')
         with open('.gitignore', 'r') as f:
             gitignore = f.read()
 
-        assert gitignore == 'to-ignore.yml\n'
+        assert gitignore == ('\n'.join([
+            UpdateGitignoreAction.get_block_limit(True),
+            'to-ignore.yml',
+            'to-ignore-2.yml',
+            UpdateGitignoreAction.get_block_limit(False),
+        ]) + '\n')
 
     def test_empty_project_with_core(self, project_loader):
         project_loader("empty")
@@ -36,7 +42,11 @@ class TestUpdateGitIgnoreAction:
         with open('.gitignore', 'r') as f:
             gitignore = f.read()
 
-        assert gitignore == 'to-ignore.yml\n'
+        assert gitignore == ('\n'.join([
+            UpdateGitignoreAction.get_block_limit(True),
+            'to-ignore.yml',
+            UpdateGitignoreAction.get_block_limit(False),
+        ]) + '\n')
 
     def test_already_ignored(self, project_loader):
         project_loader("already_ignored")
@@ -84,19 +94,36 @@ class TestUpdateGitIgnoreAction:
         assert os.path.exists(os.path.join('.gitignore'))
         with open(os.path.join('.gitignore'), 'r') as f:
             gitignore = f.read()
-            assert gitignore == 'no/gitignore/directory/foo.txt\n'
+            assert gitignore == ('\n'.join([
+                UpdateGitignoreAction.get_block_limit(True),
+                'no/gitignore/directory/foo.txt',
+                UpdateGitignoreAction.get_block_limit(False),
+            ]) + '\n')
 
         assert os.path.exists(os.path.join('sub', '.gitignore'))
         with open(os.path.join('sub', '.gitignore'), 'r') as f:
             gitignore = f.read()
-            assert set(gitignore.splitlines()) == {'directory/test.json', 'directory/test.yaml'}
+            assert gitignore == ('\n'.join([
+                UpdateGitignoreAction.get_block_limit(True),
+                'directory/test.json',
+                'directory/test.yaml',
+                UpdateGitignoreAction.get_block_limit(False),
+            ]) + '\n')
 
         assert os.path.exists(os.path.join('another', 'sub', '.gitignore'))
         with open(os.path.join('another', 'sub', '.gitignore'), 'r') as f:
             gitignore = f.read()
-            assert set(gitignore.splitlines()) == {'foo', '!directory/forced.*', 'bar'}
+            assert gitignore == '\n'.join([
+                'foo',
+                '!directory/forced.*',
+                'bar',
+            ])
 
         assert os.path.exists(os.path.join('another', 'sub', 'directory', '.gitignore'))
         with open(os.path.join('another', 'sub', 'directory', '.gitignore'), 'r') as f:
             gitignore = f.read()
-            assert set(gitignore.splitlines()) == {'test.yaml'}
+            assert gitignore == ('\n'.join([
+                UpdateGitignoreAction.get_block_limit(True),
+                'test.yaml',
+                UpdateGitignoreAction.get_block_limit(False),
+            ]) + '\n')

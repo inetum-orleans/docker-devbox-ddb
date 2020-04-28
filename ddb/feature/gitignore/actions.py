@@ -3,6 +3,7 @@ import os
 import pathlib
 
 import zgitignore
+
 from ddb.action import Action
 from ddb.action.action import EventBinding
 from ddb.config import config
@@ -97,20 +98,61 @@ class UpdateGitignoreAction(Action):
         except StopIteration:
             gitignore = ".gitignore"
 
-        last_character = None
-        if os.path.exists(gitignore):
-            with open(gitignore, 'rb+') as gitignore_file:
-                gitignore_file.seek(0, 2)
-                size = gitignore_file.tell()
-                if size > 0:
-                    gitignore_file.seek(0 - 1, 2)
-                    last_character = gitignore_file.read()
-
         relative_target = pathlib.Path(os.path.relpath(target, os.path.dirname(gitignore))).as_posix()
-
-        with open(gitignore, "a", encoding="utf-8") as gitignore_file:
-            if last_character and last_character != b"\n":
-                gitignore_file.write("\n")
-            gitignore_file.write(relative_target)
-            gitignore_file.write("\n")
+        UpdateGitignoreAction.append_to_block(gitignore, relative_target)
         context.log.success("%s added to %s", relative_target, gitignore)
+
+    @staticmethod
+    def append_to_block(gitignore: str, relative_target: str):
+        # Retrieval of file content
+        gitignore_file_content = ''
+        if os.path.exists(gitignore):
+            with open(gitignore, "r+", encoding="utf-8") as gitignore_file:
+                gitignore_file_content = gitignore_file.read()
+
+        # Retrieval of the current block
+        current_block = UpdateGitignoreAction.get_block(gitignore_file_content)
+        is_block_present = (len(current_block) > 0)
+
+        # Creation of the new block version
+        if not is_block_present:
+            new_block = [UpdateGitignoreAction.get_block_limit(True), UpdateGitignoreAction.get_block_limit(False)]
+        else:
+            new_block = current_block.copy()
+
+        # Addition of the target_file to the block
+        new_block.insert(len(current_block) - 1, relative_target)
+
+        # Updating the gitignore content
+        if is_block_present:
+            gitignore_file_content = gitignore_file_content.replace('\n'.join(current_block), '\n'.join(new_block))
+        else:
+            if len(gitignore_file_content) > 0:
+                gitignore_file_content += '\n'
+            gitignore_file_content += '\n'.join(new_block) + '\n'
+
+        # Writing new content to the file
+        with open(gitignore, "w+", encoding="utf-8") as gitignore_file:
+            gitignore_file.write(gitignore_file_content)
+
+    @staticmethod
+    def get_block(gitignore_file_content: str):
+        started = False
+        ended = False
+        lines = []
+        for line in gitignore_file_content.split('\n'):
+            if line == UpdateGitignoreAction.get_block_limit(True):
+                started = True
+            if started and not ended:
+                lines.append(line)
+            if line == UpdateGitignoreAction.get_block_limit(False):
+                ended = True
+
+        return lines
+
+    @staticmethod
+    def get_block_limit(start: bool):
+        repository = "gfi-centre-ouest/docker-devbox"
+        if start:
+            return '###> {} ###'.format(repository)
+        return '###< {} ###'.format(repository)
