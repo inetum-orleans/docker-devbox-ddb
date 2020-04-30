@@ -5,7 +5,6 @@ from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.docker import DockerFeature, EmitDockerComposeConfigAction
 from ddb.config import config
-from ddb.feature.shell import ShellFeature
 
 
 class TestDockerFeature:
@@ -135,16 +134,16 @@ class TestDockerFeature:
         project_loader("binary-options")
 
         features.register(DockerFeature())
-        features.register(ShellFeature())
         load_registered_features()
         register_actions_in_event_bus(True)
 
         action = EmitDockerComposeConfigAction()
         action.execute()
 
-        assert len(list(binaries.all())) == 2
+        assert len(list(binaries.all())) == 3
         assert binaries.has("npm-simple")
         assert binaries.has("npm-conditions")
+        assert binaries.has("mysql")
 
         npm_simple = binaries.get("npm-simple")
         assert npm_simple.command() == (config.data["docker.compose.bin"] + " run --workdir=/app/. --label traefik.enable=false node").split()
@@ -155,3 +154,6 @@ class TestDockerFeature:
         assert npm_conditions.command() == (config.data["docker.compose.bin"] + " run --workdir=/app/. --label traefik.enable=false node").split()
         assert npm_conditions.command("serve") == (config.data["docker.compose.bin"] + ' run --workdir=/app/. --label traefik.enable=false node serve').split()
         assert npm_conditions.command("run serve") == (config.data["docker.compose.bin"] + ' run --workdir=/app/. node').split() + ['run serve']
+
+        mysql = binaries.get("mysql")
+        assert mysql.command() == (config.data["docker.compose.bin"] + ' run --workdir=/app/. db mysql -hdb -uproject-management-tool -pproject-management-tool').split()

@@ -50,7 +50,7 @@ class DockerBinary(Binary):
         command = [docker_compose_bin] + docker_compose_args + list(params) + list(args)
         return command
 
-    def add_options_to_params(self, params, options, condition, args=()): # pylint: disable=no-self-use
+    def add_options_to_params(self, params, options, condition, args=()):  # pylint: disable=no-self-use
         """
         Add options to params if condition is fulfilled
         :param params: the list of parameters
@@ -59,8 +59,9 @@ class DockerBinary(Binary):
         :param args: the list of args of binary call
         :return:
         """
-        if condition is not None:
+        if condition is not None and options is not None:
             if simpleeval.simple_eval(condition, functions={}, names={'args': args}):
                 params.extend(shlex.split(options))
         else:
-            params.extend(shlex.split(options))
+            if options is not None:
+                params.extend(shlex.split(options))

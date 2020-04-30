@@ -16,5 +16,18 @@ services:
     volumes:
       - .:/app
       - node-cache:/home/node/.cache
+  db:
+    image: mysql
+    init: true
+    labels:
+      ddb.emit.docker:binary[mysql](name): mysql
+      ddb.emit.docker:binary[mysql](args): mysql -hdb -uproject-management-tool -pproject-management-tool
+      ddb.emit.docker:binary[mysql](workdir): /app
+    restart: 'no'
+    user: 1000:1000
+    volumes:
+      - .:/app
+      - db-data:/var/lib/mysql
 volumes:
   node-cache:
+  db-data:
