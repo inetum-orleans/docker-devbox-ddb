@@ -262,8 +262,14 @@ class TestJsonnetAction:
 
         assert rendered == expected
 
-    def test_docker_compose_register_binary(self, project_loader):
-        project_loader("docker_compose_register_binary")
+
+    @pytest.mark.parametrize("variant", [
+        "_register_binary",
+        "_register_binary_with_one_option",
+        # "_register_binary_with_multiple_options", TODO handle (options)(c1)
+    ])
+    def test_docker_compose_register_binary(self, project_loader, variant):
+        project_loader("docker_compose" + variant)
 
         features.register(CoreFeature())
         features.register(FileFeature())

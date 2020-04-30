@@ -80,13 +80,18 @@ ddb.Compose() {
 			    "16036:636"
 			],
 		},
-		"node": ddb.Build("node") + ddb.User() + ddb.VirtualHost("8080", "biometrie.test", certresolver=if ddb.env.is("prod") then "letsencrypt" else null) {
+		"node": ddb.Build("node")
+		        + ddb.User()
+		        + ddb.Binary("npm", "/app")
+		        + ddb.BinaryOptions("npm", "--label traefik.enable=false", '"run serve" not in args', 1)
+		        + ddb.BinaryOptions("npm", "--verbose", '"verbose" in args', 2)
+		        + ddb.VirtualHost("8080", "biometrie.test", certresolver=if ddb.env.is("prod") then "letsencrypt" else null) {
 			"volumes": [
 				ddb.path.project + ":/app:rw",
 				"node-cache:/home/node/.cache:rw",
 				"node-npm-packages:/home/node/.npm-packages:rw"
 			],
-			labels +: ddb.BinaryLabels("npm", "/app")
+			labels +: ddb.BinaryLabels("node", "/app", "node")
 		},
 		"php": ddb.Build("php")
 		       + ddb.User()

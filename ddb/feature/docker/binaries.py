@@ -1,6 +1,7 @@
 import os
 import posixpath
 import shlex
+import simpleeval
 from typing import Optional, List
 
 from ddb.binary import Binary
@@ -17,11 +18,13 @@ class DockerBinary(Binary):
                  docker_compose_service: str,
                  workdir: Optional[str] = None,
                  options: Optional[str] = None,
+                 options_condition: Optional[str] = None,
                  args: Optional[str] = None):
         self._name = name
         self.docker_compose_service = docker_compose_service
         self.workdir = workdir
         self.options = options
+        self.options_condition = options_condition
         self.args = args
 
     @property
@@ -35,8 +38,9 @@ class DockerBinary(Binary):
             relpath = os.path.relpath(os.getcwd(), config.paths.project_home)
             container_workdir = posixpath.join(self.workdir, relpath)
             params.append("--workdir=%s" % (container_workdir,))
-        if self.options:
-            params.extend(shlex.split(self.options))
+
+        self.add_options_to_params(params, self.options, self.options_condition, args)
+
         params.append(self.docker_compose_service)
         if self.args:
             params.extend(shlex.split(self.args))
@@ -45,3 +49,10 @@ class DockerBinary(Binary):
         docker_compose_args = config.data.get("docker.compose.args", [])
         command = [docker_compose_bin] + docker_compose_args + list(params) + list(args)
         return command
+
+    def add_options_to_params(self, params, options, condition, args=""):
+        if condition is not None:
+            if simpleeval.simple_eval(condition, functions={}, names={'args': args}):
+                params.extend(shlex.split(options))
+        else:
+            params.extend(shlex.split(options))

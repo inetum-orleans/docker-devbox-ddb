@@ -87,14 +87,24 @@ local Volumes(services) = {
         )
 };
 
-local BinaryLabels(name, args, workdir)= {
-    ["ddb.emit.docker:binary[" + name + "](name)"]: name,
-    ["ddb.emit.docker:binary[" + name + "](args)"]: args,
-    ["ddb.emit.docker:binary[" + name + "](workdir)"]: workdir
+//
+local BinaryOptionsLabels(name, options, condition = null, index = null) = {
+    ["ddb.emit.docker:binary[" + name + "](options)" + (if index != null then "(c" + index + ")" else "")]: options,
+    [if condition != null then "ddb.emit.docker:binary[" + name + "](options_condition)" + (if index != null then "(c" + index + ")" else "")]: condition,
 };
 
-local Binary(name, args, workdir)= {
-    labels +: BinaryLabels(name, args, workdir),
+local BinaryOptions(name, options, condition = null, index = null) = {
+    labels +: BinaryOptionsLabels(name, options, condition, index),
+};
+
+local BinaryLabels(name, workdir, args = null)= {
+    ["ddb.emit.docker:binary[" + name + "](name)"]: name,
+    ["ddb.emit.docker:binary[" + name + "](workdir)"]: workdir,
+    [if args != null then "ddb.emit.docker:binary[" + name + "](args)"]: args
+};
+
+local Binary(name, workdir, args = null)= {
+    labels +: BinaryLabels(name, workdir, args),
 };
 
 local Networks(services, network_names=_docker_reverse_proxy_network_names) = {
@@ -164,6 +174,8 @@ local envIs(env) =
     VirtualHost: VirtualHost,
     Binary: Binary,
     BinaryLabels: BinaryLabels,
+    BinaryOptions: BinaryOptions,
+    BinaryOptionsLabels: BinaryOptionsLabels,
     XDebug: XDebug,
     Compose: Compose,
     Volumes: Volumes,
