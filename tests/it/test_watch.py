@@ -7,6 +7,7 @@ import pytest
 from waiting import wait
 
 from ddb.__main__ import main, reset
+from tests.utilstest import compare_gitignore_generated
 
 
 def init_test_watch(watch: bool, command: Iterable[str]):
@@ -57,7 +58,7 @@ class TestWatch:
                  timeout_seconds=5)
 
             wait(lambda: os.path.exists('.gitignore') and
-                         Path('.gitignore').read_text() == "test.txt\n",
+                         compare_gitignore_generated(Path('.gitignore').read_text(), 'test.txt'),
                  timeout_seconds=5)
         finally:
             if watch:
@@ -90,7 +91,7 @@ class TestWatch:
                  timeout_seconds=5)
 
             wait(lambda: os.path.exists('.gitignore') and
-                         Path('.gitignore').read_text() == "test.txt\ntest.created.txt\n",
+                         compare_gitignore_generated(Path('.gitignore').read_text(), 'test.txt', 'test.created.txt'),
                  timeout_seconds=5)
         finally:
             if watch:
@@ -148,7 +149,7 @@ class TestWatch:
                  timeout_seconds=5)
 
             wait(lambda: os.path.exists('.gitignore') and
-                         Path('.gitignore').read_text() == "test2.txt\n",
+                         compare_gitignore_generated(Path('.gitignore').read_text(), 'test2.txt'),
                  timeout_seconds=5)
         finally:
             if watch:
