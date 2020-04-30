@@ -47,7 +47,7 @@ class DockerBinary(Binary):
 
         docker_compose_bin = config.data["docker.compose.bin"]
         docker_compose_args = config.data.get("docker.compose.args", [])
-        command = [docker_compose_bin] + docker_compose_args + list(params) + list(args)
+        command = [docker_compose_bin] + docker_compose_args + list(params)
         return command
 
     def add_options_to_params(self, params, options, condition, args=()):  # pylint: disable=no-self-use

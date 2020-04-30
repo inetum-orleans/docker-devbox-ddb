@@ -97,7 +97,7 @@ class BashShellIntegration(ShellIntegration):
     def create_binary_shim(self, shims_path: str, binary: Binary):
         os.makedirs(shims_path, exist_ok=True)
         shim = os.path.join(os.path.normpath(shims_path), binary.name)
-        data = ''.join(["#!/usr/bin/env bash\n", "# ddb:shim\n", "$(ddb run %s \"$@\")\n" % binary.name])
+        data = ''.join(["#!/usr/bin/env bash\n", "# ddb:shim\n", "$(ddb run %s \"$@\") \"$@\"\n" % binary.name])
         written = write_if_different(shim, data, newline="\n")
 
         shim_stat = os.stat(shim)
