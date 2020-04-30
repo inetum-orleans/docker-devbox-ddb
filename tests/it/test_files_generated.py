@@ -35,7 +35,7 @@ class TestFilesGenerated:
 
         assert os.path.exists(".gitignore")
         with open(".gitignore", "r") as f:
-            assert compare_gitignore_generated(f.read(), ['test.dev.yml.jsonnet', 'test.dev.yml', 'test.yml'])
+            assert compare_gitignore_generated(f.read(), 'test.dev.yml.jsonnet', 'test.dev.yml', 'test.yml')
 
     def test_ensure_chaining_with_custom_dependencies(self, project_loader):
         project_loader("ensure-chaining-with-custom-dependencies")
@@ -65,4 +65,4 @@ class TestFilesGenerated:
 
         assert os.path.exists(".gitignore")
         with open(".gitignore", "r") as f:
-            assert compare_gitignore_generated(f.read(), ['test.dev.yml.jinja', 'test.dev.yml', 'test.yml'])
+            assert compare_gitignore_generated(f.read(), 'test.dev.yml.jinja', 'test.dev.yml', 'test.yml')

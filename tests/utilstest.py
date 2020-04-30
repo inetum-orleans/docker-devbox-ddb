@@ -1,5 +1,6 @@
 import os
 import re
+from typing import List
 
 from ddb.config import config
 from ddb.config.config import ConfigPaths
@@ -31,8 +32,9 @@ def get_docker_ip():
         return match.group(1)
 
 
-def compare_gitignore_generated(gitignore_content: str, expected_files:[str]):
-    enriched_expected_files = expected_files.copy()
-    enriched_expected_files.insert(0, UpdateGitignoreAction.get_block_limit(True))
-    enriched_expected_files.insert(len(enriched_expected_files), UpdateGitignoreAction.get_block_limit(False))
-    return gitignore_content.splitlines() == enriched_expected_files
+def compare_gitignore_generated(gitignore_content: str, *expected_lines: str):
+    gitignore_lines = set(gitignore_content.splitlines())
+    gitignore_lines.remove(UpdateGitignoreAction.get_block_limit(True))
+    gitignore_lines.remove(UpdateGitignoreAction.get_block_limit(False))
+
+    return gitignore_lines == set(expected_lines)

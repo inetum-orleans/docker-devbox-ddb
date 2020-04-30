@@ -58,7 +58,7 @@ class TestWatch:
                  timeout_seconds=5)
 
             wait(lambda: os.path.exists('.gitignore') and
-                         compare_gitignore_generated(Path('.gitignore').read_text(), ['test.txt']),
+                         compare_gitignore_generated(Path('.gitignore').read_text(), 'test.txt'),
                  timeout_seconds=5)
         finally:
             if watch:
@@ -91,7 +91,7 @@ class TestWatch:
                  timeout_seconds=5)
 
             wait(lambda: os.path.exists('.gitignore') and
-                         compare_gitignore_generated(Path('.gitignore').read_text(), ['test.txt', 'test.created.txt']),
+                         compare_gitignore_generated(Path('.gitignore').read_text(), 'test.txt', 'test.created.txt'),
                  timeout_seconds=5)
         finally:
             if watch:
@@ -149,7 +149,7 @@ class TestWatch:
                  timeout_seconds=5)
 
             wait(lambda: os.path.exists('.gitignore') and
-                         compare_gitignore_generated(Path('.gitignore').read_text(), ['test2.txt']),
+                         compare_gitignore_generated(Path('.gitignore').read_text(), 'test2.txt'),
                  timeout_seconds=5)
         finally:
             if watch:
