@@ -88,23 +88,25 @@ local Volumes(services) = {
 };
 
 //
-local BinaryOptionsLabels(name, options, condition = null, index = null) = {
+local BinaryOptionsLabels(name, options, options_condition = null, index = null) = {
     ["ddb.emit.docker:binary[" + name + "](options)" + (if index != null then "(c" + index + ")" else "")]: options,
-    [if condition != null then "ddb.emit.docker:binary[" + name + "](options_condition)" + (if index != null then "(c" + index + ")" else "")]: condition,
+    [if options_condition != null then "ddb.emit.docker:binary[" + name + "](options_condition)" + (if index != null then "(c" + index + ")" else "")]: options_condition
 };
 
 local BinaryOptions(name, options, condition = null, index = null) = {
     labels +: BinaryOptionsLabels(name, options, condition, index),
 };
 
-local BinaryLabels(name, workdir, args = null)= {
+local BinaryLabels(name, workdir = null, args = null, options = null, options_condition = null) = {
     ["ddb.emit.docker:binary[" + name + "](name)"]: name,
-    ["ddb.emit.docker:binary[" + name + "](workdir)"]: workdir,
-    [if args != null then "ddb.emit.docker:binary[" + name + "](args)"]: args
+    [if workdir != null then "ddb.emit.docker:binary[" + name + "](workdir)"]: workdir,
+    [if args != null then "ddb.emit.docker:binary[" + name + "](args)"]: args,
+    [if options != null then "ddb.emit.docker:binary[" + name + "](options)"]: options,
+    [if options_condition != null then "ddb.emit.docker:binary[" + name + "](options_condition)"]: options_condition
 };
 
-local Binary(name, workdir, args = null)= {
-    labels +: BinaryLabels(name, workdir, args),
+local Binary(name, workdir = null, args = null, options = null, options_condition = null) = {
+    labels +: BinaryLabels(name, workdir, args, options, options_condition),
 };
 
 local Networks(services, network_names=_docker_reverse_proxy_network_names) = {
