@@ -101,8 +101,14 @@ services:
     image: gfiorleans.azurecr.io/gli-biometrie/node
     init: true
     labels:
+      ddb.emit.docker:binary[node](args): node
+      ddb.emit.docker:binary[node](name): node
+      ddb.emit.docker:binary[node](workdir): /app
+      ddb.emit.docker:binary[node](options): --label traefik.enable=false
       ddb.emit.docker:binary[npm](name): npm
       ddb.emit.docker:binary[npm](workdir): /app
+      ddb.emit.docker:binary[npm](options): --label traefik.enable=false
+      ddb.emit.docker:binary[npm](options_condition): '"run serve" not in args'
       traefik.enable: "true"
       traefik.http.routers.gli-biometrie-tls.rule: Host(`biometrie.test`)
       traefik.http.routers.gli-biometrie-tls.service: gli-biometrie

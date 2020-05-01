@@ -173,7 +173,7 @@ class DockerComposeBinaryAction(Action):
         return "docker:docker-compose-binary"
 
     @staticmethod
-    def execute(name=None, workdir=None, options=None, args=None, docker_compose_service=None):
+    def execute(name=None, workdir=None, options=None, options_condition=None, args=None, docker_compose_service=None):
         """
         Execute action
         """
@@ -182,7 +182,8 @@ class DockerComposeBinaryAction(Action):
         if name is None:
             raise ValueError("name should be defined")
 
-        binary = DockerBinary(name, docker_compose_service, workdir, options, args)
+        binary = DockerBinary(name, docker_compose_service=docker_compose_service, workdir=workdir, options=options,
+                              options_condition=options_condition, args=args)
 
         if binaries.has(name):
             existing_binary = binaries.get(name)
@@ -192,6 +193,7 @@ class DockerComposeBinaryAction(Action):
                 return
 
             binaries.unregister(name)
+
 
         binaries.register(binary)
 

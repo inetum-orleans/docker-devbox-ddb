@@ -1,0 +1,33 @@
+version: '3.7'
+services:
+  node:
+    image: node
+    init: true
+    labels:
+      ddb.emit.docker:binary[npm-simple](name): npm-simple
+      ddb.emit.docker:binary[npm-simple](workdir): /app
+      ddb.emit.docker:binary[npm-simple](options): --label traefik.enable=false
+      ddb.emit.docker:binary[npm-conditions](name): npm-conditions
+      ddb.emit.docker:binary[npm-conditions](workdir): /app
+      ddb.emit.docker:binary[npm-conditions](options): --label traefik.enable=false
+      ddb.emit.docker:binary[npm-conditions](options_condition): '"run serve" not in args'
+    restart: 'no'
+    user: 1000:1000
+    volumes:
+      - .:/app
+      - node-cache:/home/node/.cache
+  db:
+    image: mysql
+    init: true
+    labels:
+      ddb.emit.docker:binary[mysql](name): mysql
+      ddb.emit.docker:binary[mysql](args): mysql -hdb -uproject-management-tool -pproject-management-tool
+      ddb.emit.docker:binary[mysql](workdir): /app
+    restart: 'no'
+    user: 1000:1000
+    volumes:
+      - .:/app
+      - db-data:/var/lib/mysql
+volumes:
+  node-cache:
+  db-data:
