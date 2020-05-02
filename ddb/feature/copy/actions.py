@@ -6,7 +6,7 @@ import re
 import requests
 
 from ddb.action import Action
-from ddb.cache import caches, _requests_cache_name
+from ddb.cache import caches, requests_cache_name
 from ddb.config import config
 from ddb.utils.file import write_if_different, copy_if_different
 
@@ -15,7 +15,7 @@ def copy_from_url(source, destination, filename=None):
     """
     Copy from an URL source.
     """
-    cache = caches.get(_requests_cache_name)
+    cache = caches.get(requests_cache_name)
     response = cache.get(source)
     if not response:
         response = requests.get(source, allow_redirects=True)

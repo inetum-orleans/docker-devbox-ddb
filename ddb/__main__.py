@@ -10,15 +10,15 @@ from typing import Optional, Sequence, Iterable, Callable, Union, List
 import pkg_resources
 import verboselogs
 from colorlog import default_log_colors, ColoredFormatter
-from slugify import slugify
 from toposort import toposort_flatten
 
 from ddb.action import actions
 from ddb.action.action import EventBinding, Action, WatchSupport
 from ddb.action.runnerfactory import action_event_binding_runner_factory
 from ddb.binary import binaries
-from ddb.cache import caches, _project_cache_name, ShelveCache, _global_cache_name, _requests_cache_name, \
-    _project_binary_cache_name
+from ddb.cache import caches, global_cache_name, requests_cache_name, \
+    project_binary_cache_name, register_global_cache, project_cache_name
+from ddb.cache import register_project_cache
 from ddb.command import commands
 from ddb.command.command import execute_command, Command
 from ddb.config import config
@@ -133,17 +133,10 @@ def register_default_caches():
     """
     Register default caches.
     """
-    caches.register(
-        ShelveCache(slugify(_project_cache_name + '.' + config.paths.project_home,
-                            regex_pattern=r'[^-a-z0-9_\.]+')),
-        _project_cache_name)
-    caches.register(ShelveCache(_global_cache_name), _global_cache_name)
-    caches.register(ShelveCache(_requests_cache_name), _requests_cache_name)
-    caches.register(
-        ShelveCache(
-            slugify(_project_binary_cache_name + '.' + config.paths.project_home,
-                    regex_pattern=r'[^-a-z0-9_\.]+')), _project_binary_cache_name)
-    binaries.set_cache(caches.get(_project_binary_cache_name))
+    register_project_cache(project_cache_name)
+    binaries.set_cache(register_project_cache(project_binary_cache_name))
+    register_global_cache(global_cache_name)
+    register_global_cache(requests_cache_name)
 
 
 def register_objects(features_list: Iterable[Feature],

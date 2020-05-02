@@ -30,9 +30,15 @@ class ShellIntegration(ABC):
         """
 
     @abstractmethod
-    def remove_binary_shims(self, shims_path: str):
+    def remove_all_binary_shims(self, shims_path: str):
         """
         Remove all executable files matching binary shims.
+        """
+
+    @abstractmethod
+    def remove_binary_shim(self, shims_path: str, binary: Binary) -> bool:
+        """
+        Delete a binary shim for this shell.
         """
 
     @abstractmethod
@@ -82,7 +88,7 @@ class BashShellIntegration(ShellIntegration):
     def remove_environment_variable(self, key):
         yield "unset " + key
 
-    def remove_binary_shims(self, shims_path: str):
+    def remove_all_binary_shims(self, shims_path: str):
         shims = []
 
         for shim in os.listdir(shims_path):
@@ -93,6 +99,13 @@ class BashShellIntegration(ShellIntegration):
 
         for shim in shims:
             force_remove(shim)
+
+    def remove_binary_shim(self, shims_path: str, binary: Binary) -> bool:
+        shim = os.path.join(shims_path, binary.name)
+        if not os.path.isfile(shim):
+            return False
+        force_remove(os.path.join(shims_path, binary.name))
+        return True
 
     def create_binary_shim(self, shims_path: str, binary: Binary):
         os.makedirs(shims_path, exist_ok=True)
@@ -126,7 +139,11 @@ class CmdShellIntegration(ShellIntegration):
     def remove_environment_variable(self, key):
         yield "set " + key + "="
 
-    def remove_binary_shims(self, shims_path: str):
+    def remove_all_binary_shims(self, shims_path: str):
+        # TODO
+        pass
+
+    def remove_binary_shim(self, shims_path: str, binary: Binary) -> bool:
         # TODO
         pass
 

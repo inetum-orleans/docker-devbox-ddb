@@ -10,6 +10,7 @@ from dictdiffer import diff
 
 from .integrations import ShellIntegration
 from ...action import Action
+from ...action.action import EventBinding
 from ...binary import Binary
 from ...config import config
 from ...config.flatten import to_environ
@@ -90,7 +91,8 @@ class CreateBinaryShim(Action):
     @property
     def event_bindings(self):
         return "binary:registered", \
-               "binary:found"
+               "binary:found", \
+               EventBinding("binary:unregistered", call=self.remove)
 
     @property
     def name(self) -> str:
@@ -104,9 +106,16 @@ class CreateBinaryShim(Action):
     def disabled(self) -> bool:
         return config.data.get('shell.shell') != self.shell.name
 
+    def remove(self, binary: Binary):
+        """
+        Remove binary shim
+        """
+        directories = config.data.get('shell.path.directories')
+        self.shell.remove_binary_shim(directories[0], binary)
+
     def execute(self, binary: Binary):
         """
-        Execute action
+        Create binary shim
         """
         directories = config.data.get('shell.path.directories')
         written, shim = self.shell.create_binary_shim(directories[0], binary)

@@ -1,0 +1,8 @@
+version: "3.7"
+services:
+  db:
+    image: psql
+    environment:
+      POSTGRES_PASSWORD: planireza
+      POSTGRES_USER: planireza
+    init: true

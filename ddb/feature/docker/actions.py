@@ -10,8 +10,9 @@ from dotty_dict import Dotty
 
 from .binaries import DockerBinary
 from ...action import Action
-from ...action.action import EventBinding
+from ...action.action import EventBinding, InitializableAction
 from ...binary import binaries
+from ...cache import caches, register_project_cache
 from ...config import config
 from ...context import context
 from ...event import bus
@@ -87,6 +88,8 @@ class EmitDockerComposeConfigAction(Action):
         if not services:
             return
 
+        bus.emit("docker:docker-compose-config:before-events", docker_compose_config=docker_compose_config)
+
         for service_name, service in services.items():
             labels = service.get('labels')
             if not labels:
@@ -100,6 +103,8 @@ class EmitDockerComposeConfigAction(Action):
             for (event_name, event_parsed_values) in event_data.items():
                 for _, (args, kwargs) in event_parsed_values.items():
                     bus.emit(event_name, *args, **kwargs)
+
+        bus.emit("docker:docker-compose-config:after-events", docker_compose_config=docker_compose_config)
 
     def _build_event_data(self, docker_compose_config, labels, service, service_name):  # pylint:disable=too-many-locals
         parsed_values = {}
@@ -154,21 +159,57 @@ class EmitDockerComposeConfigAction(Action):
         return args, kwargs
 
 
-class DockerComposeBinaryAction(Action):
+class DockerComposeBinaryAction(InitializableAction):
     """
     Convert ddb.event.bus.emit.docker:binary events to binary available from shell.
     """
 
+    def __init__(self):
+        super().__init__()
+        self.binaries = dict()
+
     @property
     def event_bindings(self):
-        return "docker:binary"
+        return ("docker:binary",
+                EventBinding("docker:docker-compose-config:before-events", call=self.before_events),
+                EventBinding("docker:docker-compose-config:after-events", call=self.after_events))
 
     @property
     def name(self) -> str:
         return "docker:docker-compose-binary"
 
-    @staticmethod
-    def execute(name=None, workdir=None, options=None, options_condition=None, args=None, docker_compose_service=None):
+    def initialize(self):
+        register_project_cache("docker.binaries")
+
+    def before_events(self, docker_compose_config):
+        """
+        Reset current binaries dict.
+        """
+        self.binaries = dict()
+
+    def after_events(self, docker_compose_config):
+        """
+        Cache binaries and remove binaries from cache that are not found in current config.
+        """
+        docker_binaries_cache = caches.get("docker.binaries")
+
+        for name, binary in self.binaries.items():
+            docker_binaries_cache.set(name, binary)
+
+        binaries_to_remove = set()
+        for name in docker_binaries_cache.keys():
+            if name not in self.binaries.keys():
+                unregistered_binary = binaries.unregister(name)
+                bus.emit("binary:unregistered", binary=unregistered_binary)
+                binaries_to_remove.add(name)
+
+        for binary_to_remove in binaries_to_remove:
+            docker_binaries_cache.pop(binary_to_remove)
+
+        docker_binaries_cache.flush()
+
+    def execute(self, name=None, workdir=None, options=None, options_condition=None, args=None,
+                docker_compose_service=None):
         """
         Execute action
         """
@@ -179,6 +220,8 @@ class DockerComposeBinaryAction(Action):
 
         binary = DockerBinary(name, docker_compose_service=docker_compose_service, workdir=workdir, options=options,
                               options_condition=options_condition, args=args)
+
+        self.binaries[name] = binary
 
         if binaries.has(name):
             existing_binary = binaries.get(name)
