@@ -2,7 +2,7 @@ import os
 
 import yaml
 
-from ddb.__main__ import main, reset
+from ddb.__main__ import main
 from tests.utilstest import compare_gitignore_generated
 
 
@@ -11,7 +11,6 @@ class TestFilesGenerated:
         project_loader("ensure-chaining")
 
         main(["configure"])
-        reset()
 
         main(["activate"])
 
@@ -41,7 +40,6 @@ class TestFilesGenerated:
         project_loader("ensure-chaining-with-custom-dependencies")
 
         main(["configure"])
-        reset()
 
         main(["activate"])
 

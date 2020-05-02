@@ -3,7 +3,7 @@
 import logging
 import sys
 import threading
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 from gettext import gettext as _
 from typing import Optional, Sequence, Iterable, Callable, Union, List
 
@@ -20,7 +20,7 @@ from ddb.binary import binaries
 from ddb.cache import caches, _project_cache_name, ShelveCache, _global_cache_name, _requests_cache_name, \
     _project_binary_cache_name
 from ddb.command import commands
-from ddb.command.command import execute_command
+from ddb.command.command import execute_command, Command
 from ddb.config import config
 from ddb.context import context
 from ddb.event import bus
@@ -253,11 +253,21 @@ def handle_watch(watch_started_event=threading.Event(), watch_stop_event=threadi
         logging.getLogger("ddb.watch").warning("Watching is supported by none enabled features")
 
 
-def handle_command_line(args: Optional[Sequence[str]] = None,
-                        watch_started_event=threading.Event(),
-                        watch_stop_event=threading.Event()):
+class ParseCommandLineException(Exception):
     """
-    Handle command line arguments.
+    Exception raised when an invalid command line is given.
+    """
+
+    def __init__(self, opts: ArgumentParser, parsed_args: Namespace, unknown_args: List[str]):
+        super().__init__()
+        self.opts = opts
+        self.parsed_args = parsed_args
+        self.unknown_args = unknown_args
+
+
+def parse_command_line(args: Optional[Sequence[str]] = None):
+    """
+    Parse command line arguments, returning the command to execute, args and unknown args.
     """
     opts = ArgumentParser()
     subparsers = opts.add_subparsers(dest="command", help='Available commands')
@@ -300,21 +310,28 @@ def handle_command_line(args: Optional[Sequence[str]] = None,
             cache.clear()
         logging.getLogger("ddb.cache").success("Cache cleared")
 
-    if parsed_args.command:
-        command = commands.get(parsed_args.command)
+    if not parsed_args.command:
+        raise ParseCommandLineException(opts, parsed_args, unknown_args)
 
-        if unknown_args and not command.allow_unknown_args:
-            msg = _('unrecognized arguments: %s')
-            opts.error(msg % ' '.join(unknown_args))
+    command = commands.get(parsed_args.command)
 
-        config.args = parsed_args
-        config.unknown_args = unknown_args
-        execute_command(command)
+    if unknown_args and not command.allow_unknown_args:
+        msg = _('unrecognized arguments: %s')
+        opts.error(msg % ' '.join(unknown_args))
 
-        if parsed_args.watch:
-            handle_watch(watch_started_event, watch_stop_event)
-    else:
-        opts.print_help()
+    return command, parsed_args, unknown_args
+
+
+def handle_command_line(command: Command,
+                        watch_started_event=threading.Event(),
+                        watch_stop_event=threading.Event()):
+    """
+    Execute the command and handle additional given arguments like watch mode
+    """
+    execute_command(command)
+
+    if config.args.watch:
+        handle_watch(watch_started_event, watch_stop_event)
 
 
 def _register_action_in_event_bus(action: Action, binding: Union[str, EventBinding], fail_fast=False):
@@ -351,13 +368,29 @@ def main(args: Optional[Sequence[str]] = None,
     """
     Load all features and handle command line
     """
-    config.load()
-    register_default_caches()
-    register_features()
-    load_registered_features()
-    register_actions_in_event_bus()
-    handle_command_line(args, watch_started_event, watch_stop_event)
-    return context.exceptions
+    try:
+        config.load()
+
+        register_features()
+        load_registered_features()
+
+        try:
+            command, args, unknown_args = parse_command_line(args)
+            config.args = args
+            config.unknown_args = unknown_args
+        except ParseCommandLineException as exc:
+            config.args = exc.parsed_args
+            config.unknown_args = exc.unknown_args
+            exc.opts.print_help()
+            raise
+
+        register_default_caches()
+        register_actions_in_event_bus()
+
+        handle_command_line(command, watch_started_event, watch_stop_event)
+        return context.exceptions
+    finally:
+        reset()
 
 
 def clear_caches():
@@ -369,21 +402,19 @@ def clear_caches():
         cache.flush()
 
 
-def reset(keep_caches=False):
+def reset():
     """
     Reset all caches and registries to run main method again
     """
-    if not keep_caches:
-        clear_caches()
-
-    caches.clear()
     bus.clear()
-    features.clear()
-    phases.clear()
-    commands.clear()
-    actions.clear()
-    binaries.clear()
-    services.clear()
+
+    features.close()
+    phases.close()
+    commands.close()
+    actions.close()
+    binaries.close()
+    services.close()
+    caches.close()
 
     context.reset()
     config.reset()

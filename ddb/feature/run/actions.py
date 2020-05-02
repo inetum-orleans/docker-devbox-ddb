@@ -2,8 +2,10 @@
 import subprocess
 
 from ...action import Action
+from ...action.action import EventBinding
 from ...binary import binaries
 from ...config import config
+from ...event import bus
 
 
 class RunAction(Action):
@@ -13,7 +15,10 @@ class RunAction(Action):
 
     @property
     def event_bindings(self):
-        return "phase:run"
+        return (
+            "phase:run",
+            EventBinding("run:run", self.run)
+        )
 
     @property
     def name(self) -> str:
@@ -22,8 +27,17 @@ class RunAction(Action):
     @staticmethod
     def execute():
         """
-        Execute action
+        Execute the action defined by argument "name".
         """
-        name = config.args.name
+        if hasattr(config.args, "name"):
+            name = config.args.name
+            bus.emit("run:run", name=name)
+
+    @staticmethod
+    def run(name: str):
+        """
+        Execute the action
+        """
+
         binary = binaries.get(name)
         print(subprocess.list2cmdline(binary.command(*config.unknown_args)))

@@ -6,7 +6,7 @@ from typing import Iterable
 import pytest
 from waiting import wait
 
-from ddb.__main__ import main, reset
+from ddb.__main__ import main
 from tests.utilstest import compare_gitignore_generated
 
 
@@ -50,7 +50,6 @@ class TestWatch:
                 template_file.write("This is {{core.project.name}} project. (modified)")
 
             if not watch:
-                reset(keep_caches=True)
                 main_runner()
 
             wait(lambda: os.path.exists('test.txt') and
@@ -83,7 +82,6 @@ class TestWatch:
                 template_file.write("This is {{core.project.name}} project. (created)")
 
             if not watch:
-                reset(keep_caches=True)
                 main_runner()
 
             wait(lambda: os.path.exists('test.created.txt') and
@@ -115,7 +113,6 @@ class TestWatch:
             os.remove("test.txt.jinja")
 
             if not watch:
-                reset(keep_caches=True)
                 main_runner()
 
             wait(lambda: not os.path.exists('test.txt'), timeout_seconds=5)
@@ -142,7 +139,6 @@ class TestWatch:
             os.rename("test.txt.jinja", "test2.txt.jinja")
 
             if not watch:
-                reset(keep_caches=True)
                 main_runner()
 
             wait(lambda: not os.path.exists('test.txt') and os.path.exists('test2.txt') and "This is watch1 project.",

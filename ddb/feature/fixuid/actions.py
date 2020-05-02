@@ -117,6 +117,7 @@ class FixuidDockerComposeAction(Action):
         image_attrs = global_cache().get(image_attrs_cache_key)
 
         if not image_attrs:
+            # TODO: registry_data peut etre None, a corriger.
             context.log.warning("Loading attributes for image %s...", image)
             pulled_image = registry_data.pull()
             image_attrs = pulled_image.attrs

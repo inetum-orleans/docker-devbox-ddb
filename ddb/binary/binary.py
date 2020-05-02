@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from abc import abstractmethod, ABC
-from typing import List
+from typing import List, Iterable
 
 from ddb.registry import RegistryObject
 
@@ -11,7 +11,7 @@ class Binary(RegistryObject, ABC):
     """
 
     @abstractmethod
-    def command(self, *args):
+    def command(self, *args) -> Iterable[str]:
         """
         Get the binary command
         """

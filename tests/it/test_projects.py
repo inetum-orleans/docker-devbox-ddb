@@ -1,6 +1,6 @@
 import os
 
-from ddb.__main__ import main, reset
+from ddb.__main__ import main
 
 
 class TestSymfonyVuejs:
@@ -8,7 +8,6 @@ class TestSymfonyVuejs:
         project_loader("symfony-vuejs")
 
         main(["configure"])
-        reset()
 
         main(["activate"])
 

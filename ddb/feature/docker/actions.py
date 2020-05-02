@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import re
-from subprocess import run, PIPE, CalledProcessError
+from subprocess import run, PIPE
 from typing import Iterable
 
 import simpleeval
@@ -72,12 +72,7 @@ class EmitDockerComposeConfigAction(Action):
         if not os.path.exists("docker-compose.yml"):
             return
 
-        try:
-            yaml_output = run_docker_compose("config")
-        except CalledProcessError as exc:
-            context.log.error(str(exc))
-            context.log.error(exc.stderr)
-            return
+        yaml_output = run_docker_compose("config")
 
         parsed_config = yaml.load(yaml_output, yaml.SafeLoader)
         docker_compose_config = Dotty(parsed_config)
@@ -193,7 +188,6 @@ class DockerComposeBinaryAction(Action):
                 return
 
             binaries.unregister(name)
-
 
         binaries.register(binary)
 

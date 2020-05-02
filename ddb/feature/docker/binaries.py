@@ -2,7 +2,7 @@ import os
 import posixpath
 import shlex
 import simpleeval
-from typing import Optional, List
+from typing import Optional, List, Iterable
 
 from ddb.binary import Binary
 from ddb.config import config
@@ -31,7 +31,7 @@ class DockerBinary(Binary):
     def name(self) -> str:
         return self._name
 
-    def command(self, *args) -> List[str]:
+    def command(self, *args) -> Iterable[str]:
         params = ["run"]
 
         if self.workdir:

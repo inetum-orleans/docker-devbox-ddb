@@ -35,7 +35,7 @@ class Action(RegistryObject, ABC):
 
     @property
     @abstractmethod
-    def event_bindings(self) -> Iterable[Union[str, EventBinding]]:
+    def event_bindings(self) -> Union[Iterable[Union[str, EventBinding]], Union[str, EventBinding]]:
         """
         The event bindings that should trigger the action.
 

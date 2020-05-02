@@ -157,3 +157,4 @@ class TestDockerFeature:
 
         mysql = binaries.get("mysql")
         assert mysql.command() == (config.data["docker.compose.bin"] + ' run --workdir=/app/. db mysql -hdb -uproject-management-tool -pproject-management-tool').split()
+

@@ -1,5 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
+from subprocess import CalledProcessError
 from typing import TypeVar, Generic
 
 from ddb.action import Action, InitializableAction
@@ -58,14 +59,7 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
             self._execute_action(*args, **kwargs)
             return True
         except Exception as exception:  # pylint:disable=broad-except
-            context.exceptions.append(exception)
-            log_error = context.log.exception if \
-                context.log.isEnabledFor(logging.DEBUG) or config.args.exceptions \
-                else context.log.error
-            log_error("An unexpected error has occured %s: %s",
-                      context.stack,
-                      str(exception).strip())
-
+            self._handle_exception(exception)
             if self.fail_fast:
                 raise
 
@@ -77,6 +71,27 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
         Execute the action
         """
         self.to_call(*args, **kwargs)
+
+    @staticmethod
+    def _handle_exception(exception: Exception):
+        """
+        Handle an exception occured in an action.
+        """
+        context.exceptions.append(exception)
+        log_error = context.log.exception if \
+            context.log.isEnabledFor(logging.DEBUG) or config.args.exceptions \
+            else context.log.error
+        log_error("An unexpected error has occured %s: %s",
+                  context.stack,
+                  str(exception).strip())
+        if isinstance(exception, CalledProcessError):
+            if exception.stderr:
+                for err_line in exception.stderr.decode("utf-8").splitlines():
+                    log_error("(stderr) %s", err_line)
+            else:
+                for out_line in exception.stderr.decode("utf-8").splitlines():
+                    log_error("(output) %s", out_line)
+
 
 
 class InitializableActionEventBindingRunner(ActionEventBindingRunner[InitializableAction]):

@@ -141,3 +141,13 @@ class Registry(Generic[T]):
         self._objects.clear()
         if self._cache:
             self._cache.clear()
+
+    def close(self):
+        """
+        Close this registry, closing the underlying cache if defined and then removing all objects instances.
+        :return:
+        """
+        if self._cache:
+            self._cache.close()
+            self._cache = None
+        self.clear()
