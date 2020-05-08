@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import inspect
 import logging
+import os
 import sys
 import threading
 from argparse import ArgumentParser, Namespace
 from gettext import gettext as _
+from importlib import import_module
 from typing import Optional, Sequence, Iterable, Callable, Union, List
 
 import pkg_resources
@@ -34,7 +37,6 @@ from ddb.feature.fixuid import FixuidFeature
 from ddb.feature.gitignore import GitignoreFeature
 from ddb.feature.jinja import JinjaFeature
 from ddb.feature.jsonnet import JsonnetFeature
-from ddb.feature.plugins import PluginsFeature
 from ddb.feature.run import RunFeature
 from ddb.feature.shell import ShellFeature
 from ddb.feature.symlinks import SymlinksFeature
@@ -44,37 +46,65 @@ from ddb.phase import phases
 from ddb.registry import Registry, RegistryObject
 from ddb.service import services
 
-
-def get_default_features():
-    """
-    Default features. Setuptools entrypoint are bypassed for those features to enhance bootstrap performance.
-    """
-    return (
-        CertsFeature(),
-        CopyFeature(),
-        CoreFeature(),
-        DockerFeature(),
-        FileFeature(),
-        FixuidFeature(),
-        GitignoreFeature(),
-        JinjaFeature(),
-        JsonnetFeature(),
-        PluginsFeature(),
-        RunFeature(),
-        ShellFeature(),
-        SymlinksFeature(),
-        TraefikFeature(),
-        YttFeature()
-    )
+_available_features = [CertsFeature(),
+                       CopyFeature(),
+                       CoreFeature(),
+                       DockerFeature(),
+                       FileFeature(),
+                       FixuidFeature(),
+                       GitignoreFeature(),
+                       JinjaFeature(),
+                       JsonnetFeature(),
+                       RunFeature(),
+                       ShellFeature(),
+                       SymlinksFeature(),
+                       TraefikFeature(),
+                       YttFeature()]
 
 
-def register_features(default_features: Iterable[Feature] = get_default_features()):
+def load_plugins():
+    """Load plugins"""
+    for directory in [d for d in config.paths if d]:
+        extension_directory = os.path.join(directory, ".ddb")
+        if os.path.exists(extension_directory):
+            sys.path.append(os.path.abspath(extension_directory))
+            for dirpath, _, files in os.walk(extension_directory):
+                module_name = os.path.relpath(dirpath, extension_directory).replace(os.sep, ".")
+                if module_name == '.':
+                    module_name = None
+
+                for file in files:
+                    if file == "__init__.py":
+                        _load_plugins_module(module_name)
+                    elif file.endswith("py"):
+                        file_module_name = os.path.splitext(file)[0]
+                        _load_plugins_module(
+                            file_module_name if not module_name else '.'.join((module_name, file_module_name)))
+
+
+def _load_plugins_module(module_name):
+    if not module_name:
+        return
+    module = import_module(module_name)
+    for _, clazz in inspect.getmembers(module):
+        if inspect.isclass(clazz) and \
+                clazz.__module__ == module.__name__ and \
+                not clazz.__name__.startswith("_") and \
+                issubclass(clazz, Feature):
+            feature = clazz()
+            _available_features.append(feature)
+
+
+def register_features(to_register: Iterable[Feature] = None):
     """
     Register default features and setuptools entrypoint 'ddb_features' inside features registry.
     Features are registered in order for their dependency to be registered first with a topological sort.
     Withing a command phase, actions are executed in the order of their feature registration.
     """
-    entrypoint_features = {f.name: f for f in default_features}
+    if to_register is None:
+        to_register = _available_features
+
+    entrypoint_features = {f.name: f for f in to_register}
     for entry_point in pkg_resources.iter_entry_points('ddb_features'):
         feature = entry_point.load()()
         entrypoint_features[feature.name] = feature
@@ -367,6 +397,7 @@ def main(args: Optional[Sequence[str]] = None,
     """
     try:
         config.load()
+        load_plugins()
 
         register_features()
         load_registered_features()
