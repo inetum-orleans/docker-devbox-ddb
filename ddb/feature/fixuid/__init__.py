@@ -23,7 +23,7 @@ class FixuidFeature(Feature):
 
     @property
     def dependencies(self) -> Iterable[str]:
-        return ["core", "docker[optional]"]
+        return ["docker[optional]"]
 
     @property
     def actions(self) -> Iterable[Action]:

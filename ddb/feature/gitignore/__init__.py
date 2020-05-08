@@ -17,10 +17,6 @@ class GitignoreFeature(Feature):
         return "gitignore"
 
     @property
-    def dependencies(self) -> Iterable[str]:
-        return ["core"]
-
-    @property
     def schema(self) -> ClassVar[GitignoreSchema]:
         return GitignoreSchema
 

@@ -26,10 +26,6 @@ class DockerFeature(Feature):
         return "docker"
 
     @property
-    def dependencies(self) -> Iterable[str]:
-        return ["core"]
-
-    @property
     def schema(self) -> ClassVar[FeatureSchema]:
         return DockerSchema
 

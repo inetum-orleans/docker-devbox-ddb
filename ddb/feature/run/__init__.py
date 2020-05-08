@@ -39,10 +39,6 @@ class RunFeature(Feature):
         )
 
     @property
-    def dependencies(self) -> Iterable[str]:
-        return ["core"]
-
-    @property
     def actions(self) -> Iterable[Action]:
         return (
             RunAction(),

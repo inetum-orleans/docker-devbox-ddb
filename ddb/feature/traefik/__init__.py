@@ -27,7 +27,7 @@ class TraefikFeature(Feature):
 
     @property
     def dependencies(self) -> Iterable[str]:
-        return ["core", "certs[optional]"]
+        return ["certs[optional]"]
 
     @property
     def actions(self) -> Iterable[Action]:

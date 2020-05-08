@@ -21,7 +21,7 @@ class JinjaFeature(Feature):
 
     @property
     def dependencies(self) -> Iterable[str]:
-        return ["core", "file"]
+        return ["file"]
 
     @property
     def schema(self) -> ClassVar[JinjaSchema]:

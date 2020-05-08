@@ -22,10 +22,6 @@ class CertsFeature(Feature):
         return CertsSchema
 
     @property
-    def dependencies(self) -> Iterable[str]:
-        return ["core"]
-
-    @property
     def actions(self) -> Iterable[Action]:
         return (
             GenerateCertAction(),
