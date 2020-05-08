@@ -15,7 +15,7 @@ from ...binary import binaries
 from ...cache import caches, register_project_cache
 from ...config import config
 from ...context import context
-from ...event import bus
+from ...event import bus, events
 
 
 def run_docker_compose(*params: Iterable[str]):
@@ -56,8 +56,8 @@ class EmitDockerComposeConfigAction(Action):
     @property
     def event_bindings(self):
         return (
-            "phase:configure",
-            EventBinding("file:generated",
+            events.phase.configure,
+            EventBinding(events.file.generated,
                          processor=lambda source, target: ((), {}) if target == "docker-compose.yml" else False)
         )
 
@@ -82,13 +82,13 @@ class EmitDockerComposeConfigAction(Action):
             return
         self.current_yaml_output = yaml_output
 
-        bus.emit("docker:docker-compose-config", docker_compose_config=docker_compose_config)
+        events.docker.docker_compose_config(docker_compose_config=docker_compose_config)
 
         services = docker_compose_config.get('services')
         if not services:
             return
 
-        bus.emit("docker:docker-compose-config:before-events", docker_compose_config=docker_compose_config)
+        events.docker.docker_compose_before_events(docker_compose_config=docker_compose_config)
 
         for service_name, service in services.items():
             labels = service.get('labels')
@@ -104,7 +104,7 @@ class EmitDockerComposeConfigAction(Action):
                 for _, (args, kwargs) in event_parsed_values.items():
                     bus.emit(event_name, *args, **kwargs)
 
-        bus.emit("docker:docker-compose-config:after-events", docker_compose_config=docker_compose_config)
+        events.docker.docker_compose_after_events(docker_compose_config=docker_compose_config)
 
     def _build_event_data(self, docker_compose_config, labels, service, service_name):  # pylint:disable=too-many-locals
         parsed_values = {}
@@ -170,9 +170,9 @@ class DockerComposeBinaryAction(InitializableAction):
 
     @property
     def event_bindings(self):
-        return ("docker:binary",
-                EventBinding("docker:docker-compose-config:before-events", call=self.before_events),
-                EventBinding("docker:docker-compose-config:after-events", call=self.after_events))
+        return (events.docker.binary,
+                EventBinding(events.docker.docker_compose_before_events, call=self.before_events),
+                EventBinding(events.docker.docker_compose_after_events, call=self.after_events))
 
     @property
     def name(self) -> str:
@@ -200,7 +200,7 @@ class DockerComposeBinaryAction(InitializableAction):
         for name in docker_binaries_cache.keys():
             if name not in self.binaries.keys():
                 unregistered_binary = binaries.unregister(name)
-                bus.emit("binary:unregistered", binary=unregistered_binary)
+                events.binary.unregistered(binary=unregistered_binary)
                 binaries_to_remove.add(name)
 
         for binary_to_remove in binaries_to_remove:
@@ -227,7 +227,7 @@ class DockerComposeBinaryAction(InitializableAction):
             existing_binary = binaries.get(name)
             if existing_binary.command() == binary.command():
                 context.log.notice("Binary exists: %s" % (name,))
-                bus.emit("binary:found", binary=binary)
+                events.binary.found(binary=binary)
                 return
 
             binaries.unregister(name)
@@ -235,4 +235,4 @@ class DockerComposeBinaryAction(InitializableAction):
         binaries.register(binary)
 
         context.log.success("Binary registered: %s", name)
-        bus.emit("binary:registered", binary=binary)
+        events.binary.registered(binary=binary)

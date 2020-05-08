@@ -5,6 +5,7 @@ from cookiecutter.main import cookiecutter
 
 from ddb.action import Action
 from ddb.config import config
+from ddb.event import events
 
 
 class CookiecutterAction(Action):
@@ -18,7 +19,7 @@ class CookiecutterAction(Action):
 
     @property
     def event_bindings(self):
-        return "phase:init"
+        return events.phase.init
 
     def execute(self):
         """

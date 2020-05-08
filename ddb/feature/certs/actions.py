@@ -7,7 +7,7 @@ from .cfssl import checksums, writer
 from ...action import Action
 from ...config import config
 from ...context import context
-from ...event import bus
+from ...event import events
 
 
 class GenerateCertAction(Action):
@@ -17,7 +17,7 @@ class GenerateCertAction(Action):
 
     @property
     def event_bindings(self):
-        return "certs:generate"
+        return events.certs.generate
 
     @property
     def name(self) -> str:
@@ -68,13 +68,13 @@ class GenerateCertAction(Action):
             context.log.success("TLS certificates generated for domain %s", domain)
 
             for generated_file in generated.values():
-                bus.emit("file:generated", source=None, target=generated_file)
+                events.file.generated(source=None, target=generated_file)
 
             certificate_path, private_key_path = generated['private_key'], generated['certificate']
-            bus.emit("certs:generated", domain=domain, wildcard=wildcard,
-                     private_key=certificate_path, certificate=private_key_path)
+            events.certs.generated(domain=domain, wildcard=wildcard, private_key=certificate_path,
+                                   certificate=private_key_path)
         else:
             context.log.notice("TLS certificates exists for domain %s", domain)
 
-        bus.emit("certs:available", domain=domain, wildcard=wildcard,
-                 private_key=private_key_path, certificate=certificate_path)
+        events.certs.available(domain=domain, wildcard=wildcard, private_key=private_key_path,
+                               certificate=certificate_path)

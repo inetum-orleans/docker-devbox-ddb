@@ -8,6 +8,7 @@ import requests
 from ddb.action import Action
 from ddb.cache import caches, requests_cache_name
 from ddb.config import config
+from ddb.event import events
 from ddb.utils.file import write_if_different, copy_if_different
 
 
@@ -65,7 +66,7 @@ class CopyAction(Action):
 
     @property
     def event_bindings(self):
-        return "phase:init"
+        return events.phase.init
 
     @staticmethod
     def execute():

@@ -5,6 +5,7 @@ from .. import features
 from ...action import Action
 from ...config import config
 from ...config.flatten import flatten
+from ...event import events
 
 
 class FeaturesAction(Action):
@@ -14,7 +15,7 @@ class FeaturesAction(Action):
 
     @property
     def event_bindings(self):
-        return "phase:features"
+        return events.phase.features
 
     @property
     def name(self) -> str:
@@ -38,7 +39,7 @@ class ConfigAction(Action):
 
     @property
     def event_bindings(self):
-        return "phase:config"
+        return events.phase.config
 
     @property
     def name(self) -> str:

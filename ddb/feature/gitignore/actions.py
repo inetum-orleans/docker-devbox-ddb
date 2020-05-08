@@ -8,9 +8,11 @@ from ddb.action import Action
 from ddb.action.action import EventBinding
 from ddb.config import config
 from ddb.context import context
+from ddb.event import events
 from ddb.utils.file import force_remove
 
 repository = "gfi-centre-ouest/docker-devbox"
+
 
 class UpdateGitignoreAction(Action):
     """
@@ -23,8 +25,8 @@ class UpdateGitignoreAction(Action):
 
     @property
     def event_bindings(self):
-        return ("file:generated",
-                EventBinding("file:deleted", self.remove))
+        return (events.file.generated,
+                EventBinding(events.file.deleted, self.remove))
 
     @staticmethod
     def find_gitignores(target: str):

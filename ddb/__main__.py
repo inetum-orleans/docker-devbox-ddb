@@ -327,12 +327,16 @@ def handle_command_line(command: Command,
         handle_watch(watch_started_event, watch_stop_event)
 
 
-def _register_action_in_event_bus(action: Action, binding: Union[str, EventBinding], fail_fast=False):
+def _register_action_in_event_bus(action: Action, binding: Union[Callable, str, EventBinding], fail_fast=False):
     """
-    Register a single event binding
+    Register a single event binding. It supports name property added by @event decorator on events callable.
     """
+    if isinstance(binding, Callable) and hasattr(binding, "name"):
+        binding = binding.name
     if isinstance(binding, str):
         binding = EventBinding(binding)
+    if isinstance(binding.event, Callable) and hasattr(binding.event, "name"):
+        binding.event = binding.event.name
 
     bus.on(binding.event, action_event_binding_runner_factory(action,
                                                               binding.event,
@@ -348,7 +352,7 @@ def register_actions_in_event_bus(fail_fast=False):
     sorted_actions = sorted(actions.all(), key=lambda x: x.order)
 
     for action in sorted_actions:
-        if isinstance(action.event_bindings, (str, EventBinding)):
+        if isinstance(action.event_bindings, (Callable, str, EventBinding)):
             _register_action_in_event_bus(action, action.event_bindings, fail_fast)
         else:
             for event_binding in action.event_bindings:

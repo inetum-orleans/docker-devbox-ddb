@@ -60,7 +60,7 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
             return True
         except Exception as exception:  # pylint:disable=broad-except
             self._handle_exception(exception)
-            if self.fail_fast:
+            if self.fail_fast:  #  TODO: Ajouter une option à la ligne de commande
                 raise
 
         finally:
@@ -91,7 +91,6 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
             else:
                 for out_line in exception.stderr.decode("utf-8").splitlines():
                     log_error("(output) %s", out_line)
-
 
 
 class InitializableActionEventBindingRunner(ActionEventBindingRunner[InitializableAction]):

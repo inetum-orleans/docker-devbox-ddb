@@ -4,7 +4,7 @@ from abc import abstractmethod, ABC
 from typing import Callable, Iterable, Union, Tuple
 
 from ddb.context import context
-from ddb.event import bus
+from ddb.event import events
 from ddb.registry import RegistryObject
 from ddb.utils.file import write_if_different, TemplateFinder, force_remove
 
@@ -22,7 +22,7 @@ class EventBinding:
     If processor returns a 2-tuple, it will use those as *args, **kwargs to invoke the method.
     """
 
-    def __init__(self, event: str, call: Callable = None, processor: Callable = None):
+    def __init__(self, event: Union[Callable, str], call: Callable = None, processor: Callable = None):
         self.event = event
         self.call = call
         self.processor = processor
@@ -35,7 +35,7 @@ class Action(RegistryObject, ABC):
 
     @property
     @abstractmethod
-    def event_bindings(self) -> Union[Iterable[Union[str, EventBinding]], Union[str, EventBinding]]:
+    def event_bindings(self) -> Union[Iterable[Union[Callable, str, EventBinding]], Union[Callable, str, EventBinding]]:
         """
         The event bindings that should trigger the action.
 
@@ -126,8 +126,8 @@ class AbstractTemplateAction(InitializableAction, ABC):  # pylint:disable=abstra
                 return (), {"template": template, "target": target}
             return None
 
-        return (EventBinding("file:found", processor=file_found_processor),
-                EventBinding("file:deleted", call=self.delete, processor=file_found_processor),
+        return (EventBinding(events.file.found, processor=file_found_processor),
+                EventBinding(events.file.deleted, call=self.delete, processor=file_found_processor),
                 EventBinding("file:generated", processor=file_generated_processor))
 
     def initialize(self):
@@ -141,7 +141,7 @@ class AbstractTemplateAction(InitializableAction, ABC):  # pylint:disable=abstra
         if os.path.exists(target):
             force_remove(target)
             context.log.warning("%s removed", target)
-            bus.emit("file:deleted", file=target)
+            events.file.deleted(target)
 
     def execute(self, template: str, target: str):
         """
@@ -158,7 +158,7 @@ class AbstractTemplateAction(InitializableAction, ABC):  # pylint:disable=abstra
             context.mark_as_processed(template, destination)
 
             if written or rendered is True:
-                bus.emit('file:generated', source=template, target=destination)
+                events.file.generated(source=template, target=destination)
 
     @abstractmethod
     def _build_template_finder(self) -> TemplateFinder:

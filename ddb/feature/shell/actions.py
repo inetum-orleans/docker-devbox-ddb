@@ -15,7 +15,7 @@ from ...binary import Binary
 from ...config import config
 from ...config.flatten import to_environ
 from ...context import context
-from ...event import bus
+from ...event import events
 
 _env_environ_backup = config.env_prefix + "_SHELL_ENVIRON_BACKUP"
 
@@ -90,9 +90,9 @@ class CreateBinaryShim(Action):
 
     @property
     def event_bindings(self):
-        return "binary:registered", \
-               "binary:found", \
-               EventBinding("binary:unregistered", call=self.remove)
+        return (events.binary.registered,
+                events.binary.found,
+                EventBinding(events.binary.unregistered, call=self.remove))
 
     @property
     def name(self) -> str:
@@ -125,7 +125,7 @@ class CreateBinaryShim(Action):
             context.log.notice("Shim exists: %s", shim)
 
         if written:
-            bus.emit("file:generated", source=None, target=shim)
+            events.file.generated(source=None, target=shim)
 
 
 class ActivateAction(Action):

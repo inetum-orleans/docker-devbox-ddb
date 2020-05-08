@@ -5,7 +5,7 @@ from ...action import Action
 from ...action.action import EventBinding
 from ...binary import binaries
 from ...config import config
-from ...event import bus
+from ...event import events
 
 
 class RunAction(Action):
@@ -16,8 +16,8 @@ class RunAction(Action):
     @property
     def event_bindings(self):
         return (
-            "phase:run",
-            EventBinding("run:run", self.run)
+            events.phase.run,
+            EventBinding(events.run.run, self.run)
         )
 
     @property
@@ -31,7 +31,7 @@ class RunAction(Action):
         """
         if hasattr(config.args, "name"):
             name = config.args.name
-            bus.emit("run:run", name=name)
+            events.run.run(name=name)
 
     @staticmethod
     def run(name: str):

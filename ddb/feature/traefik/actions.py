@@ -4,6 +4,7 @@ import os
 from ddb.config import config
 from ...action import Action
 from ...context import context
+from ...event import events
 from ...utils.file import write_if_different, copy_if_different
 
 
@@ -14,7 +15,7 @@ class TraefikInstalllCertsAction(Action):
 
     @property
     def event_bindings(self):
-        return "certs:available"
+        return events.certs.available
 
     @property
     def name(self) -> str:

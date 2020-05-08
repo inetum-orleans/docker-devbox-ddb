@@ -17,7 +17,7 @@ from ...action.action import EventBinding
 from ...cache import global_cache
 from ...config import config
 from ...context import context
-from ...event import bus
+from ...event import events
 
 BuildServiceDef = namedtuple("BuildServiceDef", "context dockerfile")
 
@@ -89,8 +89,8 @@ class FixuidDockerComposeAction(Action):
             return None
 
         return (
-            "docker:docker-compose-config",
-            EventBinding("file:generated",
+            events.docker.docker_compose_config,
+            EventBinding(events.file.generated,
                          call=self.apply_fixuid,
                          processor=file_generated_processor)
         )
@@ -187,7 +187,7 @@ class FixuidDockerComposeAction(Action):
         target = copy_from_url(config.data["fixuid.url"],
                                service.context,
                                "fixuid.tar.gz")
-        bus.emit('file:generated', source=None, target=target)
+        events.file.generated(source=None, target=target)
         lines = ("ADD fixuid.tar.gz /usr/local/bin",
                  "RUN chown root:root /usr/local/bin/fixuid && "
                  "chmod 4755 /usr/local/bin/fixuid && "
