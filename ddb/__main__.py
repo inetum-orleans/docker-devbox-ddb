@@ -39,6 +39,7 @@ from ddb.feature.jinja import JinjaFeature
 from ddb.feature.jsonnet import JsonnetFeature
 from ddb.feature.run import RunFeature
 from ddb.feature.shell import ShellFeature
+from ddb.feature.smartcd import SmartcdFeature
 from ddb.feature.symlinks import SymlinksFeature
 from ddb.feature.traefik import TraefikFeature
 from ddb.feature.ytt import YttFeature
@@ -56,6 +57,7 @@ _available_features = [CertsFeature(),
                        JinjaFeature(),
                        JsonnetFeature(),
                        RunFeature(),
+                       SmartcdFeature(),
                        ShellFeature(),
                        SymlinksFeature(),
                        TraefikFeature(),

@@ -7,8 +7,8 @@ from typing import Callable, Optional
 import pytest
 from _pytest.fixtures import FixtureRequest
 from _pytest.tmpdir import TempPathFactory
-from colorlog import logging
-from verboselogs import VerboseLogger, SPAM
+from pytest_mock import MockFixture
+from verboselogs import SPAM
 
 from ddb.__main__ import reset, configure_logging
 from ddb.config import Config
@@ -61,7 +61,7 @@ def project_loader(data_dir: str, tmp_path_factory: TempPathFactory, request: Fi
 
 
 @pytest.fixture(autouse=True)
-def configure():
+def configure(mocker: MockFixture):
     original_environ = dict(os.environ)
     cwd = os.getcwd()
 
@@ -76,6 +76,8 @@ def configure():
             os.environ['DDB_OVERRIDE_DOCKER_IP'] = '127.0.0.1'
 
         configure_logging(SPAM)
+
+        mocker.patch('ddb.feature.smartcd.actions.is_smartcd_installed', lambda: False)
 
         yield
     finally:

@@ -7,6 +7,7 @@ from stat import S_IRUSR, S_IWUSR, S_IRGRP, S_IROTH
 from typing import List, Union, Optional, Tuple
 
 from braceexpand import braceexpand
+
 from ddb.config import config
 from ddb.context import context
 
@@ -35,8 +36,7 @@ def write_if_different(file, data, read_mode='r', write_mode='w', log_source=Non
             existing_data = None
 
         if existing_data == data:
-            if log_source:
-                context.log.notice("%s -> %s", log_source, file)
+            context.log.notice("%s -> %s", log_source if log_source else "", file)
             return False
 
         if not os.access(file, os.W_OK) and os.path.isfile(file):
@@ -45,8 +45,7 @@ def write_if_different(file, data, read_mode='r', write_mode='w', log_source=Non
         with open(file, mode=write_mode, encoding=write_encoding, **kwargs) as write_file:
             write_file.write(data)
 
-        if log_source:
-            context.log.success("%s -> %s", log_source, file)
+        context.log.success("%s -> %s", log_source if log_source else "", file)
 
         return True
     finally:

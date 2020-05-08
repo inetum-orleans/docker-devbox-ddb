@@ -5,5 +5,6 @@ pytest
 coverage
 pytest-docker-compose
 waiting
+pytest-mock
 
 -r requirements.txt
