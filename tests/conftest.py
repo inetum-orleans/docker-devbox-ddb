@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import shutil
+import zipfile
 from pathlib import Path
 from typing import Callable, Optional
 
@@ -55,6 +56,11 @@ def project_loader(data_dir: str, tmp_path_factory: TempPathFactory, request: Fi
             before_load_config()
         conf = load_config(str(tmp_path))
         os.chdir(str(conf.paths.project_home))
+
+        if os.path.exists("repo.zip"):
+            with zipfile.ZipFile("repo.zip", 'r') as zip_ref:
+                zip_ref.extractall(".")
+
         return conf
 
     return load
@@ -78,6 +84,7 @@ def configure(mocker: MockFixture):
         configure_logging(SPAM)
 
         mocker.patch('ddb.feature.smartcd.actions.is_smartcd_installed', lambda: False)
+        mocker.patch('ddb.feature.version.is_git_repository', lambda _: False)
 
         yield
     finally:

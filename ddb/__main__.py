@@ -42,6 +42,7 @@ from ddb.feature.shell import ShellFeature
 from ddb.feature.smartcd import SmartcdFeature
 from ddb.feature.symlinks import SymlinksFeature
 from ddb.feature.traefik import TraefikFeature
+from ddb.feature.version import VersionFeature
 from ddb.feature.ytt import YttFeature
 from ddb.phase import phases
 from ddb.registry import Registry, RegistryObject
@@ -61,6 +62,7 @@ _available_features = [CertsFeature(),
                        ShellFeature(),
                        SymlinksFeature(),
                        TraefikFeature(),
+                       VersionFeature(),
                        YttFeature()]
 
 
@@ -393,7 +395,8 @@ def register_actions_in_event_bus(fail_fast=False):
 
 def main(args: Optional[Sequence[str]] = None,
          watch_started_event=threading.Event(),
-         watch_stop_event=threading.Event()):
+         watch_stop_event=threading.Event(),
+         reset_disabled=False):
     """
     Load all features and handle command line
     """
@@ -420,7 +423,8 @@ def main(args: Optional[Sequence[str]] = None,
         handle_command_line(command, watch_started_event, watch_stop_event)
         return context.exceptions
     finally:
-        reset()
+        if not reset_disabled:
+            reset()
 
 
 def clear_caches():
