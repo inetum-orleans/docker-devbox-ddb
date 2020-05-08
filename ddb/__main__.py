@@ -331,11 +331,11 @@ def _register_action_in_event_bus(action: Action, binding: Union[Callable, str, 
     """
     Register a single event binding. It supports name property added by @event decorator on events callable.
     """
-    if isinstance(binding, Callable) and hasattr(binding, "name"):
+    if callable(binding) and hasattr(binding, "name"):
         binding = binding.name
     if isinstance(binding, str):
         binding = EventBinding(binding)
-    if isinstance(binding.event, Callable) and hasattr(binding.event, "name"):
+    if callable(binding.event) and hasattr(binding.event, "name"):
         binding.event = binding.event.name
 
     bus.on(binding.event, action_event_binding_runner_factory(action,
@@ -352,7 +352,7 @@ def register_actions_in_event_bus(fail_fast=False):
     sorted_actions = sorted(actions.all(), key=lambda x: x.order)
 
     for action in sorted_actions:
-        if isinstance(action.event_bindings, (Callable, str, EventBinding)):
+        if isinstance(action.event_bindings, (str, EventBinding)) or callable(action.event_bindings):
             _register_action_in_event_bus(action, action.event_bindings, fail_fast)
         else:
             for event_binding in action.event_bindings:
