@@ -12,6 +12,9 @@ here = os.path.abspath(os.path.dirname(__file__))
 with io.open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
     readme = f.read()
 
+with io.open(os.path.join(here, 'CHANGELOG.md'), encoding='utf-8') as f:
+    history = f.read()
+
 dependency_links = []
 
 project_dir = os.path.dirname(os.path.realpath(__file__))
@@ -52,7 +55,7 @@ with io.open('ddb/__version__.py', 'r') as f:
 args = dict(name='ddb',
             version=version,
             description='ddb - Does the magic inside Docker Devbox',
-            long_description=readme,
+            long_description=readme + '\n' * 2 + history,
             long_description_content_type='text/markdown',
             # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
             classifiers=['Development Status :: 2 - Pre-Alpha',
