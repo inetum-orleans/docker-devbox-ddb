@@ -9,3 +9,5 @@ __pycache__/
 *.pyo
 ./.idea
 .idea
+dist/
+build/

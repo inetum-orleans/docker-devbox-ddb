@@ -4,7 +4,7 @@ import re
 from subprocess import run, PIPE
 from typing import Iterable
 
-import simpleeval
+from simpleeval import simple_eval
 import yaml
 from dotty_dict import Dotty
 
@@ -149,7 +149,7 @@ class EmitDockerComposeConfigAction(Action):
 
             eval_match = self.eval_re.match(val)
             if eval_match:
-                val = simpleeval.simple_eval(eval_match.group(1), names=names)
+                val = simple_eval(eval_match.group(1), names=names)
 
             if var:
                 kwargs[var] = val

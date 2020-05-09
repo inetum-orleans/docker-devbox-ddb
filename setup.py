@@ -25,6 +25,19 @@ with open(requirements) as f:
 with open(requirements_dev) as f:
     dev_require = list(map(str.strip, f.read().splitlines()))[:-1]
 
+dependency_link_pattern = re.compile("(\S+:\/\/\S+)#egg=(\S+)")
+
+dependency_links = []
+install_requires_fixed = []
+for req in install_requires:
+    match = dependency_link_pattern.match(req)
+    if match:
+        install_requires_fixed.append(match.group(2))
+        dependency_links.append(match.group(1))
+    else:
+        install_requires_fixed.append(req)
+install_requires = install_requires_fixed
+
 package_data = []
 
 entry_points = {

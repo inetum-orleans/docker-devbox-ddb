@@ -1,7 +1,7 @@
 import os
 import posixpath
 import shlex
-import simpleeval
+from simpleeval import simple_eval
 from typing import Optional, List, Iterable
 
 from ddb.binary import Binary
@@ -60,7 +60,7 @@ class DockerBinary(Binary):
         :return:
         """
         if condition is not None and options is not None:
-            if simpleeval.simple_eval(condition, functions={}, names={'args': args}):
+            if simple_eval(condition, functions={}, names={'args': args}):
                 params.extend(shlex.split(options))
         else:
             if options is not None:
