@@ -1,0 +1,19 @@
+include *.in
+include *.spec
+include *.txt
+include *.yml
+include *.ini
+include *.sh
+include *.md
+include *rc
+recursive-include .travis *
+recursive-include tests *
+recursive-include ddb *
+recursive-include docs *
+recursive-exclude tests *.pyc
+recursive-exclude tests *.pyo
+recursive-exclude ddb *.pyc
+recursive-exclude ddb *.pyo
+prune whl
+prune .tox
+prune .pytest_cache
