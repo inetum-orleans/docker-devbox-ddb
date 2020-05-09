@@ -1,0 +1,4 @@
+docker:
+  registry:
+    name: some-registry
+  build_image_tag_from_version: false

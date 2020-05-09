@@ -26,6 +26,10 @@ class DockerFeature(Feature):
         return "docker"
 
     @property
+    def dependencies(self) -> Iterable[str]:
+        return ["core", "version[optional]"]
+
+    @property
     def schema(self) -> ClassVar[FeatureSchema]:
         return DockerSchema
 
@@ -43,6 +47,7 @@ class DockerFeature(Feature):
         self._configure_defaults_path_mapping(feature_config)
         self._configure_defaults_port_prefix(feature_config)
         self._configure_defaults_compose_project_name(feature_config)
+        self._configure_defaults_build_image_tag(feature_config)
 
     @staticmethod
     def _configure_defaults_user(feature_config):
@@ -145,3 +150,18 @@ class DockerFeature(Feature):
         compose_network_name = normalize_name(compose_network_name)
         feature_config['compose.network_name'] = compose_network_name
         os.environ['COMPOSE_NETWORK_NAME'] = compose_network_name + "_default"
+
+    @staticmethod
+    def _configure_defaults_build_image_tag(feature_config):
+        build_image_tag_from_version = feature_config.get('build_image_tag_from_version')
+        build_image_tag = feature_config.get('build_image_tag')
+        if build_image_tag is None and build_image_tag_from_version:
+            # Use tag if we are exactly on a tag, branch otherwise
+            tag = config.data.get('version.tag')
+            version = config.data.get('version.version')
+            branch = config.data.get('version.branch')
+            if tag and version and tag == version:
+                build_image_tag = tag
+            else:
+                build_image_tag = branch
+            feature_config['build_image_tag'] = build_image_tag

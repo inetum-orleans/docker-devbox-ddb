@@ -71,7 +71,7 @@ def get_version_from_vcs(feature_config: Dotty):
     :return:
     """
     try:
-        return run_git(feature_config, "describe").decode("utf-8").strip()
+        return run_git(feature_config, "describe", "--tags").decode("utf-8").strip()
     except CalledProcessError as exc:
         if exc.returncode == 128:
             return None

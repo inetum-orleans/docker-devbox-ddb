@@ -7,6 +7,7 @@ local _docker_path_mapping = std.extVar("docker.path_mapping");
 local _docker_debug_host = std.extVar("docker.debug.host");
 local _docker_debug_disabled = std.extVar("docker.debug.disabled");
 local _docker_cache_from_image = std.extVar("docker.cache_from_image");
+local _docker_build_image_tag = std.extVar("docker.build_image_tag");
 local _docker_directory = std.extVar("docker.directory");
 local _docker_reverse_proxy_type = std.extVar("docker.reverse_proxy.type");
 local _docker_reverse_proxy_network_id = std.extVar("docker.reverse_proxy.network_id");
@@ -42,13 +43,14 @@ local Image(image=null) = Service() + {
     [if image != null then "image"]: image
 };
 
-local image_uri(image_name) =
-    std.join('/', std.filter(function(s) s != null, [_docker_registry_name, _docker_registry_repository, image_name]));
+local image_uri(image_name, with_tag = true) =
+    local image_uri = std.join('/', std.filter(function(s) s != null, [_docker_registry_name, _docker_registry_repository, image_name]));
+    if (with_tag == true && _docker_build_image_tag != null) then image_uri + ':' + _docker_build_image_tag else image_uri;
 
 local Build(name, image=name, cache_from_image=_docker_cache_from_image, directory=_docker_directory) = Service() + {
     "build": {
         [if (cache_from_image && (_docker_registry_name != null || _docker_registry_repository != null) != null) then "cache_from"]: [
-            image_uri(image)
+            image_uri(image, with_tag=false)
         ],
         "context": std.join("/", [directory, image])
     },
