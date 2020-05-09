@@ -1,6 +1,9 @@
 ddb
 ===
 
+[![PyPI](https://img.shields.io/pypi/v/docker-devbox-ddb)](https://pypi.org/project/docker-devbox-ddb/)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/docker-devbox-ddb)
+![PyPI - License](https://img.shields.io/pypi/l/docker-devbox-ddb)
 [![Build Status](https://img.shields.io/travis/gfi-centre-ouest/docker-devbox-ddb.svg)](https://travis-ci.org/gfi-centre-ouest/docker-devbox-ddb)
 [![Code coverage](https://img.shields.io/coveralls/github/gfi-centre-ouest/docker-devbox-ddb)](https://coveralls.io/github/gfi-centre-ouest/docker-devbox-ddb)
 
@@ -20,7 +23,7 @@ any technical context.
 Install
 -------
 
-**ddb** is supported on Linux and Windows. MacOS support is still unsupported, but it should come soon. 
+**ddb** is supported on Linux and Windows. MacOS is still unsupported, but it should come soon. 
 
 You can [download binary releases on github](https://github.com/gfi-centre-ouest/docker-devbox-ddb/releases), or 
 install on Python > 3.5 with pip.
