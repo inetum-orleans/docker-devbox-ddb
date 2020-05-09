@@ -458,7 +458,10 @@ def console_script():  # pragma: no cover
     """
     Console script entrypoint
     """
-    exceptions = main()
+    try:
+        exceptions = main()
+    except ParseCommandLineException:
+        sys.exit(1)
     if exceptions:
         sys.exit(1)
 
