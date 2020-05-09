@@ -52,13 +52,13 @@ entry_points = {
 with io.open('ddb/__version__.py', 'r') as f:
     version = re.search(r'^__version__\st*=\s*[\'"]([^\'"]*)[\'"]$', f.read(), re.MULTILINE).group(1)
 
-args = dict(name='ddb',
+args = dict(name='docker-devbox-ddb',
             version=version,
-            description='ddb - Does the magic inside Docker Devbox',
+            description='ddb - Erase environment differences, make developers happy !',
             long_description=readme + '\n' * 2 + history,
             long_description_content_type='text/markdown',
             # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
-            classifiers=['Development Status :: 2 - Pre-Alpha',
+            classifiers=['Development Status :: 3 - Alpha',
                          'License :: OSI Approved :: MIT License',
                          'Operating System :: OS Independent',
                          'Intended Audience :: Developers',
@@ -67,14 +67,13 @@ args = dict(name='ddb',
                          'Programming Language :: Python :: 3.6',
                          'Programming Language :: Python :: 3.7',
                          'Programming Language :: Python :: 3.8',
-                         'Topic :: Multimedia',
                          'Topic :: Software Development :: Libraries :: Python Modules'
                          ],
             keywords='docker docker-compose development environment devops templates jsonnet jinja watch',
             author='Rémi Alvergnat',
             author_email='remi.alvergnat@gfi.fr',
             url='https://github.com/gfi-centre-ouest/docker-devbox-ddb',
-            download_url='https://pypi.python.org/packages/source/g/ddb/ddb-%s.tar.gz' % version,
+            download_url='https://pypi.python.org/packages/source/g/docker-devbox-ddb/docker-devbox-ddb-%s.tar.gz' % version,
             license='MIT',
             packages=find_packages(),
             include_package_data=True,
