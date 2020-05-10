@@ -84,7 +84,7 @@ def configure(mocker: MockFixture):
         configure_logging(SPAM)
 
         mocker.patch('ddb.feature.smartcd.actions.is_smartcd_installed', lambda: False)
-        mocker.patch('ddb.feature.version.is_git_repository', lambda _: False)
+        mocker.patch('ddb.feature.version.is_git_repository', lambda: False)
 
         yield
     finally:

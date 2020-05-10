@@ -1,11 +1,13 @@
 import os
 import posixpath
 import shlex
+from typing import Optional, Iterable
+
 from simpleeval import simple_eval
-from typing import Optional, List, Iterable
 
 from ddb.binary import Binary
 from ddb.config import config
+from ddb.utils.process import effective_command
 
 
 class DockerBinary(Binary):
@@ -45,9 +47,7 @@ class DockerBinary(Binary):
         if self.args:
             params.extend(shlex.split(self.args))
 
-        docker_compose_bin = config.data["docker.compose.bin"]
-        docker_compose_args = config.data.get("docker.compose.args", [])
-        command = [docker_compose_bin] + docker_compose_args + list(params)
+        command = effective_command("docker-compose", *params)
         return command
 
     def add_options_to_params(self, params, options, condition, args=()):  # pylint: disable=no-self-use

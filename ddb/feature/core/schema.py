@@ -11,8 +11,8 @@ class PathSchema(Schema):
     Path settings for core feature schema.
     """
     project_home = fields.String(default=None)  # default is set in feature _configure_defaults
-    home = fields.String(default=None)  # default is set in feature _configure_defaults
-    ddb_home = fields.String(default=None)  # default is set in feature _configure_defaults
+    home = fields.String(default=None, allow_none=True)  # default is set in feature _configure_defaults
+    ddb_home = fields.String(default=None, allow_none=True)  # default is set in feature _configure_defaults
 
 
 class EnvSchema(Schema):
@@ -38,6 +38,15 @@ class ProjectSchema(Schema):
     name = fields.String(required=True, default=None)  # default is set in feature _configure_defaults
 
 
+class ProcessSchema(Schema):
+    """
+    Process settings for core feature schema.
+    """
+    bin = fields.String(required=False, allow_none=True, default=None)
+    prepend = fields.Raw(required=False, allow_none=True, default=None)  # List[str] or str splitted with shlex
+    append = fields.Raw(required=False, allow_none=True, default=None)  # List[str] or str splitted with shlex
+
+
 class CoreFeatureSchema(FeatureSchema):
     """
     Core feature schema.
@@ -46,4 +55,5 @@ class CoreFeatureSchema(FeatureSchema):
     domain = fields.Nested(DomainSchema(), default=DomainSchema())
     project = fields.Nested(ProjectSchema(), default=ProjectSchema())
     os = fields.String(required=True, default=os.name)
-    path = fields.Nested(PathSchema(), defalut=PathSchema())
+    path = fields.Nested(PathSchema(), default=PathSchema())
+    process = fields.Dict(fields.String(), fields.Nested(ProcessSchema()), default={})  # Process binary mappings

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 import tempfile
-from subprocess import run, PIPE
 from typing import Union, Iterable, Tuple
 
 import yaml
@@ -9,6 +8,7 @@ import yaml
 from ddb.action.action import AbstractTemplateAction
 from ddb.config import config
 from ddb.utils.file import TemplateFinder
+from ddb.utils.process import run
 
 
 class YttAction(AbstractTemplateAction):
@@ -73,10 +73,8 @@ class YttAction(AbstractTemplateAction):
             finally:
                 yaml_config_file.close()
 
-            rendered = run([config.data["ytt.bin"]] + input_files_args + config.data["ytt.args"],
-                           check=True,
-                           stdout=PIPE, stderr=PIPE)
+            rendered = run("ytt", *input_files_args, *config.data["ytt.args"])
 
-            yield rendered.stdout, target
+            yield rendered, target
         finally:
             os.unlink(yaml_config_file.name)

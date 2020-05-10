@@ -5,6 +5,7 @@ from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.docker import DockerFeature, EmitDockerComposeConfigAction
 from ddb.config import config
+from ddb.utils.process import effective_command
 
 
 class TestDockerFeature:
@@ -146,15 +147,15 @@ class TestDockerFeature:
         assert binaries.has("mysql")
 
         npm_simple = binaries.get("npm-simple")
-        assert npm_simple.command() == (config.data["docker.compose.bin"] + " run --workdir=/app/. --label traefik.enable=false node").split()
-        assert npm_simple.command("serve") == (config.data["docker.compose.bin"] + ' run --workdir=/app/. --label traefik.enable=false node').split()
-        assert npm_simple.command("run serve") == (config.data["docker.compose.bin"] + ' run --workdir=/app/. --label traefik.enable=false node').split()
+        assert npm_simple.command() == (''.join(effective_command("docker-compose")) + " run --workdir=/app/. --label traefik.enable=false node").split()
+        assert npm_simple.command("serve") == (''.join(effective_command("docker-compose")) + ' run --workdir=/app/. --label traefik.enable=false node').split()
+        assert npm_simple.command("run serve") == (''.join(effective_command("docker-compose")) + ' run --workdir=/app/. --label traefik.enable=false node').split()
 
         npm_conditions = binaries.get("npm-conditions")
-        assert npm_conditions.command() == (config.data["docker.compose.bin"] + " run --workdir=/app/. --label traefik.enable=false node").split()
-        assert npm_conditions.command("serve") == (config.data["docker.compose.bin"] + ' run --workdir=/app/. --label traefik.enable=false node').split()
-        assert npm_conditions.command("run serve") == (config.data["docker.compose.bin"] + ' run --workdir=/app/. node').split()
+        assert npm_conditions.command() == (''.join(effective_command("docker-compose")) + " run --workdir=/app/. --label traefik.enable=false node").split()
+        assert npm_conditions.command("serve") == (''.join(effective_command("docker-compose")) + ' run --workdir=/app/. --label traefik.enable=false node').split()
+        assert npm_conditions.command("run serve") == (''.join(effective_command("docker-compose")) + ' run --workdir=/app/. node').split()
 
         mysql = binaries.get("mysql")
-        assert mysql.command() == (config.data["docker.compose.bin"] + ' run --workdir=/app/. db mysql -hdb -uproject-management-tool -pproject-management-tool').split()
+        assert mysql.command() == (''.join(effective_command("docker-compose")) + ' run --workdir=/app/. db mysql -hdb -uproject-management-tool -pproject-management-tool').split()
 

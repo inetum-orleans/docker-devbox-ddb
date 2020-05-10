@@ -1,10 +1,11 @@
-from subprocess import run, PIPE, CalledProcessError
+from subprocess import CalledProcessError
 from typing import Union, Iterable, Callable
 
 from ddb.action.action import EventBinding, InitializableAction
 from ddb.command import commands
 from ddb.event import events
 from ddb.utils.file import write_if_different
+from ddb.utils.process import run
 
 
 def is_smartcd_installed():
@@ -13,9 +14,7 @@ def is_smartcd_installed():
     """
 
     try:
-        run(["/usr/bin/env", "bash", "-ic", "smartcd", "--help"],
-            check=True,
-            stdout=PIPE, stderr=PIPE)
+        run("bash", "-ic", "smartcd", "--help")
         return True
     except CalledProcessError:
         return False

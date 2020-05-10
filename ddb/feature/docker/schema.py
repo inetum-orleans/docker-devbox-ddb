@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import os
 
 from marshmallow import fields, Schema
 
@@ -26,8 +25,6 @@ class ComposeSchema(Schema):
     """
     Docker compose schema
     """
-    bin = fields.String(required=True, default="docker-compose" if os.name != "nt" else "docker-compose.exe")
-    args = fields.List(fields.String(), default=[])
     project_name = fields.String(required=True, default=None)  # default is set in feature _configure_defaults
     network_name = fields.String(required=True, default=None)  # default is set in feature _configure_defaults
 

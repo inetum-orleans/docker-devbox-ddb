@@ -1,43 +1,19 @@
 # -*- coding: utf-8 -*-
 import os
 import re
-from subprocess import run, PIPE
-from typing import Iterable
 
-from simpleeval import simple_eval
 import yaml
 from dotty_dict import Dotty
+from simpleeval import simple_eval
 
 from .binaries import DockerBinary
 from ...action import Action
 from ...action.action import EventBinding, InitializableAction
 from ...binary import binaries
 from ...cache import caches, register_project_cache
-from ...config import config
 from ...context import context
 from ...event import bus, events
-
-
-def run_docker_compose(*params: Iterable[str]):
-    """
-    Run docker-compose command.
-    """
-    docker_compose_bin = config.data["docker.compose.bin"]
-    docker_compose_args = config.data.get("docker.compose.args", [])
-
-    process = run([docker_compose_bin] + docker_compose_args + list(params),
-                  check=True,
-                  stdout=PIPE, stderr=PIPE)
-
-    stdout = process.stdout
-    if os.name == "nt":
-        # On windows, there's ANSI code after output that has to be dropped...
-        try:
-            eof_index = stdout.index(b"\x1b[0m")
-            stdout = stdout[:eof_index]
-        except ValueError:
-            pass
-    return stdout
+from ...utils.process import run
 
 
 class EmitDockerComposeConfigAction(Action):
@@ -73,7 +49,7 @@ class EmitDockerComposeConfigAction(Action):
         if not os.path.exists("docker-compose.yml"):
             return
 
-        yaml_output = run_docker_compose("config")
+        yaml_output = run("docker-compose", "config")
 
         parsed_config = yaml.load(yaml_output, yaml.SafeLoader)
         docker_compose_config = Dotty(parsed_config)
