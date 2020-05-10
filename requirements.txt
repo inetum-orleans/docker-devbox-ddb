@@ -24,3 +24,4 @@ https://github.com/danthedeckie/simpleeval/archive/0383c383bd437e4fe7be9a9f85cff
 cfssl>=0.0.3b243
 cryptography
 watchdog
+gitpython
