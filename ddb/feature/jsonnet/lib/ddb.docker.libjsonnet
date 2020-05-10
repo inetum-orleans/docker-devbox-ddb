@@ -131,16 +131,19 @@ local Compose(network_names=_docker_reverse_proxy_network_names, version="3.7") 
 	"volumes": Volumes(self.services)
 };
 
-local TraefikLabels(port, hostname, name=null, certresolver=null) = {
+local TraefikCertLabels(hostname, service_name=null, certresolver=null) = {
+    [if certresolver == null then "ddb.emit.certs:generate"]: hostname,
+    [if (certresolver != null && service_name != null) then "traefik.http.routers." + service_name + "-tls.tls.certresolver"]: certresolver
+};
+
+local TraefikLabels(port, hostname, name=null, certresolver=null) = TraefikCertLabels(hostname, std.join("-", std.prune([_core_project_name, name])), certresolver) + {
     "traefik.enable": "true",
     ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + "-tls.rule"]: "Host(`" + hostname + "`)",
     ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + "-tls.service"]: std.join("-", std.prune([_core_project_name, name])),
     ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + "-tls.tls"]: "true",
     ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + ".rule"]: "Host(`" + hostname + "`)",
     ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + ".service"]: std.join("-", std.prune([_core_project_name, name])),
-    ["traefik.http.services." + std.join("-", std.prune([_core_project_name, name])) + ".loadbalancer.server.port"]: port,
-    [if certresolver == null then "ddb.emit.certs:generate"]: hostname,
-    [if certresolver != null then "traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + "-tls.tls.certresolver"]: certresolver
+    ["traefik.http.services." + std.join("-", std.prune([_core_project_name, name])) + ".loadbalancer.server.port"]: port
 };
 
 local TraefikVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id, certresolver=null) = {
@@ -176,6 +179,8 @@ local envIs(env) =
     TraefikVirtualHost: TraefikVirtualHost,
     NoVirtualHost: NoVirtualHost,
     VirtualHost: VirtualHost,
+    TraefikLabels: TraefikLabels,
+    TraefikCertLabels: TraefikCertLabels,
     Binary: Binary,
     BinaryLabels: BinaryLabels,
     BinaryOptions: BinaryOptions,
