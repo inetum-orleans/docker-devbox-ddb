@@ -123,7 +123,7 @@ class Docker:
         :param docker_compose_config:
         """
 
-    @event("docker:docker-compose-before_events")
+    @event("docker:docker-compose-before-events")
     def docker_compose_before_events(self, docker_compose_config: dict):
         """
         Before docker compose to emit events.
