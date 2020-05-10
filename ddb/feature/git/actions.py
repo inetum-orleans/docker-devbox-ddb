@@ -9,26 +9,28 @@ from ddb.context import context
 from ddb.event import events
 
 
-class FixFilesPermissionsAction(Action):
+class FixFilePermissionsAction(Action):
     """
-    Update file access rights based on git index
+    Update file access permissions based on git index
     """
 
     @property
     def name(self) -> str:
-        return "git:fix-files-permissions"
+        return "git:fix-file-permissions"
 
     @property
     def event_bindings(self):
         return events.phase.configure
+
+    @property
+    def disabled(self) -> bool:
+        return not config.data.get("git.fix_files_permissions") or os.name == 'nt'
 
     def execute(self):
         """
         Execute the action
         :return:
         """
-        if not config.data.get("git.fix_files_permissions"):
-            return
         try:
             repo = Repo(config.paths.project_home)
             self.process_repository(repo)
@@ -45,7 +47,7 @@ class FixFilesPermissionsAction(Action):
             file_config, file_path = file_data.split("\t")
             file_access = file_config.split(" ")[0]
             file_full_path = os.path.join(repo.working_dir, file_path)
-            FixFilesPermissionsAction.update_chmod(file_full_path, file_access)
+            FixFilePermissionsAction.update_chmod(file_full_path, file_access)
 
         for submodule in repo.submodules:
             self.process_repository(submodule.module())
@@ -58,10 +60,10 @@ class FixFilesPermissionsAction(Action):
         :param chmod: the chmod to apply
         :return:
         """
-        if os.path.isdir(path) or FixFilesPermissionsAction.is_windows() == 'cmd':
+        if os.path.isdir(path):
             return
 
-        current_chmod = FixFilesPermissionsAction.get_current_chmod(path)
+        current_chmod = FixFilePermissionsAction.get_current_chmod(path)
 
         if chmod != '0000' and int(chmod) != int(current_chmod):
             context.log.info("Updating %s umask from %s to %s", path, current_chmod[-4:], chmod[-4:])
@@ -77,13 +79,3 @@ class FixFilesPermissionsAction(Action):
         :return:
         """
         return oct(os.lstat(path).st_mode)[-6::]
-
-    @staticmethod
-    def is_windows():
-        """
-        Check if the current system is windows
-        :param self:
-        :return:
-        """
-        comspec = os.environ.get('COMSPEC')
-        return comspec and comspec.endswith('cmd.exe')
