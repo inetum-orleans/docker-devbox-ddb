@@ -15,7 +15,7 @@ docker run --rm --init -v "$(pwd):/src/" -e "DISABLE_REQUIREMENTS=1" cdrx/pyinst
 
 release
 
-githubrelease release gfi-centre-ouest/docker-devbox-ddb create $(python -m ddb --version | cut -d ' ' -f 3-) --publish "dist/*"
+githubrelease release gfi-centre-ouest/docker-devbox-ddb create $(python -m ddb --version -s) --publish "dist/*"
 
 postrelease
 ```

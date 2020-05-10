@@ -15,6 +15,7 @@ import verboselogs
 from colorlog import default_log_colors, ColoredFormatter
 from toposort import toposort_flatten
 
+from ddb import __version__
 from ddb.action import actions
 from ddb.action.action import EventBinding, Action, WatchSupport
 from ddb.action.runnerfactory import action_event_binding_runner_factory
@@ -299,8 +300,6 @@ def parse_command_line(args: Optional[Sequence[str]] = None):
     Parse command line arguments, returning the command to execute, args and unknown args.
     """
     opts = ArgumentParser()
-    subparsers = opts.add_subparsers(dest="command", help='Available commands')
-
     opts.add_argument('-v', '--verbose', action="store_true",
                       default=config.data.get('defaults.verbose', False),
                       help="Enable more logs")
@@ -322,9 +321,11 @@ def parse_command_line(args: Optional[Sequence[str]] = None):
     opts.add_argument('-ff', '--fail-fast', action="store_true",
                       default=config.data.get('defaults.fail_fast', False),
                       help="Stop on first error")
+    opts.add_argument('--version', action="store_true", help='Display the ddb version.')
 
     command_parsers = {}
 
+    subparsers = opts.add_subparsers(dest="command", help='Available commands')
     for command in commands.all():
         parser = subparsers.add_parser(command.name, help=command.description)
         command.configure_parser(parser)
@@ -425,8 +426,21 @@ def main(args: Optional[Sequence[str]] = None,
         except ParseCommandLineException as exc:
             config.args = exc.parsed_args
             config.unknown_args = exc.unknown_args
-            exc.opts.print_help()
-            raise
+            if not config.args.version:
+                exc.opts.print_help()
+                raise
+
+        if config.args.version:
+            if config.args.silent:
+                print(__version__)
+            else:
+                print('+--------------------------------------------------------------+')
+                print('+                   ddb ' + __version__ + (39 - len(__version__)) * ' ' + '+')
+                print('+--------------------------------------------------------------+')
+                print('|      Please report any bug or feature request at             |')
+                print('| https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues |')
+                print('+--------------------------------------------------------------+')
+            return []
 
         register_default_caches()
         register_actions_in_event_bus(config.args.fail_fast)
