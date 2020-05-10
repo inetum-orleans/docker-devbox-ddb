@@ -118,7 +118,7 @@ local Networks(services, network_names=_docker_reverse_proxy_network_names) = {
         } for key in
         std.uniq(
             std.filter(function (n) n != "default",
-                std.flatMap(function (f) if std.objectHas(services[f], "networks") then std.objectFields(services[f].networks) else [],
+                std.flatMap(function (f) if std.objectHas(services[f], "networks") then services[f].networks else [],
                     std.objectFields(services)
                 )
             )
@@ -148,10 +148,10 @@ local TraefikLabels(port, hostname, name=null, certresolver=null) = TraefikCertL
 
 local TraefikVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id, certresolver=null) = {
     labels +: TraefikLabels(port, hostname, name, certresolver),
-    networks +: {
-        "default": {},
-        [network_id]: {}
-    }
+    networks +: [
+        "default",
+        network_id
+    ]
 };
 
 local NoVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id, certresolver=null) = {};

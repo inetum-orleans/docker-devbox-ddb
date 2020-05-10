@@ -43,8 +43,8 @@ services:
     links:
       - keycloak-db:postgres
     networks:
-      default: {}
-      reverse-proxy: {}
+      - default
+      - reverse-proxy
     restart: "unless-stopped"
     volumes:
       - %ddb.path.project%/keycloak:/opt/jboss/keycloak/keycloak:rw
@@ -77,8 +77,8 @@ services:
       traefik.http.routers.gli-biometrie.service: gli-biometrie
       traefik.http.services.gli-biometrie.loadbalancer.server.port: '8080'
     networks:
-      default: {}
-      reverse-proxy: {}
+      - default
+      - reverse-proxy
     restart: "unless-stopped"
     user: %uid%:%gid%
     volumes:
@@ -112,8 +112,8 @@ services:
       traefik.http.routers.gli-biometrie-api.service: gli-biometrie-api
       traefik.http.services.gli-biometrie-api.loadbalancer.server.port: '80'
     networks:
-      default: {}
-      reverse-proxy: {}
+      - default
+      - reverse-proxy
     restart: "unless-stopped"
     volumes:
       - %ddb.path.project%/.docker/web/nginx.conf:/etc/nginx/conf.d/default.conf:rw
