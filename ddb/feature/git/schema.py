@@ -8,4 +8,4 @@ class GitSchema(FeatureSchema):
     """
     Git schema.
     """
-    auto_umask = fields.Bool(default=True)
+    fix_files_permissions = fields.Bool(default=True)

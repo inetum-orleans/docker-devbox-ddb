@@ -9,14 +9,14 @@ from ddb.context import context
 from ddb.event import events
 
 
-class UpdateUmaskAction(Action):
+class FixFilesPermissionsAction(Action):
     """
     Update file access rights based on git index
     """
 
     @property
     def name(self) -> str:
-        return "git:update-file-umask"
+        return "git:fix-files-permissions"
 
     @property
     def event_bindings(self):
@@ -27,7 +27,7 @@ class UpdateUmaskAction(Action):
         Execute the action
         :return:
         """
-        if not config.data.get("git.auto_umask"):
+        if not config.data.get("git.fix_files_permissions"):
             return
         try:
             repo = Repo(config.paths.project_home)
@@ -45,7 +45,7 @@ class UpdateUmaskAction(Action):
             file_config, file_path = file_data.split("\t")
             file_access = file_config.split(" ")[0]
             file_full_path = os.path.join(repo.working_dir, file_path)
-            UpdateUmaskAction.update_chmod(file_full_path, file_access)
+            FixFilesPermissionsAction.update_chmod(file_full_path, file_access)
 
         for submodule in repo.submodules:
             self.process_repository(submodule.module())
@@ -58,10 +58,10 @@ class UpdateUmaskAction(Action):
         :param chmod: the chmod to apply
         :return:
         """
-        if os.path.isdir(path) or UpdateUmaskAction.is_windows() == 'cmd':
+        if os.path.isdir(path) or FixFilesPermissionsAction.is_windows() == 'cmd':
             return
 
-        current_chmod = UpdateUmaskAction.get_current_chmod(path)
+        current_chmod = FixFilesPermissionsAction.get_current_chmod(path)
 
         if chmod != '0000' and int(chmod) != int(current_chmod):
             context.log.info("Updating %s umask from %s to %s", path, current_chmod[-4:], chmod[-4:])

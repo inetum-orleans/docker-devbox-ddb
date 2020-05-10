@@ -5,7 +5,7 @@ History
 -------------------------
 
 - Creation of feature *Git*<br/>
-  Currently, there is only one action : git:update-file-umask which update umask for files based on git index. <br/>
+  Currently, there is only one action : git:fix-files-permissions which update umask for files based on git index. <br/>
   **Reminder :** in order to update the umask of a file in git, use command ```git update-index --chmod=+x foo.sh```<br/>
   It can be disabled by setting ```git.auto_umask``` to false in your project ddb.yaml file
 

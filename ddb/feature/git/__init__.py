@@ -3,7 +3,7 @@ from typing import ClassVar, Iterable
 
 from ddb.action import Action
 from ddb.feature import Feature
-from .actions import UpdateUmaskAction
+from .actions import FixFilesPermissionsAction
 from .schema import GitSchema
 
 
@@ -23,5 +23,5 @@ class GitFeature(Feature):
     @property
     def actions(self) -> Iterable[Action]:
         return (
-            UpdateUmaskAction(),
+            FixFilesPermissionsAction(),
         )

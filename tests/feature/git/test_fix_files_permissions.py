@@ -8,11 +8,11 @@ from ddb.__main__ import load_registered_features
 from ddb.config import config
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
-from ddb.feature.git import GitFeature, UpdateUmaskAction
+from ddb.feature.git import GitFeature, FixFilesPermissionsAction
 
 
 @pytest.mark.skipif("sys.platform == 'win32'")
-class TestUpdateFileAccessFromGitAction:
+class TestGitFixFilesPermissionsAction:
 
     def test_update_files_disabled(self, project_loader):
         project_loader("disabled")
@@ -28,7 +28,7 @@ class TestUpdateFileAccessFromGitAction:
         repo.git.update_index('.gitignore', chmod='+x')
         repo.git.commit('-m "Initial commit"')
 
-        action = UpdateUmaskAction()
+        action = FixFilesPermissionsAction()
         action.execute()
 
         assert action.get_current_chmod(os.path.join(config.path.project_home, '.gitignore')) != '100755'
@@ -47,7 +47,7 @@ class TestUpdateFileAccessFromGitAction:
         repo.git.update_index('.gitignore', chmod='+x')
         repo.git.commit('-m "Initial commit"')
 
-        action = UpdateUmaskAction()
+        action = FixFilesPermissionsAction()
         action.execute()
 
         assert action.get_current_chmod(os.path.join(config.path.project_home, '.gitignore')) == '100755'
@@ -76,10 +76,10 @@ class TestUpdateFileAccessFromGitAction:
         repo.git.update_index('.gitignore', chmod='+x')
         repo.git.commit('-m "Initial commit"')
 
-        action = UpdateUmaskAction()
+        action = FixFilesPermissionsAction()
         action.execute()
 
-        assert UpdateUmaskAction.get_current_chmod(os.path.join(config.path.project_home, '.gitignore')) == '100755'
-        assert UpdateUmaskAction.get_current_chmod(os.path.join(config.path.project_home, '.gitmodules')) == '100644'
-        assert UpdateUmaskAction.get_current_chmod(
+        assert FixFilesPermissionsAction.get_current_chmod(os.path.join(config.path.project_home, '.gitignore')) == '100755'
+        assert FixFilesPermissionsAction.get_current_chmod(os.path.join(config.path.project_home, '.gitmodules')) == '100644'
+        assert FixFilesPermissionsAction.get_current_chmod(
             os.path.join(config.path.project_home, 'submodule', '.gitignore')) == '100755'
