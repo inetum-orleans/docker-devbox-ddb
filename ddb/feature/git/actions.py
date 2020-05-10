@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 
-from git import Repo
+from git import Repo, InvalidGitRepositoryError
 
 from ddb.action import Action
 from ddb.config import config
@@ -29,8 +29,11 @@ class UpdateUmaskAction(Action):
         """
         if not config.data.get("git.auto_umask"):
             return
-        repo = Repo(config.paths.project_home)
-        self.process_repository(repo)
+        try:
+            repo = Repo(config.paths.project_home)
+            self.process_repository(repo)
+        except InvalidGitRepositoryError:
+            pass
 
     def process_repository(self, repo: Repo):
         """
