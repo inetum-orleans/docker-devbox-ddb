@@ -1,5 +1,6 @@
 import os
 import threading
+import time
 from pathlib import Path
 from typing import Iterable
 
@@ -27,6 +28,9 @@ def init_test_watch(watch: bool, command: Iterable[str]):
                                   target=main_runner)
         thread.start()
         watch_started_event.wait(30)
+        if os.environ.get('TRAVIS') == "true":
+            # On TravisCI, it seems there is some race condition that may cause tests to fail without this.
+            time.sleep(1)
     else:
         main_runner()
 
