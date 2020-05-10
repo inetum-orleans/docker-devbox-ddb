@@ -34,6 +34,7 @@ from ddb.feature.core import CoreFeature
 from ddb.feature.docker import DockerFeature
 from ddb.feature.file import FileFeature
 from ddb.feature.fixuid import FixuidFeature
+from ddb.feature.git import GitFeature
 from ddb.feature.gitignore import GitignoreFeature
 from ddb.feature.jinja import JinjaFeature
 from ddb.feature.jsonnet import JsonnetFeature
@@ -54,6 +55,7 @@ _available_features = [CertsFeature(),
                        DockerFeature(),
                        FileFeature(),
                        FixuidFeature(),
+                       GitFeature(),
                        GitignoreFeature(),
                        JinjaFeature(),
                        JsonnetFeature(),
