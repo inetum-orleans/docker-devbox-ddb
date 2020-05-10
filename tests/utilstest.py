@@ -1,6 +1,5 @@
 import os
 import re
-from typing import List
 
 from ddb.config import config
 from ddb.config.config import ConfigPaths

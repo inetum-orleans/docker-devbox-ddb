@@ -4,6 +4,7 @@ from shutil import copy
 from _pytest.capture import CaptureFixture
 
 from ddb.__main__ import main
+from ddb.config import Config
 
 
 class TestBinaries:
@@ -25,6 +26,8 @@ class TestBinaries:
         assert not exceptions
 
     def test_docker_binaries_removed(self, project_loader, capsys: CaptureFixture):
+        Config.defaults = None
+
         project_loader("docker_removal")
 
         main(["configure"])

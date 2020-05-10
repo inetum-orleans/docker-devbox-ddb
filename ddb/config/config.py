@@ -54,6 +54,8 @@ class Config:  # pylint:disable=too-many-instance-attributes
     """
     Configuration
     """
+    # Static default values for configuration, can be modified from code mainly for tests purpose
+    defaults = None
 
     def __init__(self,
                  paths: Union[ConfigPaths, None] = None,
@@ -86,7 +88,7 @@ class Config:  # pylint:disable=too-many-instance-attributes
         """
         Load configuration data. Variable in 'env_key' key will be placed loaded as environment variables.
         """
-        loaded_data = {}
+        loaded_data = {} if Config.defaults is None else dict(Config.defaults)
 
         for path in self.paths:
             if not path:

@@ -299,18 +299,27 @@ def parse_command_line(args: Optional[Sequence[str]] = None):
     opts = ArgumentParser()
     subparsers = opts.add_subparsers(dest="command", help='Available commands')
 
-    opts.add_argument('-v', '--verbose', action="store_true", default=False,
+    opts.add_argument('-v', '--verbose', action="store_true",
+                      default=config.data.get('defaults.verbose', False),
                       help="Enable more logs")
-    opts.add_argument('-vv', '--very-verbose', action="store_true", default=False,
+    opts.add_argument('-vv', '--very-verbose', action="store_true",
+                      default=config.data.get('defaults.very_verbose', False),
                       help="Enable even more logs")
-    opts.add_argument('-s', '--silent', action="store_true", default=False,
+    opts.add_argument('-s', '--silent', action="store_true",
+                      default=config.data.get('defaults.silent', False),
                       help="Disable all logs")
-    opts.add_argument('-x', '--exceptions', action="store_true", default=False,
+    opts.add_argument('-x', '--exceptions', action="store_true",
+                      default=config.data.get('defaults.exceptions', False),
                       help="Display exceptions on errors")
-    opts.add_argument("-c", "--clear-cache", action="store_true", default=None,
+    opts.add_argument("-c", "--clear-cache", action="store_true",
+                      default=config.data.get('defaults.clear_cache', False),
                       help="Clear all caches")
-    opts.add_argument('-w', '--watch', action="store_true", default=False,
+    opts.add_argument('-w', '--watch', action="store_true",
+                      default=config.data.get('defaults.watch', False),
                       help="Enable watch mode (hot reload of generated files")
+    opts.add_argument('-ff', '--fail-fast', action="store_true",
+                      default=config.data.get('defaults.fail_fast', False),
+                      help="Stop on first error")
 
     command_parsers = {}
 
@@ -381,7 +390,7 @@ def _register_action_in_event_bus(action: Action, binding: Union[Callable, str, 
 
 def register_actions_in_event_bus(fail_fast=False):
     """
-    Register registered actions into event bus.
+    Register actions into event bus.
     """
     sorted_actions = sorted(actions.all(), key=lambda x: x.order)
 
@@ -418,7 +427,7 @@ def main(args: Optional[Sequence[str]] = None,
             raise
 
         register_default_caches()
-        register_actions_in_event_bus()
+        register_actions_in_event_bus(config.args.fail_fast)
 
         handle_command_line(command, watch_started_event, watch_stop_event)
         return context.exceptions

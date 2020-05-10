@@ -15,6 +15,8 @@ def test_defaults():
 
 
 def test_load_and_clear(data_dir):
+    Config.defaults = None
+
     ddb_home, home, project = os.path.join(data_dir, 'load', 'ddb_home'), \
                               os.path.join(data_dir, 'load', 'home'), \
                               os.path.join(data_dir, 'load', 'project')
@@ -32,6 +34,8 @@ def test_load_and_clear(data_dir):
 
 
 def test_load_with_env_overrides(data_dir):
+    Config.defaults = None
+
     ddb_home, home, project = os.path.join(data_dir, 'load', 'ddb_home'), \
                               os.path.join(data_dir, 'load', 'home'), \
                               os.path.join(data_dir, 'load', 'project')

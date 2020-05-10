@@ -71,6 +71,8 @@ def configure(mocker: MockFixture):
     original_environ = dict(os.environ)
     cwd = os.getcwd()
 
+    Config.defaults = {'defaults': {'fail_fast': True}}
+
     try:
         if os.name == 'nt' and 'COMSPEC' not in os.environ:
             os.environ['COMSPEC'] = r'C:\Windows\System32\cmd.exe'

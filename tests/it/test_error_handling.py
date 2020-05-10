@@ -1,12 +1,13 @@
-import os
-
 from _pytest.logging import LogCaptureFixture
 
 from ddb.__main__ import main
+from ddb.config import Config
 
 
 class TestErrorHandling:
     def test_invalid_jsonnet(self, project_loader, caplog: LogCaptureFixture):
+        Config.defaults = None
+
         project_loader("invalid-jsonnet")
 
         exceptions = main(["configure"])
