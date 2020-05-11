@@ -196,16 +196,21 @@ class FileWalker:
     @staticmethod
     def _is_excluded(candidate: str, *excludes: List[str]) -> bool:
         excluded = False
-        norm_candidate = None
         if not excludes:
             return False
+        # TODO find a better solution instead of adding the "./" in front of the normed path
+        norm_candidate = FileWalker._prefix_path_to_current_folder(Path(os.path.normpath(candidate)).as_posix())
         for exclude in excludes:
-            if not norm_candidate:
-                norm_candidate = Path(os.path.normpath(candidate)).as_posix()
             if exclude.match(candidate) or exclude.match(norm_candidate):
                 excluded = True
                 break
         return excluded
+
+    @staticmethod
+    def _prefix_path_to_current_folder(path: str):
+        if path[0:2] == './':
+            return path
+        return './' + path
 
     def is_source_filtered(self, candidate: str):
         """

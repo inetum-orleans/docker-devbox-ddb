@@ -41,7 +41,7 @@ class TestGitFixFilesPermissionsAction:
         action = FixFilePermissionsAction()
         action.execute()
 
-        assert action.get_current_chmod(os.path.join(config.path.project_home, '.gitignore')) == '100755'
+        assert os.access(os.path.join(config.path.project_home, '.gitignore'), os.X_OK)
 
         shutil.rmtree(config.path.project_home)
 
@@ -70,9 +70,6 @@ class TestGitFixFilesPermissionsAction:
         action = FixFilePermissionsAction()
         action.execute()
 
-        assert FixFilePermissionsAction.get_current_chmod(
-            os.path.join(config.path.project_home, '.gitignore')) == '100755'
-        assert FixFilePermissionsAction.get_current_chmod(
-            os.path.join(config.path.project_home, '.gitmodules')) == '100644'
-        assert FixFilePermissionsAction.get_current_chmod(
-            os.path.join(config.path.project_home, 'submodule', '.gitignore')) == '100755'
+        assert os.access(os.path.join(config.path.project_home, '.gitignore'), os.X_OK)
+        assert os.access(os.path.join(config.path.project_home, 'submodule', '.gitignore'), os.X_OK)
+        assert not os.access(os.path.join(config.path.project_home, '.gitmodules'), os.X_OK)
