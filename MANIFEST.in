@@ -6,6 +6,7 @@ include *.ini
 include *.sh
 include *.md
 include *rc
+include LICENSE
 recursive-include .travis *
 recursive-include tests *
 recursive-include ddb *

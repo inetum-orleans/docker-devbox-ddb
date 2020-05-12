@@ -12,7 +12,9 @@ configuration.
 - Add `utils.process` module to help running external commands. It makes possible to configure path and additional 
 arguments to any external process invoked by ddb.
 - Default command line argument values can now be customized in configuration using `defaults` key.
-
+- Fix and issue with traefik and jsonnet docker-compose when `networks` is defined in at least one service definition.
+- Add `permissions` feature to apply chmod on some files.
+- Add windows support for shell integration (cmd.exe only, powershell is still unsupported).
 
 1.0.0-alpha1 (2020-05-10)
 -------------------------
