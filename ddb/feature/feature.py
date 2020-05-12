@@ -138,6 +138,6 @@ class FeatureConfigurationValidationError(FeatureConfigurationError):
         additional_messages = []
         for (field, field_messages) in validation_error.messages.items():
             for field_message in field_messages:
-                additional_messages.append(field + ": " + field_message)
+                additional_messages.append("%s: %s" % (field, field_message))
         super().__init__(feature, *additional_messages)
         self.validation_error = validation_error
