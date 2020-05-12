@@ -33,6 +33,10 @@ class ActivateActionBase(ABC):
     def filepath_regex(self):
         pass
 
+    @property
+    def additional_environment_variable(self) -> dict:
+        return {}
+
     def test_run(self, capsys: CaptureFixture):
         action = ActivateAction(self.build_shell_integration())
         action.execute()
@@ -48,7 +52,8 @@ class ActivateActionBase(ABC):
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
         env = dict(export_match)
 
-        assert sorted(env.keys()) == sorted(("DDB_PROJECT_HOME", "DDB_SHELL_ENVIRON_BACKUP"))
+        assert sorted(env.keys()) == sorted(
+            ["DDB_PROJECT_HOME", "DDB_SHELL_ENVIRON_BACKUP"] + list(self.additional_environment_variable.keys()))
 
         assert "DDB_SHELL_ENVIRON_BACKUP" in env
         assert env["DDB_SHELL_ENVIRON_BACKUP"]
@@ -72,7 +77,8 @@ class ActivateActionBase(ABC):
         env = dict(export_match)
 
         assert sorted(env.keys()) == sorted(
-            ("DDB_PROJECT_HOME", "DDB_SOME", "DDB_ANOTHER_DEEP", "DDB_SHELL_ENVIRON_BACKUP"))
+            ["DDB_PROJECT_HOME", "DDB_SOME", "DDB_ANOTHER_DEEP",
+             "DDB_SHELL_ENVIRON_BACKUP"] + list(self.additional_environment_variable.keys()))
 
     def test_run_activate_deactivate_project(self, capsys: CaptureFixture, project_loader):
         project_loader("project")
@@ -187,6 +193,10 @@ class TestCmdActivateAction(ActivateActionBase):
     unset_regex = r"^set (.+)=()$"
     filepath_regex = r"^(?:.* )?(.+)$"
 
+    @property
+    def additional_environment_variable(self) -> dict:
+        return {'NL': '^'}
+
     def build_shell_integration(self) -> ShellIntegration:
         return CmdShellIntegration()
 
@@ -211,6 +221,10 @@ class DeactivateActionBase(ABC):
     def filepath_regex(self):
         pass
 
+    @property
+    def additional_environment_variable(self) -> dict:
+        return {}
+
     def test_run(self, capsys: CaptureFixture):
         os.environ['DDB_SHELL_ENVIRON_BACKUP'] = encode_environ_backup(dict(os.environ))
 
@@ -227,7 +241,7 @@ class DeactivateActionBase(ABC):
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
         exported = dict(export_match)
-        assert not exported
+        assert exported == self.additional_environment_variable
 
         unset_match = re.findall(self.unset_regex, script, re.MULTILINE)
         unset = dict(unset_match)
@@ -254,7 +268,7 @@ class DeactivateActionBase(ABC):
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
         exported = dict(export_match)
-        assert not exported
+        assert exported == self.additional_environment_variable
 
         unset_match = re.findall(self.unset_regex, script, re.MULTILINE)
         unset = dict(unset_match)
@@ -286,9 +300,11 @@ class DeactivateActionBase(ABC):
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
         exported = dict(export_match)
-        assert len(exported) == 2
-        assert sorted(exported.keys()) == sorted(("DDB_CHANGE", "DDB_REMOVED"))
-        assert sorted(exported.values()) == sorted(("foo", removed_item))
+        assert len(exported) == (2 + len(self.additional_environment_variable.keys()))
+        assert sorted(exported.keys()) == sorted(
+            ["DDB_CHANGE", "DDB_REMOVED"] + list(self.additional_environment_variable.keys()))
+        assert sorted(exported.values()) == sorted(
+            ["foo", removed_item] + list(self.additional_environment_variable.values()))
 
         unset_match = re.findall(self.unset_regex, script, re.MULTILINE)
         unset = dict(unset_match)
@@ -309,6 +325,10 @@ class TestCmdDeactivateAction(DeactivateActionBase):
     export_regex = r"^set (.+?)=[\'\"]?(.+?)[\'\"]?$"
     unset_regex = r"^set (.+)=()$"
     filepath_regex = r"^(?:.* )?(.+)$"
+
+    @property
+    def additional_environment_variable(self) -> dict:
+        return {'NL': '^'}
 
     def build_shell_integration(self) -> ShellIntegration:
         return CmdShellIntegration()

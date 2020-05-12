@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import stat
 
 from git import Repo, InvalidGitRepositoryError
 
@@ -63,13 +64,18 @@ class FixFilePermissionsAction(Action):
         if os.path.isdir(path):
             return
 
-        current_chmod = FixFilePermissionsAction.get_current_chmod(path)
-
-        if chmod != '0000' and int(chmod) != int(current_chmod):
-            context.log.info("Updating %s umask from %s to %s", path, current_chmod[-4:], chmod[-4:])
-            context.log.warning('If this is not expected, update the file umask in git using command "git '
+        current_mode = os.stat(path).st_mode
+        if chmod[-4:] == '0755' and not os.access(path, os.X_OK):
+            context.log.info("Adding execution permission to file %s", path)
+            context.log.warning('If this is not expected, update the file permission in git using command "git '
                                 'update-index --chmod=+x foo.sh"')
-            os.chmod(path, int(chmod[-4:], base=8))
+            os.chmod(path, stat.S_IMODE(current_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH))
+            return
+        if chmod[-4:] != '0755' and os.access(path, os.X_OK):
+            context.log.info("Removing execution permission to file %s", path)
+            context.log.warning('If this is not expected, update the file permission in git using command "git '
+                                'update-index --chmod=+x foo.sh"')
+            os.chmod(path, stat.S_IMODE(current_mode & ~ stat.S_IXUSR & ~ stat.S_IXGRP & ~ stat.S_IXOTH))
 
     @staticmethod
     def get_current_chmod(path: str) -> str:

@@ -3,7 +3,7 @@ from typing import Iterable
 
 from ddb.action import Action
 from ddb.feature import Feature
-from .actions import SmartcdAction
+from .actions import SmartcdAction, WindowsProjectActivate
 
 
 class SmartcdFeature(Feature):
@@ -19,4 +19,5 @@ class SmartcdFeature(Feature):
     def actions(self) -> Iterable[Action]:
         return (
             SmartcdAction(),
+            WindowsProjectActivate(),
         )

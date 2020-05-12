@@ -134,22 +134,49 @@ class CmdShellIntegration(ShellIntegration):
         super().__init__("cmd", "Windows cmd.exe")
 
     def set_environment_variable(self, key, value):
-        yield "set " + key + "=" + shlex.quote(value)  # TODO: Maybe use subprocess.list2cmdline for Windows ?
+        # TODO: Maybe use subprocess.list2cmdline for Windows ?
+        yield "set " + key + "=" + value.replace('\n', '!NL! ^\n')
 
     def remove_environment_variable(self, key):
         yield "set " + key + "="
 
     def remove_all_binary_shims(self, shims_path: str):
-        # TODO
-        pass
+        shims = []
+
+        for shim in os.listdir(shims_path):
+            with open(shim, "a", encoding="utf-8", newline="\n") as shim_file:
+                lines = shim_file.readlines()
+                if len(lines) > 2 and lines[1] == "REM ddb:shim":
+                    shims.append(shim)
+
+        for shim in shims:
+            force_remove(shim)
 
     def remove_binary_shim(self, shims_path: str, binary: Binary) -> bool:
-        # TODO
-        pass
+        shim = os.path.join(shims_path, binary.name + '.bat')
+        if not os.path.isfile(shim):
+            return False
+        force_remove(os.path.join(shims_path, binary.name + '.bat'))
+        return True
 
     def create_binary_shim(self, shims_path: str, binary: Binary):
-        # TODO
-        pass
+        os.makedirs(shims_path, exist_ok=True)
+        shim = os.path.join(os.path.normpath(shims_path), binary.name + '.bat')
+        commands = ["@echo off", "REM ddb:shim", "SHIFT"]
+        commands.append("set command=(ddb run {} \"%*\")".format(binary.name))
+        commands.append("%command%>cmd.txt")
+        commands.append("set /p execution=<cmd.txt")
+        commands.append("del cmd.txt")
+        commands.append("%execution% \"%*\"")
+        data = '\n'.join(commands) + '\n'
+        written = write_if_different(shim, data, newline="\n")
+
+        shim_stat = os.stat(shim)
+        os.chmod(shim, shim_stat.st_mode | stat.S_IXUSR)
+        return written, shim
 
     def evaluate_script(self, script_filepath) -> Iterable[str]:
-        yield "source %s" % (script_filepath,)
+        yield "call %s" % (script_filepath,)
+
+    def header(self) -> Iterable[str]:
+        return ["@echo off", "set NL=^", ""]
