@@ -39,6 +39,7 @@ from ddb.feature.git import GitFeature
 from ddb.feature.gitignore import GitignoreFeature
 from ddb.feature.jinja import JinjaFeature
 from ddb.feature.jsonnet import JsonnetFeature
+from ddb.feature.permissions import PermissionsFeature
 from ddb.feature.run import RunFeature
 from ddb.feature.shell import ShellFeature
 from ddb.feature.smartcd import SmartcdFeature
@@ -60,6 +61,7 @@ _available_features = [CertsFeature(),
                        GitignoreFeature(),
                        JinjaFeature(),
                        JsonnetFeature(),
+                       PermissionsFeature(),
                        RunFeature(),
                        SmartcdFeature(),
                        ShellFeature(),
