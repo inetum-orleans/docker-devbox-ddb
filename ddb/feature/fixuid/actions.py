@@ -4,10 +4,10 @@ import os
 import re
 import shlex
 from collections import namedtuple
-from stat import S_IWUSR
 from typing import Iterable
 
 import docker
+from chmod_monkey import tmp_chmod
 from dockerfile_parse import DockerfileParser
 from dotty_dict import Dotty
 
@@ -142,21 +142,13 @@ class FixuidDockerComposeAction(Action):
         """
         dockerfile_path = os.path.join(service.context, service.dockerfile)
 
-        dockerfile_path_stat = None
-        if not os.access(dockerfile_path, os.W_OK) and os.path.isfile(dockerfile_path):
-            dockerfile_path_stat = os.stat(dockerfile_path)
-            os.chmod(dockerfile_path, dockerfile_path_stat.st_mode | S_IWUSR)
-
-        try:
+        with tmp_chmod(dockerfile_path, '+w'):
             with open(dockerfile_path, "ba+") as dockerfile_file:
                 parser = CustomDockerfileParser(fileobj=dockerfile_file)
 
                 if FixuidDockerComposeAction._apply_fixuid_from_parser(parser, service):
                     context.log.success("Fixuid applied to %s",
                                         os.path.relpath(dockerfile_path, config.paths.project_home))
-        finally:
-            if dockerfile_path_stat is not None:
-                os.chmod(dockerfile_path, dockerfile_path_stat.st_mode)
 
     @staticmethod
     def _apply_fixuid_from_parser(parser: CustomDockerfileParser, service: BuildServiceDef):

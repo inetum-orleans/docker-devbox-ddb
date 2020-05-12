@@ -1,11 +1,10 @@
 import os
 import shlex
-import stat
 from abc import ABC, abstractmethod
 from typing import Tuple, Iterable, Dict, Any
 
 from ddb.binary import Binary
-from ddb.utils.file import force_remove, write_if_different
+from ddb.utils.file import force_remove, write_if_different, chmod
 
 
 class ShellIntegration(ABC):
@@ -113,8 +112,7 @@ class BashShellIntegration(ShellIntegration):
         data = ''.join(["#!/usr/bin/env bash\n", "# ddb:shim\n", "$(ddb run %s \"$@\") \"$@\"\n" % binary.name])
         written = write_if_different(shim, data, newline="\n")
 
-        shim_stat = os.stat(shim)
-        os.chmod(shim, shim_stat.st_mode | stat.S_IXUSR)
+        chmod(shim, '+x', logging=False)
         return written, shim
 
     @property
@@ -171,8 +169,7 @@ class CmdShellIntegration(ShellIntegration):
         data = '\n'.join(commands) + '\n'
         written = write_if_different(shim, data, newline="\n")
 
-        shim_stat = os.stat(shim)
-        os.chmod(shim, shim_stat.st_mode | stat.S_IXUSR)
+        chmod(shim, '+x', logging=False)
         return written, shim
 
     def evaluate_script(self, script_filepath) -> Iterable[str]:

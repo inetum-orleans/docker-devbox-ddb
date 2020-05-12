@@ -2,9 +2,7 @@
 import fnmatch
 import os
 import re
-import stat
 from pathlib import Path
-from stat import S_IRUSR, S_IWUSR, S_IRGRP, S_IROTH
 from typing import List, Union, Optional, Tuple
 
 import chmod_monkey
@@ -42,8 +40,7 @@ def write_if_different(file, data, read_mode='r', write_mode='w', log_source=Non
             return False
 
         if not os.access(file, os.W_OK) and os.path.isfile(file):
-            target_stat = os.stat(file)
-            os.chmod(file, target_stat.st_mode | S_IWUSR)
+            chmod(file, '+w', logging=False)
         with open(file, mode=write_mode, encoding=write_encoding, **kwargs) as write_file:
             write_file.write(data)
 
@@ -52,7 +49,7 @@ def write_if_different(file, data, read_mode='r', write_mode='w', log_source=Non
         return True
     finally:
         if readonly and os.path.isfile(file):
-            os.chmod(file, S_IRUSR | S_IRGRP | S_IROTH)
+            chmod(file, '+r', logging=False)
 
 
 def copy_if_different(source, target, read_mode='r', write_mode='w', log=False, readonly=True, **kwargs) -> bool:
@@ -81,8 +78,7 @@ def copy_if_different(source, target, read_mode='r', write_mode='w', log=False, 
             return False
 
         if not os.access(target, os.W_OK) and os.path.exists(target):
-            target_stat = os.stat(target)
-            os.chmod(target, target_stat.st_mode | S_IWUSR)
+            chmod(target, '+w')
         with open(target, mode=write_mode, encoding=write_encoding, **kwargs) as write_file:
             write_file.write(source_data)
 
@@ -92,7 +88,7 @@ def copy_if_different(source, target, read_mode='r', write_mode='w', log=False, 
         return True
     finally:
         if readonly and os.path.isfile(target):
-            os.chmod(target, S_IRUSR | S_IRGRP | S_IROTH)
+            chmod(target, '+r', logging=False)
 
 
 def force_remove(file: str):
@@ -102,22 +98,23 @@ def force_remove(file: str):
     try:
         os.remove(file)
     except PermissionError:
-        target_stat = os.stat(file)
-        os.chmod(file, target_stat.st_mode | S_IWUSR)
+        # On windows, removing a readonly file raise this error.
+        chmod(file, '+w', logging=False)
         os.remove(file)
 
 
-def chmod(file: str, mode: str):
+def chmod(file: str, mode: str, logging=True):
     """
     Apply given mode to file
     """
-    current_mode = stat.S_IMODE(os.lstat(file).st_mode)
-    new_mode = chmod_monkey.to_mode(file, mode)
-    if current_mode != new_mode:
-        context.log.success("chmod %s file", file, mode)
+    new_mode, old_mode = chmod_monkey.to_mode(file, mode, return_old_mode=True)
+    if old_mode != new_mode:
+        if logging:
+            context.log.success("chmod %s file", file, mode)
         os.chmod(file, new_mode)
     else:
-        context.log.notice("chmod %s file", file, mode)
+        if logging:
+            context.log.notice("chmod %s file", file, mode)
 
 
 class FileWalker:
