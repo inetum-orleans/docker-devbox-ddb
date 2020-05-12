@@ -1,0 +1,4 @@
+permissions:
+  specs:
+    "*.sh": "+x"
+    "subdirectory/*.sh": "+x"

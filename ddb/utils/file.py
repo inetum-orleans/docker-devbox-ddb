@@ -6,6 +6,7 @@ from pathlib import Path
 from stat import S_IRUSR, S_IWUSR, S_IRGRP, S_IROTH
 from typing import List, Union, Optional, Tuple
 
+import chmod_monkey
 from braceexpand import braceexpand
 
 from ddb.config import config
@@ -103,6 +104,13 @@ def force_remove(file: str):
         target_stat = os.stat(file)
         os.chmod(file, target_stat.st_mode | S_IWUSR)
         os.remove(file)
+
+
+def chmod(file: str, mode: str):
+    """
+    Apply given mode to file
+    """
+    os.chmod(file, chmod_monkey.to_mode(file, mode))
 
 
 class FileWalker:

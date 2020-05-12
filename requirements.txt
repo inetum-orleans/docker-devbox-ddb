@@ -25,3 +25,4 @@ cfssl>=0.0.3b243
 cryptography
 watchdog
 gitpython
+chmod_monkey
