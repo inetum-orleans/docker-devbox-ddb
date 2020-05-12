@@ -2,6 +2,7 @@
 import fnmatch
 import os
 import re
+import stat
 from pathlib import Path
 from stat import S_IRUSR, S_IWUSR, S_IRGRP, S_IROTH
 from typing import List, Union, Optional, Tuple
@@ -110,7 +111,13 @@ def chmod(file: str, mode: str):
     """
     Apply given mode to file
     """
-    os.chmod(file, chmod_monkey.to_mode(file, mode))
+    current_mode = stat.S_IMODE(os.lstat(file).st_mode)
+    new_mode = chmod_monkey.to_mode(file, mode)
+    if current_mode != new_mode:
+        context.log.success("chmod %s file", file, mode)
+        os.chmod(file, new_mode)
+    else:
+        context.log.notice("chmod %s file", file, mode)
 
 
 class FileWalker:
