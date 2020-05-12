@@ -1,8 +1,8 @@
 History
 =======
 
-1.0.0-alpha2 (unreleased)
--------------------------
+1.0.0-beta1 (2020-05-12)
+------------------------
 
 - Add `git` feature. Currently, there is only one action : git:fix-files-permissions to update permissions for files 
 based on git index. In order to update permissions of a file in git, use command 
