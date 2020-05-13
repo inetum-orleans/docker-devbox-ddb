@@ -110,11 +110,11 @@ def chmod(file: str, mode: str, logging=True):
     new_mode, old_mode = chmod_monkey.to_mode(file, mode, return_old_mode=True)
     if old_mode != new_mode:
         if logging:
-            context.log.success("chmod %s file", file, mode)
+            context.log.success("chmod %s %s", mode, file)
         os.chmod(file, new_mode)
     else:
         if logging:
-            context.log.notice("chmod %s file", file, mode)
+            context.log.notice("chmod %s %s", mode, file)
 
 
 class FileWalker:

@@ -4,7 +4,7 @@ History
 1.0.0-beta2 (unreleased)
 ------------------------
 
-- Nothing changed yet.
+- Fix Logging Error in chmod
 
 
 1.0.0-beta1 (2020-05-12)
