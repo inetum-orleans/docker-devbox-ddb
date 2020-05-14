@@ -201,7 +201,7 @@ class DockerComposeBinaryAction(InitializableAction):
 
         if binaries.has(name):
             existing_binary = binaries.get(name)
-            if existing_binary.command() == binary.command():
+            if existing_binary.is_same(binary):
                 context.log.notice("Binary exists: %s" % (name,))
                 events.binary.found(binary=binary)
                 return

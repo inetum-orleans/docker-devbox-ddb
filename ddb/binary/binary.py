@@ -16,6 +16,13 @@ class Binary(RegistryObject, ABC):
         Get the binary command
         """
 
+    @abstractmethod
+    def is_same(self, binary) -> bool:
+        """
+        Check if given binary is the same as the current one
+        :param binary: Binary object
+        :return: True or False depending on it's the same or not
+        """
 
 class DefaultBinary(Binary):
     """
@@ -32,3 +39,6 @@ class DefaultBinary(Binary):
 
     def command(self, *args) -> List[str]:
         return self._command
+
+    def is_same(self, binary) -> bool:
+        return self.command() == binary.command()
