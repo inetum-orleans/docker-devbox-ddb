@@ -22,6 +22,9 @@ class BinaryMock(Binary):
     def name(self) -> str:
         return self._name
 
+    def is_same(self, binary) -> bool:
+        return self.command() == binary.command()
+
 
 class TestRunFeature:
     def test_empty_project_without_core(self, project_loader):

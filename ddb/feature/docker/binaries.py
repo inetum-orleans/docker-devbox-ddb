@@ -65,3 +65,19 @@ class DockerBinary(Binary):
         else:
             if options is not None:
                 params.extend(shlex.split(options))
+
+    def is_same(self, binary) -> bool:
+        """
+        Check if given binary is the same as the current one
+        :param binary:
+        :return: True or False depending on it's the same or not
+        """
+        if not isinstance(binary, DockerBinary):
+            return False
+        if self.command() != binary.command():
+            return False
+        if self.options != binary.options:
+            return False
+        if self.options_condition != binary.options_condition:
+            return False
+        return True
