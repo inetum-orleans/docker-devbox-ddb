@@ -1,10 +1,11 @@
+import os
+
 from ddb.__main__ import load_registered_features, register_actions_in_event_bus
 from ddb.binary import binaries
 from ddb.event import bus
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.docker import DockerFeature, EmitDockerComposeConfigAction
-from ddb.config import config
 from ddb.utils.process import effective_command
 
 
@@ -115,7 +116,8 @@ class TestDockerFeature:
 
         assert len(another_events) == 2
         assert {"args": ("emit-another-arg",), "kwargs": {"docker_compose_service": "docker"}} in another_events
-        assert {"args": (), "kwargs": {"kw1": "emit-another-kwarg", "docker_compose_service": "docker2"}} in another_events
+        assert {"args": (),
+                "kwargs": {"kw1": "emit-another-kwarg", "docker_compose_service": "docker2"}} in another_events
 
     def test_binary_workdir(self, project_loader):
         project_loader("binary-workdir")
@@ -147,15 +149,56 @@ class TestDockerFeature:
         assert binaries.has("mysql")
 
         npm_simple = binaries.get("npm-simple")
-        assert npm_simple.command() == (''.join(effective_command("docker-compose")) + " run --workdir=/app/. --label traefik.enable=false node").split()
-        assert npm_simple.command("serve") == (''.join(effective_command("docker-compose")) + ' run --workdir=/app/. --label traefik.enable=false node').split()
-        assert npm_simple.command("run serve") == (''.join(effective_command("docker-compose")) + ' run --workdir=/app/. --label traefik.enable=false node').split()
+        assert npm_simple.command() == (''.join(
+            effective_command("docker-compose")) + " run --workdir=/app/. --label traefik.enable=false node").split()
+        assert npm_simple.command("serve") == (''.join(
+            effective_command("docker-compose")) + ' run --workdir=/app/. --label traefik.enable=false node').split()
+        assert npm_simple.command("run serve") == (''.join(
+            effective_command("docker-compose")) + ' run --workdir=/app/. --label traefik.enable=false node').split()
 
         npm_conditions = binaries.get("npm-conditions")
-        assert npm_conditions.command() == (''.join(effective_command("docker-compose")) + " run --workdir=/app/. --label traefik.enable=false node").split()
-        assert npm_conditions.command("serve") == (''.join(effective_command("docker-compose")) + ' run --workdir=/app/. --label traefik.enable=false node').split()
-        assert npm_conditions.command("run serve") == (''.join(effective_command("docker-compose")) + ' run --workdir=/app/. node').split()
+        assert npm_conditions.command() == (''.join(
+            effective_command("docker-compose")) + " run --workdir=/app/. --label traefik.enable=false node").split()
+        assert npm_conditions.command("serve") == (''.join(
+            effective_command("docker-compose")) + ' run --workdir=/app/. --label traefik.enable=false node').split()
+        assert npm_conditions.command("run serve") == (
+                ''.join(effective_command("docker-compose")) + ' run --workdir=/app/. node').split()
 
         mysql = binaries.get("mysql")
-        assert mysql.command() == (''.join(effective_command("docker-compose")) + ' run --workdir=/app/. db mysql -hdb -uproject-management-tool -pproject-management-tool').split()
+        assert mysql.command() == (''.join(effective_command(
+            "docker-compose")) + ' run --workdir=/app/. db mysql -hdb -uproject-management-tool -pproject-management-tool').split()
 
+    def test_local_volume_simple(self, project_loader):
+        project_loader("local-volume-simple")
+
+        features.register(DockerFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
+
+        action = EmitDockerComposeConfigAction()
+        action.execute()
+
+        assert not os.path.exists('node-path')
+        assert os.path.isdir('existing-directory')
+        assert os.path.isdir('new_directory')
+        assert os.path.isfile('existing-file.txt')
+        assert os.path.isfile('new_file')
+        assert os.path.isfile('another_new_file.txt')
+
+        with open('existing-file.txt', 'r') as f:
+            assert f.read() == 'existing-file.txt'
+
+    def test_local_volume_related(self, project_loader):
+        project_loader("local-volume-related")
+
+        features.register(DockerFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
+
+        action = EmitDockerComposeConfigAction()
+        action.execute()
+
+        assert not os.path.exists('node-path')
+        assert os.path.isdir('new_directory')
+        assert os.path.isdir('child')
+        assert os.path.isdir(os.path.join('new_directory', 'some', 'child'))

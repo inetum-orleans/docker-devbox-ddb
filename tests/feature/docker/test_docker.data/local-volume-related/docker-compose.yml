@@ -1,0 +1,7 @@
+version: '3.7'
+services:
+  ubuntu:
+    image: ubuntu
+    volumes:
+      - ./new_directory:/etc/new-directory
+      - ./child:/etc/new-directory/some/child

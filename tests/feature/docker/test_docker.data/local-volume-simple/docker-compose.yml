@@ -1,0 +1,17 @@
+version: '3.7'
+services:
+  node:
+    image: node
+    volumes:
+      - .:/app
+      - node-cache:/home/node/.cache
+  ubuntu:
+    image: ubuntu
+    volumes:
+      - ./new_directory:/etc/new-directory
+      - ./existing-directory:/etc/existing-directory
+      - ./new_file:/etc/new-file.txt
+      - ./another_new_file.txt:/etc/another-new-file
+      - ./existing-file.txt:/etc/existing-file.txt
+volumes:
+  node-cache:

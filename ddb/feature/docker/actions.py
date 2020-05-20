@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import re
+from pathlib import PurePosixPath, Path
 
 import yaml
 from dotty_dict import Dotty
@@ -11,6 +12,7 @@ from ...action import Action
 from ...action.action import EventBinding, InitializableAction
 from ...binary import binaries
 from ...cache import caches, register_project_cache
+from ...config import config
 from ...context import context
 from ...event import bus, events
 from ...utils.process import run
@@ -212,3 +214,107 @@ class DockerComposeBinaryAction(InitializableAction):
 
         context.log.success("Binary registered: %s", name)
         events.binary.registered(binary=binary)
+
+
+class LocalVolumesAction(Action):
+    """
+    This should avoid issues where docker creates local volume mount points as root:root.
+    We can create those folder before starting the stack with the user account.
+    """
+
+    @property
+    def event_bindings(self):
+        return events.docker.docker_compose_config
+
+    @property
+    def name(self) -> str:
+        return "docker:docker-compose-local-volumes"
+
+    def execute(self, docker_compose_config: dict):
+        """
+        Execute action
+        """
+        if 'services' not in docker_compose_config:
+            return
+
+        external_volumes = docker_compose_config['volumes'].keys() if 'volumes' in docker_compose_config else []
+
+        volume_mappings = self._get_volume_mappings(docker_compose_config, external_volumes)
+
+        for source, target in volume_mappings:
+            self._create_local_volume(source, target)
+
+        for source_a, destination_a in volume_mappings:
+            for source_b, destination_b in volume_mappings:
+                if source_a == source_b and destination_a == destination_b:
+                    continue
+
+                if destination_b.startswith(destination_a):
+                    relpath = PurePosixPath(destination_b).relative_to(destination_a)
+                    related_path = PurePosixPath().joinpath(source_a, relpath)
+                    rel_related_path = os.path.relpath(os.path.normpath(related_path), ".")
+
+                    if not os.path.exists(rel_related_path):
+                        os.makedirs(rel_related_path)
+                        context.log.info("Local volume source: %s (related directory created)", rel_related_path)
+
+                    self._fix_owner(rel_related_path)
+
+    @staticmethod
+    def _fix_owner(relative_path):
+        stat_info = os.stat(relative_path)
+        uid = stat_info.st_uid
+        gid = stat_info.st_gid
+        if uid != config.data.get("docker.user.uid") and gid != config.data.get("docker.user.gid"):
+            context.log.warn("Invalid owner detected for %s", relative_path)
+            try:
+                os.chown(relative_path, config.data.get("docker.user.uid"), config.data.get("docker.user.gid"))
+                context.log.info("Owner has been fixed for %s", relative_path)
+            except OSError:
+                context.log.error("Run this command to fix: sudo chown -R \"%s:%s\" %s",
+                                  config.data.get("docker.user.uid"), config.data.get("docker.user.gid"),
+                                  relative_path)
+
+    @staticmethod
+    def _create_local_volume(source, target):
+        rel_source = os.path.relpath(source, ".")
+        if os.path.exists(source):
+            context.log.notice("Local volume source: %s (exists)", rel_source)
+        else:
+            _, source_ext = os.path.splitext(source)
+            _, target_ext = os.path.splitext(target)
+            if source_ext or target_ext:
+                # Create empty file
+                os.makedirs(str(Path(source).parent), exist_ok=True)
+                context.log.info("Local volume source: %s (file created)", rel_source)
+                with open(source, "w"):
+                    pass
+                events.file.generated(source=None, target=rel_source)
+            else:
+                # Create empty directory
+                os.makedirs(source)
+                context.log.info("Local volume source: %s (directory created)", rel_source)
+        LocalVolumesAction._fix_owner(rel_source)
+
+    @staticmethod
+    def _get_volume_mappings(docker_compose_config, external_volumes):
+        volume_mappings = []
+        for service in docker_compose_config['services'].values():
+            if 'volumes' not in service:
+                continue
+
+            for volume_spec in service['volumes']:
+                if isinstance(volume_spec, dict):
+                    source = volume_spec['source']
+                    target = volume_spec['target']
+                else:
+                    source, target, _ = volume_spec.rsplit(':', 2)
+
+                if source in external_volumes:
+                    continue
+
+                volume_mapping = (source, target)
+
+                if volume_mapping not in volume_mappings:
+                    volume_mappings.append(volume_mapping)
+        return volume_mappings
