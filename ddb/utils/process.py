@@ -15,6 +15,13 @@ def run(executable: str, *args: str):
                              check=True,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
+    if os.name == "nt":
+        # On windows, there's ANSI code after output that has to be dropped...
+        try:
+            eof_index = process.stdout.index(b"\x1b[0m")
+            process.stdout = process.stdout[:eof_index]
+        except ValueError:
+            pass
     return process.stdout
 
 

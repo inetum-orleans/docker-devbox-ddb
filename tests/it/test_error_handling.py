@@ -13,7 +13,7 @@ class TestErrorHandling:
         exceptions = main(["configure"])
         assert len(exceptions) == 1
 
-        assert len(caplog.records) == 1
+        assert len(caplog.records) >= 1
         record = caplog.records[0]
 
         assert record.message == \

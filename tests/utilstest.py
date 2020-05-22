@@ -31,9 +31,24 @@ def get_docker_ip():
         return match.group(1)
 
 
-def compare_gitignore_generated(gitignore_content: str, *expected_lines: str):
-    gitignore_lines = set(gitignore_content.splitlines())
-    gitignore_lines.remove(UpdateGitignoreAction.get_block_limit(True))
-    gitignore_lines.remove(UpdateGitignoreAction.get_block_limit(False))
+def expect_gitignore(gitignore: str, *expected_lines: str):
+    in_block_lines = set()
 
-    return gitignore_lines == set(expected_lines)
+    if os.path.exists(gitignore):
+        with open(gitignore, 'r') as file:
+            inside_block = False
+            for gitignore_line in file.read().splitlines():
+                if gitignore_line == UpdateGitignoreAction.get_block_limit(True):
+                    inside_block = True
+                    continue
+                if gitignore_line == UpdateGitignoreAction.get_block_limit(False):
+                    inside_block = False
+                    continue
+                if inside_block:
+                    in_block_lines.add(gitignore_line)
+
+    for expected_line in expected_lines:
+        if expected_line not in in_block_lines:
+            return False
+
+    return True

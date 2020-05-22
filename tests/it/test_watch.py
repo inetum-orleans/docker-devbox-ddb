@@ -1,14 +1,13 @@
 import os
 import threading
-import time
 from pathlib import Path
 from typing import Iterable
 
 import pytest
-from waiting import wait
-
+import time
 from ddb.__main__ import main
-from tests.utilstest import compare_gitignore_generated
+from tests.utilstest import expect_gitignore
+from waiting import wait
 
 
 def init_test_watch(watch: bool, command: Iterable[str]):
@@ -60,8 +59,7 @@ class TestWatch:
                          Path('test.txt').read_text() == "This is watch1 project. (modified)",
                  timeout_seconds=5)
 
-            wait(lambda: os.path.exists('.gitignore') and
-                         compare_gitignore_generated(Path('.gitignore').read_text(), 'test.txt'),
+            wait(lambda: os.path.exists('.gitignore') and expect_gitignore('.gitignore', 'test.txt'),
                  timeout_seconds=5)
         finally:
             if watch:
@@ -93,7 +91,7 @@ class TestWatch:
                  timeout_seconds=5)
 
             wait(lambda: os.path.exists('.gitignore') and
-                         compare_gitignore_generated(Path('.gitignore').read_text(), 'test.txt', 'test.created.txt'),
+                         expect_gitignore('.gitignore', 'test.txt', 'test.created.txt'),
                  timeout_seconds=5)
         finally:
             if watch:
@@ -120,7 +118,7 @@ class TestWatch:
                 main_runner()
 
             wait(lambda: not os.path.exists('test.txt'), timeout_seconds=5)
-            wait(lambda: not os.path.exists('.gitignore'), timeout_seconds=5)
+            wait(lambda: not expect_gitignore('.gitignore', 'text.txt'), timeout_seconds=5)
         finally:
             if watch:
                 watch_stop_event.set()
@@ -148,8 +146,7 @@ class TestWatch:
             wait(lambda: not os.path.exists('test.txt') and os.path.exists('test2.txt') and "This is watch1 project.",
                  timeout_seconds=5)
 
-            wait(lambda: os.path.exists('.gitignore') and
-                         compare_gitignore_generated(Path('.gitignore').read_text(), 'test2.txt'),
+            wait(lambda: os.path.exists('.gitignore') and expect_gitignore('.gitignore', 'test2.txt'),
                  timeout_seconds=5)
         finally:
             if watch:

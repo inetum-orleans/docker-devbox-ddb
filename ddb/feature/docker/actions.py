@@ -251,8 +251,8 @@ class LocalVolumesAction(Action):
 
                 if destination_b.startswith(destination_a):
                     relpath = PurePosixPath(destination_b).relative_to(destination_a)
-                    related_path = PurePosixPath().joinpath(source_a, relpath)
-                    rel_related_path = os.path.relpath(os.path.normpath(related_path), ".")
+                    related_path = str(PurePosixPath().joinpath(source_a, relpath))
+                    rel_related_path = os.path.relpath(os.path.normpath(str(related_path)), ".")
 
                     if not os.path.exists(rel_related_path):
                         os.makedirs(rel_related_path)
@@ -262,18 +262,20 @@ class LocalVolumesAction(Action):
 
     @staticmethod
     def _fix_owner(relative_path):
-        stat_info = os.stat(relative_path)
-        uid = stat_info.st_uid
-        gid = stat_info.st_gid
-        if uid != config.data.get("docker.user.uid") and gid != config.data.get("docker.user.gid"):
-            context.log.warn("Invalid owner detected for %s", relative_path)
-            try:
-                os.chown(relative_path, config.data.get("docker.user.uid"), config.data.get("docker.user.gid"))
-                context.log.info("Owner has been fixed for %s", relative_path)
-            except OSError:
-                context.log.error("Run this command to fix: sudo chown -R \"%s:%s\" %s",
-                                  config.data.get("docker.user.uid"), config.data.get("docker.user.gid"),
-                                  relative_path)
+        if hasattr(os, 'chown'):
+            stat_info = os.stat(relative_path)
+            uid = stat_info.st_uid
+            gid = stat_info.st_gid
+            if uid != config.data.get("docker.user.uid") and gid != config.data.get("docker.user.gid"):
+                context.log.warning("Invalid owner detected for %s", relative_path)
+                try:
+                    # pylint:disable=no-member
+                    os.chown(relative_path, config.data.get("docker.user.uid"), config.data.get("docker.user.gid"))
+                    context.log.info("Owner has been fixed for %s", relative_path)
+                except OSError:
+                    context.log.error("Run this command to fix: sudo chown -R \"%s:%s\" %s",
+                                      config.data.get("docker.user.uid"), config.data.get("docker.user.gid"),
+                                      relative_path)
 
     @staticmethod
     def _create_local_volume(source, target):

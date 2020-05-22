@@ -3,7 +3,7 @@ import os
 import yaml
 
 from ddb.__main__ import main
-from tests.utilstest import compare_gitignore_generated
+from tests.utilstest import expect_gitignore
 
 
 class TestFilesGenerated:
@@ -33,8 +33,7 @@ class TestFilesGenerated:
         assert os.path.islink("test.yml")
 
         assert os.path.exists(".gitignore")
-        with open(".gitignore", "r") as f:
-            assert compare_gitignore_generated(f.read(), 'test.dev.yml.jsonnet', 'test.dev.yml', 'test.yml')
+        assert expect_gitignore('.gitignore', 'test.dev.yml.jsonnet', 'test.dev.yml', 'test.yml')
 
     def test_ensure_chaining_with_custom_dependencies(self, project_loader):
         project_loader("ensure-chaining-with-custom-dependencies")
@@ -62,5 +61,4 @@ class TestFilesGenerated:
         assert os.path.islink("test.yml")
 
         assert os.path.exists(".gitignore")
-        with open(".gitignore", "r") as f:
-            assert compare_gitignore_generated(f.read(), 'test.dev.yml.jinja', 'test.dev.yml', 'test.yml')
+        assert expect_gitignore('.gitignore', 'test.dev.yml.jinja', 'test.dev.yml', 'test.yml')

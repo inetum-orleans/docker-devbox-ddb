@@ -2,7 +2,6 @@ import os
 from shutil import copy
 
 from _pytest.capture import CaptureFixture
-
 from ddb.__main__ import main
 from ddb.config import Config
 
@@ -32,7 +31,10 @@ class TestBinaries:
 
         main(["configure"])
 
-        assert os.path.isfile(os.path.join(".bin", "psql"))
+        if os.name == 'nt':
+            assert os.path.isfile(os.path.join(".bin", "psql.bat"))
+        else:
+            assert os.path.isfile(os.path.join(".bin", "psql"))
 
         exceptions = main(["run", "psql"])
         assert not exceptions
