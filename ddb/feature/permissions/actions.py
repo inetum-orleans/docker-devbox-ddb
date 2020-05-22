@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 import os
-from glob import glob
+from typing import Optional
+
+from wcmatch.glob import globmatch, GLOBSTAR
 
 from ddb.action import Action
+from ddb.action.action import EventBinding
 from ddb.config import config
 from ddb.event import events
 from ddb.utils.file import chmod
@@ -19,20 +22,22 @@ class PermissionsAction(Action):
 
     @property
     def event_bindings(self):
-        return events.phase.configure
+        def file_found_processor(file: str):
+            specs = config.data.get('permissions.specs')
+            if specs:
+                for spec, mode in specs.items():
+                    if globmatch(file, spec, flags=GLOBSTAR):
+                        return (), {"file": file, "mode": mode}
+            return None
+
+        def file_generated_processor(source: Optional[str], target: str):
+            return file_found_processor(target)
+
+        return (
+            EventBinding(events.file.found, chmod, file_found_processor),
+            EventBinding(events.file.generated, chmod, file_generated_processor)
+        )
 
     @property
     def disabled(self) -> bool:
         return os.name == 'nt'
-
-    @staticmethod
-    def execute():
-        """
-        Execute the action
-        :return:
-        """
-        specs = config.data.get('permissions.specs')
-        if specs:
-            for spec, mode in specs.items():
-                for file in glob(spec, recursive=True):
-                    chmod(file, mode)

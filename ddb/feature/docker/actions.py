@@ -250,8 +250,8 @@ class LocalVolumesAction(Action):
                     continue
 
                 if destination_b.startswith(destination_a):
-                    relpath = PurePosixPath(destination_b).relative_to(destination_a)
-                    related_path = str(PurePosixPath().joinpath(source_a, relpath))
+                    relative_destination = PurePosixPath(destination_b).relative_to(destination_a)
+                    related_path = str(PurePosixPath().joinpath(source_a, relative_destination))
                     rel_related_path = os.path.relpath(os.path.normpath(str(related_path)), ".")
 
                     if not os.path.exists(rel_related_path):
@@ -286,14 +286,14 @@ class LocalVolumesAction(Action):
             _, source_ext = os.path.splitext(source)
             _, target_ext = os.path.splitext(target)
             if source_ext or target_ext:
-                # Create empty file
+                # Create empty file, because with have an extension in source or target.
                 os.makedirs(str(Path(source).parent), exist_ok=True)
                 context.log.info("Local volume source: %s (file created)", rel_source)
                 with open(source, "w"):
                     pass
                 events.file.generated(source=None, target=rel_source)
             else:
-                # Create empty directory
+                # Create empty directory, because neither source or target has an extension.
                 os.makedirs(source)
                 context.log.info("Local volume source: %s (directory created)", rel_source)
         LocalVolumesAction._fix_owner(rel_source)
