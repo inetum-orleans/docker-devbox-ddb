@@ -141,14 +141,14 @@ class FixuidDockerComposeAction(Action):
         Apply fixuid to given service
         """
         dockerfile_path = os.path.join(service.context, service.dockerfile)
+        if os.path.exists(dockerfile_path):
+            with tmp_chmod(dockerfile_path, '+w'):
+                with open(dockerfile_path, "ba+") as dockerfile_file:
+                    parser = CustomDockerfileParser(fileobj=dockerfile_file)
 
-        with tmp_chmod(dockerfile_path, '+w'):
-            with open(dockerfile_path, "ba+") as dockerfile_file:
-                parser = CustomDockerfileParser(fileobj=dockerfile_file)
-
-                if FixuidDockerComposeAction._apply_fixuid_from_parser(parser, service):
-                    context.log.success("Fixuid applied to %s",
-                                        os.path.relpath(dockerfile_path, config.paths.project_home))
+                    if FixuidDockerComposeAction._apply_fixuid_from_parser(parser, service):
+                        context.log.success("Fixuid applied to %s",
+                                            os.path.relpath(dockerfile_path, config.paths.project_home))
 
     @staticmethod
     def _apply_fixuid_from_parser(parser: CustomDockerfileParser, service: BuildServiceDef):

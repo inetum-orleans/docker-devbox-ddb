@@ -34,7 +34,9 @@ class EmitDockerComposeConfigAction(Action):
     @property
     def event_bindings(self):
         return (
-            events.phase.configure,
+            # TODO: Add support for custom docker-compose -f option (custom filename and multiple files)
+            EventBinding(events.file.found,
+                         processor=lambda file: ((), {}) if file == "docker-compose.yml" else False),
             EventBinding(events.file.generated,
                          processor=lambda source, target: ((), {}) if target == "docker-compose.yml" else False)
         )
@@ -47,7 +49,6 @@ class EmitDockerComposeConfigAction(Action):
         """
         Execute action
         """
-        # TODO: Add support for custom docker-compose -f option (custom filename and multiple files)
         if not os.path.exists("docker-compose.yml"):
             return
 
