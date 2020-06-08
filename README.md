@@ -38,5 +38,6 @@ Docs
 * [How to participate ?](./docs/00-development.md)
 * [Changing the default configuration](./docs/10-default_configuration.md)
 * [Managing your project configuration](./docs/11-project_configuration.md)
+* [Setting up your CI](./docs/20-pipeline_configuration.md)
 
 *N.B : Docs are under construction, more will be added over time* 

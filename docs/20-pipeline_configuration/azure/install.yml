@@ -1,0 +1,25 @@
+# Install ddb into the pipeline
+
+steps:
+  - bash: |
+      curl -L https://github.com/gfi-centre-ouest/docker-devbox-ddb/releases/latest/download/ddb -o ddb && chmod +x ddb
+      sudo mv ./ddb /usr/local/bin/ddb
+    displayName: 'Install docker-devbox-ddb'
+
+  - bash: |
+      mkdir ${HOME}/.docker-devbox
+      cat <<EOT >> ${HOME}/.docker-devbox/ddb.yaml
+      core:
+        env:
+          current: stage
+      certs:
+        disabled: true
+      docker:
+        reverse_proxy:
+          type: none
+      traefik:
+        disabled: true
+      smartcd:
+        disabled: true
+      EOT
+    displayName: 'Setup CI environment'
