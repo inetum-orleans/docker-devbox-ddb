@@ -9,6 +9,9 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
+      - name: check python version
+        run: python --version
+
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
 
