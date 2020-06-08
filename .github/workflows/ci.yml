@@ -2,6 +2,9 @@ name: Test CI
 
 on: [push]
 
+env:
+  SHELL: /bin/bash
+
 jobs:
   build:
     runs-on: ubuntu-latest
