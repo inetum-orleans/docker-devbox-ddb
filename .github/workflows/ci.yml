@@ -10,19 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
-
-      - name: Install latest python version
-        run: sudo rm /usr/bin/python && sudo apt install python3 && sudo ln -s /usr/bin/python3 /usr/bin/python && pip install -U pip setuptools
-
-      - name: check python version
-        run: python --version
-
-      - name: Install dependencies
-        run: pip install -r requirements-dev.txt && pip install -e .
+      - name: Install latest ddb version
+        run: curl -L https://github.com/gfi-centre-ouest/docker-devbox-ddb/releases/latest/download/ddb -o ddb && chmod +x ddb && sudo mv ./ddb /usr/local/bin/ddb
 
       # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
       # Docs: https://getcomposer.org/doc/articles/scripts.md
 
       - name: Test config
-        run: python ddb config
+        run: ddb config
