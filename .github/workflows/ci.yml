@@ -22,4 +22,4 @@ jobs:
       # Docs: https://getcomposer.org/doc/articles/scripts.md
 
       - name: Test config
-        run: ddb config
+        run: python ddb config
