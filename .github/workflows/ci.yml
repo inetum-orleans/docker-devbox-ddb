@@ -9,6 +9,12 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
+      - name: Install latest python version
+        bash: |
+          rm /usr/bin/python
+          apt install python3
+          ln -s /usr/bin/python3 /usr/bin/python
+
       - name: check python version
         run: python --version
 
