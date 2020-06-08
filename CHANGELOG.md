@@ -4,7 +4,10 @@ History
 1.0.0-beta2 (unreleased)
 ------------------------
 
+- Docker and Permissions features are now plugged on File feature
+- Docker-compose locally mapped files/directories are now created on `ddb configure` to ensure valid user owning
 - Fix Logging Error in chmod
+- Upgrade chmod-monkey and use it everywhere to improve readability
 
 
 1.0.0-beta1 (2020-05-12)
