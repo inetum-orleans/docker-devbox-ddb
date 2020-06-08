@@ -1,7 +1,7 @@
 History
 =======
 
-1.0.0-beta2 (unreleased)
+1.0.0-beta2 (2020-06-08)
 ------------------------
 
 - Docker and Permissions features are now plugged on File feature
