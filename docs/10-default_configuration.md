@@ -132,6 +132,7 @@ permissions:
   disabled: false
   specs: null
 shell:
+  aliases: {} # Define aliases which will be available only in project context
   disabled: false
   envignore:
   - PYENV_*
@@ -147,7 +148,6 @@ shell:
     prepend: true
   shell: bash
 smartcd:
-  aliases: {} # Define aliases which will be added in bash_enter
   disabled: false
 symlinks:
   disabled: false

@@ -4,7 +4,6 @@ from typing import Union, Iterable, Callable
 
 from ddb.action.action import EventBinding, InitializableAction
 from ddb.command import commands
-from ddb.config import config
 from ddb.event import events
 from ddb.utils.file import write_if_different
 from ddb.utils.process import run

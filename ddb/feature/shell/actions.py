@@ -140,7 +140,7 @@ class CreateAliasShim(Action):
 
     @property
     def event_bindings(self):
-        return (events.phase.configure)
+        return events.phase.configure
 
     @property
     def name(self) -> str:
