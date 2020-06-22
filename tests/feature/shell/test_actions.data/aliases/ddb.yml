@@ -1,0 +1,6 @@
+shell:
+  aliases:
+    dc: docker-compose
+  path:
+    directories:
+      - bin

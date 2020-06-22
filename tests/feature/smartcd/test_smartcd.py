@@ -91,24 +91,6 @@ class TestSmartcdAction:
         assert not os.path.exists(".bash_enter")
         assert not os.path.exists(".bash_leave")
 
-    def test_empty_project_main_aliases(self, project_loader, mocker: MockFixture):
-        mocker.patch('ddb.feature.smartcd.actions.is_smartcd_installed', lambda: True)
-
-        project_loader("aliases")
-
-        main(["configure"])
-
-        assert os.path.exists(".bash_enter")
-        assert os.path.exists(".bash_leave")
-
-        with open(".bash_enter") as f:
-            content = f.read()
-            assert "$(ddb activate)" in content
-            assert 'autostash alias ll="ls -als"' in content
-
-        with open(".bash_leave") as f:
-            assert "$(ddb deactivate)" in f.read()
-
 
 @pytest.mark.skipif("os.name != 'nt'")
 class TestWindowsProjectActivate:

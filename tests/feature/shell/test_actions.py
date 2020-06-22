@@ -4,12 +4,12 @@ from abc import ABC, abstractmethod
 
 from _pytest.capture import CaptureFixture
 
-from ddb.__main__ import load_registered_features
+from ddb.__main__ import main, load_registered_features
 from ddb.config import config
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.shell import ActivateAction, DeactivateAction, ShellFeature
-from ddb.feature.shell.actions import encode_environ_backup
+from ddb.feature.shell.actions import encode_environ_backup, CreateAliasShim
 from ddb.feature.shell.integrations import BashShellIntegration, ShellIntegration, CmdShellIntegration
 
 
@@ -21,6 +21,10 @@ class ActivateActionBase(ABC):
     @property
     @abstractmethod
     def export_regex(self):
+        pass
+
+    @abstractmethod
+    def get_shim_filename(self, shimname: str) -> str:
         pass
 
     @property
@@ -178,14 +182,28 @@ class ActivateActionBase(ABC):
         assert last != os.path.normpath(os.path.join(os.getcwd(), "./bin")) or \
                last != os.path.normpath(os.path.join(os.getcwd(), "./.bin"))
 
+    def test_empty_project_main_aliases(self, project_loader):
+        project_loader("aliases")
+
+        main(["configure"])
+
+        assert os.path.exists(os.path.join("bin", "dc"))
+
+        with open(os.path.join("bin", "dc"), 'r') as f:
+            content = f.read()
+            assert 'docker-compose "$@"' in content
+
 
 class TestBashActivateAction(ActivateActionBase):
     export_regex = r"^export (.+?)=[\'\"]?(.+?)[\'\"]?$"
-    unset_regex = r"^unset (.+)()$"
+    unset_regex = r"^/unset (.+)()$"
     filepath_regex = r"^(?:.* )?(.+)$"
 
     def build_shell_integration(self) -> ShellIntegration:
         return BashShellIntegration()
+
+    def get_shim_filename(self, shimname: str) -> str:
+        return shimname
 
 
 class TestCmdActivateAction(ActivateActionBase):
@@ -199,6 +217,9 @@ class TestCmdActivateAction(ActivateActionBase):
 
     def build_shell_integration(self) -> ShellIntegration:
         return CmdShellIntegration()
+
+    def get_shim_filename(self, shimname: str) -> str:
+        return "{}.bat".format(shimname)
 
 
 class DeactivateActionBase(ABC):

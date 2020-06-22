@@ -21,3 +21,4 @@ class ShellSchema(FeatureSchema):
     envignore = fields.List(fields.String(), required=False, default=[
         "PYENV_*", "_", "PS1", "PS2", "PS3", "PS4"
     ])
+    aliases = fields.Dict(required=False, default={})
