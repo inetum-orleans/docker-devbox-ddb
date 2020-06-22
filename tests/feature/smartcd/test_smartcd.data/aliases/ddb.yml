@@ -1,0 +1,3 @@
+smartcd:
+  aliases:
+    ll: ls -als

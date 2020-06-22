@@ -4,7 +4,7 @@ History
 1.0.0-beta3 (unreleased)
 ------------------------
 
-- Nothing changed yet.
+- Smartcd : addition of aliases management
 
 
 1.0.0-beta2 (2020-06-08)

@@ -4,6 +4,7 @@ from typing import Union, Iterable, Callable
 
 from ddb.action.action import EventBinding, InitializableAction
 from ddb.command import commands
+from ddb.config import config
 from ddb.event import events
 from ddb.utils.file import write_if_different
 from ddb.utils.process import run
@@ -49,10 +50,25 @@ class SmartcdAction(InitializableAction):
         if not is_smartcd_installed():
             return
 
-        if write_if_different(".bash_enter", "echo [smartcd] Activate\n$(ddb activate)\n"):
+        bash_enter_content = [
+            "echo [smartcd] Activate",
+            "$(ddb activate)"
+        ]
+        aliases = config.data.get('smartcd.aliases')
+        for key in aliases:
+            bash_enter_content.append('autostash alias {}="{}"'.format(key, aliases[key]))
+        bash_enter = '\n'.join(bash_enter_content) + '\n'
+
+        bash_leave_content = [
+            "echo [smartcd] Deactivate",
+            "$(ddb deactivate)"
+        ]
+        bash_leave = '\n'.join(bash_leave_content) + '\n'
+
+        if write_if_different(".bash_enter", bash_enter):
             events.file.generated(source=None, target=".bash_enter")
 
-        if write_if_different(".bash_leave", "echo [smartcd] Deactivate\n$(ddb deactivate)\n"):
+        if write_if_different(".bash_leave", bash_leave):
             events.file.generated(source=None, target=".bash_leave")
 
 

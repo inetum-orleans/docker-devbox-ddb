@@ -26,7 +26,7 @@ core:
 Here is the list of default configuration provided by docker-devbox-ddb : 
 ```yaml
 binary:
-  disabled: false # Disable the binary generation for the project and the run option
+  disabled: false
 certs:
   cfssl:
     append_ca_certificate: true
@@ -50,50 +50,51 @@ copy:
 core:
   disabled: false
   domain:
-    ext: test # The base domain extension used for traefik DNS registration
-    sub: docker-devbox-ddb # The subdomain to use for the project. By default, it will be the name of the project directory
+    ext: test
+    sub: projects
   env:
-    available: # List of available environments
+    available:
     - prod
     - stage
     - ci
     - dev
-    current: dev # Current active environment
+    current: dev
   os: posix
   path:
-    ddb_home: /home/docker/.docker-devbox/ddb
-    home: /home/docker/.docker-devbox
-    project_home: /home/docker/projects/docker-devbox-ddb # The directory of the project you are working on
+    ddb_home: /home/devbox/.docker-devbox/ddb
+    home: /home/devbox/.docker-devbox
+    project_home: /home/devbox/projects
+  process: {}
   project:
-    name: docker-devbox-ddb # The name of the project. By default, it will be the name of the project directory
+    name: projects
 docker:
+  build_image_tag: null
+  build_image_tag_from_version: true
   cache_from_image: false
   compose:
-    args: []
-    bin: docker-compose
-    network_name: docker-devbox-ddb_default # The docker network name for the project
-    project_name: docker-devbox-ddb # The project name used in docker-compose
+    network_name: projects_default
+    project_name: projects
   debug:
-    disabled: false # Disable the debug mod for the project (disable xDebug for instance)
-    host: 192.168.72.1 # IP of the computer debugging the project
+    disabled: false
+    host: 192.168.85.1
   directory: .docker
   disabled: false
   interface: docker0
   ip: 172.17.0.1
   path_mapping: {}
-  port_prefix: 70 # The port prefix used in docker-compose port exposition
-  registry: # The registry used for image storage
+  port_prefix: 35
+  registry:
     name: null
     repository: null
-  restart_policy: 'no' # The restart_policy applied
+  restart_policy: 'no'
   reverse_proxy:
-    network_id: reverse-proxy # The id of the reverse-proxy network
+    network_id: reverse-proxy
     network_names:
       reverse-proxy: reverse-proxy
-    type: traefik # The type of the reverse-proxy network
+    type: traefik
   user:
-    gid: 1001 # The id of the current user
-    uid: 1001 # The gid of the current user
+    gid: 1001
+    uid: 1001
 file:
   disabled: false
   excludes:
@@ -102,12 +103,15 @@ file:
   - '**/node_modules'
   - '**/vendor'
 fixuid:
-  disabled: false # Disable fixuid automatic integration in the Dockerfile
-  url: https://github.com/boxboat/fixuid/releases/download/v0.4/fixuid-0.4-linux-amd64.tar.gz # The url of fixuid used
+  disabled: false
+  url: https://github.com/boxboat/fixuid/releases/download/v0.4/fixuid-0.4-linux-amd64.tar.gz
+git:
+  disabled: false
+  fix_files_permissions: true
 gitignore:
-  disabled: false # Disable the automatic update of gitignore
+  disabled: false
 jinja:
-  disabled: false # Disable Jinja template engine
+  disabled: false
   extensions:
   - .*
   - ''
@@ -116,7 +120,7 @@ jinja:
   suffixes:
   - .jinja
 jsonnet:
-  disabled: false # Disable jsonnet template engine
+  disabled: false
   extensions:
   - .*
   - ''
@@ -124,8 +128,9 @@ jsonnet:
   - '*.jsonnet{.*,}'
   suffixes:
   - .jsonnet
-plugins:
+permissions:
   disabled: false
+  specs: null
 shell:
   disabled: false
   envignore:
@@ -141,6 +146,9 @@ shell:
     - bin
     prepend: true
   shell: bash
+smartcd:
+  aliases: {} # Define aliases which will be added in bash_enter
+  disabled: false
 symlinks:
   disabled: false
   includes:
@@ -148,16 +156,17 @@ symlinks:
   suffixes:
   - .dev
 traefik:
-  certs_directory: /home/docker/.docker-devbox/certs
-  config_directory: /home/docker/.docker-devbox/traefik/config
-  disabled: false # Disable automatic traefik integration
+  certs_directory: /home/devbox/.docker-devbox/certs
+  config_directory: /home/devbox/.docker-devbox/traefik/config
+  disabled: false
   mapped_certs_directory: /certs
   ssl_config_template: "# This configuration file has been automatically generated\
     \ by ddb\n[[tls.certificates]]\n  certFile = \"%s\"\n  keyFile = \"%s\"\n"
+version:
+  disabled: false
 ytt:
   args:
   - --ignore-unknown-comments
-  bin: ytt
   depends_suffixes:
   - .data
   - .overlay
