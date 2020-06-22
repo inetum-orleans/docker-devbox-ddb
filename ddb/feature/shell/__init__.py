@@ -4,7 +4,7 @@ from typing import Iterable, ClassVar
 
 from dotty_dict import Dotty
 
-from .actions import ActivateAction, DeactivateAction, CreateBinaryShim
+from .actions import ActivateAction, DeactivateAction, CreateBinaryShim, CreateAliasShim
 from .integrations import BashShellIntegration, CmdShellIntegration
 from .schema import ShellSchema
 from ..feature import Feature, FeatureConfigurationAutoConfigureError
@@ -33,9 +33,11 @@ class ShellFeature(Feature):
             ActivateAction(BashShellIntegration()),
             DeactivateAction(BashShellIntegration()),
             CreateBinaryShim(BashShellIntegration()),
+            CreateAliasShim(BashShellIntegration()),
             ActivateAction(CmdShellIntegration()),
             DeactivateAction(CmdShellIntegration()),
             CreateBinaryShim(CmdShellIntegration()),
+            CreateAliasShim(CmdShellIntegration()),
         )
 
     @property

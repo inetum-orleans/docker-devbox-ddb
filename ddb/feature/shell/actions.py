@@ -12,6 +12,7 @@ from .integrations import ShellIntegration
 from ...action import Action
 from ...action.action import EventBinding
 from ...binary import Binary
+from ...binary.binary import DefaultBinary
 from ...config import config
 from ...config.flatten import to_environ
 from ...context import context
@@ -126,6 +127,50 @@ class CreateBinaryShim(Action):
 
         if written:
             events.file.generated(source=None, target=shim)
+
+
+class CreateAliasShim(Action):
+    """
+    Create alias shim for each alias
+    """
+
+    def __init__(self, shell: ShellIntegration):
+        super().__init__()
+        self.shell = shell
+
+    @property
+    def event_bindings(self):
+        return events.phase.configure
+
+    @property
+    def name(self) -> str:
+        return "shell:" + self.shell.name + ":create-alias-shim"
+
+    @property
+    def description(self) -> str:
+        return super().description + " for " + self.shell.description
+
+    @property
+    def disabled(self) -> bool:
+        return config.data.get('shell.shell') != self.shell.name
+
+    def execute(self):
+        """
+        Create binary shim
+        """
+        directories = config.data.get('shell.path.directories')
+        aliases = config.data.get('shell.aliases')
+        shim_directory = directories[0]
+        for key in aliases:
+            binary = DefaultBinary(key, aliases[key])
+            written, shim = self.shell.create_alias_binary_shim(shim_directory, binary)
+            if written:
+                context.log.success("Shim created: %s", shim)
+            else:
+                context.log.notice("Shim exists: %s", shim)
+
+            if written:
+                events.file.generated(source=None, target=shim)
 
 
 class ActivateAction(Action):

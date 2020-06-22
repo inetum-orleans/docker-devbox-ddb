@@ -48,6 +48,13 @@ class ShellIntegration(ABC):
         """
 
     @abstractmethod
+    def create_alias_binary_shim(self, shims_path: str, binary: Binary) -> Tuple[bool, str]:
+        """
+        Add a alias binary shim for this shell.
+        :return created filepath
+        """
+
+    @abstractmethod
     def evaluate_script(self, script_filepath) -> Iterable[str]:
         """
         Get the command to evaluate the script inside the current shell context.
@@ -107,10 +114,23 @@ class BashShellIntegration(ShellIntegration):
         return True
 
     def create_binary_shim(self, shims_path: str, binary: Binary):
+        return self._write_shim(shims_path, binary.name, 'binary', "$(ddb run %s \"$@\")" % binary.name)
+
+    def create_alias_binary_shim(self, shims_path: str, binary: Binary) -> Tuple[bool, str]:
+        return self._write_shim(shims_path, binary.name, 'alias', binary.command())
+
+    @staticmethod
+    def _write_shim(shims_path: str, shim_name: str, shim_type: str, command: Iterable[str]) -> Tuple[bool, str]:
+        """
+        Generate the shim file
+        :return:
+        """
         os.makedirs(shims_path, exist_ok=True)
-        shim = os.path.join(os.path.normpath(shims_path), binary.name)
-        data = ''.join(["#!/usr/bin/env bash\n", "# ddb:shim\n", "$(ddb run %s \"$@\") \"$@\"\n" % binary.name])
-        written = write_if_different(shim, data, newline="\n")
+        shim = os.path.join(os.path.normpath(shims_path), shim_name)
+
+        content = '\n'.join(["#!/usr/bin/env bash", "# ddb:shim:" + shim_type, ''.join(command) + " \"$@\""]) + "\n"
+
+        written = write_if_different(shim, content, newline="\n")
 
         chmod(shim, '+x', logging=False)
         return written, shim
@@ -162,6 +182,21 @@ class CmdShellIntegration(ShellIntegration):
         shim = os.path.join(os.path.normpath(shims_path), binary.name + '.bat')
         commands = ["@echo off", "REM ddb:shim", "SHIFT"]
         commands.append("set command=(ddb run {} \"%*\")".format(binary.name))
+        commands.append("%command%>cmd.txt")
+        commands.append("set /p execution=<cmd.txt")
+        commands.append("del cmd.txt")
+        commands.append("%execution% \"%*\"")
+        data = '\n'.join(commands) + '\n'
+        written = write_if_different(shim, data, newline="\n")
+
+        chmod(shim, '+x', logging=False)
+        return written, shim
+
+    def create_alias_binary_shim(self, shims_path: str, binary: Binary):
+        os.makedirs(shims_path, exist_ok=True)
+        shim = os.path.join(os.path.normpath(shims_path), binary.name + '.bat')
+        commands = ["@echo off", "REM ddb:shim", "SHIFT"]
+        commands.append("set command=({} \"%*\")".format(binary.name))
         commands.append("%command%>cmd.txt")
         commands.append("set /p execution=<cmd.txt")
         commands.append("del cmd.txt")

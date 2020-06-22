@@ -4,7 +4,6 @@ from typing import Union, Iterable, Callable
 
 from ddb.action.action import EventBinding, InitializableAction
 from ddb.command import commands
-from ddb.config import config
 from ddb.event import events
 from ddb.utils.file import write_if_different
 from ddb.utils.process import run
@@ -54,9 +53,6 @@ class SmartcdAction(InitializableAction):
             "echo [smartcd] Activate",
             "$(ddb activate)"
         ]
-        aliases = config.data.get('smartcd.aliases')
-        for key in aliases:
-            bash_enter_content.append('autostash alias {}="{}"'.format(key, aliases[key]))
         bash_enter = '\n'.join(bash_enter_content) + '\n'
 
         bash_leave_content = [
