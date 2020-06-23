@@ -1,7 +1,7 @@
 History
 =======
 
-1.0.0-beta3 (unreleased)
+1.0.0-beta3 (2020-06-23)
 ------------------------
 
 - Shell : addition of aliases management
