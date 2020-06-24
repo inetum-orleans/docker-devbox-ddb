@@ -208,6 +208,7 @@ class ActivateAction(Action):
         """
         initial_environ = dict(os.environ.items())
         config_environ = to_environ(config.data, config.env_prefix)
+        config_environ.update(config.env_additions)
 
         to_encode_environ = dict(initial_environ)
         os.environ.update(config_environ)

@@ -142,7 +142,7 @@ class DockerFeature(Feature):
 
         compose_project_name = normalize_name(compose_project_name)
         feature_config['compose.project_name'] = compose_project_name
-        os.environ['COMPOSE_PROJECT_NAME'] = compose_project_name
+        config.env_additions['COMPOSE_PROJECT_NAME'] = compose_project_name
 
         compose_network_name = feature_config.get('compose.network_name')
         if not compose_network_name:
@@ -150,7 +150,7 @@ class DockerFeature(Feature):
 
         compose_network_name = normalize_name(compose_network_name)
         feature_config['compose.network_name'] = compose_network_name
-        os.environ['COMPOSE_NETWORK_NAME'] = compose_network_name + "_default"
+        config.env_additions['COMPOSE_NETWORK_NAME'] = compose_network_name + "_default"
 
     @staticmethod
     def _configure_defaults_build_image_tag(feature_config):

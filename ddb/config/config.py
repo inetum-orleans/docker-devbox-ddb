@@ -67,6 +67,7 @@ class Config:  # pylint:disable=too-many-instance-attributes
         self.env_override_prefix = env_override_prefix
         self.filenames = filenames
         self.extensions = extensions
+        self.env_additions = {}
         self.data = dotty()
         self.paths = paths if paths else get_default_config_paths(env_prefix, filenames, extensions)
         self.args = Namespace()
@@ -83,6 +84,7 @@ class Config:  # pylint:disable=too-many-instance-attributes
         Remove all configuration data.
         """
         self.data.clear()
+        self.env_additions.clear()
 
     def load(self, env_key='env'):
         """
