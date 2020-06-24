@@ -4,7 +4,7 @@ History
 1.0.0-beta4 (unreleased)
 ------------------------
 
-- Nothing changed yet.
+- Feature Jsonnet : correction of a bug when adding multiple VHost on same docker-compose service
 
 
 1.0.0-beta3 (2020-06-23)
