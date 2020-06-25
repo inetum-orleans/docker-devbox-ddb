@@ -12,6 +12,7 @@ local _docker_directory = std.extVar("docker.directory");
 local _docker_reverse_proxy_type = std.extVar("docker.reverse_proxy.type");
 local _docker_reverse_proxy_network_id = std.extVar("docker.reverse_proxy.network_id");
 local _docker_reverse_proxy_network_names = std.extVar("docker.reverse_proxy.network_names");
+local _docker_reverse_proxy_certresolver = std.extVar("docker.reverse_proxy.certresolver");
 local _core_project_name = std.extVar("core.project.name");
 local _core_os = std.extVar("core.os");
 local _core_env_current = std.extVar("core.env.current");
@@ -132,8 +133,9 @@ local Compose(network_names=_docker_reverse_proxy_network_names, version="3.7") 
 };
 
 local TraefikCertLabels(hostname, service_name, certresolver=null) = {
-    [if certresolver == null then "ddb.emit.certs:generate:" + service_name]: hostname,
-    [if certresolver != null then "traefik.http.routers." + service_name + "-tls.tls.certresolver"]: certresolver
+    [if certresolver != null then "traefik.http.routers." + service_name + "-tls.tls.certresolver"]: certresolver,
+    [if (certresolver == null && _docker_reverse_proxy_certresolver != null) then "traefik.http.routers." + service_name + "-tls.tls.certresolver"]: _docker_reverse_proxy_certresolver,
+    [if (certresolver == null && _docker_reverse_proxy_certresolver == null) then "ddb.emit.certs:generate:" + service_name]: hostname,
 };
 
 local TraefikLabels(port, hostname, name=null, certresolver=null) = TraefikCertLabels(hostname, std.join("-", std.prune([_core_project_name, name])), certresolver) + {
