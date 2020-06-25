@@ -51,24 +51,26 @@ from ddb.phase import phases
 from ddb.registry import Registry, RegistryObject
 from ddb.service import services
 
-_available_features = [CertsFeature(),
-                       CopyFeature(),
-                       CoreFeature(),
-                       DockerFeature(),
-                       FileFeature(),
-                       FixuidFeature(),
-                       GitFeature(),
-                       GitignoreFeature(),
-                       JinjaFeature(),
-                       JsonnetFeature(),
-                       PermissionsFeature(),
-                       RunFeature(),
-                       SmartcdFeature(),
-                       ShellFeature(),
-                       SymlinksFeature(),
-                       TraefikFeature(),
-                       VersionFeature(),
-                       YttFeature()]
+_default_available_features = [CertsFeature(),
+                               CopyFeature(),
+                               CoreFeature(),
+                               DockerFeature(),
+                               FileFeature(),
+                               FixuidFeature(),
+                               GitFeature(),
+                               GitignoreFeature(),
+                               JinjaFeature(),
+                               JsonnetFeature(),
+                               PermissionsFeature(),
+                               RunFeature(),
+                               SmartcdFeature(),
+                               ShellFeature(),
+                               SymlinksFeature(),
+                               TraefikFeature(),
+                               VersionFeature(),
+                               YttFeature()]
+
+_available_features = list(_default_available_features)
 
 
 def load_plugins():
@@ -479,6 +481,9 @@ def reset():
 
     context.reset()
     config.reset()
+
+    global _available_features
+    _available_features = list(_default_available_features)
 
 
 def console_script():  # pragma: no cover
