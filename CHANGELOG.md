@@ -1,7 +1,7 @@
 History
 =======
 
-1.0.0-beta4 (unreleased)
+1.0.0-beta4 (2020-06-25)
 ------------------------
 
 - Remove existing file or directory when generating a new file ([#31](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/31))
