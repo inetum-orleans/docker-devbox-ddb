@@ -62,3 +62,16 @@ class TestFilesGenerated:
 
         assert os.path.exists(".gitignore")
         assert expect_gitignore('.gitignore', 'test.dev.yml.jinja', 'test.dev.yml', 'test.yml')
+
+
+    def test_directories_overriden(self, project_loader):
+        project_loader("directories-overriden")
+
+        assert os.path.isdir("test")
+
+        main(["configure"])
+
+        main(["activate"])
+
+        assert not os.path.isdir("test")
+        assert os.path.isfile("test")

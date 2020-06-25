@@ -2,6 +2,7 @@
 import fnmatch
 import os
 import re
+import shutil
 from pathlib import Path
 from typing import List, Union, Optional, Tuple
 
@@ -30,8 +31,12 @@ def write_if_different(file, data, read_mode='r', write_mode='w', log_source=Non
         write_encoding = "utf-8" if 'b' not in write_mode else None
 
         if os.path.exists(file):
-            with open(file, mode=read_mode, encoding=read_encoding, **kwargs) as read_file:
-                existing_data = read_file.read()
+            try:
+                with open(file, mode=read_mode, encoding=read_encoding, **kwargs) as read_file:
+                    existing_data = read_file.read()
+            except OSError:
+                shutil.rmtree(file)
+                existing_data = None
         else:
             existing_data = None
 

@@ -4,6 +4,7 @@ History
 1.0.0-beta4 (unreleased)
 ------------------------
 
+- Remove existing file or directory when generating a new file ([#31](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/31))
 - Docker: Fix missing `COMPOSE_PROJECT_NAME` and `COMPOSE_NETWORK_NAME` environment variables on ddb activate
 - Jsonnet: Fix a bug when multiple Virtualhost are defined on the same docker-compose service
 
