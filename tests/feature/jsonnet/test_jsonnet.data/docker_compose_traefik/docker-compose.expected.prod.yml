@@ -32,11 +32,11 @@ services:
     image: jboss/keycloak:8.0.1
     init: true
     labels:
+      traefik.http.routers.gli-biometrie-keycloak-tls.tls.certresolver: letsencrypt
       traefik.enable: "true"
       traefik.http.routers.gli-biometrie-keycloak-tls.rule: Host(`keycloak.biometrie.test`)
       traefik.http.routers.gli-biometrie-keycloak-tls.service: gli-biometrie-keycloak
       traefik.http.routers.gli-biometrie-keycloak-tls.tls: "true"
-      traefik.http.routers.gli-biometrie-keycloak-tls.tls.certresolver: letsencrypt
       traefik.http.routers.gli-biometrie-keycloak.rule: Host(`keycloak.biometrie.test`)
       traefik.http.routers.gli-biometrie-keycloak.service: gli-biometrie-keycloak
       traefik.http.services.gli-biometrie-keycloak.loadbalancer.server.port: '8080'
@@ -68,11 +68,11 @@ services:
     image: gfiorleans.azurecr.io/gli-biometrie/node
     init: true
     labels:
+      traefik.http.routers.gli-biometrie-tls.tls.certresolver: letsencrypt
       traefik.enable: "true"
       traefik.http.routers.gli-biometrie-tls.rule: Host(`biometrie.test`)
       traefik.http.routers.gli-biometrie-tls.service: gli-biometrie
       traefik.http.routers.gli-biometrie-tls.tls: "true"
-      traefik.http.routers.gli-biometrie-tls.tls.certresolver: letsencrypt
       traefik.http.routers.gli-biometrie.rule: Host(`biometrie.test`)
       traefik.http.routers.gli-biometrie.service: gli-biometrie
       traefik.http.services.gli-biometrie.loadbalancer.server.port: '8080'
@@ -103,11 +103,11 @@ services:
     image: gfiorleans.azurecr.io/gli-biometrie/web
     init: true
     labels:
+      traefik.http.routers.gli-biometrie-api-tls.tls.certresolver: letsencrypt
       traefik.enable: "true"
       traefik.http.routers.gli-biometrie-api-tls.rule: Host(`api.biometrie.test`)
       traefik.http.routers.gli-biometrie-api-tls.service: gli-biometrie-api
       traefik.http.routers.gli-biometrie-api-tls.tls: "true"
-      traefik.http.routers.gli-biometrie-api-tls.tls.certresolver: letsencrypt
       traefik.http.routers.gli-biometrie-api.rule: Host(`api.biometrie.test`)
       traefik.http.routers.gli-biometrie-api.service: gli-biometrie-api
       traefik.http.services.gli-biometrie-api.loadbalancer.server.port: '80'

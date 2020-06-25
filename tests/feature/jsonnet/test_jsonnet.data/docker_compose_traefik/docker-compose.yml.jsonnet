@@ -2,6 +2,7 @@ local ddb = import 'ddb.docker.libjsonnet';
 
 local user = "biometrie";
 local password = "biometrie";
+local certresolver = if ddb.env.is("ci") then "anothercertresolver" else null;
 
 ddb.Compose() {
 	"services": {
@@ -31,7 +32,7 @@ ddb.Compose() {
 				ddb.path.project + ":/workdir"
 			]
 		},
-		"keycloak":  ddb.Image("jboss/keycloak:8.0.1") + ddb.VirtualHost("8080", "keycloak.biometrie.test", "keycloak", certresolver=if ddb.env.is("prod") then "letsencrypt" else null) {
+		"keycloak":  ddb.Image("jboss/keycloak:8.0.1") + ddb.VirtualHost("8080", "keycloak.biometrie.test", "keycloak", certresolver=certresolver) {
 			"command": [
 				"-b 0.0.0.0 -Dkeycloak.import=/opt/jboss/keycloak/keycloak/realm-export.json"
 			],
@@ -81,7 +82,7 @@ ddb.Compose() {
 			],
 		},
 		"node": ddb.Build("node") + ddb.User()
-		    + ddb.VirtualHost("8080", "biometrie.test", certresolver=if ddb.env.is("prod") then "letsencrypt" else null)
+		    + ddb.VirtualHost("8080", "biometrie.test", certresolver=certresolver)
 		    + (if ddb.env.is("dev") then ddb.VirtualHost("3000", "gulp.biometrie.test", "gulp") else {})
 		    {
 			"volumes": [
@@ -98,7 +99,7 @@ ddb.Compose() {
 				ddb.path.project + ":/var/www/html:rw"
 			]
 		},
-		"web": ddb.Build("web") + ddb.VirtualHost("80", "api.biometrie.test", "api", certresolver=if ddb.env.is("prod") then "letsencrypt" else null) {
+		"web": ddb.Build("web") + ddb.VirtualHost("80", "api.biometrie.test", "api", certresolver=certresolver) {
 			"volumes": [
 				ddb.path.project + "/.docker/web/nginx.conf:/etc/nginx/conf.d/default.conf:rw",
 				ddb.path.project + ":/var/www/html:rw"
