@@ -46,8 +46,7 @@ class JsonnetAction(AbstractTemplateAction):
         else:
             ext = os.path.splitext(target)[-1]
             if ext.lower() in ['.yaml', '.yml']:
-                json_evaluated = self._clean_data(target, json.loads(evaluated))
-                evaluated = yaml.dump(json_evaluated, Dumper=yaml.SafeDumper)
+                evaluated = yaml.dump(json.loads(evaluated), Dumper=yaml.SafeDumper)
             yield evaluated, target
 
     @staticmethod
@@ -75,36 +74,3 @@ class JsonnetAction(AbstractTemplateAction):
             if len(first_line_splitted) > 1:
                 multiple_file_dir = first_line_splitted[-1].strip()
         return multiple_file_output, multiple_file_dir
-
-    def _clean_data(self, target: str, data: dict) -> dict:
-        """
-        Process the data and clean it if needed
-        :param target:
-        :param data:
-        :return:
-        """
-        if 'docker-compose.yml' in target or 'docker-compose.yaml' in target:
-            return self._clean_docker_compose(data)
-        return data
-
-    @staticmethod
-    def _clean_docker_compose(data: dict) -> dict:
-        """
-        Clean the content of the docker-compose
-        :param data:
-        :return:
-        """
-        services = data.get('services')
-        if services is None:
-            return data
-
-        for key in services:
-            networks = services[key].get('networks')
-            if networks is None:
-                continue
-            if isinstance(networks, list):
-                networks.sort()
-            services[key].update({'networks': sorted(tuple(set(networks)))})
-
-        data.update({'services': services})
-        return data
