@@ -18,6 +18,7 @@ from ...cache import global_cache
 from ...config import config
 from ...context import context
 from ...event import events
+from ...utils.file import force_remove
 
 BuildServiceDef = namedtuple("BuildServiceDef", "context dockerfile")
 
@@ -55,7 +56,6 @@ class CustomDockerfileParser(DockerfileParser):
     def entrypoint(self, value):
         """
         setter for final 'ENTRYPOINT' instruction in final build stage
-
         """
         entrypoint = None
         for insndesc in self.structure:
@@ -64,11 +64,62 @@ class CustomDockerfileParser(DockerfileParser):
             elif insndesc['instruction'] == 'ENTRYPOINT':
                 entrypoint = insndesc
 
-        new_entrypoint = 'ENTRYPOINT ' + value
-        if entrypoint:
-            self.add_lines_at(entrypoint, new_entrypoint, replace=True)
+        if value:
+            new_entrypoint = 'ENTRYPOINT ' + value
         else:
+            new_entrypoint = None
+
+        if entrypoint:
+            if new_entrypoint:
+                self.add_lines_at(entrypoint, new_entrypoint, replace=True)
+            else:
+                new_lines = list(self.lines)
+                new_lines.remove(entrypoint['content'])
+                self.lines = new_lines
+        elif new_entrypoint:
             self.add_lines(new_entrypoint)
+
+    @property
+    def cmd(self):
+        """
+        Determine the final CMD instruction, if any, in the final build stage.
+        CMDs from earlier stages are ignored.
+        :return: value of final stage CMD instruction
+        """
+        value = None
+        for insndesc in self.structure:
+            if insndesc['instruction'] == 'FROM':  # new stage, reset
+                value = None
+            elif insndesc['instruction'] == 'CMD':
+                value = insndesc['value']
+        return value
+
+    @cmd.setter
+    def cmd(self, value):
+        """
+        setter for final 'CMD' instruction in final build stage
+
+        """
+        cmd = None
+        for insndesc in self.structure:
+            if insndesc['instruction'] == 'FROM':  # new stage, reset
+                cmd = None
+            elif insndesc['instruction'] == 'CMD':
+                cmd = insndesc
+
+        if value:
+            new_cmd = 'CMD ' + value
+        else:
+            new_cmd = None
+        if cmd:
+            if new_cmd:
+                self.add_lines_at(cmd, new_cmd, replace=True)
+            else:
+                new_lines = list(self.lines)
+                new_lines.remove(cmd['content'])
+                self.lines = new_lines
+        elif new_cmd:
+            self.add_lines(new_cmd)
 
 
 class FixuidDockerComposeAction(Action):
@@ -79,6 +130,11 @@ class FixuidDockerComposeAction(Action):
 
     def __init__(self):
         self.docker_compose_config = dict()
+        self._dockerfile_lines = ("ADD fixuid.tar.gz /usr/local/bin",
+                                  "RUN chown root:root /usr/local/bin/fixuid && "
+                                  "chmod 4755 /usr/local/bin/fixuid && "
+                                  "mkdir -p /etc/fixuid",
+                                  "COPY fixuid.yml /etc/fixuid/config.yml")
 
     @property
     def event_bindings(self):
@@ -88,11 +144,33 @@ class FixuidDockerComposeAction(Action):
                 return (), {"service": service}
             return None
 
+        def file_found_processor(file: str):
+            if os.path.basename(file) == 'fixuid.yml':
+                dockerfile_filepath = os.path.join(os.path.dirname(file), 'Dockerfile')
+                service = self.find_fixuid_service(dockerfile_filepath)
+                if service:
+                    return (), {"service": service}
+            return None
+
+        def file_deleted_processor(file: str):
+            if os.path.basename(file) == 'fixuid.yml':
+                dockerfile_filepath = os.path.join(os.path.dirname(file), 'Dockerfile')
+                service = self.find_fixuid_service(dockerfile_filepath, include_missing_fixuid=True)
+                if service:
+                    return (), {"service": service}
+            return None
+
         return (
             events.docker.docker_compose_config,
             EventBinding(events.file.generated,
                          call=self.apply_fixuid,
-                         processor=file_generated_processor)
+                         processor=file_generated_processor),
+            EventBinding(events.file.found,
+                         call=self.apply_fixuid,
+                         processor=file_found_processor),
+            EventBinding(events.file.deleted,
+                         call=self.remove_fixuid,
+                         processor=file_deleted_processor)
         )
 
     @property
@@ -100,16 +178,22 @@ class FixuidDockerComposeAction(Action):
         return "fixuid:docker"
 
     @staticmethod
+    def _get_registry_data(image):
+        context.log.warning("Loading registry data id for image %s...", image)
+        client = docker.from_env()
+        registry_data = client.images.get_registry_data(image)
+        context.log.success("Id retrieved for image %s (%s)", image, registry_data.id)
+        return registry_data
+
+    @staticmethod
     def _load_image_attrs(image):
         registry_data_id_cache_key = "docker.image.name." + image + ".registry_data"
         registry_data_id = global_cache().get(registry_data_id_cache_key)
+        registry_data = None
         if not registry_data_id:
-            context.log.warning("Loading registry data id for image %s...", image)
-            client = docker.from_env()
-            registry_data = client.images.get_registry_data(image)
+            registry_data = FixuidDockerComposeAction._get_registry_data(image)
             registry_data_id = registry_data.id
             global_cache().set(registry_data_id_cache_key, registry_data_id)
-            context.log.success("Id retrieved for image %s (%s)", image, registry_data_id)
         else:
             context.log.notice("Id retrieved for image %s (%s) (from cache)", image, registry_data_id)
 
@@ -117,7 +201,8 @@ class FixuidDockerComposeAction(Action):
         image_attrs = global_cache().get(image_attrs_cache_key)
 
         if not image_attrs:
-            # TODO: registry_data peut etre None, a corriger.
+            if not registry_data:
+                registry_data = FixuidDockerComposeAction._get_registry_data(image)
             context.log.warning("Loading attributes for image %s...", image)
             pulled_image = registry_data.pull()
             image_attrs = pulled_image.attrs
@@ -135,8 +220,7 @@ class FixuidDockerComposeAction(Action):
                 return attrs['Config']
         return None
 
-    @staticmethod
-    def apply_fixuid(service: BuildServiceDef):
+    def apply_fixuid(self, service: BuildServiceDef):
         """
         Apply fixuid to given service
         """
@@ -146,12 +230,25 @@ class FixuidDockerComposeAction(Action):
                 with open(dockerfile_path, "ba+") as dockerfile_file:
                     parser = CustomDockerfileParser(fileobj=dockerfile_file)
 
-                    if FixuidDockerComposeAction._apply_fixuid_from_parser(parser, service):
+                    if FixuidDockerComposeAction._apply_fixuid_from_parser(self, parser, service):
                         context.log.success("Fixuid applied to %s",
                                             os.path.relpath(dockerfile_path, config.paths.project_home))
 
-    @staticmethod
-    def _apply_fixuid_from_parser(parser: CustomDockerfileParser, service: BuildServiceDef):
+    def remove_fixuid(self, service: BuildServiceDef):
+        """
+        Remove fixuid from given service
+        """
+        dockerfile_path = os.path.join(service.context, service.dockerfile)
+        if os.path.exists(dockerfile_path):
+            with tmp_chmod(dockerfile_path, '+w'):
+                with open(dockerfile_path, "ba+") as dockerfile_file:
+                    parser = CustomDockerfileParser(fileobj=dockerfile_file)
+
+                    if FixuidDockerComposeAction._remove_fixuid_from_parser(self, parser, service):
+                        context.log.success("Fixuid removed from %s",
+                                            os.path.relpath(dockerfile_path, config.paths.project_home))
+
+    def _apply_fixuid_from_parser(self, parser: CustomDockerfileParser, service: BuildServiceDef):
         entrypoint = parser.entrypoint
         cmd = parser.cmd
         # if entrypoint is defined in Dockerfile, we should not grab cmd from base image
@@ -173,29 +270,62 @@ class FixuidDockerComposeAction(Action):
         if not cmd:
             cmd = None
         if entrypoint:
-            parser.entrypoint = FixuidDockerComposeAction._sanitize_entrypoint(entrypoint)
+            parser.entrypoint = FixuidDockerComposeAction._add_fixuid_entrypoint(entrypoint)
         if cmd:
             parser.cmd = cmd
         target = copy_from_url(config.data["fixuid.url"],
                                service.context,
                                "fixuid.tar.gz")
         events.file.generated(source=None, target=target)
-        lines = ("ADD fixuid.tar.gz /usr/local/bin",
-                 "RUN chown root:root /usr/local/bin/fixuid && "
-                 "chmod 4755 /usr/local/bin/fixuid && "
-                 "mkdir -p /etc/fixuid",
-                 "COPY fixuid.yml /etc/fixuid/config.yml")
-        if "ADD fixuid.tar.gz /usr/local/bin\n" not in parser.lines:
+
+        if self._dockerfile_lines[0] + "\n" not in parser.lines:
             last_instruction_user = parser.get_last_instruction("USER")
             last_instruction_entrypoint = parser.get_last_instruction("ENTRYPOINT")
             if last_instruction_user:
-                parser.add_lines_at(last_instruction_user, *lines)
+                parser.add_lines_at(last_instruction_user, *self._dockerfile_lines)
             elif last_instruction_entrypoint:
-                parser.add_lines_at(last_instruction_entrypoint, *lines)
+                parser.add_lines_at(last_instruction_entrypoint, *self._dockerfile_lines)
             else:
-                parser.add_lines(*lines)
+                parser.add_lines(*self._dockerfile_lines)
             return True
         return False
+
+    def _remove_fixuid_from_parser(self, parser: CustomDockerfileParser, service: BuildServiceDef):
+        baseimage_config = FixuidDockerComposeAction._get_image_config(parser.baseimage)
+        image_entrypoint = None
+        if baseimage_config and 'Entrypoint' in baseimage_config:
+            image_entrypoint = json.dumps(baseimage_config['Entrypoint'])
+
+        image_cmd = None
+        if baseimage_config and 'Cmd' in baseimage_config:
+            image_cmd = json.dumps(baseimage_config['Cmd'])
+
+        if parser.entrypoint:
+            parser.entrypoint = FixuidDockerComposeAction._remove_fixuid_entrypoint(parser.entrypoint)
+
+        if parser.entrypoint == image_entrypoint:
+            parser.entrypoint = None
+
+        if parser.cmd == image_cmd:
+            parser.cmd = None
+
+        removed = False
+
+        fixuid_targz = os.path.join(service.context, "fixuid.tar.gz")
+        if os.path.exists(fixuid_targz):
+            force_remove(fixuid_targz)
+            removed = True
+
+        lines = list(parser.lines)
+        for dockerfile_line in self._dockerfile_lines:
+            if dockerfile_line + "\n" in lines:
+                lines.remove(dockerfile_line + "\n")
+                removed = True
+
+        if removed:
+            parser.lines = lines
+
+        return removed
 
     def execute(self, docker_compose_config: dict):
         """
@@ -203,20 +333,20 @@ class FixuidDockerComposeAction(Action):
         """
         self.docker_compose_config = docker_compose_config
 
-        for service in self.fixuid_services:
+        for service in self.get_fixuid_services():
             self.apply_fixuid(service)
 
-    def find_fixuid_service(self, filepath: str):
+    def find_fixuid_service(self, dockerfile_filepath: str, include_missing_fixuid=False):
         """
-        Find related fixuid service from filepath
+        Find related fixuid service from dockerfile filepath
         """
-        for service in self.fixuid_services:
-            if os.path.join(service.context, service.dockerfile) == os.path.abspath(filepath):
+        for service in self.get_fixuid_services(include_missing_fixuid):
+            if os.path.abspath(os.path.join(service.context, service.dockerfile)) == \
+                    os.path.abspath(dockerfile_filepath):
                 return service
         return None
 
-    @property
-    def fixuid_services(self) -> Iterable[BuildServiceDef]:
+    def get_fixuid_services(self, include_missing_fixuid=False) -> Iterable[BuildServiceDef]:
         """
         Services where fixuid.tar.gz is available in build context.
         """
@@ -234,14 +364,14 @@ class FixuidDockerComposeAction(Action):
             else:
                 continue
 
-            if not os.path.exists(os.path.join(build_context, "fixuid.yml")):
+            if not include_missing_fixuid and not os.path.exists(os.path.join(build_context, "fixuid.yml")):
                 continue
 
             dockerfile = Dotty(service).get("build.dockerfile", "Dockerfile")
             yield BuildServiceDef(build_context, dockerfile)
 
     @staticmethod
-    def _sanitize_entrypoint(entrypoint):
+    def _parse_entrypoint(entrypoint):
         as_list = False
         start_quote = ""
         end_quote = ""
@@ -256,7 +386,32 @@ class FixuidDockerComposeAction(Action):
             entrypoint = entrypoint_match.group(2)
             entrypoint_list = shlex.split(entrypoint)
 
-        entrypoint_list = ["fixuid", "-q"] + entrypoint_list
+        return entrypoint_list, as_list, start_quote, end_quote
+
+    @staticmethod
+    def _add_fixuid_entrypoint(entrypoint):
+        entrypoint_list, as_list, start_quote, end_quote = \
+            FixuidDockerComposeAction._parse_entrypoint(entrypoint)
+
+        fixuid_entrypoint_prefix = ["fixuid", "-q"]
+        if entrypoint_list[:len(fixuid_entrypoint_prefix)] != fixuid_entrypoint_prefix:
+            entrypoint_list = ["fixuid", "-q"] + entrypoint_list
+        if as_list:
+            entrypoint = json.dumps(entrypoint_list)
+        else:
+            entrypoint = " ".join(entrypoint_list)
+            entrypoint = "%s%s%s" % (start_quote, entrypoint, end_quote)
+
+        return entrypoint
+
+    @staticmethod
+    def _remove_fixuid_entrypoint(entrypoint):
+        entrypoint_list, as_list, start_quote, end_quote = \
+            FixuidDockerComposeAction._parse_entrypoint(entrypoint)
+
+        fixuid_entrypoint_prefix = ["fixuid", "-q"]
+        if entrypoint_list[:len(fixuid_entrypoint_prefix)] == fixuid_entrypoint_prefix:
+            entrypoint_list = entrypoint_list[len(fixuid_entrypoint_prefix):]
         if as_list:
             entrypoint = json.dumps(entrypoint_list)
         else:

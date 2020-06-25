@@ -4,7 +4,8 @@ import docker
 import pytest
 import yaml
 
-from ddb.__main__ import load_registered_features, register_default_caches
+from ddb.__main__ import load_registered_features, register_default_caches, register_actions_in_event_bus
+from ddb.event import events
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.fixuid import FixuidFeature, FixuidDockerComposeAction
@@ -55,8 +56,6 @@ class TestFixuidFeature:
         action = FixuidDockerComposeAction()
         action.execute(docker_compose_config=config)
 
-        assert not os.path.exists("Dockerfile")
-
         with open(os.path.join("docker", "Dockerfile.expected"), "r") as f:
             expected = f.read()
         with open(os.path.join("docker", "Dockerfile"), "r") as f:
@@ -72,3 +71,36 @@ class TestFixuidFeature:
             client = docker.from_env()
             image = client.images.build(path="docker")
             assert image
+
+    def test_from_mysql_fixuid_removed(self, project_loader):
+        project_loader("from-mysql-fixuid-removed")
+        register_default_caches()
+
+        features.register(FixuidFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
+
+        with open('docker-compose.yml', 'r') as config_file:
+            config = yaml.load(config_file, yaml.SafeLoader)
+
+        events.docker.docker_compose_config(config)
+        events.file.found(os.path.join("docker", "fixuid.yml"))
+
+        with open(os.path.join("docker", "Dockerfile.expected"), "r") as f:
+            expected = f.read()
+        with open(os.path.join("docker", "Dockerfile"), "r") as f:
+            content = f.read()
+        assert content == expected
+
+        assert os.path.exists(os.path.join("docker", "fixuid.tar.gz"))
+
+        os.remove(os.path.join("docker", "fixuid.yml"))
+        events.file.deleted(os.path.join("docker", "fixuid.yml"))
+
+        with open(os.path.join("docker", "Dockerfile.removed.expected"), "r") as f:
+            expected = f.read()
+        with open(os.path.join("docker", "Dockerfile"), "r") as f:
+            content = f.read()
+        assert content == expected
+
+        assert not os.path.exists(os.path.join("docker", "fixuid.tar.gz"))

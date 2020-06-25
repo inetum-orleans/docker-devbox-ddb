@@ -4,7 +4,8 @@ History
 1.0.0-beta5 (unreleased)
 ------------------------
 
-- Nothing changed yet.
+- Fixuid: Add Dockerfile generation when fixuid.yml file is created or deleted
+- Docker: Add docker.reverse_proxy.certresolver setting to setup traefik certresolver globally
 
 
 1.0.0-beta4 (2020-06-25)
