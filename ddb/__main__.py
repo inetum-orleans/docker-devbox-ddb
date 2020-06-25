@@ -482,7 +482,7 @@ def reset():
     context.reset()
     config.reset()
 
-    global _available_features
+    global _available_features  # pylint:disable=global-statement
     _available_features = list(_default_available_features)
 
 
