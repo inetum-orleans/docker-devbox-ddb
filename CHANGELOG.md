@@ -4,13 +4,13 @@ History
 1.0.0-beta4 (unreleased)
 ------------------------
 
-- Nothing changed yet.
+- Feature Jsonnet: Fix a bug when multiple Virtualhost are defined on the same docker-compose service
 
 
 1.0.0-beta3 (2020-06-23)
 ------------------------
 
-- Shell : addition of aliases management
+- Shell: Add aliases management
 
 
 1.0.0-beta2 (2020-06-08)

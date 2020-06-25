@@ -131,9 +131,9 @@ local Compose(network_names=_docker_reverse_proxy_network_names, version="3.7") 
 	"volumes": Volumes(self.services)
 };
 
-local TraefikCertLabels(hostname, service_name=null, certresolver=null) = {
-    [if certresolver == null then "ddb.emit.certs:generate"]: hostname,
-    [if (certresolver != null && service_name != null) then "traefik.http.routers." + service_name + "-tls.tls.certresolver"]: certresolver
+local TraefikCertLabels(hostname, service_name, certresolver=null) = {
+    [if certresolver == null then "ddb.emit.certs:generate:" + service_name]: hostname,
+    [if certresolver != null then "traefik.http.routers." + service_name + "-tls.tls.certresolver"]: certresolver
 };
 
 local TraefikLabels(port, hostname, name=null, certresolver=null) = TraefikCertLabels(hostname, std.join("-", std.prune([_core_project_name, name])), certresolver) + {
@@ -146,13 +146,16 @@ local TraefikLabels(port, hostname, name=null, certresolver=null) = TraefikCertL
     ["traefik.http.services." + std.join("-", std.prune([_core_project_name, name])) + ".loadbalancer.server.port"]: port
 };
 
-local TraefikVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id, certresolver=null) = {
+local TraefikVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id, certresolver=null) =
+  local vh = {
     labels +: TraefikLabels(port, hostname, name, certresolver),
     networks +: [
         "default",
         network_id
     ]
-};
+  };
+
+  vh + {networks: std.uniq(vh.networks)};
 
 local NoVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id, certresolver=null) = {};
 

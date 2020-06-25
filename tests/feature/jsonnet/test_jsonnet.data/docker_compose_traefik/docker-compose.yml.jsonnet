@@ -80,7 +80,10 @@ ddb.Compose() {
 			    "16036:636"
 			],
 		},
-		"node": ddb.Build("node") + ddb.User() + ddb.VirtualHost("8080", "biometrie.test", certresolver=if ddb.env.is("prod") then "letsencrypt" else null) {
+		"node": ddb.Build("node") + ddb.User()
+		    + ddb.VirtualHost("8080", "biometrie.test", certresolver=if ddb.env.is("prod") then "letsencrypt" else null)
+		    + (if ddb.env.is("dev") then ddb.VirtualHost("3000", "gulp.biometrie.test", "gulp") else {})
+		    {
 			"volumes": [
 				ddb.path.project + ":/app:rw",
 				"node-cache:/home/node/.cache:rw",
