@@ -4,7 +4,8 @@ History
 1.0.0-beta4 (unreleased)
 ------------------------
 
-- Feature Jsonnet: Fix a bug when multiple Virtualhost are defined on the same docker-compose service
+- Docker: Fix missing `COMPOSE_PROJECT_NAME` and `COMPOSE_NETWORK_NAME` environment variables on ddb activate
+- Jsonnet: Fix a bug when multiple Virtualhost are defined on the same docker-compose service
 
 
 1.0.0-beta3 (2020-06-23)
