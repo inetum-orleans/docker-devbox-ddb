@@ -2,7 +2,6 @@
 
 from marshmallow import fields, Schema
 
-from ddb.config import config
 from ddb.feature.schema import FeatureSchema
 
 
@@ -48,12 +47,6 @@ class DebugSchema(Schema):
     host = fields.String(required=True, default=None)  # default is set in feature _configure_defaults
 
 
-def _default_restart_policy():
-    if config.data.get("core.env.current") == "dev":
-        return "no"
-    return "unless-stopped"
-
-
 class DockerSchema(FeatureSchema):
     """
     Docker schema.
@@ -61,7 +54,8 @@ class DockerSchema(FeatureSchema):
     user = fields.Nested(UserSchema(), required=True, default=UserSchema())
     ip = fields.String(required=True, default=None)  # default is set in feature _configure_defaults
     debug = fields.Nested(DebugSchema(), default=DebugSchema())
-    restart_policy = fields.String(required=True, default=_default_restart_policy)
+    restart_policy = fields.String(required=False, allow_none=True,
+                                   default=None)  # default is set in feature _configure_defaults
     port_prefix = fields.Integer(required=False)  # default is set in feature _configure_defaults
     registry = fields.Nested(RegistrySchema(), required=True, default=RegistrySchema())
     interface = fields.String(required=True, default="docker0")
