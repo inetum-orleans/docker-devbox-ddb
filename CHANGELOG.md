@@ -6,6 +6,7 @@ History
 
 - Fixuid: Add Dockerfile generation when fixuid.yml file is created or deleted
 - Docker: Add docker.reverse_proxy.certresolver setting to setup traefik certresolver globally
+- Jsonnet : Add optional routers_rule parameter to `ddb.VirtualHost` function in order to override the default `Host(hostname)` 
 
 
 1.0.0-beta4 (2020-06-25)
