@@ -7,9 +7,9 @@ History
 - Fixuid: Add Dockerfile generation when fixuid.yml file is created or deleted
 - Docker: Add docker.reverse_proxy.certresolver setting to setup traefik certresolver globally
 - Docker: Set `docker.restart_policy` default value to `unless-stopped` if `core.env.current` is different of `dev`
-- Jsonnet : Add optional router_rule parameter to `ddb.VirtualHost` function in order to override the default `Host(hostname)`.
+- Jsonnet: Add optional `router_rule` parameter to `ddb.VirtualHost` function in order to override the default `Host(hostname)`.
 For traefik, available values in the [official documentation](https://docs.traefik.io/v2.0/routing/routers/#rule)
-
+- Templates: Keep the file that match template target name when it has been modified since latest rendering ([#39](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/39))
 
 1.0.0-beta4 (2020-06-25)
 ------------------------

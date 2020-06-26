@@ -39,3 +39,9 @@ class SymlinksAction(AbstractTemplateAction):
             context.log.success("%s -> %s", template, target)
 
             yield True, target
+
+    def _target_is_modified(self, template: str, target: str) -> bool:
+        if not os.path.islink(target):
+            return True
+        reltemplate = os.path.relpath(template, os.path.dirname(target))
+        return os.readlink(target) != reltemplate

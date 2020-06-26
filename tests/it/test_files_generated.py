@@ -63,7 +63,6 @@ class TestFilesGenerated:
         assert os.path.exists(".gitignore")
         assert expect_gitignore('.gitignore', 'test.dev.yml.jinja', 'test.dev.yml', 'test.yml')
 
-
     def test_directories_overriden(self, project_loader):
         project_loader("directories-overriden")
 
@@ -75,3 +74,40 @@ class TestFilesGenerated:
 
         assert not os.path.isdir("test")
         assert os.path.isfile("test")
+
+    def test_remove_target_on_source_removed(self, project_loader):
+        project_loader("remove_target_on_source_removed")
+
+        main(["configure"])
+
+        main(["activate"])
+
+        assert os.path.islink("test")
+
+        os.remove("test.dev")
+        os.remove("test2.jinja")
+
+        main(["configure"])
+
+        assert not os.path.exists("test")
+        assert not os.path.exists("test2")
+
+    def test_do_not_remove_modified_target_on_source_removed_symlink(self, project_loader):
+        project_loader("remove_target_on_source_removed")
+
+        main(["configure"])
+
+        assert os.path.islink("test")
+        assert os.path.isfile("test2")
+
+        os.remove("test")
+        os.remove("test.dev")
+        os.remove("test2.jinja")
+
+        with open("test", "w") as fp:
+            fp.write("test")
+
+        main(["configure"])
+
+        assert os.path.exists("test")
+        assert not os.path.exists("test2")
