@@ -49,6 +49,7 @@ class DockerFeature(Feature):
         self._configure_defaults_port_prefix(feature_config)
         self._configure_defaults_compose_project_name(feature_config)
         self._configure_defaults_build_image_tag(feature_config)
+        self._configure_defaults_restart_policy(feature_config)
 
     @staticmethod
     def _configure_defaults_user(feature_config):
@@ -166,3 +167,12 @@ class DockerFeature(Feature):
             else:
                 build_image_tag = branch
             feature_config['build_image_tag'] = build_image_tag
+
+    @staticmethod
+    def _configure_defaults_restart_policy(feature_config):
+        restart_policy = feature_config.get('restart_policy')
+        if restart_policy is None:
+            if config.data.get("core.env.current") == "dev":
+                feature_config['restart_policy'] = 'no'
+            else:
+                feature_config['restart_policy'] = 'unless-stopped'

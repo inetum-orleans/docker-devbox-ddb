@@ -54,7 +54,8 @@ class DockerSchema(FeatureSchema):
     user = fields.Nested(UserSchema(), required=True, default=UserSchema())
     ip = fields.String(required=True, default=None)  # default is set in feature _configure_defaults
     debug = fields.Nested(DebugSchema(), default=DebugSchema())
-    restart_policy = fields.String(required=True, default="no")
+    restart_policy = fields.String(required=False, allow_none=True,
+                                   default=None)  # default is set in feature _configure_defaults
     port_prefix = fields.Integer(required=False)  # default is set in feature _configure_defaults
     registry = fields.Nested(RegistrySchema(), required=True, default=RegistrySchema())
     interface = fields.String(required=True, default="docker0")

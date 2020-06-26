@@ -5,6 +5,7 @@ core:
     name: gli-biometrie
 docker:
   cache_from_image: True
+  restart_policy: "no"
   registry:
     name: "gfiorleans.azurecr.io"
     repository: "gli-biometrie"
