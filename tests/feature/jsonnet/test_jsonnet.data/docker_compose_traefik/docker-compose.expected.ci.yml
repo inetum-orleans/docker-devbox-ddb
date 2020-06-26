@@ -130,10 +130,10 @@ services:
     labels:
       traefik.http.routers.gli-biometrie-api-tls.tls.certresolver: anothercertresolver
       traefik.enable: "true"
-      traefik.http.routers.gli-biometrie-api-tls.rule: Host(`api.biometrie.test`)
+      traefik.http.routers.gli-biometrie-api-tls.rule: HostRegexp(`traefik.io`, `{subdomain:[a-z]+}.traefik.io`, ...)
       traefik.http.routers.gli-biometrie-api-tls.service: gli-biometrie-api
       traefik.http.routers.gli-biometrie-api-tls.tls: "true"
-      traefik.http.routers.gli-biometrie-api.rule: Host(`api.biometrie.test`)
+      traefik.http.routers.gli-biometrie-api.rule: HostRegexp(`traefik.io`, `{subdomain:[a-z]+}.traefik.io`, ...)
       traefik.http.routers.gli-biometrie-api.service: gli-biometrie-api
       traefik.http.services.gli-biometrie-api.loadbalancer.server.port: '80'
     networks:
