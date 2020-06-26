@@ -90,7 +90,6 @@ local Volumes(services) = {
         )
 };
 
-//
 local BinaryOptionsLabels(name, options, options_condition = null, index = null) = {
     ["ddb.emit.docker:binary[" + name + "](options)" + (if index != null then "(c" + index + ")" else "")]: options,
     [if options_condition != null then "ddb.emit.docker:binary[" + name + "](options_condition)" + (if index != null then "(c" + index + ")" else "")]: options_condition
@@ -138,19 +137,27 @@ local TraefikCertLabels(hostname, service_name, certresolver=null) = {
     [if (certresolver == null && _docker_reverse_proxy_certresolver == null) then "ddb.emit.certs:generate:" + service_name]: hostname,
 };
 
-local TraefikLabels(port, hostname, name=null, certresolver=null) = TraefikCertLabels(hostname, std.join("-", std.prune([_core_project_name, name])), certresolver) + {
-    "traefik.enable": "true",
-    ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + "-tls.rule"]: "Host(`" + hostname + "`)",
-    ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + "-tls.service"]: std.join("-", std.prune([_core_project_name, name])),
-    ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + "-tls.tls"]: "true",
-    ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + ".rule"]: "Host(`" + hostname + "`)",
-    ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + ".service"]: std.join("-", std.prune([_core_project_name, name])),
-    ["traefik.http.services." + std.join("-", std.prune([_core_project_name, name])) + ".loadbalancer.server.port"]: port
+local TraefikRoutersRuleLabels(hostname, service_name, routers_rule=null) = {
+    [if routers_rule == null then "traefik.http.routers." + service_name + ".rule"]: "Host(`" + hostname + "`)",
+    [if routers_rule == null then "traefik.http.routers." + service_name + "-tls.rule"]: "Host(`" + hostname + "`)",
+    [if routers_rule != null then "traefik.http.routers." + service_name + ".rule"]: routers_rule,
+    [if routers_rule != null then "traefik.http.routers." + service_name + "-tls.rule"]: routers_rule,
 };
 
-local TraefikVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id, certresolver=null) =
+local TraefikLabels(port, hostname, name=null, certresolver=null, routers_rule=null) =
+{
+    "traefik.enable": "true",
+    ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + ".service"]: std.join("-", std.prune([_core_project_name, name])),
+    ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + "-tls.service"]: std.join("-", std.prune([_core_project_name, name])),
+    ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + "-tls.tls"]: "true",
+    ["traefik.http.services." + std.join("-", std.prune([_core_project_name, name])) + ".loadbalancer.server.port"]: port
+}
++ TraefikCertLabels(hostname, std.join("-", std.prune([_core_project_name, name])), certresolver)
++ TraefikRoutersRuleLabels(hostname, std.join("-", std.prune([_core_project_name, name])), routers_rule);
+
+local TraefikVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id, certresolver=null, routers_rule=null) =
   local vh = {
-    labels +: TraefikLabels(port, hostname, name, certresolver),
+    labels +: TraefikLabels(port, hostname, name, certresolver, routers_rule),
     networks +: [
         "default",
         network_id
@@ -159,7 +166,7 @@ local TraefikVirtualHost(port, hostname, name=null, network_id=_docker_reverse_p
 
   vh + {networks: std.uniq(vh.networks)};
 
-local NoVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id, certresolver=null) = {};
+local NoVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id, certresolver=null, routers_rule=null) = {};
 
 local VirtualHost = if _docker_reverse_proxy_type == "traefik" then TraefikVirtualHost else NoVirtualHost;
 

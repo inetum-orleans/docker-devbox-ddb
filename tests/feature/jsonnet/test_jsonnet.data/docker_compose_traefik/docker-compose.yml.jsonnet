@@ -3,6 +3,7 @@ local ddb = import 'ddb.docker.libjsonnet';
 local user = "biometrie";
 local password = "biometrie";
 local certresolver = if ddb.env.is("ci") then "anothercertresolver" else null;
+local routers_rule = if ddb.env.is("ci") then "HostRegexp(`traefik.io`, `{subdomain:[a-z]+}.traefik.io`, ...)" else null;
 
 ddb.Compose() {
 	"services": {
@@ -99,7 +100,7 @@ ddb.Compose() {
 				ddb.path.project + ":/var/www/html:rw"
 			]
 		},
-		"web": ddb.Build("web") + ddb.VirtualHost("80", "api.biometrie.test", "api", certresolver=certresolver) {
+		"web": ddb.Build("web") + ddb.VirtualHost("80", "api.biometrie.test", "api", certresolver=certresolver, routers_rule=routers_rule) {
 			"volumes": [
 				ddb.path.project + "/.docker/web/nginx.conf:/etc/nginx/conf.d/default.conf:rw",
 				ddb.path.project + ":/var/www/html:rw"
