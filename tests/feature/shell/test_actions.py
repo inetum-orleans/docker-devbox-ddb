@@ -187,11 +187,14 @@ class ActivateActionBase(ABC):
 
         main(["configure"])
 
-        assert os.path.exists(os.path.join("bin", "dc"))
-
-        with open(os.path.join("bin", "dc"), 'r') as f:
-            content = f.read()
-            assert 'docker-compose "$@"' in content
+        if os.name == 'nt':
+            assert os.path.exists(os.path.join("bin", "dc.bat"))
+            # TODO: Check the content of the file with an assertion, and test the feature behavior on windows
+        else:
+            assert os.path.exists(os.path.join("bin", "dc"))
+            with open(os.path.join("bin", "dc"), 'r') as f:
+                content = f.read()
+                assert 'docker-compose "$@"' in content
 
 
 class TestBashActivateAction(ActivateActionBase):
