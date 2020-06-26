@@ -99,3 +99,35 @@ class TestSymlinksAction:
         assert os.path.exists(os.path.join('subdirectory', 'test.yml'))
 
         assert not os.path.islink('no.yml')
+
+    def test_project_many_dev(self, project_loader):
+        project_loader("project_many_dev")
+
+        features.register(CoreFeature())
+        features.register(FileFeature())
+        features.register(SymlinksFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
+
+        action = FileWalkAction()
+        action.initialize()
+        action.execute()
+
+        assert os.path.islink('test.yml')
+        assert os.readlink('test.yml') == 'test.dev.yml'
+
+    def test_project_many_prod(self, project_loader):
+        project_loader("project_many_prod")
+
+        features.register(CoreFeature())
+        features.register(FileFeature())
+        features.register(SymlinksFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
+
+        action = FileWalkAction()
+        action.initialize()
+        action.execute()
+
+        assert os.path.islink('test.yml')
+        assert os.readlink('test.yml') == 'test.prod.yml'
