@@ -1,7 +1,7 @@
 History
 =======
 
-1.0.0-beta5 (unreleased)
+1.0.0-beta5 (2020-06-26)
 ------------------------
 
 - Fixuid: Add Dockerfile generation when fixuid.yml file is created or deleted
