@@ -178,31 +178,30 @@ class CmdShellIntegration(ShellIntegration):
         return True
 
     def create_binary_shim(self, shims_path: str, binary: Binary):
-        os.makedirs(shims_path, exist_ok=True)
-        shim = os.path.join(os.path.normpath(shims_path), binary.name + '.bat')
-        commands = ["@echo off", "REM ddb:shim", "SHIFT"]
-        commands.append("set command=(ddb run {} \"%*\")".format(binary.name))
-        commands.append("%command%>cmd.txt")
-        commands.append("set /p execution=<cmd.txt")
-        commands.append("del cmd.txt")
-        commands.append("%execution% \"%*\"")
-        data = '\n'.join(commands) + '\n'
-        written = write_if_different(shim, data, newline="\n")
-
-        chmod(shim, '+x', logging=False)
-        return written, shim
+        commands = [
+            "set command=(ddb run {} \"%*\")".format(binary.name),
+            "%command%>cmd.txt",
+            "set /p execution=<cmd.txt",
+            "del cmd.txt",
+            "%execution% \"%*\""
+        ]
+        return self._write_shim(shims_path, binary.name, 'binary', commands)
 
     def create_alias_binary_shim(self, shims_path: str, binary: Binary):
+        return self._write_shim(shims_path, binary.name, 'alias', binary.command())
+
+    @staticmethod
+    def _write_shim(shims_path: str, shim_name: str, shim_type: str, command: Iterable[str]) -> Tuple[bool, str]:
+        """
+        Generate the shim file
+        :return:
+        """
         os.makedirs(shims_path, exist_ok=True)
-        shim = os.path.join(os.path.normpath(shims_path), binary.name + '.bat')
-        commands = ["@echo off", "REM ddb:shim", "SHIFT"]
-        commands.append("set command=({} \"%*\")".format(binary.name))
-        commands.append("%command%>cmd.txt")
-        commands.append("set /p execution=<cmd.txt")
-        commands.append("del cmd.txt")
-        commands.append("%execution% \"%*\"")
-        data = '\n'.join(commands) + '\n'
-        written = write_if_different(shim, data, newline="\n")
+        shim = os.path.join(os.path.normpath(shims_path), shim_name + '.bat')
+
+        content = '\n'.join(["@echo off", "REM ddb:shim:" + shim_type, "SHIFT", '\n'.join(command)]) + "\n"
+
+        written = write_if_different(shim, content, newline="\n")
 
         chmod(shim, '+x', logging=False)
         return written, shim

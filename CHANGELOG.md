@@ -4,8 +4,7 @@ History
 1.0.0-beta6 (unreleased)
 ------------------------
 
-- Nothing changed yet.
-
+- Windows Shell : Correction of alias generation
 
 1.0.0-beta5 (2020-06-26)
 ------------------------
