@@ -146,7 +146,6 @@ local TraefikRoutersRuleLabels(hostname, service_name, router_rule=null) = {
 
 local TraefikForceHttpsLabels(hostname, service_name, force_https=false) = {
     [if force_https == true then "traefik.http.routers." + service_name + ".middlewares"]: service_name + "-redirect-to-https",
-    [if force_https == true then "traefik.http.middlewares." + service_name + "-redirect-to-https.redirectscheme.permanent"]: true,
     [if force_https == true then "traefik.http.middlewares." + service_name + "-redirect-to-https.redirectscheme.scheme"]: "https",
 };
 
