@@ -144,7 +144,12 @@ local TraefikRoutersRuleLabels(hostname, service_name, router_rule=null) = {
     [if router_rule != null then "traefik.http.routers." + service_name + "-tls.rule"]: router_rule,
 };
 
-local TraefikLabels(port, hostname, name=null, certresolver=null, router_rule=null) =
+local TraefikForceHttpsLabels(hostname, service_name, force_https=false) = {
+    [if force_https == true then "traefik.http.routers." + service_name + ".middlewares"]: service_name + "-redirect-to-https",
+    [if force_https == true then "traefik.http.middlewares." + service_name + "-redirect-to-https.redirectscheme.scheme"]: "https",
+};
+
+local TraefikLabels(port, hostname, name=null, certresolver=null, router_rule=null, force_https=false) =
 {
     "traefik.enable": "true",
     ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + ".service"]: std.join("-", std.prune([_core_project_name, name])),
@@ -153,11 +158,12 @@ local TraefikLabels(port, hostname, name=null, certresolver=null, router_rule=nu
     ["traefik.http.services." + std.join("-", std.prune([_core_project_name, name])) + ".loadbalancer.server.port"]: port
 }
 + TraefikCertLabels(hostname, std.join("-", std.prune([_core_project_name, name])), certresolver)
-+ TraefikRoutersRuleLabels(hostname, std.join("-", std.prune([_core_project_name, name])), router_rule);
++ TraefikRoutersRuleLabels(hostname, std.join("-", std.prune([_core_project_name, name])), router_rule)
++ TraefikForceHttpsLabels(hostname, std.join("-", std.prune([_core_project_name, name])), force_https);
 
-local TraefikVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id, certresolver=null, router_rule=null) =
+local TraefikVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id, certresolver=null, router_rule=null, force_https=false) =
   local vh = {
-    labels +: TraefikLabels(port, hostname, name, certresolver, router_rule),
+    labels +: TraefikLabels(port, hostname, name, certresolver, router_rule, force_https),
     networks +: [
         "default",
         network_id
@@ -166,7 +172,7 @@ local TraefikVirtualHost(port, hostname, name=null, network_id=_docker_reverse_p
 
   vh + {networks: std.uniq(vh.networks)};
 
-local NoVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id, certresolver=null, router_rule=null) = {};
+local NoVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id, certresolver=null, router_rule=null, force_https) = {};
 
 local VirtualHost = if _docker_reverse_proxy_type == "traefik" then TraefikVirtualHost else NoVirtualHost;
 
