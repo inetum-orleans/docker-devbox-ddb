@@ -1,0 +1,7 @@
+core:
+  project:
+    name: gli-biometrie
+docker:
+  registry:
+    name: "gfiorleans.azurecr.io"
+    repository: "gli-biometrie"
