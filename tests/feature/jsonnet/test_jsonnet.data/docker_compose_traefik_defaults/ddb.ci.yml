@@ -1,0 +1,11 @@
+core:
+  env:
+    current: ci
+  project:
+    name: defaults-project
+docker:
+  cache_from_image: True
+  restart_policy: "no"
+  registry:
+    name: "gfiorleans.azurecr.io"
+    repository: "defaults-project"

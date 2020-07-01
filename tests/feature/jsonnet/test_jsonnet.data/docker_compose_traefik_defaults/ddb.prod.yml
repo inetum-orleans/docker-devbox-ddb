@@ -1,0 +1,12 @@
+core:
+  env:
+    current: prod
+  project:
+    name: defaults-project
+docker:
+  registry:
+    name: "gfiorleans.azurecr.io"
+    repository: "defaults-project"
+  reverse_proxy:
+    certresolver: "letsencrypt"
+    redirect_to_https: true

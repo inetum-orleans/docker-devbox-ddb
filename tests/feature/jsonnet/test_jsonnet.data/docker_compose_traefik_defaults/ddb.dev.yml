@@ -1,0 +1,7 @@
+core:
+  project:
+    name: defaults-project
+docker:
+  registry:
+    name: "gfiorleans.azurecr.io"
+    repository: "defaults-project"

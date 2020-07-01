@@ -1,0 +1,31 @@
+version: '3.7'
+services:
+  web:
+    build:
+      context: .docker/web
+    image: gfiorleans.azurecr.io/defaults-project/web
+    init: true
+    labels:
+      traefik.enable: "true"
+      traefik.http.middlewares.defaults-project-redirect-to-https.redirectscheme.scheme: https
+      traefik.http.routers.defaults-project.middlewares: defaults-project-redirect-to-https
+      traefik.http.routers.defaults-project-tls.rule: Host(`web.domain.tld`)
+      traefik.http.routers.defaults-project-tls.service: defaults-project
+      traefik.http.routers.defaults-project-tls.tls: "true"
+      traefik.http.routers.defaults-project.rule: Host(`web.domain.tld`)
+      traefik.http.routers.defaults-project.service: defaults-project
+      traefik.http.services.defaults-project.loadbalancer.server.port: '80'
+      traefik.http.routers.defaults-project-tls.tls.certresolver: letsencrypt
+    networks:
+      - default
+      - reverse-proxy
+    restart: "unless-stopped"
+    volumes:
+      - %ddb.path.project%/.docker/web/nginx.conf:/etc/nginx/conf.d/default.conf:rw
+      - %ddb.path.project%:/var/www/html:rw
+networks:
+  reverse-proxy:
+    external: true
+    name: reverse-proxy
+volumes: {}
+

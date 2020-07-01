@@ -4,7 +4,7 @@ local user = "biometrie";
 local password = "biometrie";
 local certresolver = if ddb.env.is("ci") then "anothercertresolver" else null;
 local router_rule = if ddb.env.is("ci") then "HostRegexp(`traefik.io`, `{subdomain:[a-z]+}.traefik.io`, ...)" else null;
-local force_https = if ddb.env.is("prod") then true else false;
+local redirect_to_https = if ddb.env.is("prod") then true else false;
 
 ddb.Compose() {
 	"services": {
@@ -101,7 +101,7 @@ ddb.Compose() {
 				ddb.path.project + ":/var/www/html:rw"
 			]
 		},
-		"web": ddb.Build("web") + ddb.VirtualHost("80", "api.biometrie.test", "api", certresolver=certresolver, router_rule=router_rule, force_https=force_https) {
+		"web": ddb.Build("web") + ddb.VirtualHost("80", "api.biometrie.test", "api", certresolver=certresolver, router_rule=router_rule, redirect_to_https=redirect_to_https) {
 			"volumes": [
 				ddb.path.project + "/.docker/web/nginx.conf:/etc/nginx/conf.d/default.conf:rw",
 				ddb.path.project + ":/var/www/html:rw"

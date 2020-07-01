@@ -5,7 +5,7 @@ History
 ------------------------
 
 - Windows Shell : Correction of alias generation
-- Jsonnet : Addition of force_https to ddb.VirtualHost in order to automatically redirect http request to https
+- Jsonnet : Addition of redirect_to_https to ddb.VirtualHost in order to automatically redirect http request to https
 
 1.0.0-beta5 (2020-06-26)
 ------------------------
