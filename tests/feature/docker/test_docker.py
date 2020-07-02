@@ -1,12 +1,18 @@
 import os
+import shutil
 
 from ddb.__main__ import load_registered_features, register_actions_in_event_bus
+from ddb.action import actions
 from ddb.binary import binaries
+from ddb.config import config
 from ddb.event import bus
 from ddb.feature import features
+from ddb.feature.certs import CertsFeature
 from ddb.feature.core import CoreFeature
 from ddb.feature.docker import DockerFeature, EmitDockerComposeConfigAction
+from ddb.feature.traefik import TraefikFeature
 from ddb.utils.process import effective_command
+from tests.utilstest import setup_cfssl
 
 
 class TestDockerFeature:
@@ -16,7 +22,7 @@ class TestDockerFeature:
         features.register(DockerFeature())
         load_registered_features()
 
-        action = EmitDockerComposeConfigAction()
+        action = actions.get('docker:emit-docker-compose-config')  # type:EmitDockerComposeConfigAction
         action.execute()
 
     def test_empty_project_with_core(self, project_loader):
@@ -26,7 +32,7 @@ class TestDockerFeature:
         features.register(DockerFeature())
         load_registered_features()
 
-        action = EmitDockerComposeConfigAction()
+        action = actions.get('docker:emit-docker-compose-config')  # type:EmitDockerComposeConfigAction
         action.execute()
 
     def test_ubuntu(self, project_loader):
@@ -42,7 +48,7 @@ class TestDockerFeature:
 
         bus.on("docker:docker-compose-config", listener)
 
-        action = EmitDockerComposeConfigAction()
+        action = actions.get('docker:emit-docker-compose-config')  # type:EmitDockerComposeConfigAction
         action.execute()
 
         assert len(custom_event_listeners) == 1
@@ -56,12 +62,12 @@ class TestDockerFeature:
 
         custom_event_listeners = []
 
-        def listener(data, docker_compose_service):
+        def listener(data):
             custom_event_listeners.append(data)
 
         bus.on("some:test", listener)
 
-        action = EmitDockerComposeConfigAction()
+        action = actions.get('docker:emit-docker-compose-config')  # type:EmitDockerComposeConfigAction
         action.execute()
 
         assert len(custom_event_listeners) == 1
@@ -75,12 +81,12 @@ class TestDockerFeature:
 
         custom_event_listeners = []
 
-        def listener(data, docker_compose_service):
+        def listener(data):
             custom_event_listeners.append(data)
 
         bus.on("some:test", listener)
 
-        action = EmitDockerComposeConfigAction()
+        action = actions.get('docker:emit-docker-compose-config')  # type:EmitDockerComposeConfigAction
         action.execute()
 
         assert len(custom_event_listeners) == 1
@@ -104,20 +110,19 @@ class TestDockerFeature:
         bus.on("some:test", someListener)
         bus.on("another:test", anotherListener)
 
-        action = EmitDockerComposeConfigAction()
+        action = actions.get('docker:emit-docker-compose-config')  # type:EmitDockerComposeConfigAction
         action.execute()
 
         assert len(some_events) == 3
-        assert {"args": ("emit-one-arg",), "kwargs": {"docker_compose_service": "docker"}} in some_events
-        assert {"args": ("emit-one-arg-2",), "kwargs": {"docker_compose_service": "docker2"}} in some_events
+        assert {"args": ("emit-one-arg",), "kwargs": {}} in some_events
+        assert {"args": ("emit-one-arg-2",), "kwargs": {}} in some_events
         assert {"args": ("emit-some-arg",),
-                "kwargs": {'image': 'ubuntu', 'kw1': 'emit-one-kwarg', 'kw2': 7, 'version': '3.7',
-                           "docker_compose_service": "docker"}} in some_events
+                "kwargs": {'image': 'ubuntu', 'kw1': 'emit-one-kwarg', 'kw2': 7, 'version': '3.7'}} in some_events
 
         assert len(another_events) == 2
-        assert {"args": ("emit-another-arg",), "kwargs": {"docker_compose_service": "docker"}} in another_events
+        assert {"args": ("emit-another-arg",), "kwargs": {}} in another_events
         assert {"args": (),
-                "kwargs": {"kw1": "emit-another-kwarg", "docker_compose_service": "docker2"}} in another_events
+                "kwargs": {"kw1": "emit-another-kwarg"}} in another_events
 
     def test_binary_workdir(self, project_loader):
         project_loader("binary-workdir")
@@ -126,7 +131,7 @@ class TestDockerFeature:
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = EmitDockerComposeConfigAction()
+        action = actions.get('docker:emit-docker-compose-config')  # type:EmitDockerComposeConfigAction
         action.execute()
 
         assert len(list(binaries.all())) == 2
@@ -140,7 +145,7 @@ class TestDockerFeature:
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = EmitDockerComposeConfigAction()
+        action = actions.get('docker:emit-docker-compose-config')  # type:EmitDockerComposeConfigAction
         action.execute()
 
         assert len(list(binaries.all())) == 3
@@ -175,7 +180,7 @@ class TestDockerFeature:
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = EmitDockerComposeConfigAction()
+        action = actions.get('docker:emit-docker-compose-config')  # type:EmitDockerComposeConfigAction
         action.execute()
 
         assert not os.path.exists('node-path')
@@ -195,10 +200,55 @@ class TestDockerFeature:
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        action = EmitDockerComposeConfigAction()
+        action = actions.get('docker:emit-docker-compose-config')  # type:EmitDockerComposeConfigAction
         action.execute()
 
         assert not os.path.exists('node-path')
         assert os.path.isdir('new_directory')
         assert os.path.isdir('child')
         assert os.path.isdir(os.path.join('new_directory', 'some', 'child'))
+
+    def test_traefik_cert(self, project_loader, module_scoped_container_getter):
+        project_loader("traefik-cert")
+
+        features.register(CertsFeature())
+        features.register(TraefikFeature())
+        features.register(DockerFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
+
+        setup_cfssl(module_scoped_container_getter)
+
+        shutil.copyfile("docker-compose.yml", "docker-compose.original.yml")
+
+        action = actions.get('docker:emit-docker-compose-config')  # type:EmitDockerComposeConfigAction
+        action.execute()
+
+        assert os.path.exists(os.path.join(config.paths.project_home, ".certs", "web.domain.tld.key"))
+        assert os.path.exists(os.path.join(config.paths.project_home, ".certs", "web.domain.tld.crt"))
+        assert os.path.exists(os.path.join(config.paths.home, "traefik", "config", "web.domain.tld.ssl.toml"))
+
+        shutil.copyfile("docker-compose.removed.yml", "docker-compose.yml")
+        action.execute()
+
+        assert not os.path.exists(os.path.join(config.paths.project_home, ".certs", "web.domain.tld.key"))
+        assert not os.path.exists(os.path.join(config.paths.project_home, ".certs", "web.domain.tld.crt"))
+        assert not os.path.exists(os.path.join(config.paths.home, "traefik", "config", "web.domain.tld.ssl.toml"))
+
+        shutil.copyfile("docker-compose.original.yml", "docker-compose.yml")
+        action.execute()
+
+        assert os.path.exists(os.path.join(config.paths.project_home, ".certs", "web.domain.tld.key"))
+        assert os.path.exists(os.path.join(config.paths.project_home, ".certs", "web.domain.tld.crt"))
+        assert os.path.exists(os.path.join(config.paths.home, "traefik", "config", "web.domain.tld.ssl.toml"))
+
+        shutil.copyfile("docker-compose.changed.yml", "docker-compose.yml")
+        action.execute()
+
+        assert not os.path.exists(os.path.join(config.paths.project_home, ".certs", "web.domain.tld.key"))
+        assert not os.path.exists(os.path.join(config.paths.project_home, ".certs", "web.domain.tld.crt"))
+        assert not os.path.exists(os.path.join(config.paths.home, "traefik", "config", "web.domain.tld.ssl.toml"))
+
+        assert os.path.exists(os.path.join(config.paths.project_home, ".certs", "web-changed.domain.tld.key"))
+        assert os.path.exists(os.path.join(config.paths.project_home, ".certs", "web-changed.domain.tld.crt"))
+        assert os.path.exists(os.path.join(config.paths.home, "traefik", "config", "web-changed.domain.tld.ssl.toml"))

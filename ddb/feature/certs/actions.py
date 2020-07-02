@@ -8,6 +8,7 @@ from ...action import Action
 from ...config import config
 from ...context import context
 from ...event import events
+from ...utils.file import force_remove
 
 
 class GenerateCertAction(Action):
@@ -24,15 +25,15 @@ class GenerateCertAction(Action):
         return "certs:generate"
 
     @staticmethod
-    def execute(domain, *args, wildcard=True, **kwargs):
+    def execute(domain, wildcard=True):
         """
-        Execute action
+        Generate a certificate
         """
         if config.data.get('certs.type') == 'cfssl':
-            GenerateCertAction.execute_cfssl(domain, wildcard)
+            GenerateCertAction.generate_cfssl(domain, wildcard)
 
     @staticmethod
-    def execute_cfssl(domain, wildcard=True):
+    def generate_cfssl(domain, wildcard=True):
         """
         Generate CA certificate with CFSSL.
         """
@@ -78,3 +79,47 @@ class GenerateCertAction(Action):
 
         events.certs.available(domain=domain, wildcard=wildcard, private_key=private_key_path,
                                certificate=certificate_path)
+
+
+class RemoveCertAction(Action):
+    """
+    Remove a certificate for a domain.
+    """
+
+    @property
+    def event_bindings(self):
+        return events.certs.remove
+
+    @property
+    def name(self) -> str:
+        return "certs:remove"
+
+    @staticmethod
+    def execute(domain):
+        """
+        Remove certificate
+        """
+        if RemoveCertAction.remove_cfssl(domain):
+            events.certs.removed(domain=domain)
+
+    @staticmethod
+    def remove_cfssl(domain):
+        """
+        Remove CA certificate generated with CFSSL.
+        """
+        certificate_path, private_key_path = writer.get_certs_path(domain,
+                                                                   config.data['certs.cfssl.writer'],
+                                                                   config.data['certs.destination'])
+
+        removed = False
+        if os.path.exists(certificate_path):
+            force_remove(certificate_path)
+            events.file.deleted(certificate_path)
+            removed = True
+
+        if os.path.exists(private_key_path):
+            force_remove(private_key_path)
+            events.file.deleted(certificate_path)
+            removed = True
+
+        return removed

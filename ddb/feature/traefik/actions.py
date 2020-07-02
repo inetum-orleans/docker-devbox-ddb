@@ -5,7 +5,7 @@ from ddb.config import config
 from ...action import Action
 from ...context import context
 from ...event import events
-from ...utils.file import write_if_different, copy_if_different
+from ...utils.file import write_if_different, copy_if_different, force_remove
 
 
 class TraefikInstalllCertsAction(Action):
@@ -22,7 +22,7 @@ class TraefikInstalllCertsAction(Action):
         return "traefik:install-certs"
 
     @staticmethod
-    def execute(domain: str, private_key: str, certificate: str, *args, **kwargs):
+    def execute(domain: str, private_key: str, certificate: str, wildcard: bool = False):
         """
         Execute action
         """
@@ -48,3 +48,29 @@ class TraefikInstalllCertsAction(Action):
             context.log.success("SSL Configuration file written for domain %s" % (domain,))
         else:
             context.log.notice("SSL Configuration file exists for domain %s" % (domain,))
+
+
+class TraefikUninstalllCertsAction(Action):
+    """
+    Uninstall removed certificates from traefik.
+    """
+
+    @property
+    def event_bindings(self):
+        return events.certs.removed
+
+    @property
+    def name(self) -> str:
+        return "traefik:uninstall-certs"
+
+    @staticmethod
+    def execute(domain: str):
+        """
+        Execute action
+        """
+        config_directory = config.data.get('traefik.config_directory')
+        config_target = os.path.join(config_directory, "%s.ssl.toml" % (domain,))
+
+        if os.path.exists(config_target):
+            force_remove(config_target)
+            context.log.notice("SSL Configuration file removed for domain %s" % (domain,))

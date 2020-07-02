@@ -22,6 +22,7 @@ class Bus:
             listeners.append(listener)
         else:
             self._listeners.append(listener)
+        return lambda: self.off(event_name, listener)
 
     def off(self, event_name: Union[str, None], listener: Callable):
         """

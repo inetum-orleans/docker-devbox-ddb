@@ -4,7 +4,7 @@ from typing import Iterable, ClassVar
 
 from dotty_dict import Dotty
 
-from .actions import TraefikInstalllCertsAction
+from .actions import TraefikInstalllCertsAction, TraefikUninstalllCertsAction
 from .schema import TraefikSchema
 from ..feature import Feature
 from ..schema import FeatureSchema
@@ -33,6 +33,7 @@ class TraefikFeature(Feature):
     def actions(self) -> Iterable[Action]:
         return (
             TraefikInstalllCertsAction(),
+            TraefikUninstalllCertsAction()
             # TODO: Add action to install custom traefik configuration
         )
 

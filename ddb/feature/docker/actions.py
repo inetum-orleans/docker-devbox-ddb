@@ -2,6 +2,7 @@
 import os
 import re
 from pathlib import PurePosixPath, Path
+from typing import Union, Iterable
 
 import yaml
 from dotty_dict import Dotty
@@ -30,6 +31,7 @@ class EmitDockerComposeConfigAction(Action):
         self.current_yaml_output = None
         self.key_re = re.compile(r"^\s*ddb\.emit\.(.+?)(?:\[(.+?)\])?(?:\((.+?)\))?\s*$")
         self.eval_re = re.compile(r"^\s*eval\((.*)\)\s*$")
+        self._cert_domains_cache = register_project_cache("docker.cert-domains")
 
     @property
     def event_bindings(self):
@@ -69,6 +71,30 @@ class EmitDockerComposeConfigAction(Action):
 
         events.docker.docker_compose_before_events(docker_compose_config=docker_compose_config)
 
+        cert_domains = []
+
+        def on_available(domain: str, wildcard: bool, private_key: Union[bytes, str], certificate: Union[bytes, str]):
+            """
+            When a certificate is available.
+            :param domain:
+            :param wildcard:
+            :param private_key:
+            :param certificate:
+            :return:
+            """
+            cert_domains.append(domain)
+
+        off = bus.on("certs:available", on_available)
+        try:
+            self._parse_docker_compose(docker_compose_config, services)
+        finally:
+            off()
+
+        self._update_cache_and_emit_certs_remove(cert_domains)
+
+        events.docker.docker_compose_after_events(docker_compose_config=docker_compose_config)
+
+    def _parse_docker_compose(self, docker_compose_config: dict, services):
         for service_name, service in services.items():
             labels = service.get('labels')
             if not labels:
@@ -83,7 +109,18 @@ class EmitDockerComposeConfigAction(Action):
                 for _, (args, kwargs) in event_parsed_values.items():
                     bus.emit(event_name, *args, **kwargs)
 
-        events.docker.docker_compose_after_events(docker_compose_config=docker_compose_config)
+    def _update_cache_and_emit_certs_remove(self, cert_domains: Iterable[str]):
+        removed_domains = []
+        for previous_cert_domain in self._cert_domains_cache.keys():
+            if previous_cert_domain not in cert_domains:
+                events.certs.remove(previous_cert_domain)
+                removed_domains.append(previous_cert_domain)
+
+        for removed_domain in removed_domains:
+            self._cert_domains_cache.pop(removed_domain)
+
+        for cert_domain in cert_domains:
+            self._cert_domains_cache.set(cert_domain, None)
 
     def _build_event_data(self, docker_compose_config, labels, service, service_name):  # pylint:disable=too-many-locals
         parsed_values = {}
@@ -99,7 +136,8 @@ class EmitDockerComposeConfigAction(Action):
             args, kwargs = self._parse_value(value,
                                              {"service": service, "config": docker_compose_config},
                                              property_name)
-            kwargs["docker_compose_service"] = service_name
+            if event_name == 'docker:binary':
+                kwargs["docker_compose_service"] = service_name
 
             event_parsed_values = parsed_values.get(event_name)
             if not event_parsed_values:
