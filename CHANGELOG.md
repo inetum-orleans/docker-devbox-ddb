@@ -4,14 +4,15 @@ History
 1.0.0-beta6 (unreleased)
 ------------------------
 
-- Windows Shell : Correction of alias generation
-- Jsonnet : Addition of redirect_to_https to ddb.VirtualHost in order to automatically redirect http request to https
+- Windows Shell: Fix alias generation
+- Jsonnet: Add `redirect_to_https` to ddb.VirtualHost in order to redirect http requests to https
+- Certs/Traefik: Remove previously generated certs when certs:generate event is removed from docker-compose.yml configuration
 
 1.0.0-beta5 (2020-06-26)
 ------------------------
 
 - Fixuid: Add Dockerfile generation when fixuid.yml file is created or deleted
-- Docker: Add docker.reverse_proxy.certresolver setting to setup traefik certresolver globally
+- Docker: Add `docker.reverse_proxy.certresolver` to setup traefik certresolver globally
 - Docker: Set `docker.restart_policy` default value to `unless-stopped` if `core.env.current` is different of `dev`
 - Jsonnet: Add optional `router_rule` parameter to `ddb.VirtualHost` function in order to override the default `Host(hostname)`.
 For traefik, available values in the [official documentation](https://docs.traefik.io/v2.0/routing/routers/#rule)

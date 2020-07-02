@@ -5,7 +5,7 @@ from ddb.config import config
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.traefik import TraefikFeature
-from ddb.feature.traefik.actions import TraefikInstalllCertsAction
+from ddb.feature.traefik.actions import TraefikInstalllCertsAction, TraefikUninstalllCertsAction
 
 
 class TestTraefikFeature:
@@ -33,10 +33,10 @@ class TestTraefikFeature:
         features.register(TraefikFeature())
         load_registered_features()
 
-        action = TraefikInstalllCertsAction()
-        action.execute(domain="dummy.tld",
-                       private_key=os.path.join(".certs", "some-dummy.tld.key"),
-                       certificate=os.path.join(".certs", "some-dummy.tld.crt"))
+        install_action = TraefikInstalllCertsAction()
+        install_action.execute(domain="dummy.tld",
+                               private_key=os.path.join(".certs", "some-dummy.tld.key"),
+                               certificate=os.path.join(".certs", "some-dummy.tld.crt"))
 
         assert os.path.exists(os.path.join(config.paths.home, "certs", "dummy.tld.key"))
         assert os.path.exists(os.path.join(config.paths.home, "certs", "dummy.tld.crt"))
@@ -48,3 +48,8 @@ class TestTraefikFeature:
             assert 'key' == key_file.read()
 
         assert os.path.exists(os.path.join(config.paths.home, "traefik", "config", "dummy.tld.ssl.toml"))
+
+        uninstall_action = TraefikUninstalllCertsAction()
+        uninstall_action.execute(domain="dummy.tld")
+
+        assert not os.path.exists(os.path.join(config.paths.home, "traefik", "config", "dummy.tld.ssl.toml"))

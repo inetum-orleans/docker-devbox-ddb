@@ -47,6 +47,13 @@ class Certs:
         :param wildcard:
         """
 
+    @event("certs:remove")
+    def remove(self, domain: str):
+        """
+        Ask to remove a certificate.
+        :param domain:
+        """
+
     @event("certs:generated")
     def generated(self, domain: str, wildcard: bool, private_key: Union[bytes, str], certificate: Union[bytes, str]):
         """
@@ -55,6 +62,13 @@ class Certs:
         :param wildcard:
         :param private_key:
         :param certificate:
+        """
+
+    @event("certs:removed")
+    def removed(self, domain: str):
+        """
+        When a certificate is removed.
+        :param domain:
         """
 
     @event("certs:available")

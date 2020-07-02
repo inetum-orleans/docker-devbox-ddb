@@ -1,5 +1,8 @@
 import os
 import re
+import time
+
+from cfssl import cfssl
 
 from ddb.config import config
 from ddb.config.config import ConfigPaths
@@ -21,7 +24,7 @@ def load_config(data_dir: str = None, name: str = None):
     return config
 
 
-def get_docker_ip():
+def _get_docker_ip():
     docker_host = os.environ.get('DOCKER_HOST')
     if not docker_host:
         return '127.0.0.1'
@@ -29,6 +32,29 @@ def get_docker_ip():
     match = re.match(r"tcp:\/\/(.*?):(.*)", docker_host)
     if match:
         return match.group(1)
+
+
+def _wait_cfssl_ready(max_retry=20):
+    client = cfssl.CFSSL(**config.data['certs.cfssl.server'])
+    retry = 0
+    while True:
+        try:
+            client.info("")
+            break
+        except:
+            retry += 1
+            time.sleep(1)
+            if retry > max_retry:
+                raise
+
+
+def setup_cfssl(container_getter):
+    cfssl_service = container_getter.get('cfssl')
+
+    config.data['certs.cfssl.server.host'] = _get_docker_ip()
+    config.data['certs.cfssl.server.port'] = int(cfssl_service.network_info[0].host_port)
+
+    _wait_cfssl_ready()
 
 
 def expect_gitignore(gitignore: str, *expected_lines: str):

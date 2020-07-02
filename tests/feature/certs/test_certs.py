@@ -1,48 +1,32 @@
 import os
-import time
-
-import cfssl
 
 from ddb.__main__ import load_registered_features
-from ddb.config import config
 from ddb.feature import features
 from ddb.feature.certs import CertsFeature, GenerateCertAction
+from ddb.feature.certs.actions import RemoveCertAction
 from ddb.feature.core import CoreFeature
-from tests.utilstest import get_docker_ip
+from tests.utilstest import setup_cfssl
 
 
 class TestCertsFeature:
-    def wait_cfssl_ready(self, max_retry=20):
-        client = cfssl.CFSSL(**config.data['certs.cfssl.server'])
-        retry = 0
-        while True:
-            try:
-                client.info("")
-                break
-            except:
-                retry += 1
-                time.sleep(1)
-                if retry > max_retry:
-                    raise
-
     def test_empty_project_without_core(self, project_loader, module_scoped_container_getter):
         project_loader("empty")
 
         features.register(CertsFeature())
         load_registered_features()
 
-        cfssl_service = module_scoped_container_getter.get('cfssl')
+        setup_cfssl(module_scoped_container_getter)
 
-        config.data['certs.cfssl.server.host'] = get_docker_ip()
-        config.data['certs.cfssl.server.port'] = int(cfssl_service.network_info[0].host_port)
-
-        self.wait_cfssl_ready()
-
-        action = GenerateCertAction()
-        action.execute(domain="testing.test")
+        generate_action = GenerateCertAction()
+        generate_action.execute(domain="testing.test")
 
         assert os.path.exists(os.path.join(".certs", "testing.test.crt"))
         assert os.path.exists(os.path.join(".certs", "testing.test.key"))
+
+        remove_action = RemoveCertAction()
+        remove_action.execute(domain="testing.test")
+        assert not os.path.exists(os.path.join(".certs", "testing.test.crt"))
+        assert not os.path.exists(os.path.join(".certs", "testing.test.key"))
 
     def test_empty_project_with_core(self, project_loader, module_scoped_container_getter):
         project_loader("empty")
@@ -51,14 +35,10 @@ class TestCertsFeature:
         features.register(CertsFeature())
         load_registered_features()
 
-        cfssl_service = module_scoped_container_getter.get('cfssl')
-        config.data['certs.cfssl.server.host'] = get_docker_ip()
-        config.data['certs.cfssl.server.port'] = int(cfssl_service.network_info[0].host_port)
+        setup_cfssl(module_scoped_container_getter)
 
-        self.wait_cfssl_ready()
-
-        action = GenerateCertAction()
-        action.execute(domain="testing.test")
+        generate_action = GenerateCertAction()
+        generate_action.execute(domain="testing.test")
 
         assert os.path.exists(os.path.join(".certs", "testing.test.crt"))
         assert os.path.exists(os.path.join(".certs", "testing.test.key"))
@@ -69,6 +49,11 @@ class TestCertsFeature:
         with open(os.path.join(".certs", "testing.test.key")) as key_file:
             assert 'PRIVATE KEY' in key_file.read()
 
+        remove_action = RemoveCertAction()
+        remove_action.execute(domain="testing.test")
+        assert not os.path.exists(os.path.join(".certs", "testing.test.crt"))
+        assert not os.path.exists(os.path.join(".certs", "testing.test.key"))
+
     def test_existing_does_nothing(self, project_loader, module_scoped_container_getter):
         project_loader("existing")
 
@@ -76,11 +61,7 @@ class TestCertsFeature:
         features.register(CertsFeature())
         load_registered_features()
 
-        cfssl_service = module_scoped_container_getter.get('cfssl')
-        config.data['certs.cfssl.server.host'] = get_docker_ip()
-        config.data['certs.cfssl.server.port'] = int(cfssl_service.network_info[0].host_port)
-
-        self.wait_cfssl_ready()
+        setup_cfssl(module_scoped_container_getter)
 
         assert os.path.exists(os.path.join(".certs", "testing.test.crt"))
         assert os.path.exists(os.path.join(".certs", "testing.test.key"))
@@ -91,8 +72,8 @@ class TestCertsFeature:
         with open(os.path.join(".certs", "testing.test.key")) as key_file:
             key = key_file.read()
 
-        action = GenerateCertAction()
-        action.execute(domain="testing.test")
+        generate_action = GenerateCertAction()
+        generate_action.execute(domain="testing.test")
 
         with open(os.path.join(".certs", "testing.test.crt")) as crt_file:
             assert crt == crt_file.read()
@@ -100,3 +81,8 @@ class TestCertsFeature:
         with open(os.path.join(".certs", "testing.test.key")) as key_file:
             assert key == key_file.read()
 
+        remove_action = RemoveCertAction()
+        remove_action.execute(domain="testing.test")
+
+        assert not os.path.exists(os.path.join(".certs", "testing.test.crt"))
+        assert not os.path.exists(os.path.join(".certs", "testing.test.key"))

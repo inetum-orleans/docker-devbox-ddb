@@ -51,8 +51,8 @@ services:
       traefik.http.routers.gli-biometrie-gulp.rule: Host(`gulp.biometrie.test`)
       traefik.http.routers.gli-biometrie-gulp.service: gli-biometrie-gulp
       traefik.http.services.gli-biometrie-gulp.loadbalancer.server.port: '3000'
-      ddb.emit.certs:generate:gli-biometrie: biometrie.test
-      ddb.emit.certs:generate:gli-biometrie-gulp: gulp.biometrie.test
+      ddb.emit.certs:generate[gli-biometrie]: biometrie.test
+      ddb.emit.certs:generate[gli-biometrie-gulp]: gulp.biometrie.test
     networks:
       - default
       - reverse-proxy
@@ -90,7 +90,7 @@ services:
       traefik.http.routers.gli-biometrie-api.rule: Host(`api.biometrie.test`)
       traefik.http.routers.gli-biometrie-api.service: gli-biometrie-api
       traefik.http.services.gli-biometrie-api.loadbalancer.server.port: '80'
-      ddb.emit.certs:generate:gli-biometrie-api: api.biometrie.test
+      ddb.emit.certs:generate[gli-biometrie-api]: api.biometrie.test
     networks:
       - default
       - reverse-proxy

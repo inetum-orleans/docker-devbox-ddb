@@ -135,7 +135,7 @@ local Compose(network_names=_docker_reverse_proxy_network_names, version="3.7") 
 local TraefikCertLabels(hostname, service_name, certresolver=null) = {
     [if certresolver != null then "traefik.http.routers." + service_name + "-tls.tls.certresolver"]: certresolver,
     [if (certresolver == null && _docker_reverse_proxy_certresolver != null) then "traefik.http.routers." + service_name + "-tls.tls.certresolver"]: _docker_reverse_proxy_certresolver,
-    [if (certresolver == null && _docker_reverse_proxy_certresolver == null) then "ddb.emit.certs:generate:" + service_name]: hostname,
+    [if (certresolver == null && _docker_reverse_proxy_certresolver == null) then "ddb.emit.certs:generate[" + service_name + "]"]: hostname,
 };
 
 local TraefikRoutersRuleLabels(hostname, service_name, router_rule=null) = {
