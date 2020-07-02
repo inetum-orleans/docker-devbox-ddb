@@ -74,3 +74,16 @@ class TraefikUninstalllCertsAction(Action):
         if os.path.exists(config_target):
             force_remove(config_target)
             context.log.notice("SSL Configuration file removed for domain %s" % (domain,))
+
+        certs_directory = config.data.get('traefik.certs_directory')
+        private_key_filename = "%s.key" % (domain,)
+        private_key_filename_target = os.path.join(certs_directory, private_key_filename)
+        if os.path.exists(private_key_filename_target):
+            force_remove(private_key_filename_target)
+            context.log.notice("SSL private key file removed for domain %s" % (domain,))
+
+        certificate_filename = "%s.crt" % (domain,)
+        certificate_filename_target = os.path.join(certs_directory, certificate_filename)
+        if os.path.exists(certificate_filename_target):
+            force_remove(certificate_filename_target)
+            context.log.notice("SSL certificate file removed for domain %s" % (domain,))

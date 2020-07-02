@@ -226,6 +226,8 @@ class TestDockerFeature:
 
         assert os.path.exists(os.path.join(config.paths.project_home, ".certs", "web.domain.tld.key"))
         assert os.path.exists(os.path.join(config.paths.project_home, ".certs", "web.domain.tld.crt"))
+        assert os.path.exists(os.path.join(config.paths.home, "certs", "web.domain.tld.key"))
+        assert os.path.exists(os.path.join(config.paths.home, "certs", "web.domain.tld.crt"))
         assert os.path.exists(os.path.join(config.paths.home, "traefik", "config", "web.domain.tld.ssl.toml"))
 
         shutil.copyfile("docker-compose.removed.yml", "docker-compose.yml")
@@ -233,6 +235,8 @@ class TestDockerFeature:
 
         assert not os.path.exists(os.path.join(config.paths.project_home, ".certs", "web.domain.tld.key"))
         assert not os.path.exists(os.path.join(config.paths.project_home, ".certs", "web.domain.tld.crt"))
+        assert not os.path.exists(os.path.join(config.paths.home, "certs", "web.domain.tld.key"))
+        assert not os.path.exists(os.path.join(config.paths.home, "certs", "web.domain.tld.crt"))
         assert not os.path.exists(os.path.join(config.paths.home, "traefik", "config", "web.domain.tld.ssl.toml"))
 
         shutil.copyfile("docker-compose.original.yml", "docker-compose.yml")
@@ -240,6 +244,8 @@ class TestDockerFeature:
 
         assert os.path.exists(os.path.join(config.paths.project_home, ".certs", "web.domain.tld.key"))
         assert os.path.exists(os.path.join(config.paths.project_home, ".certs", "web.domain.tld.crt"))
+        assert os.path.exists(os.path.join(config.paths.home, "certs", "web.domain.tld.key"))
+        assert os.path.exists(os.path.join(config.paths.home, "certs", "web.domain.tld.crt"))
         assert os.path.exists(os.path.join(config.paths.home, "traefik", "config", "web.domain.tld.ssl.toml"))
 
         shutil.copyfile("docker-compose.changed.yml", "docker-compose.yml")
@@ -247,8 +253,12 @@ class TestDockerFeature:
 
         assert not os.path.exists(os.path.join(config.paths.project_home, ".certs", "web.domain.tld.key"))
         assert not os.path.exists(os.path.join(config.paths.project_home, ".certs", "web.domain.tld.crt"))
+        assert not os.path.exists(os.path.join(config.paths.home, "certs", "web.domain.tld.key"))
+        assert not os.path.exists(os.path.join(config.paths.home, "certs", "web.domain.tld.crt"))
         assert not os.path.exists(os.path.join(config.paths.home, "traefik", "config", "web.domain.tld.ssl.toml"))
 
         assert os.path.exists(os.path.join(config.paths.project_home, ".certs", "web-changed.domain.tld.key"))
         assert os.path.exists(os.path.join(config.paths.project_home, ".certs", "web-changed.domain.tld.crt"))
+        assert os.path.exists(os.path.join(config.paths.home, "certs", "web-changed.domain.tld.key"))
+        assert os.path.exists(os.path.join(config.paths.home, "certs", "web-changed.domain.tld.crt"))
         assert os.path.exists(os.path.join(config.paths.home, "traefik", "config", "web-changed.domain.tld.ssl.toml"))
