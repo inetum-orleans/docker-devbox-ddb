@@ -1,7 +1,7 @@
 History
 =======
 
-1.0.0-beta6 (unreleased)
+1.0.0-beta6 (2020-07-03)
 ------------------------
 
 - Windows Shell: Fix alias generation
