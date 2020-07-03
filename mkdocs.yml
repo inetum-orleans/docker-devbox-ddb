@@ -1,0 +1,28 @@
+site_name: Docker Devbox - ddb
+
+site_url: https://gfi-centre-ouest.github.io/docker-devbox-ddb
+site_description: Erase environment differences, make developers happy !
+site_author: Rémi Alvergnat <remi.alvergnat@gfi.world>
+copyright: GFI Informatique
+
+repo_url: https://github.com/gfi-centre-ouest/docker-devbox-ddb
+
+theme:
+  language: 'fr'
+  name: 'material'
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - toc:
+      permalink: true
+
+nav:
+  - Guides:
+      - Foreword: guides/foreword.md
+      - PostgreSQL, Symfony, VueJS:  guides/psql-symfony-vue.md
+
+plugins:
+  - search
+
+dev_addr: 0.0.0.0:8000

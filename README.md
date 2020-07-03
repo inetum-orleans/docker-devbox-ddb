@@ -26,7 +26,7 @@ Install
 **ddb** is supported on Linux and Windows. MacOS is still unsupported, but it should come soon. 
 
 You can [download binary releases on github](https://github.com/gfi-centre-ouest/docker-devbox-ddb/releases), or 
-install on Python > 3.5 with pip.
+install on Python >= 3.5 with pip.
 
 ```
 pip install docker-devbox-ddb
@@ -35,9 +35,4 @@ pip install docker-devbox-ddb
 Docs
 ----
 
-* [How to participate ?](./docs/00-development.md)
-* [Changing the default configuration](./docs/10-default_configuration.md)
-* [Managing your project configuration](./docs/11-project_configuration.md)
-* [Setting up your CI](./docs/20-pipeline_configuration.md)
-
-*N.B : Docs are under construction, more will be added over time* 
+[Documentation is available here](https://gfi-centre-ouest.github.io/docker-devbox-ddb)

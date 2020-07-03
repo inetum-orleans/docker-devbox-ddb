@@ -1,3 +1,19 @@
+## Contribute to docs
+
+You may run the docs locally with docker
+
+```bash
+docker run --rm -it -p 8000:8000 --user $(id -u):$(id -g) -v ${PWD}:/docs squidfunk/mkdocs-material serve
+```
+
+Docs are then available on http://localhost:8000.
+
+## Publish docs
+
+```bash
+docker run --rm -it -p 8000:8000 --user $(id -u):$(id -g) -v ${PWD}/..:/docs -v ${HOME}/.netrc:/.netrc:ro --workdir=/docs/ddb squidfunk/mkdocs-material gh-deploy
+```
+
 ## Build and release process
 
 The release process requires docker with custom images of `cdrx/pyinstaller-linux` and `cdrx/pyinstaller-windows` that 
@@ -19,3 +35,4 @@ githubrelease release gfi-centre-ouest/docker-devbox-ddb create $(python -m ddb 
 
 postrelease
 ```
+
