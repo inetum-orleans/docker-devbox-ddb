@@ -2,7 +2,7 @@ site_name: Docker Devbox - ddb
 
 site_url: https://gfi-centre-ouest.github.io/docker-devbox-ddb
 site_description: Erase environment differences, make developers happy !
-site_author: Rémi Alvergnat <remi.alvergnat@gfi.world>
+site_author: Rémi Alvergnat <remi.alvergnat@gfi.world>, Pierre Lejeune <pierre.lejeune@gfi.world>
 copyright: GFI Informatique
 
 repo_url: https://github.com/gfi-centre-ouest/docker-devbox-ddb
@@ -21,6 +21,10 @@ nav:
   - Guides:
       - Foreword: guides/foreword.md
       - PostgreSQL, Symfony, VueJS:  guides/psql-symfony-vue.md
+  - References:
+      - Foreword: references/foreword.md
+      - Features:
+        - Jsonnet: references/features/jsonnet.md
 
 plugins:
   - search
