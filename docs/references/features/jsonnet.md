@@ -193,7 +193,7 @@ Feature Configuration
 
 A few configurations are available for this features : 
 - `disabled`: Definition of the status of the feature. If set to True, jsonnet templates will not be processed by 
-               this feature.S
+               this feature.
     - type: boolean
     - default value: False
               
