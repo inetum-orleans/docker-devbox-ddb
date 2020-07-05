@@ -8,7 +8,7 @@ copyright: GFI Informatique
 repo_url: https://github.com/gfi-centre-ouest/docker-devbox-ddb
 
 theme:
-  language: 'fr'
+  language: 'en'
   name: 'material'
 
 markdown_extensions:

@@ -240,7 +240,7 @@ ddb.Compose() {
 
 ```
 
-You should notice that some binary files have been generated in `.bin` directory, `psql` and `pg_dump`.
+You should notice that some binary files have been generated in `.bin` directory : `psql` and `pg_dump`.
 
 Those binaries are available right now on your local environment. You can check their version.
 
@@ -300,7 +300,7 @@ But this suck ... As a developer, you are really disappointed ... And you are ri
 Workaround permission issues
 ---
 
-To workaround those permission issues, ddb as automated the installation of [fixuid](https://github.com/boxboat/fixuid)
+To workaround those permission issues, ddb has automated the installation of [fixuid](https://github.com/boxboat/fixuid)
 inside a Dockerfile.
 
 !!! note "Docker and permission issues"
