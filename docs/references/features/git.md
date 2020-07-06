@@ -6,7 +6,7 @@ The Git feature provides automation relatives to the git configuration of the pr
 Feature Configuration
 ---
 
-- `disabled`: Definition of the status of the feature. If set to True, every git automation will be disabled.
+- `disabled`: Definition of the status of the feature. If set to True, all git automations will be disabled.
     - type: boolean
     - default value: False
               
