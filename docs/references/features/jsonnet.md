@@ -41,18 +41,18 @@ A few configurations are available for this features :
     - type: array of strings
     - default value: `[]`
 
-Here is the default configuration that you can retrieve from ```ddb config``` commands and override in your `ddb.yaml`
-```yaml
-jsonnet:
-  disabled: false
-  extensions:
-  - .*
-  - ''
-  includes:
-  - '*.jsonnet{.*,}'
-  suffixes:
-  - .jsonnet
-```
+??? example "Configuration example"
+    ```yaml
+    jsonnet:
+      disabled: false
+      extensions:
+      - .*
+      - ''
+      includes:
+      - '*.jsonnet{.*,}'
+      suffixes:
+      - .jsonnet
+    ```
 
 Docker-compose jsonnet library
 ---

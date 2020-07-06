@@ -10,6 +10,11 @@ Feature Configuration
     - type: boolean
     - default value: False
  
+??? example "Configuration example"
+    ```yaml
+    gitignore:
+      disabled: false
+    ```
 Automatic management of gitignore
 ---
 

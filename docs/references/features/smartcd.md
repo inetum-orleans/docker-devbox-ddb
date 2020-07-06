@@ -9,7 +9,13 @@ Feature Configuration
 - `disabled`: Definition of the status of the feature. If set to True, all SmartCD automations will be disabled.
     - type: boolean
     - default value: False
- 
+
+??? example "Configuration example"
+    ```yaml
+    smartcd:
+      disabled: false
+    ```
+    
 SmartCD automation on Linux/Unix
 ---
 

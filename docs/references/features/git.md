@@ -13,7 +13,13 @@ Feature Configuration
 - `fix_files_permissions`: Activate the file access in regard to git index 
     - type: boolean
     - default value: true
- 
+
+??? example "Configuration example"
+    ```yaml
+    git:
+      disabled: false
+      fix_files_permissions: true
+    ``` 
 Fix Files Permissions automation
 ---
 

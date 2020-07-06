@@ -17,14 +17,21 @@ Feature Configuration
 - `url`: The URL to download the fixuid binaries.
     - type: string
     - default value: https://github.com/boxboat/fixuid/releases/download/v0.4/fixuid-0.4-linux-amd64.tar.gz
- 
+    
+??? example "Configuration example"
+    ```yaml
+    fixuid:
+        disabled: false
+        url: https://github.com/boxboat/fixuid/releases/download/v0.4/fixuid-0.4-linux-amd64.tar.gz
+    ``` 
+    
 Automatic installation in service
 ---
 
 In order to benefit from this feature, few steps are require. 
 
 First things first, you need to create a file next to the Dockerfile.jinja in which fixuid will be integrated : 
-fixuid.yml`.
+`fixuid.yml`.
 In this file, you will have to define three settings : 
 
 - `user`: the user inside the container which will be used for running commands

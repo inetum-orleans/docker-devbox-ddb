@@ -20,3 +20,14 @@ Those are triggered based on a system event on which they are listening, and som
     conditions trigger his behavior.
     
     And so on.
+    
+All the features created, if they are exposing configuration, such as `disabled`, will be organised under the name of
+the feature.
+
+??? example "Example of docker"
+    Example of [docker feature](docker#feature-configuration) configuration : 
+    
+    ```yaml
+    docker:
+      disabled: false
+    ```

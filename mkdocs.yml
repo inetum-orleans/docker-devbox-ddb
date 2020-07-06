@@ -26,6 +26,7 @@ nav:
   - References:
       - Foreword: references/foreword.md
       - Features:
+        - docker: references/features/docker.md
         - fixuid: references/features/fixuid.md
         - git: references/features/git.md
         - gitignore: references/features/gitignore.md
