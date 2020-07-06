@@ -26,6 +26,7 @@ nav:
   - References:
       - Foreword: references/foreword.md
       - Features:
+        - Git: references/features/git.md
         - Jsonnet: references/features/jsonnet.md
 
 plugins:
