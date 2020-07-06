@@ -29,6 +29,7 @@ nav:
         - Git: references/features/git.md
         - Gitignore: references/features/gitignore.md
         - Jsonnet: references/features/jsonnet.md
+        - SmartCD: references/features/smartcd.md
 
 plugins:
   - search
