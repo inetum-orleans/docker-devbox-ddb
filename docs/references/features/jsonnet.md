@@ -12,6 +12,8 @@ you need using jsonnet standard library function :
 std.extVar("<name of the configuration variable>")
 ```
 
+The parsing of template into final file is done by executing `ddb configure` command.
+
 Feature Configuration
 ---
 
