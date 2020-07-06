@@ -26,10 +26,11 @@ nav:
   - References:
       - Foreword: references/foreword.md
       - Features:
-        - Git: references/features/git.md
-        - Gitignore: references/features/gitignore.md
-        - Jsonnet: references/features/jsonnet.md
-        - SmartCD: references/features/smartcd.md
+        - fixuid: references/features/fixuid.md
+        - git: references/features/git.md
+        - gitignore: references/features/gitignore.md
+        - jsonnet: references/features/jsonnet.md
+        - smartCD: references/features/smartcd.md
 
 plugins:
   - search

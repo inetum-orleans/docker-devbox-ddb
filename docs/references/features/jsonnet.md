@@ -54,7 +54,7 @@ jsonnet:
   - .jsonnet
 ```
 
-Docker-compose template functions
+Docker-compose jsonnet library
 ---
 
 Jsonnet feature provides a handful list of functions to help generation of docker-compose.
