@@ -21,8 +21,10 @@ Those are triggered based on a system event on which they are listening, and som
     
     And so on.
     
-All the features created, if they are exposing configuration, such as `disabled`, will be organised under the name of
-the feature.
+All the features created possessed at least one configuration, `disabled`, which let you decide if you want to enable it
+or not.
+
+Whether they are exposing more configuration or not, it will be organised under the name of the feature.
 
 ??? example "Example of docker"
     Example of [docker feature](docker#feature-configuration) configuration : 
