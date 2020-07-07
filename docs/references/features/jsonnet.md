@@ -22,24 +22,24 @@ A few configurations are available for this features :
 - `disabled`: Definition of the status of the feature. If set to True, jsonnet templates will not be processed by 
                this feature.
     - type: boolean
-    - default value: False
+    - default: False
               
 - `suffixes`: Definition of the list of suffixes which will be used for detection of files that needs to be processed
               by the feature. 
     - type: array of strings
-    - default value: `[".jsonnet"]`
+    - default: `[".jsonnet"]`
  
 - `extensions`: TODO : Explain the use of extensions
     - type: array of strings
-    - default value: `['.*', '']`
+    - default: `['.*', '']`
  
 - `includes`: TODO : Explain the use of includes
     - type: array of strings
-    - default value: `['.*', '']`
+    - default: `['.*', '']`
  
 - `excludes`: Define list of files to be excluded from jsonnet feature
     - type: array of strings
-    - default value: `[]`
+    - default: `[]`
 
 ??? example "Configuration example"
     ```yaml
@@ -73,10 +73,10 @@ This function defines global docker-compose configurations elements.
 !!! abstract "Parameters:"
     - `network_names`: the network to add.
         - type: string|object
-        - default value: `docker.reverse_proxy.network_names` ddb configuration value
+        - default: `docker.reverse_proxy.network_names` ddb configuration value
     - `version`: the docker-compose file version. 
         - type: string
-        - default value: `3.7`
+        - default: `3.7`
 
 ??? example 
     ```jsonnet
@@ -105,15 +105,15 @@ The `restart` configuration will be set with the `docker.restart_policy` ddb con
     - `image`:
     The name of the image. If docker registry is defined, it will generate the full uri for the image in the registry. 
         - type: string
-        - default value: `name` parameter.
+        - default: `name` parameter.
     - `cache_from_image`: 
     If set to true and docker registry is defined, it will generate the `build.cache_from` configuration uri. 
         - type: boolean
-        - default value: `docker.cache_from_image` ddb configuration value
+        - default: `docker.cache_from_image` ddb configuration value
     - `directory`:
     Path to the directory in which images will be defined (one subfolder by image).
         - type: boolean
-        - default value: `docker.directory` ddb configuration value
+        - default: `docker.directory` ddb configuration value
 
 ??? example "Example with a registry defined"
     ```jsonnet
@@ -157,10 +157,10 @@ In ddb, it is mainly use for `fixuid` automatic integration
 !!! abstract "Parameters:"
     - `uid`: The uid to use
         - type: string
-        - default : `docker.user.uid` ddb configuration value
+        - default: : `docker.user.uid` ddb configuration value
     - `gid`: The gid to use
         - type: string
-        - default : `docker.user.gid` ddb configuration value
+        - default: : `docker.user.gid` ddb configuration value
 
 ??? example 
     ```jsonnet 

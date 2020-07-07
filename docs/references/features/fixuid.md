@@ -12,11 +12,11 @@ Feature Configuration
 
 - `disabled`: Definition of the status of the feature. If set to True, all git automations will be disabled.
     - type: boolean
-    - default value: False
+    - default: False
               
 - `url`: The URL to download the fixuid binaries.
     - type: string
-    - default value: https://github.com/boxboat/fixuid/releases/download/v0.4/fixuid-0.4-linux-amd64.tar.gz
+    - default: https://github.com/boxboat/fixuid/releases/download/v0.4/fixuid-0.4-linux-amd64.tar.gz
     
 ??? example "Configuration example"
     ```yaml

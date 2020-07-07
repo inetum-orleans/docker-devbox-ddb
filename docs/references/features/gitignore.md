@@ -8,7 +8,7 @@ Feature Configuration
 
 - `disabled`: Definition of the status of the feature. If set to True, all gitignore automations will be disabled.
     - type: boolean
-    - default value: False
+    - default: False
  
 ??? example "Configuration example"
     ```yaml

@@ -8,11 +8,11 @@ Feature Configuration
 
 - `disabled`: Definition of the status of the feature. If set to True, all git automations will be disabled.
     - type: boolean
-    - default value: False
+    - default: False
               
 - `fix_files_permissions`: Activate the file access in regard to git index 
     - type: boolean
-    - default value: true
+    - default: true
 
 ??? example "Configuration example"
     ```yaml

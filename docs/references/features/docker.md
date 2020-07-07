@@ -23,70 +23,70 @@ As docker is at the heart of ddb, it has one of the largest collection of parame
 
 - `disabled`: Definition of the status of the feature. If set to True, docker feature will not be triggered.
     - type: boolean
-    - default value: False
+    - default: False
 - `build_image_tag_from_version`: Define if an automatic tag must be added to image name in docker-compose file.
     - type: boolean
-    - default value: True
+    - default: True
 - `build_image_tag`: The tag added to the image name in docker-compose file.
     - type: string
-    - default value: <retrieved from git branch or tag name>
+    - default: <retrieved from git branch or tag name>
 - `cache_from_image`: 
     Mainly used for build purpose in CI, it enable the cache_from settings for services in docker-compose.yml generation.
     - type: boolean
-    - default value: False
+    - default: False
 - `compose.project_name`: The name given to the project. 
     - type: string
-    - default value: retrieved from project folder name
+    - default: retrieved from project folder name
 - `compose.network_name`: The name of the default docker network for this project. 
     - type: string
-    - default value: retrieved from compose.project.name, suffixed with _default
+    - default: retrieved from compose.project.name, suffixed with _default
 - `debug.disabled`: Enable or disable debug functionalities integrated in docker-compose.yml.jsonnet automation.
     - type: boolean
-    - default value: False
+    - default: False
 - `debug.host`: The address to contact for debug functionalities.
     - type: string
 - `directory`: The directory where container Dockerfile are stored.
     - type: string
-    - default value : .docker
+    - default: value : .docker
 - `interface`: TODO explain what it is used for.
     - type: string
-    - default value : docker0
+    - default: value : docker0
 - `ip`: TODO explain what it is used for.
     - type: string
-    - default value : 172.17.0.1
+    - default: value : 172.17.0.1
 - `path_mapping`: TODO explain what it is used for.
     - type: object
-    - default value : {}
+    - default: value : {}
 - `port_prefix`: The prefix to add to default ports for exposition to host.
     - type: integer
-    - default value : 373
+    - default: value : 373
 - `registry.name`: The address of the docker image registry.
     - type: string|null
 - `registry.repository`: The repository for this project docker images.
     - type: string|null
 - `restart_policy`: TODO explain what it is used for.
     - type: string
-    - default value: depending on the environment : on dev it is set to 'no', on other it is set to 'yes'
+    - default: depending on the environment : on dev it is set to 'no', on other it is set to 'yes'
 - `reverse_proxy.certresolver`: TODO explain what it is used for.
     - type: string|null
 - `reverse_proxy.network_id`: TODO explain what it is used for.
     - type: string|null
-    - default value: reverse-proxy # TODO
+    - default: reverse-proxy # TODO
 - `reverse_proxy.network_names`: TODO explain what it is used for.
     - type: object
-    - default value: {reverse-proxy: reverse-proxy} # TODO
+    - default: {reverse-proxy: reverse-proxy} # TODO
 - `reverse_proxy.redirect_to_https`: Set if all traffic must be redirected to https.
     - type: boolean|null
-    - default value: null
+    - default: null
 - `reverse_proxy.type`: Define the type of reverse_proxy for configuration management
     - type: string
-    - default value: null # TODO
+    - default: null # TODO
 - `user.uid`: The UID to use inside a container
     - type: number
-    - default value: Automatically retrieve the UID of the current user
+    - default: Automatically retrieve the UID of the current user
 - `user.gid`: The GID to use inside a container
     - type: number
-    - default value: Automatically retrieve the GID of the current user
+    - default: Automatically retrieve the GID of the current user
     
 ??? example "Configuration example"
     ```yaml
