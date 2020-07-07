@@ -20,11 +20,13 @@ markdown_extensions:
   - pymdownx.superfences
 
 nav:
+  - Home: index.md
   - Guides:
       - Foreword: guides/foreword.md
       - PostgreSQL, Symfony, VueJS:  guides/psql-symfony-vue.md
   - References:
       - Foreword: references/foreword.md
+      - Commands: references/commands.md
       - Features:
         - docker: references/features/docker.md
         - fixuid: references/features/fixuid.md
