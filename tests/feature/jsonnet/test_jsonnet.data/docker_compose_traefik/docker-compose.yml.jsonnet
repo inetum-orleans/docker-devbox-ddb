@@ -2,8 +2,8 @@ local ddb = import 'ddb.docker.libjsonnet';
 
 local user = "biometrie";
 local password = "biometrie";
-local certresolver = if ddb.env.is("ci") then "anothercertresolver" else null;
-local router_rule = if ddb.env.is("ci") then "HostRegexp(`traefik.io`, `{subdomain:[a-z]+}.traefik.io`, ...)" else null;
+local certresolver = if ddb.env.is("stage") then "anothercertresolver" else null;
+local router_rule = if ddb.env.is("stage") then "HostRegexp(`traefik.io`, `{subdomain:[a-z]+}.traefik.io`, ...)" else null;
 local redirect_to_https = if ddb.env.is("prod") then true else false;
 
 ddb.Compose() {

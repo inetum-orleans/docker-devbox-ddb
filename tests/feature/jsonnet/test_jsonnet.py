@@ -220,6 +220,7 @@ class TestJsonnetAction:
     @pytest.mark.parametrize("variant", [
         "dev",
         "ci",
+        "stage",
         "prod",
     ])
     def test_docker_compose_traefik(self, project_loader, variant):

@@ -1,6 +1,6 @@
 core:
   env:
-    current: ci
+    current: stage
   project:
     name: gli-biometrie
 docker:
@@ -9,5 +9,3 @@ docker:
   registry:
     name: "gfiorleans.azurecr.io"
     repository: "gli-biometrie"
-  reverse_proxy:
-    type: 'none'
