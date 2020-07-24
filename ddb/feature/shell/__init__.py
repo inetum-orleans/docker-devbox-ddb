@@ -68,5 +68,7 @@ class ShellFeature(Feature):
                 feature_config['shell'] = 'cmd'
             elif shell and shell.endswith('bash'):
                 feature_config['shell'] = 'bash'
+            elif shell and shell.endswith('zsh'):
+                feature_config['shell'] = 'zsh'
             else:
                 raise FeatureConfigurationAutoConfigureError(self, 'shell')
