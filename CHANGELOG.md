@@ -4,8 +4,10 @@ History
 1.0.0-beta7 (unreleased)
 ------------------------
 
-- Nothing changed yet.
-
+- Add MacOS support (no binary package available though)
+- Shell: Add zsh support
+- Jsonnet: Fix an issue when reverse proxy is not defined to traefik.
+- Docs: Add way more docs
 
 1.0.0-beta6 (2020-07-03)
 ------------------------
