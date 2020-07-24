@@ -78,20 +78,26 @@ class DockerFeature(Feature):
                 if ip_match:
                     ip_address = ip_match.group(1)
 
-        if not ip_address:
-            interface = feature_config.get('interface')
-            try:
-                docker_if = netifaces.ifaddresses(interface)
-            except ValueError:
-                raise FeatureConfigurationAutoConfigureError(self, 'ip',
-                                                             "Invalid network interface: " + interface)
-            if docker_if and netifaces.AF_INET in docker_if:
-                docker_af_inet = docker_if[netifaces.AF_INET][0]
-                ip_address = docker_af_inet['addr']
+        try:
+            if not ip_address:
+                interface = feature_config.get('interface')
+                try:
+                    docker_if = netifaces.ifaddresses(interface)
+                except ValueError:
+                    raise FeatureConfigurationAutoConfigureError(self, 'ip',
+                                                                 "Invalid network interface: " + interface)
+                if docker_if and netifaces.AF_INET in docker_if:
+                    docker_af_inet = docker_if[netifaces.AF_INET][0]
+                    ip_address = docker_af_inet['addr']
+                else:
+                    raise FeatureConfigurationAutoConfigureError(self, 'ip',
+                                                                 "Can't get ip address "
+                                                                 "from network interface configuration: " + interface)
+        except FeatureConfigurationAutoConfigureError as error:
+            if os.path.exists('/var/run/docker.sock'):
+                ip_address = '127.0.0.1'
             else:
-                raise FeatureConfigurationAutoConfigureError(self, 'ip',
-                                                             "Can't get ip address "
-                                                             "from network interface configuration: " + interface)
+                raise error
 
         feature_config['ip'] = ip_address
 

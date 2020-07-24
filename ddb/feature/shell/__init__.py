@@ -44,7 +44,7 @@ class ShellFeature(Feature):
     def phases(self) -> Iterable[Phase]:
         return (
             DefaultPhase("activate", "Write a shell script to be executed to activate environment"),
-            DefaultPhase("deactivate", "Write a shell script to be executed to deactivate environment")
+            DefaultPhase("deactivatde", "Write a shell script to be executed to deactivate environment")
         )
 
     @property
@@ -68,5 +68,7 @@ class ShellFeature(Feature):
                 feature_config['shell'] = 'cmd'
             elif shell and shell.endswith('bash'):
                 feature_config['shell'] = 'bash'
+            elif shell and shell.endswith('zsh'):
+                feature_config['shell'] = 'zsh'
             else:
                 raise FeatureConfigurationAutoConfigureError(self, 'shell')
