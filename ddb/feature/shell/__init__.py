@@ -44,7 +44,7 @@ class ShellFeature(Feature):
     def phases(self) -> Iterable[Phase]:
         return (
             DefaultPhase("activate", "Write a shell script to be executed to activate environment"),
-            DefaultPhase("deactivatde", "Write a shell script to be executed to deactivate environment")
+            DefaultPhase("deactivate", "Write a shell script to be executed to deactivate environment")
         )
 
     @property
