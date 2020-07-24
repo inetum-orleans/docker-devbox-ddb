@@ -24,15 +24,16 @@ making **ddb** a fully reactive software.
 !!! question "What occurs when running ddb ?"
     When running `ddb configure` command, a bunch of events are triggered.
     
-    Firstly, the command raise the `phase.configure` event, which is binded to the [file](./feature/file.md) feature.
+    Firstly, the command raise the `phase.configure` event, which is binded to the [file feature](./features/file.md).
     
-    Secondly, file feature executes it's action to scan files and trigger `file:found` event for each file in the 
+    Secondly, [file feature](./features/file.md) scans files and triggers `file:found` event for each file in the 
     project directory.
     
     Thirdly, the [jsonnet](./features/jsonnet.md) feature which is binded to `file:found` event with a filter to match
     `.jsonnet` file extension only, so that only those files are processed by the jsonnet template engine.
     
-    Other features will perform actions the same way, like jinja, symlinks and ytt features.
+    Other features perform actions the same way, like [jinja](./features/jinja.md), [symlinks](./features/symlinks.md) 
+    and [ytt](./features/ytt.md) features.
     
     Those actions raises other events, like `file.generated` for each generated files, that will be processed by the 
     gitignore feature to add generated files to ignore list.    

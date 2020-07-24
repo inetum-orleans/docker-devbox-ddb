@@ -25,16 +25,21 @@ nav:
   - Overview: overview.md
   - Configuration: configuration.md
   - Commands: commands.md
+  - Templates: templates.md
   - Guides:
       - PostgreSQL, Symfony, VueJS:  guides/psql-symfony-vue.md
   - Features:
-    - docker: features/docker.md
-    - fixuid: features/fixuid.md
-    - git: features/git.md
-    - gitignore: features/gitignore.md
-    - jsonnet: features/jsonnet.md
-    - shell: features/shell.md
-    - smartCD: features/smartcd.md
+      - docker: features/docker.md
+      - file: features/file.md
+      - fixuid: features/fixuid.md
+      - git: features/git.md
+      - gitignore: features/gitignore.md
+      - jinja: features/jinja.md
+      - jsonnet: features/jsonnet.md
+      - shell: features/shell.md
+      - smartcd: features/smartcd.md
+      - symlinks: features/symlinks.md
+      - ytt: features/ytt.md
 
 plugins:
   - search

@@ -18,7 +18,7 @@ This configuration is **used internally** by feature actions, but is also inject
 template engine**. You can add any data structure inside the configuration file so this data is available inside 
 template engines.
 
-!!! question How to check effective configuration
+!!! question "How to check effective configuration"
     You can run `ddb config` to view the merged effective configuration.
     
 Each feature holds it's own configuration section under the name of the feature. For details about each supported 

@@ -7,11 +7,11 @@ handling simple execution of commands into docker containers, it contains a lot 
 docker-compose configuration processing
 ---
 
-Listening on `file.found` event, when a `docker-compose.yml` is found or generated from templates, the content is parsed.
+When a `docker-compose.yml` is found or generated from templates, the content is parsed.
 
 All labels prefixed `ddb.emit.` are processed and converted into event and event arguments.
 
-!!! example "Example : the creation of binaries"
+!!! info "Creation of binaries"
     Whether you use `ddb.Binary()` in jsonnet template or manually add labels to your `docker-compose.yml`, they 
     are converted into ddb configuration and shims are generated as simple executable commands by the [shell](shell.md)
     features, thanks to `docker:binary` event.
