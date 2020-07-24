@@ -6,6 +6,7 @@ site_author: Rémi Alvergnat <remi.alvergnat@gfi.world>, Pierre Lejeune <pierre.
 copyright: GFI Informatique
 
 repo_url: https://github.com/gfi-centre-ouest/docker-devbox-ddb
+edit_uri: https://github.com/gfi-centre-ouest/docker-devbox-ddb/blob/develop/docs
 
 theme:
   language: 'en'
