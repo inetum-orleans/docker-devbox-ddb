@@ -21,20 +21,19 @@ markdown_extensions:
 
 nav:
   - Home: index.md
+  - Overview: overview.md
+  - Configuration: configuration.md
+  - Commands: commands.md
   - Guides:
-      - Foreword: guides/foreword.md
       - PostgreSQL, Symfony, VueJS:  guides/psql-symfony-vue.md
-  - References:
-      - Foreword: references/foreword.md
-      - Commands: references/commands.md
-      - Features:
-        - docker: references/features/docker.md
-        - fixuid: references/features/fixuid.md
-        - git: references/features/git.md
-        - gitignore: references/features/gitignore.md
-        - jsonnet: references/features/jsonnet.md
-        - shell: references/features/shell.md
-        - smartCD: references/features/smartcd.md
+  - Features:
+    - docker: features/docker.md
+    - fixuid: features/fixuid.md
+    - git: features/git.md
+    - gitignore: features/gitignore.md
+    - jsonnet: features/jsonnet.md
+    - shell: features/shell.md
+    - smartCD: features/smartcd.md
 
 plugins:
   - search

@@ -10,17 +10,17 @@ Feature Configuration
     - type: boolean
     - default: False
               
-- `fix_files_permissions`: Activate the file access in regard to git index 
+- `fix_files_permissions`: Fix filesystem permissions from git index metadata 
     - type: boolean
     - default: true
 
-??? example "Configuration example"
+!!! example "Configuration"
     ```yaml
     git:
       disabled: false
       fix_files_permissions: true
     ``` 
-Fix Files Permissions automation
+Fix files permissions
 ---
 
 When you clone or update a repository, it may contains executable files such as php binaries. By default, they does not 

@@ -11,15 +11,14 @@ Listening on `file.found` event, when a `docker-compose.yml` is found or generat
 
 All labels prefixed `ddb.emit.` are processed and converted into event and event arguments.
 
-??? example "Example : the creation of binaries"
-    Whether you use ddb.Binary() in jsonnet template or manually add the right labels to your `docker-compose.yml`, they 
+!!! example "Example : the creation of binaries"
+    Whether you use `ddb.Binary()` in jsonnet template or manually add labels to your `docker-compose.yml`, they 
     are converted into ddb configuration and shims are generated as simple executable commands by the [shell](shell.md)
-    features because of the event `docker:binary`
+    features, thanks to `docker:binary` event.
     
 Feature configuration
 ---
 As docker is at the heart of ddb, it has one of the largest collection of parameters. 
-
 
 - `disabled`: Definition of the status of the feature. If set to True, docker feature will not be triggered.
     - type: boolean
@@ -88,7 +87,7 @@ As docker is at the heart of ddb, it has one of the largest collection of parame
     - type: number
     - default: Automatically retrieve the GID of the current user
     
-??? example "Configuration example"
+!!! example "Configuration"
     ```yaml
     docker:
       build_image_tag: master
@@ -115,6 +114,6 @@ As docker is at the heart of ddb, it has one of the largest collection of parame
         redirect_to_https: null
         type: traefik
       user:
-        gid: 1001
-        uid: 1001
+        gid: 1000
+        uid: 1000
     ```

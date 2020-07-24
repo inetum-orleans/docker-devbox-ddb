@@ -4,20 +4,22 @@ Jsonnet
 [Jsonnet](https://jsonnet.org/) is embedded into ddb. You only have to use the right file extension for ddb to 
 process it through the appropriate template engine.
 
-Mainly used for docker-compose.yml generation, you can use it for any file generation you want.
+Mainly used to generate `docker-compose.yml` configuration, you can still use it for any other json or yaml based 
+templating purpose.
 
-When jsonnet templates are processed, ddb inject all his configuration into the template, so you can use them as 
-you need using jsonnet standard library function : 
-```jsonnet 
+When a jsonnet template is processed, ddb use it's configuration as context, so you can use them as you need using 
+jsonnet standard library function.
+
+```json 
 std.extVar("<name of the configuration variable>")
 ```
 
-The parsing of template into final file is done by executing `ddb configure` command.
+Run `ddb configure` to evaluate the template and generate target file.
 
 Feature Configuration
 ---
 
-A few configurations are available for this features : 
+A few configurations are available for this feature : 
 
 - `disabled`: Definition of the status of the feature. If set to True, jsonnet templates will not be processed by 
                this feature.
@@ -29,11 +31,11 @@ A few configurations are available for this features :
     - type: array of strings
     - default: `[".jsonnet"]`
  
-- `extensions`: TODO : Explain the use of extensions
+- `extensions`: TODO
     - type: array of strings
     - default: `['.*', '']`
  
-- `includes`: TODO : Explain the use of includes
+- `includes`: TODO
     - type: array of strings
     - default: `['.*', '']`
  
@@ -41,7 +43,7 @@ A few configurations are available for this features :
     - type: array of strings
     - default: `[]`
 
-??? example "Configuration example"
+!!! example "Configuration"
     ```yaml
     jsonnet:
       disabled: false
@@ -57,20 +59,19 @@ A few configurations are available for this features :
 Docker-compose jsonnet library
 ---
 
-Jsonnet feature provides a handful list of functions to help generation of docker-compose.
+Jsonnet feature provides a library with handful functions to help generate `docker-compose.yml`.
 
-In order to make those available, you need to include the library:
-```jsonnet
+In order to make those available, you need to import the library:
+
+```json
 local ddb = import 'ddb.docker.libjsonnet';
 ```
 
-This will provide you the following functions to simplify `docker-compose.yml` file generation.
-
 ### Compose
 
-This function defines global docker-compose configurations elements. 
+This function defines the minimal docker-compose configuration. 
 
-!!! abstract "Parameters:"
+!!! abstract "Parameters"
     - `network_names`: the network to add.
         - type: string|object
         - default: `docker.reverse_proxy.network_names` ddb configuration value
@@ -78,8 +79,8 @@ This function defines global docker-compose configurations elements.
         - type: string
         - default: `3.7`
 
-??? example 
-    ```jsonnet
+!!! example 
+    ```json
     ddb.Compose()
     ```
     without any service configuration will produce
@@ -92,13 +93,17 @@ This function defines global docker-compose configurations elements.
     ```
 
 ### Build
-This function generates the `build` configuration for a service and `image` if docker registry is defined.
+
+This function generates a service configuration from a `Dockerfile` available in `.docker/<service>` directory.
 
 It will also add the `init` to true and `restart` configurations for the service.
 
 The `restart` configuration will be set with the `docker.restart_policy` ddb configuration.
 
-!!! abstract "Parameters:"
+If a docker registry is configured inside docker feature, `image` configuration will also be generated from the service 
+name.
+
+!!! abstract "Parameters"
     - `name`: 
     Generate the `build.context` configuration value by appending it to the `directory` parameter.
         - type: string
@@ -115,8 +120,8 @@ The `restart` configuration will be set with the `docker.restart_policy` ddb con
         - type: boolean
         - default: `docker.directory` ddb configuration value
 
-??? example "Example with a registry defined"
-    ```jsonnet
+!!! example "Example with a registry defined"
+    ```json
     ddb.Build("db")
     ```
     will produce :
@@ -128,20 +133,20 @@ The `restart` configuration will be set with the `docker.restart_policy` ddb con
     ```
 
 ### Image
-This function generates the `image` configuration for a service.
+This function generates a service configuration based on an external image.
 
 It will also add the `init` to true and `restart` configurations for the service.
 
 The `restart` configuration will be set with the `docker.restart_policy` ddb configuration.
 
-!!! abstract "Parameters:"
+!!! abstract "Parameters"
     - `image`: 
     The image to use
         - type: string
 
 
-??? example 
-    ```jsonnet 
+!!! example 
+    ```json 
     ddb.Image("nginx:latest")
     ```
     will produce
@@ -150,11 +155,11 @@ The `restart` configuration will be set with the `docker.restart_policy` ddb con
     ```
 
 ### User
-This function generate the `user` configuration for a service.
+This function generates the `user` configuration for a service.
 
 In ddb, it is mainly use for `fixuid` automatic integration
 
-!!! abstract "Parameters:"
+!!! abstract "Parameters"
     - `uid`: The uid to use
         - type: string
         - default: : `docker.user.uid` ddb configuration value
@@ -162,8 +167,8 @@ In ddb, it is mainly use for `fixuid` automatic integration
         - type: string
         - default: : `docker.user.gid` ddb configuration value
 
-??? example 
-    ```jsonnet 
+!!! example 
+    ```json 
     ddb.User()
     ```
     will produce
@@ -171,8 +176,8 @@ In ddb, it is mainly use for `fixuid` automatic integration
     user: 1000:1000
     ```
 
-### XDebug
-This function generate `environment` configuration used for PHP XDebug.
+### XDebug (PHP)
+This function generates `environment` configuration used for XDebug (PHP Debugger).
 
 There is not parameter, but it will generate `PHP_IDE_CONFIG` and `XDEBUG_CONFIG` if `docker.debug.disabled` 
 ddb configuration is set to `False`.
@@ -181,8 +186,8 @@ For the `serverName` and `idekey`, it will be set with the ddb configuration `co
 
 For the `remote_host`, it will be set with the ddb configuration `docker.debug.host`.
 
-??? example 
-    ```jsonnet 
+!!! example 
+    ```json 
     ddb.Xdebug()
     ```
     will produce
@@ -194,12 +199,12 @@ For the `remote_host`, it will be set with the ddb configuration `docker.debug.h
     ```
 
 ### VirtualHost
-This function generate service configuration used for reverse-proxy auto-configuration.
+This function generates service configuration used for reverse-proxy auto-configuration.
 
 The output generated depends on the `docker.reverse_proxy.type` ddb configuration. Currently, only traefik is supported.
 If this configuration is anything else, there will be no output.
 
-!!! abstract "Parameters:"
+!!! abstract "Parameters"
     - `port`:
     The port on which the trafic will be redirected.
         - type: string
@@ -230,8 +235,8 @@ If this configuration is anything else, there will be no output.
         - type: boolean|null
         - default: null
 
-??? example "Example with traefik as reverse proxy"
-    ```jsonnet 
+!!! example "Example with traefik as reverse proxy"
+    ```json 
     ddb.VirtualHost("80", "your-project.test", "app")
     ```
     will produce
@@ -253,7 +258,7 @@ If this configuration is anything else, there will be no output.
 
 Binary allow the creation of alias for command execution inside the service.
 
-!!! abstract "Parameters:"
+!!! abstract "Parameters"
     - `name`: the binary name. This will be the command you will enter in your terminal.
         - type: string
     - `workdir`: the default directory to execute the command into. In most case, it is the same as the service workdir.
@@ -266,8 +271,8 @@ Binary allow the creation of alias for command execution inside the service.
     - `options_condition`: add a condition for the option to be added or not to the command.
         - type: string|null
 
-??? example 
-    ```jsonnet 
+!!! example 
+    ```json 
     ddb.Binary("npm", "/app", "npm", "--label traefik.enable=false", '"serve" not in args')
     ```
     will produce
@@ -285,7 +290,7 @@ Binary allow the creation of alias for command execution inside the service.
 BinaryLabels is mostly the same as [Binary](#binary) but output configuration without the `labels:` part, so you can add 
 it directly to your own labels block.
 
-!!! abstract "Parameters:"
+!!! abstract "Parameters"
     - `name`: the binary name. This will be the command you will enter in your terminal.
         - type: string
     - `workdir`: the default directory to execute the command into. In most case, it is the same as the service workdir.
@@ -298,8 +303,8 @@ it directly to your own labels block.
     - `options_condition`: add a condition for the option to be added or not to the command.
         - type: string|null
 
-??? example 
-    ```jsonnet 
+!!! example 
+    ```json 
     ddb.BinaryLabels("npm", "/app", "npm", "--label traefik.enable=false", '"serve" not in args')
     ```
     will produce
@@ -315,7 +320,7 @@ it directly to your own labels block.
 
 BinaryOptions allow you to add options to service's binary previously declared.
 
-!!! abstract "Parameters:"
+!!! abstract "Parameters"
     - `name`: the binary name. This will be the command you will enter in your terminal.
         - type: string
     - `options`: options to add to the docker-compose command.
@@ -323,8 +328,8 @@ BinaryOptions allow you to add options to service's binary previously declared.
     - `options_condition`: add a condition for the option to be added or not to the command.
         - type: string|null
     
-??? example 
-    ```jsonnet 
+!!! example 
+    ```json 
     ddb.BinaryOptions("npm", "--label traefik.enable=false", '"serve" not in args')
     ```
     will produce
@@ -339,7 +344,7 @@ BinaryOptions allow you to add options to service's binary previously declared.
 BinaryOptionsLabels is mostly the same as [BinaryOptions](#binaryoptions) but output configuration without the 
 `labels:` part, so you can add it directly to your own labels block.
 
-!!! abstract "Parameters:"
+!!! abstract "Parameters"
     - `name`: the binary name. This will be the command you will enter in your terminal.
         - type: string
     - `options`: options to add to the docker-compose command.
@@ -347,8 +352,8 @@ BinaryOptionsLabels is mostly the same as [BinaryOptions](#binaryoptions) but ou
     - `options_condition`: add a condition for the option to be added or not to the command.
     - type: string|null
     
-??? example 
-    ```jsonnet 
+!!! example 
+    ```json 
     ddb.BinaryOptions("npm", "--label traefik.enable=false", '"serve" not in args')
     ```
     will produce
@@ -370,7 +375,7 @@ This can be used to add environment condition to a service activation, a specifi
     - `env`: the environment to search index of.
         - type: string|null
     
-??? example
+!!! example
     With the following configuration :  
     ```yml 
     core:
@@ -394,7 +399,7 @@ It does not have any input parameter and returns boolean.
 
 This can be used to add environment condition to a service activation, a specific configuration,... 
     
-??? example
+!!! example
     With the following configuration :  
     ```yml 
     core:
@@ -403,7 +408,7 @@ This can be used to add environment condition to a service activation, a specifi
     ```
     
     - `ddb.env.is("prod")` will return false
-    - `ddb.env.index("dev")` will return true
+    - `ddb.env.is("dev")` will return true
 
 ### path
 
@@ -413,4 +418,4 @@ It is mostly used to add a folder as volume to service.
 
 ### path.mapPath
 
-TODO : Explain the goal of it
+TODO

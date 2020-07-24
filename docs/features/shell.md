@@ -1,9 +1,9 @@
 Shell
 ===
 
-The shell feature is the one managing the behavior of environment specific behaviors (Windows, Linux/Unix).
+The shell feature manages OS/Shell specific behaviors (Windows, Linux/Unix).
 
-For instance, on Linux, shims will be mainly bash executables but on Windows they are .bat files
+For instance, generated binary shims are bash executables on Linux, but .bat files on Windows.
 
 Feature Configuration
 ---
@@ -33,7 +33,7 @@ Feature Configuration
     - type: string
     - default: Detect the current shell type used
     
-??? example "Configuration example"
+!!! example "Configuration"
     ```yaml
     shell:
       aliases:
@@ -54,66 +54,57 @@ Feature Configuration
       shell: bash
     ```
 
-Environment update
+Environment activation
 ---
 
-ddb is generating configurations for your project and binary management for you docker containers. 
+ddb is generating configurations for your project and brings docker container binaries right in your development 
+environment. 
 
-If you have generated binary via using your `docker-compose.yml.jsonnet`, for instance you can run `.bin/psql`.
+If you have registered binary inside `docker-compose.yml.jsonnet`, you can found binary shims inside `.bin` directory.
 It means that you need to be in the root folder of your project, or to add the full path to the executable file if you 
 are not.
 
-The best solution is to update your `PATH`. 
-ddb provides you a simple way to do it by running the following command in your shell :
-
-```
-$(ddb activate) 
-```
+The best solution is to update your `PATH`. ddb provides you a way to do it by running the `$(ddb activate)` command in your shell.
 
 This command will generate environment variables updates commands and execute them, including `PATH` update for easy 
-access to executables stored in the `.bin` folder of your project.
+to access stored in the `.bin` folder of your project from anywhere.
 
-!!! info "This environment update is local"
-    The modification of the environment variable is local to your current shell session. 
+!!! info "Changes to environment are local and not persistent"
+    The modification of the shell environment is local to your current shell session. 
     It means that if you open a new one, the environment will be the same as before run the `$(ddb activate)` command.
 
-** But what happen if you are changing directory and move to another project ?**
+!!! question "But what happen when switching to another project ?"
+    The environment variables will still be configured for the project you ran the command for. So before leaving his directory,
+    you will need to run `$(ddb deactivate) ` command.
 
-The environment variables will still be configured for the project you ran the command for. So before leaving his directory,
-you will need to run the following command : 
-
-```
-$(ddb deactivate) 
-```
-
-It will unload the project specific environment variable configuration and restore it to normal.
-
-Now you can move to the new project directory and run `$(ddb activate)` once again, and so on.
-
-??? info "If you are lazy as we are"
-    In order to simplify this process, we implemented a great feature which will automatize it.
+    It will unload the project specific environment variable configuration and restore it to the initial state.
     
-    For more information, we invite you to check the [SmartCD Feature](smartcd.md)
-    
+    Now you can move to the new project directory and run `$(ddb activate)` once again, and so on.
 
-Docker Binary Generation
+!!! info "If you are as lazy as we are ..."
+    In order to automate this process, check [SmartCD Feature](smartcd.md). It will run those commands when entering 
+    and leaving the project directory containing the `ddb.yml` file.
+
+Docker binary shims
 --- 
 
-If you are using [Jsonnet templates](jsonnet.md) and the `ddb.Binary()` function, this means that you want to have 
+If you are using [Jsonnet templates](jsonnet.md) with `ddb.Binary()` function, this means that you want to have 
 simple access to command execution inside docker containers. 
 
-As the generation of the shims depends on your Operating System, it is handled by the shell feature.
+As the generation of the shims depends on your specific shell (cmd.exe, bash, ...), it is handled by the shell feature.
 
-Each binary declared will be converted to a simple shims which will be created inside the `shell.path.directories[0]` 
-of your project declared in ddb configuration, and available in your shell after running `$(ddb activate)`.
+Each declared binary inside `.jsonnet` file generates a shim inside the `.bin` project directory 
+(directory configured in `shell.path.directories[0]`), and available in your shell after running `$(ddb activate)`.
 
-??? example "Access to postgresql command"
-    Working with PostgreSQL, you may need to run commands like ...
+!!! example "Access to PostgreSQL commands the native way"
+    If you have a PostgreSQL container, you may need to run commands like ...
       - `psql` - PostgreSQL client binary.
       - `pg_dump` - PostgreSQL command line tool to export data to a file.
    
-    So, instead of writing a long and boring commmand, you can declare them in your docker-compose.yml.jsonnet as follow:
-    ```jsonnet
+    Instead of writing a long and impossible to remember docker commmand, you should declare them using `ddb.Binary()` 
+    function in `docker-compose.yml.jsonnet` file.
+    
+    ```json
     local ddb = import 'ddb.docker.libjsonnet';
     
     ddb.Compose() {
@@ -124,20 +115,19 @@ of your project declared in ddb configuration, and available in your shell after
               {
                 environment+: {POSTGRES_PASSWORD: "ddb"},
                 volumes+: [
-              'db-data:/var/lib/postgresql/data',
-              ddb.path.project + ':/project'
+                  'db-data:/var/lib/postgresql/data',
+                  ddb.path.project + ':/project'
                 ]
               }
         }
     }
     ```
     
-    Then, run `ddb configure`, which will generate executable files in the `.bin` folder.
+    Then, run `ddb configure`, which will generate executable shim file in the `.bin` folder.
     
-    Finaly, you can run `$(ddb activate)` to update your `PATH` and bring those commands to your local environment 
-    as native ones.
-    
-    Now, you can run `psql` and `pg_dump` as if they were native commands.
+    Finaly, run `$(ddb activate)` to update your `PATH` and bring those commands to your local environment.
+
+    Now, `psql` and `pg_dump` are available as if they were native commands.
 
 Aliases Management
 ---
@@ -157,19 +147,22 @@ shell:
       myAlias: theLongCommandToExecute
 ```  
 
-??? example "A long drupal drush path"
-    When you are working on drupal project, most of the time [Drush](https://www.drush.org/) command is available 
-    globally. But in some case, it is a composer requirement, so it is available through `vendor/drush/drush/drush` path.
+!!! example "Make a composer dependency available globally"
+    When you are working on PHP/Composer project, some commands are available inside `vendor` path.
     
-    So, instead of writing this command each time, you can declare the alias this way: 
+    For drupal developers, [Drush](https://www.drush.org/) commands is available through `vendor/drush/drush/drush` 
+    binary.
+    
+    Instead of writing the full path of this binary each time, you can declare an alias in ddb configuration. 
+    
     ```yaml
     shell:
       aliases:
         drush: vendor/drush/drush/drush
     ```
     
-    A shims will be created and added to the `PATH` thanks to ddb so you will able to use it from you project root folder
-    due to the way it is declared : 
+    A binary shim will be created and added to the `PATH` thanks to ddb so you will able to use it from you project 
+    root folder: 
     
     ```shell
     drush cr

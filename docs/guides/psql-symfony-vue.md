@@ -20,7 +20,7 @@ Setup database
 
 You should now setup the database container. Create `docker-compose.yml.jsonnet` file, and add the following content:
 
-```jsonnet
+```json
 local ddb = import 'ddb.docker.libjsonnet';
 
 ddb.Compose() {
@@ -84,7 +84,7 @@ variable `POSTGRES_PASSWORD`.
 
 Add this environment variable to `docker-compose.yml.jsonnet` template.
 
-```jsonnet
+```json
 local ddb = import 'ddb.docker.libjsonnet';
 
 ddb.Compose() {
@@ -167,7 +167,7 @@ docker-compose down
 
 Map a named volume to the `db` service inside `docker-compose.yml.jsonnet`.
 
-```jsonnet
+```json
 local ddb = import 'ddb.docker.libjsonnet';
 
 ddb.Compose() {
@@ -203,8 +203,10 @@ volumes:
 has also been declared in the main volumes section ! Magic :)
 
 !!! note "In fact, it's not so magic"
-    Those automated behavior provided by `docker-compose.yml.jsonnet`, like `init` and `restart` on container, 
+    Those automated behavior provided by `docker-compose.yml.jsonnet`, like `init` and `restart` on each service, 
     and global `volumes` declaration, are handled by `ddb` jsonnet library through `ddb.Compose()` function.
+    
+    For more information, check [Jsonnet Feature](../features/jsonnet.md) section.
     
 Register binary from image
 ---
@@ -220,7 +222,7 @@ binary from your local environment. You may also have issues to read input data 
 With ddb, you can register those binaries a single time inside `docker-compose.yml.jsonnet` to bring them to your local 
 environment.
 
-```jsonnet
+```json
 local ddb = import 'ddb.docker.libjsonnet';
 
 ddb.Compose() {
@@ -342,7 +344,7 @@ paths:
 Last step, change in `docker-compose.yml.jsonnet` the service definition to use the newly created Dockerfile
 (`ddb.Image("postgres")` replaced to `ddb.Build("postgres")`), and set `user` to the host user uid/gid (`ddb.User()`).
 
-```jsonnet
+```json
 local ddb = import 'ddb.docker.libjsonnet';
 
 ddb.Compose() {
