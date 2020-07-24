@@ -1,7 +1,7 @@
 History
 =======
 
-1.0.0-beta7 (unreleased)
+1.0.0-beta7 (2020-07-25)
 ------------------------
 
 - Add MacOS support (no binary package available though)
