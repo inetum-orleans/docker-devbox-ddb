@@ -204,7 +204,7 @@ has also been declared in the main volumes section ! Magic :)
 
 !!! note "In fact, it's not so magic"
     Those automated behavior provided by `docker-compose.yml.jsonnet`, like `init` and `restart` on each service, 
-    and global `volumes` declaration, are handled by `ddb` jsonnet library through `ddb.Compose()` function.
+    and global `volumes` declaration, are handled by ddb jsonnet library through `ddb.Compose()` function.
     
     For more information, check [Jsonnet Feature](../features/jsonnet.md) section.
     

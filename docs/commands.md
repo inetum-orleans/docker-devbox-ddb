@@ -1,7 +1,7 @@
 Commands
 ========
 
-If you run `ddb` with no argument, the usage is displayed.
+If you run **ddb** with no argument, the usage is displayed.
 
 !!! info "ddb usage"
     ```
@@ -35,10 +35,10 @@ If you run `ddb` with no argument, the usage is displayed.
 
 Positional argument match **command** names: `run`, `init`, `configure`, `features`, `config`, `activate`, `deactivate`.
 
-Some optional arguments are available globally, regardless the command. These are placed before the command name.
+Some **optional arguments are available globally**, regardless the command. These are placed **before the command name**.
 
-Some commands support additional arguments that can be listed with `--help` flag after the command name. 
-Those are placed after the command name.
+Some **commands support additional arguments** that can be listed with `--help` flag after the command name. 
+Those are placed **after the command name**.
 
 !!! info "`ddb config` additional arguments"
     `ddb config --help`
@@ -77,7 +77,7 @@ This action allows you to check the list of enabled features with a short explan
 
 Display the effective configuration after merge of all configuration files from possible locations.
 
-See *[Configuration](./configuration.md)* section for more information about how to configure ddb.
+Read more: [Configuration](configuration.md)
     
 !!! tip "Tip: Use --variables to check what is available in template engines"
     
@@ -97,14 +97,14 @@ TODO
 Display a script for the configured shell that must be evaluated to active the project environment inside the current 
 shell session.
 
-More information in [shell feature](./features/shell.md) section.
+Read more: [Shell feature](features/shell.md)
 
 - **ddb deactivate**
 
 Display a script for the configured shell that must be evaluated to deactivate the project environment inside the current 
 shell session.
 
-More information in [shell feature](./features/shell.md) section.
+Read more: [Shell feature](features/shell.md)
 
 - **ddb run**
 
