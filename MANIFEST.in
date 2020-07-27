@@ -7,6 +7,7 @@ include *.sh
 include *.md
 include *rc
 include LICENSE
+exclude Makefile
 recursive-include .travis *
 recursive-include tests *
 recursive-include ddb *
