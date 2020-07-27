@@ -63,4 +63,4 @@ If you have previously defined a certresolver to null, it will be detected that 
 The `certs:removed` event will be triggered, which is handled by the traefik feature.
 
 When triggered, it will remove the configuration file and both public and private key in order to tell Traefik 
-that there is no certificate defined for the given domain.
+that there is no more certificate defined for the given domain.
