@@ -29,6 +29,8 @@ nav:
   - Guides:
       - PostgreSQL, Symfony, VueJS:  guides/psql-symfony-vue.md
   - Features:
+      - certs: features/certs.md
+      - copy: features/copy.md
       - docker: features/docker.md
       - file: features/file.md
       - fixuid: features/fixuid.md
@@ -36,9 +38,13 @@ nav:
       - gitignore: features/gitignore.md
       - jinja: features/jinja.md
       - jsonnet: features/jsonnet.md
+      - permissions: features/permissions.md
+      - run: features/run.md
       - shell: features/shell.md
       - smartcd: features/smartcd.md
       - symlinks: features/symlinks.md
+      - traefik: features/traefik.md
+      - version: features/version.md
       - ytt: features/ytt.md
   - FAQ: faq.md
 
