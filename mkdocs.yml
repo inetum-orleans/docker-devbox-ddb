@@ -31,6 +31,7 @@ nav:
   - Features:
       - certs: features/certs.md
       - copy: features/copy.md
+      - core: features/core.md
       - docker: features/docker.md
       - file: features/file.md
       - fixuid: features/fixuid.md
