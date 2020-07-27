@@ -63,7 +63,7 @@ As docker is at the heart of ddb, it has one of the largest collection of parame
     - type: string|null
 - `registry.repository`: The repository for this project docker images.
     - type: string|null
-- `restart_policy`: TODO explain what it is used for.
+- `restart_policy`: The strategy to use for docker restart on crash or host start event
     - type: string
     - default: depending on the environment : on dev it is set to 'no', on other it is set to 'yes'
 - `reverse_proxy.certresolver`: TODO explain what it is used for.
