@@ -225,7 +225,7 @@ class DockerComposeBinaryAction(InitializableAction):
 
         docker_binaries_cache.flush()
 
-    def execute(self, name=None, workdir=None, options=None, options_condition=None, args=None,
+    def execute(self, name=None, workdir=None, options=None, options_condition=None, args=None, exe=False,
                 docker_compose_service=None):
         """
         Execute action
@@ -236,7 +236,7 @@ class DockerComposeBinaryAction(InitializableAction):
             raise ValueError("name should be defined")
 
         binary = DockerBinary(name, docker_compose_service=docker_compose_service, workdir=workdir, options=options,
-                              options_condition=options_condition, args=args)
+                              options_condition=options_condition, args=args, exe=exe)
 
         self.binaries[name] = binary
 

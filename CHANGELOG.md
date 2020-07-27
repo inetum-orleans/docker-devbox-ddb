@@ -4,7 +4,7 @@ History
 1.0.0-beta8 (unreleased)
 ------------------------
 
-- Nothing changed yet.
+- Binary: Add exe option to use docker-compose exec instead of run
 
 
 1.0.0-beta7 (2020-07-25)

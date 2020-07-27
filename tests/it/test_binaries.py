@@ -16,6 +16,21 @@ class TestBinaries:
         exceptions = main(["run", "psql"])
         assert not exceptions
 
+        output = capsys.readouterr()
+        assert output.out.strip() == "docker-compose run --workdir=/workdir/. db psql"
+
+    def test_docker_binaries_exe(self, project_loader, capsys: CaptureFixture):
+        project_loader("docker1_exe")
+
+        exceptions = main(["configure"])
+        assert not exceptions
+
+        exceptions = main(["run", "psql"])
+        assert not exceptions
+
+        output = capsys.readouterr()
+        assert output.out.strip() == "docker-compose exec --workdir=/workdir/. db psql"
+
     def test_docker_binaries_with_clear_cache(self, project_loader, capsys: CaptureFixture):
         project_loader("docker1")
 

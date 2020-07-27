@@ -21,20 +21,22 @@ class DockerBinary(Binary):
                  workdir: Optional[str] = None,
                  options: Optional[str] = None,
                  options_condition: Optional[str] = None,
-                 args: Optional[str] = None):
+                 args: Optional[str] = None,
+                 exe: bool = False):
         self._name = name
         self.docker_compose_service = docker_compose_service
         self.workdir = workdir
         self.options = options
         self.options_condition = options_condition
         self.args = args
+        self.exe = exe
 
     @property
     def name(self) -> str:
         return self._name
 
     def command(self, *args) -> Iterable[str]:
-        params = ["run"]
+        params = ["exec" if hasattr(self, 'exe') and self.exe else "run"]
 
         if self.workdir:
             relpath = os.path.relpath(os.getcwd(), config.paths.project_home)
