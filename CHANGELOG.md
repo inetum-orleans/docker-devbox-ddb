@@ -5,7 +5,7 @@ History
 ------------------------
 
 - Binary: Add exe option to use docker-compose exec instead of run
-
+- Gitignore : Add enforce option to force addition of file to gitignore
 
 1.0.0-beta7 (2020-07-25)
 ------------------------

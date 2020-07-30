@@ -4,8 +4,8 @@ import pathlib
 
 import zgitignore
 
-from ddb.action import Action
-from ddb.action.action import EventBinding
+from ddb.action.action import EventBinding, InitializableAction
+from ddb.cache import caches, register_project_cache
 from ddb.config import config
 from ddb.context import context
 from ddb.event import events
@@ -14,7 +14,7 @@ from ddb.utils.file import force_remove
 repository = "gfi-centre-ouest/docker-devbox"
 
 
-class UpdateGitignoreAction(Action):
+class UpdateGitignoreAction(InitializableAction):
     """
     Append generated files to .gitignore
     """
@@ -26,7 +26,12 @@ class UpdateGitignoreAction(Action):
     @property
     def event_bindings(self):
         return (events.file.generated,
-                EventBinding(events.file.deleted, self.remove))
+                EventBinding(events.file.deleted, self.remove),
+                EventBinding(events.phase.configure, self.enforced)
+                )
+
+    def initialize(self):
+        register_project_cache("gitignore")
 
     @staticmethod
     def find_gitignores(target: str):
@@ -105,6 +110,27 @@ class UpdateGitignoreAction(Action):
         relative_target = pathlib.Path(os.path.relpath(target, os.path.dirname(gitignore))).as_posix()
         UpdateGitignoreAction.add_file(gitignore, relative_target)
         context.log.success("%s added to %s", relative_target, gitignore)
+
+    @staticmethod
+    def enforced():
+        """
+        Handle the list of enforced actions
+        """
+        files = config.data.get('gitignore.enforce')
+        cache = caches.get("gitignore")
+        cached_files = cache.get('enforced', list())
+
+        for file in cached_files:
+            if file not in files:
+                UpdateGitignoreAction.remove(file)
+
+        for file in files:
+            UpdateGitignoreAction.execute(file)
+            if file not in cached_files:
+                cached_files.append(file)
+
+        cache.set('enforced', cached_files)
+        cache.flush()
 
     @staticmethod
     def add_file(gitignore: str, relative_target: str):
