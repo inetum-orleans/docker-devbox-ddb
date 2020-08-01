@@ -329,7 +329,7 @@ def parse_command_line(args: Optional[Sequence[str]] = None):
     opts.add_argument('-ff', '--fail-fast', action="store_true",
                       default=config.data.get('defaults.fail_fast', False),
                       help="Stop on first error")
-    opts.add_argument('--version', action="store_true", help='Display the ddb version.')
+    opts.add_argument('--version', action="store_true", help='Display the ddb version and check for new ones.')
 
     command_parsers = {}
 
