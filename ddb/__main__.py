@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import inspect
 import logging
+import math
 import os
 import sys
 import threading
@@ -11,6 +12,7 @@ from importlib import import_module
 from typing import Optional, Sequence, Iterable, Callable, Union, List
 
 import pkg_resources
+import requests
 import verboselogs
 from colorlog import default_log_colors, ColoredFormatter
 from toposort import toposort_flatten
@@ -71,6 +73,8 @@ _default_available_features = [CertsFeature(),
                                YttFeature()]
 
 _available_features = list(_default_available_features)
+
+ddb_repository = 'gfi-centre-ouest/docker-devbox-ddb'
 
 
 def load_plugins():
@@ -409,6 +413,38 @@ def register_actions_in_event_bus(fail_fast=False):
                 _register_action_in_event_bus(action, event_binding, fail_fast)
 
 
+def _get_last_release():
+    response = requests.get('https://api.github.com/repos/{}/releases/latest'.format(ddb_repository))
+    return response.json()
+
+
+def _display_table(header: str, cells):
+    def _max_length(header: str, cells) -> int:
+        max_length = len(header)
+        for cell in cells:
+            for row in cell:
+                length = len(row)
+                if length > max_length:
+                    max_length = length
+        return max_length
+
+    def _get_content(content, line_length):
+        left = math.floor((line_length - len(content)) / 2) * ' '
+        right = math.ceil((line_length - len(content)) / 2) * ' '
+        return left + content + right
+
+    line_length = _max_length(header, cells) + 2
+
+    print('+' + (line_length * '-') + '+')
+    print('|' + _get_content(header, line_length) + '|')
+    print('+' + (line_length * '-') + '+')
+
+    for cell in cells:
+        for row in cell:
+            print('|' + _get_content(row, line_length) + '|')
+        print('+' + (line_length * '-') + '+')
+
+
 def main(args: Optional[Sequence[str]] = None,
          watch_started_event=threading.Event(),
          watch_stop_event=threading.Event(),
@@ -438,12 +474,27 @@ def main(args: Optional[Sequence[str]] = None,
             if config.args.silent:
                 print(__version__)
             else:
-                print('+--------------------------------------------------------------+')
-                print('+                   ddb ' + __version__ + (39 - len(__version__)) * ' ' + '+')
-                print('+--------------------------------------------------------------+')
-                print('|      Please report any bug or feature request at             |')
-                print('| https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues |')
-                print('+--------------------------------------------------------------+')
+                current_version = __version__
+
+                version_title = 'ddb ' + current_version
+                version_content = [
+                    [
+                        'Please report any bug or feature request at',
+                        'https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues'
+                    ]
+                ]
+
+                last_release = _get_last_release().get('tag_name')
+                if current_version < last_release:
+                    version_content.append([
+                        '',
+                        'A new version is available : ' + last_release,
+                        'https://github.com/' + ddb_repository + '/releases/tag/' + last_release,
+                        'https://github.com/' + ddb_repository + '/blob/' + last_release + '/CHANGELOG.md',
+                        ''
+                    ])
+
+                _display_table(version_title, version_content)
             return []
 
         register_default_caches()
