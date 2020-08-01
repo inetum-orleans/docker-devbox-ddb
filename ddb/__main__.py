@@ -2,17 +2,16 @@
 # -*- coding: utf-8 -*-
 import inspect
 import logging
-import math
 import os
 import sys
 import threading
 from argparse import ArgumentParser, Namespace
+from datetime import date
 from gettext import gettext as _
 from importlib import import_module
 from typing import Optional, Sequence, Iterable, Callable, Union, List
 
 import pkg_resources
-import requests
 import verboselogs
 from colorlog import default_log_colors, ColoredFormatter
 from toposort import toposort_flatten
@@ -52,6 +51,8 @@ from ddb.feature.ytt import YttFeature
 from ddb.phase import phases
 from ddb.registry import Registry, RegistryObject
 from ddb.service import services
+from ddb.utils.release import ddb_repository, get_last_release
+from ddb.utils.table_display import get_table_display
 
 _default_available_features = [CertsFeature(),
                                CopyFeature(),
@@ -73,8 +74,6 @@ _default_available_features = [CertsFeature(),
                                YttFeature()]
 
 _available_features = list(_default_available_features)
-
-ddb_repository = 'gfi-centre-ouest/docker-devbox-ddb'
 
 
 def load_plugins():
@@ -413,38 +412,6 @@ def register_actions_in_event_bus(fail_fast=False):
                 _register_action_in_event_bus(action, event_binding, fail_fast)
 
 
-def _get_last_release():
-    response = requests.get('https://api.github.com/repos/{}/releases/latest'.format(ddb_repository))
-    return response.json()
-
-
-def _display_table(header: str, cells):
-    def _max_length(header: str, cells) -> int:
-        max_length = len(header)
-        for cell in cells:
-            for row in cell:
-                length = len(row)
-                if length > max_length:
-                    max_length = length
-        return max_length
-
-    def _get_content(content, line_length):
-        left = math.floor((line_length - len(content)) / 2) * ' '
-        right = math.ceil((line_length - len(content)) / 2) * ' '
-        return left + content + right
-
-    line_length = _max_length(header, cells) + 2
-
-    print('+' + (line_length * '-') + '+')
-    print('|' + _get_content(header, line_length) + '|')
-    print('+' + (line_length * '-') + '+')
-
-    for cell in cells:
-        for row in cell:
-            print('|' + _get_content(row, line_length) + '|')
-        print('+' + (line_length * '-') + '+')
-
-
 def main(args: Optional[Sequence[str]] = None,
          watch_started_event=threading.Event(),
          watch_stop_event=threading.Event(),
@@ -474,9 +441,7 @@ def main(args: Optional[Sequence[str]] = None,
             if config.args.silent:
                 print(__version__)
             else:
-                current_version = __version__
-
-                version_title = 'ddb ' + current_version
+                version_title = 'ddb ' + __version__
                 version_content = [
                     [
                         'Please report any bug or feature request at',
@@ -484,8 +449,8 @@ def main(args: Optional[Sequence[str]] = None,
                     ]
                 ]
 
-                last_release = _get_last_release().get('tag_name')
-                if current_version < last_release:
+                last_release = get_last_release().get('tag_name')
+                if __version__ < last_release:
                     version_content.append([
                         '',
                         'A new version is available : ' + last_release,
@@ -494,17 +459,39 @@ def main(args: Optional[Sequence[str]] = None,
                         ''
                     ])
 
-                _display_table(version_title, version_content)
+                print(get_table_display(version_title, version_content))
             return []
 
         register_default_caches()
         register_actions_in_event_bus(config.args.fail_fast)
 
         handle_command_line(command, watch_started_event, watch_stop_event)
+        if command.name not in ['activate', 'deactivate', 'run']:
+            _check_for_update()
         return context.exceptions
     finally:
         if not reset_disabled:
             reset()
+
+
+def _check_for_update():
+    register_global_cache('core.version')
+    cache = caches.get('core.version')
+    last_check = cache.get('last_check', None)
+    today = date.today()
+
+    if last_check is None or last_check < today:
+        last_release = get_last_release().get('tag_name')
+        if __version__ < last_release:
+            header = 'A new version is available : {}'.format(last_release)
+            content = [[
+                'For more information, check the following links :',
+                'https://github.com/{}/releases/tag/{}'.format(ddb_repository, last_release),
+                'https://github.com/{}/releases/tag/{}/CHANGELOG.md'.format(ddb_repository, last_release),
+            ]]
+            print(get_table_display(header, content))
+
+    cache.set('last_check', today)
 
 
 def clear_caches():
