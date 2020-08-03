@@ -6,6 +6,7 @@ import os
 import sys
 import threading
 from argparse import ArgumentParser, Namespace
+from datetime import date
 from gettext import gettext as _
 from importlib import import_module
 from typing import Optional, Sequence, Iterable, Callable, Union, List
@@ -50,6 +51,8 @@ from ddb.feature.ytt import YttFeature
 from ddb.phase import phases
 from ddb.registry import Registry, RegistryObject
 from ddb.service import services
+from ddb.utils.release import ddb_repository, get_last_release
+from ddb.utils.table_display import get_table_display
 
 _default_available_features = [CertsFeature(),
                                CopyFeature(),
@@ -325,7 +328,7 @@ def parse_command_line(args: Optional[Sequence[str]] = None):
     opts.add_argument('-ff', '--fail-fast', action="store_true",
                       default=config.data.get('defaults.fail_fast', False),
                       help="Stop on first error")
-    opts.add_argument('--version', action="store_true", help='Display the ddb version.')
+    opts.add_argument('--version', action="store_true", help='Display the ddb version and check for new ones.')
 
     command_parsers = {}
 
@@ -438,22 +441,57 @@ def main(args: Optional[Sequence[str]] = None,
             if config.args.silent:
                 print(__version__)
             else:
-                print('+--------------------------------------------------------------+')
-                print('+                   ddb ' + __version__ + (39 - len(__version__)) * ' ' + '+')
-                print('+--------------------------------------------------------------+')
-                print('|      Please report any bug or feature request at             |')
-                print('| https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues |')
-                print('+--------------------------------------------------------------+')
+                version_title = 'ddb ' + __version__
+                version_content = [
+                    [
+                        'Please report any bug or feature request at',
+                        'https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues'
+                    ]
+                ]
+
+                last_release = get_last_release().get('tag_name')
+                if __version__ < last_release:
+                    version_content.append([
+                        '',
+                        'A new version is available : ' + last_release,
+                        'https://github.com/' + ddb_repository + '/releases/tag/' + last_release,
+                        'https://github.com/' + ddb_repository + '/blob/' + last_release + '/CHANGELOG.md',
+                        ''
+                    ])
+
+                print(get_table_display(version_title, version_content))
             return []
 
         register_default_caches()
         register_actions_in_event_bus(config.args.fail_fast)
 
         handle_command_line(command, watch_started_event, watch_stop_event)
+        if command.name not in ['activate', 'deactivate', 'run']:
+            _check_for_update()
         return context.exceptions
     finally:
         if not reset_disabled:
             reset()
+
+
+def _check_for_update():
+    register_global_cache('core.version')
+    cache = caches.get('core.version')
+    last_check = cache.get('last_check', None)
+    today = date.today()
+
+    if last_check is None or last_check < today:
+        last_release = get_last_release().get('tag_name')
+        if __version__ < last_release:
+            header = 'A new version is available : {}'.format(last_release)
+            content = [[
+                'For more information, check the following links :',
+                'https://github.com/{}/releases/tag/{}'.format(ddb_repository, last_release),
+                'https://github.com/{}/releases/tag/{}/CHANGELOG.md'.format(ddb_repository, last_release),
+            ]]
+            print(get_table_display(header, content))
+
+    cache.set('last_check', today)
 
 
 def clear_caches():

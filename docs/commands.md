@@ -30,7 +30,7 @@ If you run **ddb** with no argument, the usage is displayed.
       -c, --clear-cache     Clear all caches
       -w, --watch           Enable watch mode (hot reload of generated files)
       -ff, --fail-fast      Stop on first error
-      --version             Display the ddb version.
+      --version             Display the ddb version and check for new ones.
     ```
 
 Positional argument match **command** names: `run`, `init`, `configure`, `features`, `config`, `activate`, `deactivate`.
