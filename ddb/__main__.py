@@ -51,7 +51,7 @@ from ddb.feature.ytt import YttFeature
 from ddb.phase import phases
 from ddb.registry import Registry, RegistryObject
 from ddb.service import services
-from ddb.utils.release import ddb_repository, get_last_release
+from ddb.utils.release import ddb_repository, get_lastest_release_version
 from ddb.utils.table_display import get_table_display
 
 _default_available_features = [CertsFeature(),
@@ -449,8 +449,8 @@ def main(args: Optional[Sequence[str]] = None,
                     ]
                 ]
 
-                last_release = get_last_release().get('tag_name')
-                if __version__ < last_release:
+                last_release = get_lastest_release_version()
+                if last_release and __version__ < last_release:
                     version_content.append([
                         '',
                         'A new version is available : ' + last_release,
@@ -481,8 +481,8 @@ def _check_for_update():
     today = date.today()
 
     if last_check is None or last_check < today:
-        last_release = get_last_release().get('tag_name')
-        if __version__ < last_release:
+        last_release = get_lastest_release_version()
+        if last_release and __version__ < last_release:
             header = 'A new version is available : {}'.format(last_release)
             content = [[
                 'For more information, check the following links :',
