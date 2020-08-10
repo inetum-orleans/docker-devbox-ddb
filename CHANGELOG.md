@@ -6,7 +6,9 @@ History
 
 - Binary: Add exe option to use docker-compose exec instead of run
 - Gitignore: Add enforce option to force addition of file to gitignore
-- Core: addition of release check on --version
+- Certs: Add `certs.cfssl.append_ca_certificate` and `certs.cfssl.verify_checksum` options support
+- Core: Add release check on --version
+- Core: Fix crash when github quota has exceeded on release check
 
 1.0.0-beta7 (2020-07-25)
 ------------------------
