@@ -52,6 +52,7 @@ class CfsslSchema(Schema):
     server = fields.Nested(CfsslServerSchema(), required=True, default=CfsslServerSchema())
     append_ca_certificate = fields.Boolean(required=True, default=True)
     certificate_request = fields.List(fields.Nested(CfsslCertificateRequest()))
+    verify_checksum = fields.Boolean(required=True, default=True)
     writer = fields.Nested(CfsslWriterSchema(), required=True, default=CfsslWriterSchema())
 
 
