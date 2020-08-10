@@ -62,9 +62,9 @@ class GenerateCertAction(Action):
                                            None,
                                            config.data['certs.cfssl.writer'],
                                            config.data['certs.destination'],
-                                           False,
+                                           config.data['certs.cfssl.append_ca_certificate'],
                                            client,
-                                           False)
+                                           config.data['certs.cfssl.verify_checksum'])
 
             context.log.success("TLS certificates generated for domain %s", domain)
 
