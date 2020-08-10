@@ -1,7 +1,7 @@
 History
 =======
 
-1.0.0-beta8 (unreleased)
+1.0.0-beta8 (2020-08-10)
 ------------------------
 
 - Binary: Add exe option to use docker-compose exec instead of run
