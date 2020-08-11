@@ -9,7 +9,7 @@ from .schema import CookiecutterFeatureSchema
 
 class CookiecutterFeature(Feature):
     """
-    Grabs templates from github repositories with semver versioning.
+    Generate code from a cookiecutter template available on github (https://cookiecutter.readthedocs.io).
     """
 
     @property

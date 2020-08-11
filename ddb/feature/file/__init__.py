@@ -10,7 +10,7 @@ from ...action import Action
 
 class FileFeature(Feature):
     """
-    Find files matching given pattern
+    Filesystem support.
     """
 
     @property

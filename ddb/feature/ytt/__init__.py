@@ -12,7 +12,7 @@ from ...utils.file import TemplateFinder
 
 class YttFeature(Feature):
     """
-    Render ytt files with ytt (YAML Templating Tool) (https://get-ytt.io/).
+    Render template files with ytt (https://get-ytt.io/).
     """
 
     @property

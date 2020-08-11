@@ -16,7 +16,7 @@ from ...phase import Phase, DefaultPhase
 
 class ShellFeature(Feature):
     """
-    Shell integration
+    Shell integration.
     """
 
     @property

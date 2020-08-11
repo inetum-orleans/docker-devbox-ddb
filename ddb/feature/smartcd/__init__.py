@@ -8,7 +8,7 @@ from .actions import SmartcdAction, WindowsProjectActivate
 
 class SmartcdFeature(Feature):
     """
-    Generate smartcd .bash_enter/.bash_leave files to automatically activate/deactive.
+    Smartcd support (https://github.com/cxreg/smartcd).
     """
 
     @property

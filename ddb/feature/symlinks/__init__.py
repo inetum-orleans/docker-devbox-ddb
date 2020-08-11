@@ -13,7 +13,7 @@ from ...utils.file import TemplateFinder, FileWalker
 
 class SymlinksFeature(Feature):
     """
-    Creates symlinks from file with current environment value in their extension, or before their extension.
+    Creates symlinks from file matching current environment.
     """
 
     @property

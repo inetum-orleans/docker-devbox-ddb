@@ -12,7 +12,7 @@ from ...utils.file import TemplateFinder
 
 class JinjaFeature(Feature):
     """
-    Render template files with Jinja template engine.
+    Render template files with Jinja (https://jinja.palletsprojects.com).
     """
 
     @property

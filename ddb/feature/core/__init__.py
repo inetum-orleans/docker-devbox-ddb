@@ -18,7 +18,7 @@ from ...phase import Phase, DefaultPhase
 
 class CoreFeature(Feature):
     """
-    Default commands and configuration support
+    Default commands and configuration support.
     """
 
     @property

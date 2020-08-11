@@ -10,7 +10,7 @@ from ...action import Action
 
 class CopyFeature(Feature):
     """
-    Copy files from local filesystem or URL to one of many directories.
+    Copy files from local filesystem or remote URL to one or many directories.
     """
 
     @property

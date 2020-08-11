@@ -12,7 +12,7 @@ from ...utils.file import TemplateFinder
 
 class JsonnetFeature(Feature):
     """
-    Render jsonnet files with Jsonnet data templating language (https://jsonnet.org).
+    Render template files with Jsonnet (https://jsonnet.org).
     """
 
     @property

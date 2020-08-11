@@ -10,7 +10,7 @@ from ...action import Action
 
 class FixuidFeature(Feature):
     """
-    Add fixuid to docker-compose services
+    Auto-configure fixuid from docker-compose.yml services (https://github.com/boxboat/fixuid)
     """
 
     @property

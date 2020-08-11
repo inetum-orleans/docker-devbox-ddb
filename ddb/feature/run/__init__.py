@@ -12,7 +12,7 @@ from ...phase import Phase, DefaultPhase
 
 class RunFeature(Feature):
     """
-    Run some binary
+    Run registered binaries.
     """
 
     @property

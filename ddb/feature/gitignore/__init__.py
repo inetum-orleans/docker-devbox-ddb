@@ -9,7 +9,7 @@ from .schema import GitignoreSchema
 
 class GitignoreFeature(Feature):
     """
-    Update gitignore files when a file is generated.
+    Update .gitignore file when a file is generated.
     """
 
     @property

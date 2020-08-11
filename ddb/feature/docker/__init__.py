@@ -18,7 +18,7 @@ from ...config import config
 
 class DockerFeature(Feature):
     """
-    Docker/Docker Compose integration
+    Docker and docker-compose support.
     """
 
     @property

@@ -9,7 +9,7 @@ from .schema import PermissionsSchema
 
 class PermissionsFeature(Feature):
     """
-    Update gitignore files when a file is generated.
+    Enforce permissions on files from defined patterns.
     """
 
     @property

@@ -14,7 +14,7 @@ from ...config import config
 
 class TraefikFeature(Feature):
     """
-    Traefik integration
+    Traefik support (https://traefik.io).
     """
 
     @property

@@ -10,7 +10,7 @@ from ...action import Action
 
 class CertsFeature(Feature):
     """
-    Generate SSL certificates
+    Generate SSL certificates for your project.
     """
 
     @property
