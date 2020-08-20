@@ -51,12 +51,14 @@ class FileWalkAction(InitializableAction, WatchSupport):
         for file in self.file_walker.items:
             cache.set(file, None)
             found_files.add(file)
-            events.file.found(file)
 
         for cached_file in cache.keys():
             if cached_file not in found_files:
                 cache.pop(cached_file)
                 events.file.deleted(cached_file)
+
+        for file in self.file_walker.items:
+            events.file.found(file)
 
         cache.flush()
 
