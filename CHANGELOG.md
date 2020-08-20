@@ -4,7 +4,9 @@ History
 1.0.0-beta9 (unreleased)
 ------------------------
 
-- Nothing changed yet.
+- File: Emit delete events before found events.
+- Core: Set working directory to project home.
+- Fixuid: Upgrade fixuid to v0.5.
 
 
 1.0.0-beta8 (2020-08-10)
