@@ -1,7 +1,7 @@
 History
 =======
 
-1.0.0-beta9 (unreleased)
+1.0.0-beta9 (2020-08-20)
 ------------------------
 
 - File: Emit delete events before found events.
