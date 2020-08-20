@@ -173,6 +173,14 @@ def _check_missing_dependencies(entrypoint_features, required_dependencies):
                                  name + " feature (" + required_dependency + ")")
 
 
+def prepare_project_home():
+    """
+    Set working directory to project home.
+    """
+    if config.paths.project_home:
+        os.chdir(config.paths.project_home)
+
+
 def register_default_caches():
     """
     Register default caches.
@@ -462,6 +470,7 @@ def main(args: Optional[Sequence[str]] = None,
                 print(get_table_display(version_title, version_content))
             return []
 
+        prepare_project_home()
         register_default_caches()
         register_actions_in_event_bus(config.args.fail_fast)
 

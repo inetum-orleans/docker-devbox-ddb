@@ -14,16 +14,16 @@ from marshmallow import Schema
 ConfigPaths = namedtuple('ConfigPaths', ['ddb_home', 'home', 'project_home'])
 
 
-def configuration_file_exists(path: str, filenames: Iterable[str], extensions: Iterable[str]):
+def configuration_file(path: str, filenames: Iterable[str], extensions: Iterable[str]):
     """
-    Check if configuration file exists for given path and possible filename/extensions
+    Find configuration file for given path and possible filename/extensions
     """
     for basename in filenames:
         for ext in extensions:
             file = os.path.join(path, basename + '.' + ext)
             if exists(file):
-                return True
-    return False
+                return file
+    return None
 
 
 def get_default_config_paths(env_prefix, filenames, extensions) -> ConfigPaths:
@@ -34,15 +34,13 @@ def get_default_config_paths(env_prefix, filenames, extensions) -> ConfigPaths:
         project_home = os.environ.get(env_prefix + '_PROJECT_HOME')
     else:
         project_home_candidate = os.getcwd()
-        while not configuration_file_exists(project_home_candidate, filenames, extensions):
+        while not configuration_file(project_home_candidate, filenames, extensions):
             project_home_candidate_parent = str(Path(project_home_candidate).parent)
             if project_home_candidate_parent == project_home_candidate:
                 project_home_candidate = os.getcwd()
                 break
             project_home_candidate = project_home_candidate_parent
         project_home = project_home_candidate
-
-        # TODO: Display warning if project_home still match os.getcwd() and this path has no configuration file.
 
     home = os.environ.get(env_prefix + '_HOME', os.path.join(str(Path.home()), '.docker-devbox'))
     ddb_home = os.environ.get(env_prefix + '_DDB_HOME', os.path.join(home, 'ddb'))

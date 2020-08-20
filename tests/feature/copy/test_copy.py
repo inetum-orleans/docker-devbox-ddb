@@ -48,6 +48,6 @@ class TestCopyFeature:
         action = CopyAction()
         action.execute()
 
-        assert os.path.exists(os.path.join('.docker', 'service1', 'fixuid-0.4-linux-amd64.tar.gz'))
-        assert os.path.exists(os.path.join('.docker', 'service2', 'fixuid-0.4-linux-amd64.tar.gz'))
-        assert not os.path.exists(os.path.join('.docker', '.not-a-service', 'fixuid-0.4-linux-amd64.tar.gz'))
+        assert os.path.exists(os.path.join('.docker', 'service1', 'fixuid-0.5-linux-amd64.tar.gz'))
+        assert os.path.exists(os.path.join('.docker', 'service2', 'fixuid-0.5-linux-amd64.tar.gz'))
+        assert not os.path.exists(os.path.join('.docker', '.not-a-service', 'fixuid-0.5-linux-amd64.tar.gz'))
