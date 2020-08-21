@@ -41,13 +41,10 @@ Feature configuration
 - `cfssl.writer.filenames.certificate_der`: the template name of DER encoded generated certificates.
     - type: string
     - default: `%s.crt.der`
-- `cfssl.writer.filenames.certificate_der`: the template name of DER encoded generated certificates.
-    - type: string
-    - default: `%s.crt.der`
-- `cfssl.writer.filenames.certificate_der`: the template name of CSR certificates.
+- `cfssl.writer.filenames.certificate_request`: the template name of CSR certificates.
     - type: string
     - default: `%s.csr`
-- `cfssl.writer.filenames.certificate_der`: the template name of CSR DER encoded certificates.
+- `cfssl.writer.filenames.certificate_request_der`: the template name of CSR DER encoded certificates.
     - type: string
     - default: `%s.csr.der`
 - `cfssl.writer.filenames.private_key`: the template name of private key generated.
