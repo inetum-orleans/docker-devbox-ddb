@@ -160,20 +160,24 @@ class CreateAliasShim(Action):
         """
         directories = config.data.get('shell.path.directories')
         aliases = config.data.get('shell.aliases')
-        global_aliases = config.data.get('shell.global_aliases')
+        global_aliases = frozenset(config.data.get('shell.global_aliases'))
         for alias in aliases:
             global_alias = alias in global_aliases
 
-            shim_directory_prefix = None
             if global_alias:
                 shim_directory_prefix = config.paths.home
+                forbidden_shim_directory_prefix = config.paths.project_home
             else:
                 shim_directory_prefix = config.paths.project_home
+                forbidden_shim_directory_prefix = None
 
             shim_directory = None
             for directory in directories:
-                if directory.startswith(shim_directory_prefix) or \
-                        os.path.join(config.paths.project_home, directory).startswith(shim_directory_prefix):
+                if not os.path.isabs(directory):
+                    directory = os.path.join(config.paths.project_home, directory)
+                if directory.startswith(shim_directory_prefix) and \
+                        (not forbidden_shim_directory_prefix or
+                         not directory.startswith(forbidden_shim_directory_prefix)):
                     shim_directory = directory
                     break
 

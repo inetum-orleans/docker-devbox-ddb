@@ -6,6 +6,7 @@ from _pytest.capture import CaptureFixture
 
 from ddb.__main__ import main, load_registered_features
 from ddb.config import config
+from ddb.config.config import ConfigPaths
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.shell import ActivateAction, DeactivateAction, ShellFeature
@@ -200,6 +201,34 @@ class ActivateActionBase(ABC):
 
     def test_empty_project_global_aliases(self, project_loader):
         project_loader("global_aliases")
+
+        main(["configure"])
+
+        alias = "dc.bat" if os.name == 'nt' else "dc"
+
+        assert not os.path.exists(os.path.join(".bin", alias))
+        assert os.path.exists(os.path.join(config.paths.home, ".bin", alias))
+        assert not expect_gitignore('.gitignore', '../home/.bin/dc')
+
+        with open(os.path.join(config.paths.home, ".bin", alias), 'r') as f:
+            content = f.read()
+            if os.name != 'nt':
+                assert 'docker-compose "$@"' in content
+            # TODO: Check the content of the file with an assertion, and test the feature behavior on windows
+
+    def test_global_aliases_projects_in_home(self, project_loader, data_dir):
+        def project_in_home_config_provider(root_dir):
+            paths = ConfigPaths(ddb_home=os.path.join(root_dir, 'ddb_home'), home=os.path.join(root_dir, 'home'),
+                                project_home=os.path.join(root_dir, 'home', 'project'))
+
+            if not [path for path in paths if os.path.isdir(path)]:
+                paths = ConfigPaths(ddb_home=None, home=None, project_home=root_dir)
+
+            config.paths = paths
+            config.load()
+
+            return config
+        project_loader("global_aliases_projects_in_home", config_provider=project_in_home_config_provider)
 
         main(["configure"])
 

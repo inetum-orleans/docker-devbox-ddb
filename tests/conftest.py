@@ -44,7 +44,7 @@ def config_loader(data_dir: str) -> Callable[[Optional[str]], Config]:
 @pytest.fixture()
 def project_loader(data_dir: str, tmp_path_factory: TempPathFactory, request: FixtureRequest) -> Callable[
     [Optional[str]], Config]:
-    def load(name: str = None, before_load_config=None):
+    def load(name: str = None, before_load_config=None, config_provider=load_config):
         root_dir = os.path.join(data_dir, name) if name else data_dir
 
         tmp_path = tmp_path_factory.mktemp(request.function.__name__)  # type: Path
@@ -54,7 +54,7 @@ def project_loader(data_dir: str, tmp_path_factory: TempPathFactory, request: Fi
         os.chdir(str(tmp_path))
         if before_load_config:
             before_load_config()
-        conf = load_config(str(tmp_path))
+        conf = config_provider(str(tmp_path))
         os.chdir(str(conf.paths.project_home))
 
         if os.path.exists("repo.zip"):
