@@ -58,7 +58,7 @@ args = dict(name='docker-devbox-ddb',
             long_description=readme + '\n' * 2 + history,
             long_description_content_type='text/markdown',
             # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
-            classifiers=['Development Status :: 4 - Beta',
+            classifiers=['Development Status :: 5 - Production/Stable',
                          'License :: OSI Approved :: MIT License',
                          'Operating System :: OS Independent',
                          'Intended Audience :: Developers',
