@@ -39,8 +39,10 @@ class SymlinksFeature(Feature):
         if not suffixes:
             try:
                 env_available = config.data["core.env.available"]
-            except KeyError:
-                raise FeatureConfigurationError(self, "core.env.available or symlinks.suffixes should be defined.")
+            except KeyError as err:
+                raise FeatureConfigurationError(self,
+                                                "core.env.available or symlinks.suffixes should be defined.") \
+                    from err
 
             available_suffixes = ["." + env for env in env_available]
 

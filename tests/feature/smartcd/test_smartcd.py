@@ -1,7 +1,7 @@
 import os
 
 import pytest
-from pytest_mock import MockFixture
+from pytest_mock import MockerFixture
 
 from ddb.__main__ import main, load_registered_features
 from ddb.feature import features
@@ -12,7 +12,7 @@ from ddb.feature.smartcd import SmartcdFeature, SmartcdAction, WindowsProjectAct
 
 @pytest.mark.skipif("os.name == 'nt'")
 class TestSmartcdAction:
-    def test_empty_project_without_core(self, project_loader, mocker: MockFixture):
+    def test_empty_project_without_core(self, project_loader, mocker: MockerFixture):
         mocker.patch('ddb.feature.smartcd.actions.is_smartcd_installed', lambda: True)
 
         project_loader("empty")
@@ -26,7 +26,7 @@ class TestSmartcdAction:
         assert not os.path.exists(".bash_enter")
         assert not os.path.exists(".bash_leave")
 
-    def test_empty_project_with_core(self, project_loader, mocker: MockFixture):
+    def test_empty_project_with_core(self, project_loader, mocker: MockerFixture):
         mocker.patch('ddb.feature.smartcd.actions.is_smartcd_installed', lambda: True)
 
         project_loader("empty")
@@ -41,7 +41,7 @@ class TestSmartcdAction:
         assert not os.path.exists(".bash_enter")
         assert not os.path.exists(".bash_leave")
 
-    def test_empty_project_with_activate_deactivate_commands(self, project_loader, mocker: MockFixture):
+    def test_empty_project_with_activate_deactivate_commands(self, project_loader, mocker: MockerFixture):
         mocker.patch('ddb.feature.smartcd.actions.is_smartcd_installed', lambda: True)
 
         project_loader("empty")
@@ -64,7 +64,7 @@ class TestSmartcdAction:
         with open(".bash_leave") as f:
             assert "$(ddb deactivate)" in f.read()
 
-    def test_empty_project_main(self, project_loader, mocker: MockFixture):
+    def test_empty_project_main(self, project_loader, mocker: MockerFixture):
         mocker.patch('ddb.feature.smartcd.actions.is_smartcd_installed', lambda: True)
 
         project_loader("empty")
@@ -81,7 +81,7 @@ class TestSmartcdAction:
         with open(".bash_leave") as f:
             assert "$(ddb deactivate)" in f.read()
 
-    def test_empty_project_main_no_smartcd(self, project_loader, mocker: MockFixture):
+    def test_empty_project_main_no_smartcd(self, project_loader, mocker: MockerFixture):
         mocker.patch('ddb.feature.smartcd.actions.is_smartcd_installed', lambda: False)
 
         project_loader("empty")

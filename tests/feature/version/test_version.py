@@ -1,4 +1,4 @@
-from pytest_mock import MockFixture
+from pytest_mock import MockerFixture
 
 from ddb.__main__ import main, load_registered_features
 from ddb.config import config
@@ -8,7 +8,7 @@ from ddb.feature.version import VersionFeature, is_git_repository
 
 
 class TestVersionFeature:
-    def test_empty_project_without_core(self, project_loader, mocker: MockFixture):
+    def test_empty_project_without_core(self, project_loader, mocker: MockerFixture):
         mocker.patch('ddb.feature.version.is_git_repository', is_git_repository)
 
         project_loader("no_repo")
@@ -16,7 +16,7 @@ class TestVersionFeature:
         features.register(VersionFeature())
         load_registered_features()
 
-    def test_empty_project_with_core(self, project_loader, mocker: MockFixture):
+    def test_empty_project_with_core(self, project_loader, mocker: MockerFixture):
         mocker.patch('ddb.feature.version.is_git_repository', is_git_repository)
 
         project_loader("no_repo")
@@ -25,7 +25,7 @@ class TestVersionFeature:
         features.register(VersionFeature())
         load_registered_features()
 
-    def test_no_tag_repo(self, project_loader, mocker: MockFixture):
+    def test_no_tag_repo(self, project_loader, mocker: MockerFixture):
         mocker.patch('ddb.feature.version.is_git_repository', is_git_repository)
 
         project_loader("no_tag_repo")
@@ -38,7 +38,7 @@ class TestVersionFeature:
         assert config.data.get('version.version') is None
         assert config.data.get('version.tag') is None
 
-    def test_tag_repo(self, project_loader, mocker: MockFixture):
+    def test_tag_repo(self, project_loader, mocker: MockerFixture):
         mocker.patch('ddb.feature.version.is_git_repository', is_git_repository)
 
         project_loader("tag_repo")
@@ -51,7 +51,7 @@ class TestVersionFeature:
         assert config.data.get('version.version') == 'v1.0.0'
         assert config.data.get('version.tag') == 'v1.0.0'
 
-    def test_branch_repo(self, project_loader, mocker: MockFixture):
+    def test_branch_repo(self, project_loader, mocker: MockerFixture):
         mocker.patch('ddb.feature.version.is_git_repository', is_git_repository)
 
         project_loader("branch_repo")
@@ -64,7 +64,7 @@ class TestVersionFeature:
         assert config.data.get('version.version') is None
         assert config.data.get('version.tag') is None
 
-    def test_detached_repo(self, project_loader, mocker: MockFixture):
+    def test_detached_repo(self, project_loader, mocker: MockerFixture):
         mocker.patch('ddb.feature.version.is_git_repository', is_git_repository)
 
         project_loader("detached_repo")
@@ -77,7 +77,7 @@ class TestVersionFeature:
         assert config.data.get('version.version') is None
         assert config.data.get('version.tag') is None
 
-    def test_no_repo(self, project_loader, mocker: MockFixture):
+    def test_no_repo(self, project_loader, mocker: MockerFixture):
         mocker.patch('ddb.feature.version.is_git_repository', is_git_repository)
 
         project_loader("no_repo")

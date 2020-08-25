@@ -80,7 +80,7 @@ class Feature(RegistryObject, ABC):  # pylint:disable=abstract-method
         try:
             config.sanitize_and_validate(schema, self.name, self._configure_defaults)
         except ValidationError as err:
-            raise FeatureConfigurationValidationError(self, err)
+            raise FeatureConfigurationValidationError(self, err) from err
 
     def _configure_defaults(self, feature_config: Dotty):
         """

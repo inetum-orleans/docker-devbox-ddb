@@ -22,7 +22,7 @@ class ContextStackItem:
 
     @staticmethod
     def _build_parameters_repr(*args, **kwargs):
-        parameters_repr = ', '.join(args)
+        parameters_repr = ', '.join(map(str, args))
         for key, value in sorted(kwargs.items()):
             if parameters_repr:
                 parameters_repr += ', '

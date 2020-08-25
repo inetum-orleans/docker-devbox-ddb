@@ -83,9 +83,9 @@ class DockerFeature(Feature):
                 interface = feature_config.get('interface')
                 try:
                     docker_if = netifaces.ifaddresses(interface)
-                except ValueError:
+                except ValueError as err:
                     raise FeatureConfigurationAutoConfigureError(self, 'ip',
-                                                                 "Invalid network interface: " + interface)
+                                                                 "Invalid network interface: " + interface) from err
                 if docker_if and netifaces.AF_INET in docker_if:
                     docker_af_inet = docker_if[netifaces.AF_INET][0]
                     ip_address = docker_af_inet['addr']

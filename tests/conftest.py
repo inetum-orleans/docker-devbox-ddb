@@ -8,7 +8,7 @@ from typing import Callable, Optional
 import pytest
 from _pytest.fixtures import FixtureRequest
 from _pytest.tmpdir import TempPathFactory
-from pytest_mock import MockFixture
+from pytest_mock import MockerFixture
 from verboselogs import SPAM
 
 from ddb.__main__ import reset, configure_logging
@@ -67,7 +67,7 @@ def project_loader(data_dir: str, tmp_path_factory: TempPathFactory, request: Fi
 
 
 @pytest.fixture(autouse=True)
-def configure(mocker: MockFixture):
+def configure(mocker: MockerFixture):
     original_environ = dict(os.environ)
     cwd = os.getcwd()
 
