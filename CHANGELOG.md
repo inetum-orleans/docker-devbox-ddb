@@ -1,7 +1,7 @@
 History
 =======
 
-1.0.1 (unreleased)
+1.0.1 (2020-08-25)
 ------------------
 
 - Docker: Limit `port_prefix` to  `655` instead of `1000` to avoid *invalid port specification* error.
