@@ -4,7 +4,7 @@ History
 1.0.0-beta10 (unreleased)
 -------------------------
 
-- Nothing changed yet.
+- Binaries: Fix docker binary workdir value
 
 
 1.0.0-beta9 (2020-08-20)

@@ -178,6 +178,7 @@ def prepare_project_home():
     Set working directory to project home.
     """
     if config.paths.project_home:
+        config.cwd = os.getcwd()
         os.chdir(config.paths.project_home)
 
 

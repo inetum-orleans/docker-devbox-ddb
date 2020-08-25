@@ -1,3 +1,4 @@
+import os
 from typing import Iterable
 
 import pytest
@@ -5,8 +6,10 @@ from _pytest.capture import CaptureFixture
 
 from ddb.__main__ import load_registered_features, register_actions_in_event_bus
 from ddb.binary import binaries, Binary
+from ddb.config import config
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
+from ddb.feature.docker.binaries import DockerBinary
 from ddb.feature.run import RunFeature, RunAction
 
 
@@ -74,3 +77,39 @@ class TestRunFeature:
         read = capsys.readouterr()
 
         assert read.out == "some command\n"
+
+    def test_run_docker_binary(self, project_loader, capsys: CaptureFixture):
+        project_loader("empty")
+        config.cwd = config.paths.project_home
+
+        features.register(CoreFeature())
+        features.register(RunFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
+
+        binaries.register(DockerBinary("bin", "service", "/app"))
+
+        action = RunAction()
+        action.run("bin")
+
+        read = capsys.readouterr()
+
+        assert read.out == "docker-compose run --workdir=/app/. service\n"
+
+    def test_run_docker_binary_workdir(self, project_loader, capsys: CaptureFixture):
+        project_loader("empty")
+        config.cwd = os.path.join(config.paths.project_home, "sub")
+
+        features.register(CoreFeature())
+        features.register(RunFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
+
+        binaries.register(DockerBinary("bin", "service", "/app"))
+
+        action = RunAction()
+        action.run("bin")
+
+        read = capsys.readouterr()
+
+        assert read.out == "docker-compose run --workdir=/app/sub service\n"

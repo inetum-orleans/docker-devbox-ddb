@@ -68,6 +68,7 @@ class Config:  # pylint:disable=too-many-instance-attributes
         self.env_additions = {}
         self.data = dotty()
         self.paths = paths if paths else get_default_config_paths(env_prefix, filenames, extensions)
+        self.cwd = None
         self.args = Namespace()
         self.unknown_args = []
 

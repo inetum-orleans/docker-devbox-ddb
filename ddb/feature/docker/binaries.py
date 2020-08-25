@@ -39,7 +39,7 @@ class DockerBinary(Binary):
         params = ["exec" if hasattr(self, 'exe') and self.exe else "run"]
 
         if self.workdir:
-            relpath = os.path.relpath(os.getcwd(), config.paths.project_home)
+            relpath = os.path.relpath(config.cwd if config.cwd else os.getcwd(), config.paths.project_home)
             container_workdir = posixpath.join(self.workdir, relpath)
             params.append("--workdir=%s" % (container_workdir,))
 
