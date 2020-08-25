@@ -11,8 +11,11 @@ Feature Configuration
 - `disabled`: Definition of the status of the feature. If set to True, all SmartCD automations will be disabled.
     - type: boolean
     - default: False
-- `aliases`: Allow the creation of aliases available only in ddb projects directories.
-    - type: object
+- `aliases`: Allow the creation of aliases.
+    - type: dict[str, str]
+    - default: {}
+- `global_aliases`: For aliases matching those names, aliases will be declared globally instead of inside project only.
+    - type: array
     - default: {}
 - `envignore`: 
     When activating ddb for a project via `$(ddb activate)`, environment variables are saved before being updated.

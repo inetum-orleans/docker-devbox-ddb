@@ -9,8 +9,9 @@ from ddb.config import config
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.shell import ActivateAction, DeactivateAction, ShellFeature
-from ddb.feature.shell.actions import encode_environ_backup, CreateAliasShim
+from ddb.feature.shell.actions import encode_environ_backup
 from ddb.feature.shell.integrations import BashShellIntegration, ShellIntegration, CmdShellIntegration
+from tests.utilstest import expect_gitignore
 
 
 class ActivateActionBase(ABC):
@@ -187,14 +188,32 @@ class ActivateActionBase(ABC):
 
         main(["configure"])
 
-        if os.name == 'nt':
-            assert os.path.exists(os.path.join("bin", "dc.bat"))
-            # TODO: Check the content of the file with an assertion, and test the feature behavior on windows
-        else:
-            assert os.path.exists(os.path.join("bin", "dc"))
-            with open(os.path.join("bin", "dc"), 'r') as f:
-                content = f.read()
+        alias = "dc.bat" if os.name == "nt" else "dc"
+        assert os.path.exists(os.path.join("bin", alias))
+        assert not os.path.exists(os.path.join(config.paths.home, "bin", alias))
+
+        with open(os.path.join("bin", alias), 'r') as f:
+            content = f.read()
+            if os.name != 'nt':
                 assert 'docker-compose "$@"' in content
+            # TODO: Check the content of the file with an assertion, and test the feature behavior on windows
+
+    def test_empty_project_global_aliases(self, project_loader):
+        project_loader("global_aliases")
+
+        main(["configure"])
+
+        alias = "dc.bat" if os.name == 'nt' else "dc"
+
+        assert not os.path.exists(os.path.join(".bin", alias))
+        assert os.path.exists(os.path.join(config.paths.home, ".bin", alias))
+        assert not expect_gitignore('.gitignore', '../home/.bin/dc')
+
+        with open(os.path.join(config.paths.home, ".bin", alias), 'r') as f:
+            content = f.read()
+            if os.name != 'nt':
+                assert 'docker-compose "$@"' in content
+            # TODO: Check the content of the file with an assertion, and test the feature behavior on windows
 
 
 class TestBashActivateAction(ActivateActionBase):

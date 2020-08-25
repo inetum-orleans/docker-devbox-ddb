@@ -160,16 +160,34 @@ class CreateAliasShim(Action):
         """
         directories = config.data.get('shell.path.directories')
         aliases = config.data.get('shell.aliases')
-        shim_directory = directories[0]
-        for key in aliases:
-            binary = DefaultBinary(key, aliases[key])
+        global_aliases = config.data.get('shell.global_aliases')
+        for alias in aliases:
+            global_alias = alias in global_aliases
+
+            shim_directory_prefix = None
+            if global_alias:
+                shim_directory_prefix = config.paths.home
+            else:
+                shim_directory_prefix = config.paths.project_home
+
+            shim_directory = None
+            for directory in directories:
+                if directory.startswith(shim_directory_prefix) or \
+                        os.path.join(config.paths.project_home, directory).startswith(shim_directory_prefix):
+                    shim_directory = directory
+                    break
+
+            if not shim_directory:
+                continue
+
+            binary = DefaultBinary(alias, aliases[alias])
             written, shim = self.shell.create_alias_binary_shim(shim_directory, binary)
             if written:
                 context.log.success("Shim created: %s", shim)
             else:
                 context.log.notice("Shim exists: %s", shim)
 
-            if written:
+            if written and not global_alias:
                 events.file.generated(source=None, target=shim)
 
 

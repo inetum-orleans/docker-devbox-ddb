@@ -40,7 +40,8 @@ class UpdateGitignoreAction(InitializableAction):
         """
         dirname = target
 
-        while os.path.abspath(dirname) != os.path.abspath(config.paths.project_home):
+        while os.path.abspath(dirname).startswith(config.paths.project_home) and \
+                os.path.abspath(dirname) != os.path.abspath(config.paths.project_home):
             dirname = os.path.dirname(dirname)
             gitignore = os.path.join(dirname, ".gitignore")
             if os.path.exists(gitignore) and os.access(gitignore, os.W_OK):
