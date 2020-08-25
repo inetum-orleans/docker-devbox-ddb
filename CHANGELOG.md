@@ -4,14 +4,14 @@ History
 1.0.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Docker: Limit `port_prefix` to  `655` instead of `1000` to avoid *invalid port specification* error.
 
 
 1.0.0 (2020-08-25)
 ------------------
 
 - Binaries: Fix docker binary workdir value
-- Shell: add `global_aliases` configuration option to generate aliases inside global docker devbox home.
+- Shell: Add `global_aliases` configuration option to generate aliases inside global docker devbox home.
 
 
 1.0.0-beta9 (2020-08-20)

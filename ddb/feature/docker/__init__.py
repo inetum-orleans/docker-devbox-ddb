@@ -131,7 +131,7 @@ class DockerFeature(Feature):
         if port_prefix is None:
             project_name = config.data.get('core.project.name')
             if project_name:
-                port_prefix = int(hashlib.sha1(project_name.encode('utf-8')).hexdigest(), 16) % (10 ** 3)
+                port_prefix = int(hashlib.sha1(project_name.encode('utf-8')).hexdigest(), 16) % 655
                 feature_config['port_prefix'] = port_prefix
 
     @staticmethod
