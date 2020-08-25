@@ -1,8 +1,8 @@
 History
 =======
 
-1.0.0-beta10 (unreleased)
--------------------------
+1.0.0 (2020-08-25)
+------------------
 
 - Binaries: Fix docker binary workdir value
 - Shell: add `global_aliases` configuration option to generate aliases inside global docker devbox home.
