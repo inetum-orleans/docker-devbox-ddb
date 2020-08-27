@@ -24,9 +24,9 @@ You should now setup the database container. Create `docker-compose.yml.jsonnet`
 local ddb = import 'ddb.docker.libjsonnet';
 
 ddb.Compose() {
-	services: {
-		db: ddb.Image("postgres")
-    }
+  services: {
+    db: ddb.Image("postgres")
+  }
 }
 ```
 
@@ -88,12 +88,12 @@ Add this environment variable to `docker-compose.yml.jsonnet` template.
 local ddb = import 'ddb.docker.libjsonnet';
 
 ddb.Compose() {
-	services: {
-		db: ddb.Image("postgres")
-		  {
-		    environment+: {POSTGRES_PASSWORD: "ddb"}
-		  }
+  services: {
+    db: ddb.Image("postgres") +
+    {
+      environment+: {POSTGRES_PASSWORD: "ddb"}
     }
+  }
 }
 ```
 
@@ -117,7 +117,7 @@ ddb configure
 
 The generated `docker-compose.yml` file should now look like this:
 
-```
+```yaml
 networks: {}
 services:
   db:
@@ -159,7 +159,7 @@ Add a named volume
 
 As you may already know, you need to setup a volume for data to be persisted if the container is destroyed. 
 
-Let's stop all containers for now.
+Let's stop and destroy all containers for now.
 
 ```bash
 docker-compose down
@@ -219,25 +219,25 @@ Database docker image contains binaries that you may need to run, like ...
 With docker-compose or raw docker, it may be really painful to find out the right `docker-compose` command to run those 
 binary from your local environment. You may also have issues to read input data file, or to write output data file.
 
-With ddb, you can register those binaries a single time inside `docker-compose.yml.jsonnet` to bring them to your local 
+With ddb, you can register those binaries right into `docker-compose.yml.jsonnet` to make them accessible from your local 
 environment.
 
 ```json
 local ddb = import 'ddb.docker.libjsonnet';
 
 ddb.Compose() {
-	services: {
-		db: ddb.Image("postgres") +
-		    ddb.Binary("psql", "/project", "psql --dbname=postgresql://postgres:ddb@db/postgres") +
-		    ddb.Binary("pg_dump", "/project", "pg_dump --dbname=postgresql://postgres:ddb@db/postgres") +
-		  {
-		    environment+: {POSTGRES_PASSWORD: "ddb"},
-		    volumes+: [
-          'db-data:/var/lib/postgresql/data',
-          ddb.path.project + ':/project'
-		    ]
-		  }
-    }
+  services: {
+    db: ddb.Image("postgres") +
+        ddb.Binary("psql", "/project", "psql --dbname=postgresql://postgres:ddb@db/postgres") +
+        ddb.Binary("pg_dump", "/project", "pg_dump --dbname=postgresql://postgres:ddb@db/postgres") +
+        {
+          environment+: {POSTGRES_PASSWORD: "ddb"},
+          volumes+: [
+            'db-data:/var/lib/postgresql/data',
+            ddb.path.project + ':/project'
+          ]
+        }
+  }
 }
 
 ```
@@ -333,13 +333,14 @@ paths:
 ```
 
 !!! note "Fixuid"
-    When installed in the image, entrypoint is changed to run fixuid before the default entrypoint.
-     
-    Fixuid change uid/gid of the user to match the host user, and chown directories declared in configuration 
-    recursively to this user. 
+    Fixuid change `uid` and `gid` of the container user to match the host user, and it changes files ownerships as 
+    declared in `fixuid.yml` configuration file. 
     
-    Most of the time, `user` and `group` should match the user defined in Dockerfile, and 
-    `paths` should match the root directory and volume directories.
+    Most of the time, `user` and `group` defined in the configuration file should match the user defined in Dockerfile, 
+    and `paths` should match the root directory and volume directories.
+    
+    When a `fixuid.yml` file is available next to a Dockerfile, ddb generates fixuid installation instructions into the 
+    `Dockerfile`, and entrypoint is changed to run fixuid before the default entrypoint.  
 
 Last step, change in `docker-compose.yml.jsonnet` the service definition to use the newly created Dockerfile
 (`ddb.Image("postgres")` replaced to `ddb.Build("postgres")`), and set `user` to the host user uid/gid (`ddb.User()`).
@@ -378,7 +379,251 @@ pg_dump -f dump.sql
 
 `dump.sql` is now owned by your own user, and as a developer, you are happy again :)
 
-Setup PHP
+Setup PHP, Apache and Symfony Skeleton
 ---
 
-To be continued ...
+Then, we need to setup PHP FPM with it's related web server Apache.
+
+So, we are creating a new `php` service inside `docker-compose.yml.jsonnet`, based on a Dockerfile build.
+
+```json
+local ddb = import 'ddb.docker.libjsonnet';
+
+ddb.Compose() {
+	services: {
+        ...
+        php: ddb.Build("php") +
+          ddb.User() +
+          {
+          volumes+: [
+            ddb.path.project + ":/var/www/html",
+            "php-composer-cache:/composer/cache",
+            "php-composer-vendor:/composer/vendor"
+          ]
+        }
+}
+```
+
+And the related `Dockerfile.jinja` inside `.docker/php` directory.
+
+```dockerfile
+FROM php:7.3-fpm
+
+RUN docker-php-ext-install opcache
+RUN yes | pecl install xdebug && docker-php-ext-enable xdebug
+
+RUN apt-get update -y &&\
+ apt-get install -y libpq-dev &&\
+ rm -rf /var/lib/apt/lists/* &&\
+ docker-php-ext-install pdo pdo_pgsql
+
+ENV COMPOSER_HOME /composer
+ENV PATH /composer/vendor/bin:$PATH
+ENV COMPOSER_ALLOW_SUPERUSER 1
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+RUN apt-get update -y &&\
+ apt-get install -y git zip unzip &&\
+ rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p "$COMPOSER_HOME/cache" \
+&& mkdir -p "$COMPOSER_HOME/vendor" \
+&& chown -R www-data:www-data $COMPOSER_HOME \
+&& chown -R www-data:www-data /var/www
+
+VOLUME /composer/cache
+```
+
+Then the docker image should build when running `docker-compose build`.
+
+Composer has been installed in the image, so let's make it available by registering a binary into 
+`docker-compose.yml.jsonnet`. We can also register the `php` binary for it to be available locally too.
+
+```jsonnet
+local ddb = import 'ddb.docker.libjsonnet';
+
+ddb.Compose() {
+    services: {
+        ...
+        php: ddb.Build("php") +
+             ddb.User() +
+             ddb.Binary("composer", "/var/www/html", "composer") +
+             ddb.Binary("php", "/var/www/html", "php") +
+             {
+              volumes+: [
+                 ddb.path.project + ":/var/www/html",
+                 "php-composer-cache:/composer/cache",
+                 "php-composer-vendor:/composer/vendor"
+              ]
+             }
+        },
+}
+```
+
+And activate the project, with `$(ddb activate)`. The composer command in now available right in your PATH.
+
+```bash
+$ composer --version
+Composer version 1.10.10 2020-08-03 11:35:19
+
+$ php --version
+PHP 7.3.10 (cli) (built: Oct 17 2019 15:09:28) ( NTS )
+Copyright (c) 1997-2018 The PHP Group
+Zend Engine v3.3.10, Copyright (c) 1998-2018 Zend Technologies
+    with Xdebug v2.9.6, Copyright (c) 2002-2020, by Derick Rethans
+```
+
+Now PHP and composer are available, you can generate the symfony skeleton inside a `backend` directory.
+
+```bash
+composer create-project symfony/skeleton backend
+```
+
+We also need a `web` service for Apache configured with PHP. Here's the `docker-compose.yml.jsonnet` part.
+
+```json
+local ddb = import 'ddb.docker.libjsonnet';
+
+local domain_ext = std.extVar("core.domain.ext");
+local domain_sub = std.extVar("core.domain.sub");
+
+local domain = std.join('.', [domain_sub, domain_ext]);
+
+ddb.Compose() {
+	services: {
+        ...
+        web: ddb.Build("web") +
+             ddb.VirtualHost("80", domain)
+             {
+                  volumes+: [
+                     ddb.path.project + ":/var/www/html",
+                     ddb.path.project + "/.docker/web/apache.conf:/usr/local/apache2/conf/custom/apache.conf",
+                  ]
+             },
+        },
+}
+```
+
+!!! note "Use std.extVar(...) inside jsonnet to read a configuration property"
+    As you can see here, we are using jsonnet features to build the domain name and setup the traefik configuration for 
+    the virtualhost. Configuration properties are available inside all template engines and can be listed with 
+    `ddb config --variables`
+    
+As with the `php` service, a `.docker/web/Dockerfile.jinja` is created to define the image build.
+
+```
+FROM httpd:2.4
+
+RUN mkdir -p /usr/local/apache2/conf/custom \
+&& mkdir -p /var/www/html \
+&& sed -i '/LoadModule proxy_module/s/^#//g' /usr/local/apache2/conf/httpd.conf \
+&& sed -i '/LoadModule proxy_fcgi_module/s/^#//g' /usr/local/apache2/conf/httpd.conf \
+&& echo >> /usr/local/apache2/conf/httpd.conf && echo 'Include conf/custom/*.conf' >> /usr/local/apache2/conf/httpd.conf
+
+RUN sed -i '/LoadModule headers_module/s/^#//g' /usr/local/apache2/conf/httpd.conf
+RUN sed -i '/LoadModule rewrite_module/s/^#//g' /usr/local/apache2/conf/httpd.conf
+```
+
+`apache.conf` specified in docker compose volume mount is also generated from a jinja file, `apache.conf.jinja`. It is
+ used to inject domain name and docker compose network name, for the domain to be centralized into ddb.yml 
+ configuration and ease various environment deployements (stage, prod).
+
+```
+<VirtualHost *:80>
+  ServerAdmin webmaster@{{core.domain.sub}}.{{core.domain.ext}}
+  ServerName api.{{core.domain.sub}}.{{core.domain.ext}}
+  DocumentRoot /var/www/html/backend/public
+
+  <Directory "/var/www/html/backend/public/">
+    DirectoryIndex index.php
+
+    AllowOverride All
+    Order allow,deny
+    Allow from all
+    Require all granted
+
+    # symfony configuration from https://github.com/symfony/recipes-contrib/blob/master/symfony/apache-pack/1.0/public/.htaccess
+
+    # By default, Apache does not evaluate symbolic links if you did not enable this
+    # feature in your server configuration. Uncomment the following line if you
+    # install assets as symlinks or if you experience problems related to symlinks
+    # when compiling LESS/Sass/CoffeScript assets.
+    # Options FollowSymlinks
+
+    # Disabling MultiViews prevents unwanted negotiation, e.g. "/index" should not resolve
+    # to the front controller "/index.php" but be rewritten to "/index.php/index".
+    <IfModule mod_negotiation.c>
+        Options -MultiViews
+    </IfModule>
+
+    <IfModule mod_rewrite.c>
+        RewriteEngine On
+
+        # Determine the RewriteBase automatically and set it as environment variable.
+        # If you are using Apache aliases to do mass virtual hosting or installed the
+        # project in a subdirectory, the base path will be prepended to allow proper
+        # resolution of the index.php file and to redirect to the correct URI. It will
+        # work in environments without path prefix as well, providing a safe, one-size
+        # fits all solution. But as you do not need it in this case, you can comment
+        # the following 2 lines to eliminate the overhead.
+        RewriteCond %{REQUEST_URI}::$1 ^(/.+)/(.*)::\2$
+        RewriteRule ^(.*) - [E=BASE:%1]
+
+        # Sets the HTTP_AUTHORIZATION header removed by Apache
+        RewriteCond %{HTTP:Authorization} .
+        RewriteRule ^ - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+        # Redirect to URI without front controller to prevent duplicate content
+        # (with and without `/index.php`). Only do this redirect on the initial
+        # rewrite by Apache and not on subsequent cycles. Otherwise we would get an
+        # endless redirect loop (request -> rewrite to front controller ->
+        # redirect -> request -> ...).
+        # So in case you get a "too many redirects" error or you always get redirected
+        # to the start page because your Apache does not expose the REDIRECT_STATUS
+        # environment variable, you have 2 choices:
+        # - disable this feature by commenting the following 2 lines or
+        # - use Apache >= 2.3.9 and replace all L flags by END flags and remove the
+        #   following RewriteCond (best solution)
+        RewriteCond %{ENV:REDIRECT_STATUS} ^$
+        RewriteRule ^index\.php(?:/(.*)|$) %{ENV:BASE}/$1 [R=301,L]
+
+        # If the requested filename exists, simply serve it.
+        # We only want to let Apache serve files and not directories.
+        RewriteCond %{REQUEST_FILENAME} -f
+        RewriteRule ^ - [L]
+
+        # Rewrite all other queries to the front controller.
+        RewriteRule ^ %{ENV:BASE}/index.php [L]
+    </IfModule>
+
+    <IfModule !mod_rewrite.c>
+        <IfModule mod_alias.c>
+            # When mod_rewrite is not available, we instruct a temporary redirect of
+            # the start page to the front controller explicitly so that the website
+            # and the generated links can still be used.
+            RedirectMatch 307 ^/$ /index.php/
+            # RedirectTemp cannot be used instead
+        </IfModule>
+    </IfModule>
+  </Directory>
+
+  SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+
+  <FilesMatch \.php$>
+      SetHandler "proxy:fcgi://php.{{docker.compose.network_name}}:9000"
+  </FilesMatch>
+</VirtualHost>
+```
+
+And now, we are ready start all containers : `docker-compose up -d`. You should be able to view Symfony landing page at 
+[http://api.ddb-quickstart.test](http://api.ddb-quickstart.test) and 
+[https://api.ddb-quickstart.test](https://api.ddb-quickstart.test).
+
+!!! note "You may have to restart traefik container"
+    If you have some issues with certificate validity on the https:// url, you may need to restart traefik container : 
+    `docker restart traefik`.
+    
+Setup VueJS and Vue CLI
+---
+
+To be continued
