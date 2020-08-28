@@ -330,7 +330,7 @@ def parse_command_line(args: Optional[Sequence[str]] = None):
                       help="Display exceptions on errors")
     opts.add_argument("-c", "--clear-cache", action="store_true",
                       default=config.data.get('defaults.clear_cache', False),
-                      help="Clear all caches")
+                      help="Clear all used caches")
     opts.add_argument('-w', '--watch', action="store_true",
                       default=config.data.get('defaults.watch', False),
                       help="Enable watch mode (hot reload of generated files)")
@@ -358,12 +358,6 @@ def parse_command_line(args: Optional[Sequence[str]] = None):
         log_level = 'CRITICAL'
 
     configure_logging(log_level)
-
-    clear_cache = parsed_args.clear_cache
-    if clear_cache:
-        for cache in caches.all():
-            cache.clear()
-        logging.getLogger("ddb.cache").success("Cache cleared")
 
     if not parsed_args.command:
         raise ParseCommandLineException(opts, parsed_args, unknown_args)
@@ -473,6 +467,7 @@ def main(args: Optional[Sequence[str]] = None,
 
         prepare_project_home()
         register_default_caches()
+
         register_actions_in_event_bus(config.args.fail_fast)
 
         handle_command_line(command, watch_started_event, watch_stop_event)
