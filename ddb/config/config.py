@@ -85,6 +85,15 @@ class Config:  # pylint:disable=too-many-instance-attributes
         self.data.clear()
         self.env_additions.clear()
 
+    @property
+    def clear_cache(self):
+        """
+        Should cache be cleared on load
+        """
+        if 'clear_cache' in self.args:
+            return self.args.clear_cache
+        return False
+
     def load(self, env_key='env'):
         """
         Load configuration data. Variable in 'env_key' key will be placed loaded as environment variables.

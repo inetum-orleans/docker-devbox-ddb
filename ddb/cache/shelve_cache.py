@@ -21,7 +21,20 @@ class ShelveCache(Cache):
             path = os.path.join(tempfile.gettempdir(), "ddb", "cache")
         os.makedirs(path, exist_ok=True)
 
-        self._shelf = shelve.open(os.path.join(path, self._namespace))
+        filename = os.path.join(path, self._namespace)
+        if config.clear_cache and os.path.exists(filename):
+            os.remove(filename)
+        try:
+            self._shelf = shelve.open(filename)
+        except Exception as e:
+            if config.clear_cache and os.path.exists(filename):
+                try:
+                    os.remove(filename)
+                except Exception as e2:
+                    raise e from e2
+            self._shelf = shelve.open(filename)
+        if config.clear_cache:
+            self._shelf.clear()
 
     def close(self):
         self._shelf.close()
