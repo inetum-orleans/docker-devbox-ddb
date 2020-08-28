@@ -26,13 +26,14 @@ class ShelveCache(Cache):
             os.remove(filename)
         try:
             self._shelf = shelve.open(filename)
-        except Exception as e:
-            if config.clear_cache and os.path.exists(filename):
+        except IOError as open_error:
+            if os.path.exists(filename):
                 try:
                     os.remove(filename)
-                except Exception as e2:
-                    raise e from e2
-            self._shelf = shelve.open(filename)
+                except IOError as remove_error:
+                    raise remove_error from open_error
+                self._shelf = shelve.open(filename)
+            raise open_error
         if config.clear_cache:
             self._shelf.clear()
 

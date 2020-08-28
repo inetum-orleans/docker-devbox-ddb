@@ -4,8 +4,8 @@ History
 1.0.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- Core: Fix `[Errno 11] Resource temporarily unavailable` error when running more than one instance of ddb.
+- Aliases: Fix global aliases for projects lying inside docker devbox home directory (traefik, portainer, cfssl).
 
 1.0.1 (2020-08-25)
 ------------------
