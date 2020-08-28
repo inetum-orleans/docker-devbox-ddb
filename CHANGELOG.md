@@ -1,7 +1,7 @@
 History
 =======
 
-1.0.2 (unreleased)
+1.0.2 (2020-08-28)
 ------------------
 
 - Core: Fix `[Errno 11] Resource temporarily unavailable` error when running more than one instance of ddb.
