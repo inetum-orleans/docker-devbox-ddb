@@ -4,7 +4,7 @@ History
 1.0.3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Certs: Fix inversion between certificate and key for `certs:generated` and `certs:available` events.
 
 
 1.0.2 (2020-08-28)

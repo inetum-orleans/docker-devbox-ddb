@@ -71,7 +71,7 @@ class GenerateCertAction(Action):
             for generated_file in generated.values():
                 events.file.generated(source=None, target=generated_file)
 
-            certificate_path, private_key_path = generated['private_key'], generated['certificate']
+            private_key_path, certificate_path = generated['private_key'], generated['certificate']
             events.certs.generated(domain=domain, wildcard=wildcard, private_key=certificate_path,
                                    certificate=private_key_path)
         else:
