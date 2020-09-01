@@ -1,7 +1,7 @@
 History
 =======
 
-1.0.3 (unreleased)
+1.0.3 (2020-09-01)
 ------------------
 
 - Certs: Fix inversion between certificate and key for `certs:generated` and `certs:available` events.
