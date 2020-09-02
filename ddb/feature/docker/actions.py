@@ -8,9 +8,6 @@ import yaml
 from dotty_dict import Dotty
 from simpleeval import simple_eval
 
-""" TODO replace by the right import """
-from ...utils.table_display import get_table_display
-
 from .binaries import DockerBinary
 from ...action import Action
 from ...action.action import EventBinding, InitializableAction
@@ -20,6 +17,10 @@ from ...config import config
 from ...context import context
 from ...event import bus, events
 from ...utils.process import run
+from ...utils.table_display import get_table_display
+
+
+# TODO replace by the right import
 
 
 class EmitDockerComposeConfigAction(Action):
@@ -412,7 +413,7 @@ class DockerDisplayInfoAction(Action):
 
             self._output_data(service_name, environments, ports, docker_binaries, vhosts)
 
-    def _retrieve_environment_data(self, service_config: Dotty) -> Dotty:
+    def _retrieve_environment_data(self, service_config: Dotty) -> Dotty:  # pylint: disable=no-self-use
         """
         Retrieve environment data
         :param service_config: the service configuration
@@ -424,7 +425,7 @@ class DockerDisplayInfoAction(Action):
 
         return environments
 
-    def _retrieve_ports_data(self, service_config: Dotty):
+    def _retrieve_ports_data(self, service_config: Dotty):  # pylint: disable=no-self-use
         """
         Retrieve exposed ports data
         :param service_config: the service configuration
@@ -436,7 +437,7 @@ class DockerDisplayInfoAction(Action):
 
         return ports
 
-    def _retrieve_labels_data(self, service_config: Dotty):
+    def _retrieve_labels_data(self, service_config: Dotty):  # pylint: disable=no-self-use
         """
         Retrieve useful labels data
         :param service_config: the service configuration
@@ -448,7 +449,7 @@ class DockerDisplayInfoAction(Action):
 
         return ports
 
-    def _retrieve_binaries_data(self, service_config: Dotty) -> list:
+    def _retrieve_binaries_data(self, service_config: Dotty) -> list:  # pylint: disable=no-self-use
         """
         Retrieve binaries data
         :param service_config: the service configuration
@@ -472,7 +473,7 @@ class DockerDisplayInfoAction(Action):
 
         return binaries_labels
 
-    def _retrieve_vhosts_data(self, service_config: Dotty) -> list:
+    def _retrieve_vhosts_data(self, service_config: Dotty) -> list:  # pylint: disable=no-self-use
         """
         Retrieve vhosts data
         :param service_config: the service configuration
@@ -495,7 +496,8 @@ class DockerDisplayInfoAction(Action):
 
         return vhosts_labels
 
-    def _output_data(self, service_name: str, environments, ports, docker_binaries, vhosts):
+    def _output_data(self, service_name: str, environments, ports, docker_binaries, # pylint: disable=no-self-use
+                     vhosts):
         """
         Process the data and render it to the user
         :param service_name: the service name
@@ -510,30 +512,30 @@ class DockerDisplayInfoAction(Action):
         content = []
 
         if (config.args.type is None or 'env' in config.args.type) and len(environments) > 0:
-            environment_content = ['Environment Variables:', '']
+            tmp_content = ['Environment Variables:', '']
             for key in sorted(environments.keys()):
-                environment_content.append('{} : {}'.format(key, environments.get(key)))
+                tmp_content.append('{} : {}'.format(key, environments.get(key)))
 
-            content.append(environment_content)
+            content.append(tmp_content)
 
         if (config.args.type is None or 'port' in config.args.type) and len(ports) > 0:
-            ports_content = ['Exposed ports:', '']
+            tmp_content = ['Exposed ports:', '']
             for port in ports:
-                ports_content.append('In container : {} || Exposed : {}'.format(port.get('target'),
-                                                                                port.get('published')))
-            content.append(ports_content)
+                tmp_content.append('In container : {} || Exposed : {}'.format(port.get('target'),
+                                                                              port.get('published')))
+            content.append(tmp_content)
 
         if (config.args.type is None or 'bin' in config.args.type) and len(docker_binaries) > 0:
-            binaries_content = ['Binaries:', '']
-            for b in sorted(docker_binaries):
-                binaries_content.append(b)
-            content.append(binaries_content)
+            tmp_content = ['Binaries:', '']
+            for binary in sorted(docker_binaries):
+                tmp_content.append(binary)
+            content.append(tmp_content)
 
         if (config.args.type is None or 'vhost' in config.args.type) and len(vhosts) > 0:
-            vhosts_content = ['Virtual Hosts:', '']
-            for b in sorted(vhosts):
-                vhosts_content.append(b)
-            content.append(vhosts_content)
+            tmp_content = ['Virtual Hosts:', '']
+            for vhost in sorted(vhosts):
+                tmp_content.append(vhost)
+            content.append(tmp_content)
 
         if len(content) > 0:
             print(get_table_display(header, content, False))
