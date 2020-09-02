@@ -72,7 +72,12 @@ def get_short_hash_from_vcs():
     """
     Get commit short hash from git index
     """
-    return run("git", "log", "--pretty=format:%h", "-n", "1").decode("utf-8").strip()
+    try:
+        return run("git", "log", "--pretty=format:%h", "-n", "1").decode("utf-8").strip()
+    except CalledProcessError as exc:
+        if exc.returncode == 128:
+            return None
+        raise
 
 
 class VersionFeature(Feature):
