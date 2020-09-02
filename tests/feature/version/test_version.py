@@ -89,3 +89,16 @@ class TestVersionFeature:
         assert config.data.get('version.branch') is None
         assert config.data.get('version.version') is None
         assert config.data.get('version.tag') is None
+
+    def test_repo_no_commit(self, project_loader, mocker: MockerFixture):
+        mocker.patch('ddb.feature.version.is_git_repository', is_git_repository)
+
+        project_loader("repo_no_commit")
+
+        main(["configure"], reset_disabled=True)
+
+        assert config.data.get('version.hash') is None
+        assert config.data.get('version.short_hash') is None
+        assert config.data.get('version.branch') is None
+        assert config.data.get('version.version') is None
+        assert config.data.get('version.tag') is None
