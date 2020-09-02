@@ -8,6 +8,9 @@ import yaml
 from dotty_dict import Dotty
 from simpleeval import simple_eval
 
+""" TODO replace by the right import """
+from ...utils.table_display import get_table_display
+
 from .binaries import DockerBinary
 from ...action import Action
 from ...action.action import EventBinding, InitializableAction
@@ -359,3 +362,179 @@ class LocalVolumesAction(Action):
                 if volume_mapping not in volume_mappings:
                     volume_mappings.append(volume_mapping)
         return volume_mappings
+
+
+class DockerDisplayInfoAction(Action):
+    """
+    Retrieve exposed ports and vhosts from docker-compose config and display them to the user
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.current_yaml_output = None
+
+    @property
+    def event_bindings(self):
+        return (
+            events.phase.info
+        )
+
+    @property
+    def name(self) -> str:
+        return "docker:display-info"
+
+    def execute(self):
+        """
+        Execute action
+        """
+        if not os.path.exists("docker-compose.yml"):
+            return
+
+        yaml_output = run("docker-compose", "config")
+
+        parsed_config = yaml.load(yaml_output, yaml.SafeLoader)
+        docker_compose_config = Dotty(parsed_config)
+
+        if self.current_yaml_output == yaml_output:
+            return
+        self.current_yaml_output = yaml_output
+
+        services = docker_compose_config.get('services')
+        if not services:
+            return
+
+        for service_name in sorted(services.keys()):
+            service_config = services.get(service_name)
+            environments = self._retrieve_environment_data(service_config)
+            ports = self._retrieve_ports_data(service_config)
+            docker_binaries = self._retrieve_binaries_data(service_config)
+            vhosts = self._retrieve_vhosts_data(service_config)
+
+            self._output_data(service_name, environments, ports, docker_binaries, vhosts)
+
+    def _retrieve_environment_data(self, service_config: Dotty) -> Dotty:
+        """
+        Retrieve environment data
+        :param service_config: the service configuration
+        :return: a dict containing environment variables
+        """
+        environments = service_config.get('environment')
+        if not environments:
+            return Dotty({})
+
+        return environments
+
+    def _retrieve_ports_data(self, service_config: Dotty):
+        """
+        Retrieve exposed ports data
+        :param service_config: the service configuration
+        :return: a dict containing exposed ports
+        """
+        ports = service_config.get('ports')
+        if not ports:
+            return []
+
+        return ports
+
+    def _retrieve_labels_data(self, service_config: Dotty):
+        """
+        Retrieve useful labels data
+        :param service_config: the service configuration
+        :return: a dict containing useful labels data
+        """
+        ports = service_config.get('labels')
+        if not ports:
+            return Dotty({})
+
+        return ports
+
+    def _retrieve_binaries_data(self, service_config: Dotty) -> list:
+        """
+        Retrieve binaries data
+        :param service_config: the service configuration
+        :return: a list containing binaries
+        """
+        labels = service_config.get('labels')
+        if not labels:
+            return []
+
+        binary_regex_re = re.compile(r"^\s*ddb\.emit\.(.+?)(?:\[(.+?)\])?(?:\((.+?)\))?\s*$")
+
+        binaries_labels = []
+        for key in labels.keys():
+            match = binary_regex_re.match(key)
+            if not match:
+                continue
+            event_name = match.group(1)
+            binary_name = match.group(2)
+            if event_name == 'docker:binary' and binary_name not in binaries_labels:
+                binaries_labels.append(match.group(2))
+
+        return binaries_labels
+
+    def _retrieve_vhosts_data(self, service_config: Dotty) -> list:
+        """
+        Retrieve vhosts data
+        :param service_config: the service configuration
+        :return: a list containing vhosts data
+        """
+        labels = service_config.get('labels')
+        if not labels:
+            return []
+
+        vhosts_regex_re = re.compile(r"^Host\(`(.+?)`\)$")
+
+        vhosts_labels = []
+        for key in labels.keys():
+            value = labels.get(key)
+            match = vhosts_regex_re.match(value)
+            if not match or '-tls.' in key:
+                continue
+            url = 'http://{}/'.format(match.group(1))
+            vhosts_labels.append(url)
+
+        return vhosts_labels
+
+    def _output_data(self, service_name: str, environments, ports, docker_binaries, vhosts):
+        """
+        Process the data and render it to the user
+        :param service_name: the service name
+        :param environments: the service environment data to display
+        :param ports: the service ports data to display
+        :param docker_binaries: the list of docker binaries
+        :param vhosts: the list of vhosts
+        :return: a dict containing useful labels data
+        """
+
+        header = 'Service: {}'.format(service_name)
+        content = []
+
+        if (config.args.type is None or 'env' in config.args.type) and len(environments) > 0:
+            environment_content = ['Environment Variables:', '']
+            for key in sorted(environments.keys()):
+                environment_content.append('{} : {}'.format(key, environments.get(key)))
+
+            content.append(environment_content)
+
+        if (config.args.type is None or 'port' in config.args.type) and len(ports) > 0:
+            ports_content = ['Exposed ports:', '']
+            for port in ports:
+                ports_content.append('In container : {} || Exposed : {}'.format(port.get('target'),
+                                                                                port.get('published')))
+            content.append(ports_content)
+
+        if (config.args.type is None or 'bin' in config.args.type) and len(docker_binaries) > 0:
+            binaries_content = ['Binaries:', '']
+            for b in sorted(docker_binaries):
+                binaries_content.append(b)
+            content.append(binaries_content)
+
+        if (config.args.type is None or 'vhost' in config.args.type) and len(vhosts) > 0:
+            vhosts_content = ['Virtual Hosts:', '']
+            for b in sorted(vhosts):
+                vhosts_content.append(b)
+            content.append(vhosts_content)
+
+        if len(content) > 0:
+            print(get_table_display(header, content, False))
+            print()

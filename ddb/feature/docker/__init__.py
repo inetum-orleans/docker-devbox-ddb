@@ -8,7 +8,7 @@ from typing import Iterable, ClassVar
 import netifaces
 from dotty_dict import Dotty
 
-from .actions import EmitDockerComposeConfigAction, DockerComposeBinaryAction, LocalVolumesAction
+from .actions import EmitDockerComposeConfigAction, DockerComposeBinaryAction, LocalVolumesAction, DockerDisplayInfoAction
 from .schema import DockerSchema
 from ..feature import Feature, FeatureConfigurationAutoConfigureError
 from ..schema import FeatureSchema
@@ -38,7 +38,8 @@ class DockerFeature(Feature):
         return (
             EmitDockerComposeConfigAction(),
             DockerComposeBinaryAction(),
-            LocalVolumesAction()
+            LocalVolumesAction(),
+            DockerDisplayInfoAction()
         )
 
     def _configure_defaults(self, feature_config: Dotty):

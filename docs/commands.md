@@ -16,6 +16,7 @@ If you run **ddb** with no argument, the usage is displayed.
         configure           Configure the environment
         features            List enabled features
         config              Display effective configuration
+        info                Display useful information
         activate            Write a shell script to be executed to activate
                             environment
         deactivate          Write a shell script to be executed to deactivate
@@ -91,6 +92,51 @@ Read more: [Configuration](configuration.md)
 - **ddb configure**
 
 TODO
+
+- **ddb info**
+
+Displays compacted information about docker containers such as environment variables, virtual host, exposed ports and 
+binaries in a more readable way.
+
+```bash 
++-----------------------------------------------+
+|                  Service: db                  |
++-----------------------------------------------+
+| Environment Variables:                        |
+|                                               |
+| MYSQL_DATABASE : ddb                          |
+| MYSQL_PASSWORD : ddb                          |
+| MYSQL_ROOT_PASSWORD : ddb                     |
+| MYSQL_USER : ddb                              |
++-----------------------------------------------+
+| Exposed ports:                                |
+|                                               |
+| In container : 3306 || Exposed : 37306        |
++-----------------------------------------------+
+| Binaries:                                     |
+|                                               |
+| mysql                                         |
+| mysqldump                                     |
++-----------------------------------------------+
+```
+
+!!! tip "Tip: Use --type to filter for a type of information"
+    
+    For instance, you want to see only virtual hosts information. 
+    
+    Instead of displaying every section, by writing `ddb info --type bin` you will be provided with a filtered result.
+    You can choose between bin, env, port and vhost
+    
+    ```bash 
+    +-----------------------------------------------+
+    |                  Service: db                  |
+    +-----------------------------------------------+
+    | Binaries:                                     |
+    |                                               |
+    | mysql                                         |
+    | mysqldump                                     |
+    +-----------------------------------------------+
+    ```
 
 - **ddb activate**
 
