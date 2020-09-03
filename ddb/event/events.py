@@ -189,6 +189,12 @@ class Phase:
         Features phase
         """
 
+    @event("phase:info")
+    def info(self):
+        """
+        Features phase
+        """
+
     @event("phase:config")
     def config(self):
         """

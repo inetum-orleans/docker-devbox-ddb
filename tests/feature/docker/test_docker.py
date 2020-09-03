@@ -1,6 +1,9 @@
 import os
 import shutil
 
+from _pytest.capture import CaptureFixture
+from dotty_dict import Dotty
+
 from ddb.__main__ import load_registered_features, register_actions_in_event_bus
 from ddb.action import actions
 from ddb.binary import binaries
@@ -12,6 +15,7 @@ from ddb.feature.core import CoreFeature
 from ddb.feature.docker import DockerFeature, EmitDockerComposeConfigAction
 from ddb.feature.traefik import TraefikFeature
 from ddb.utils.process import effective_command
+from ddb.feature.docker import DockerDisplayInfoAction
 from tests.utilstest import setup_cfssl
 
 
@@ -262,3 +266,187 @@ class TestDockerFeature:
         assert os.path.exists(os.path.join(config.paths.home, "certs", "web-changed.domain.tld.key"))
         assert os.path.exists(os.path.join(config.paths.home, "certs", "web-changed.domain.tld.crt"))
         assert os.path.exists(os.path.join(config.paths.home, "traefik", "config", "web-changed.domain.tld.ssl.toml"))
+
+
+class TestDockerDisplayInfoAction:
+
+    def test__retrieve_environment_data(self):
+        features.register(DockerFeature())
+        load_registered_features()
+        action = actions.get('docker:display-info')  # type:DockerDisplayInfoAction
+
+        assert {} == action._retrieve_environment_data(Dotty({}))
+        assert {} == action._retrieve_environment_data(Dotty({'toto': 'toto'}))
+        assert {'AZERTY': '123'} == action._retrieve_environment_data(Dotty({'environment': {'AZERTY': '123'}}))
+
+    def test__retrieve_ports_data(self):
+        features.register(DockerFeature())
+        load_registered_features()
+        action = actions.get('docker:display-info')  # type:DockerDisplayInfoAction
+
+        assert [] == action._retrieve_ports_data(Dotty({}))
+        assert [] == action._retrieve_ports_data(Dotty({'toto': 'toto'}))
+        assert [{'AZERTY': '123'}] == action._retrieve_ports_data(Dotty({'ports': [{'AZERTY': '123'}]}))
+
+    def test__retrieve_binaries_data(self):
+        features.register(DockerFeature())
+        load_registered_features()
+        action = actions.get('docker:display-info')  # type:DockerDisplayInfoAction
+
+        assert [] == action._retrieve_binaries_data(Dotty({}))
+        assert [] == action._retrieve_binaries_data(Dotty({'toto': 'toto'}))
+        assert [] == action._retrieve_binaries_data(Dotty({'labels': {'toto': '123'}}))
+        assert ['npm-simple'] == action._retrieve_binaries_data(Dotty({'labels': {
+            'ddb.emit.docker:binary[npm-simple](name)': 'npm-simple',
+            'ddb.emit.docker:binary[npm-simple](workdir)': '/app'
+        }}))
+        assert ['npm', 'npm-simple'] == sorted(action._retrieve_binaries_data(Dotty({'labels': {
+            'ddb.emit.docker:binary[npm](name)': 'npm',
+            'ddb.emit.docker:binary[npm-simple](name)': 'npm-simple',
+            'ddb.emit.docker:binary[npm-simple](workdir)': '/app'
+        }})))
+
+    def test__retrieve_vhosts_data(self):
+        features.register(DockerFeature())
+        load_registered_features()
+        action = actions.get('docker:display-info')  # type:DockerDisplayInfoAction
+
+        assert [] == action._retrieve_vhosts_data(Dotty({}))
+        assert [] == action._retrieve_vhosts_data(Dotty({'toto': 'toto'}))
+        assert [] == action._retrieve_vhosts_data(Dotty({'labels': {'toto': '123'}}))
+        assert ['http://web.domain.tld/'] == action._retrieve_vhosts_data(Dotty({'labels': {
+            'traefik.http.routers.defaults-project.rule': 'Host(`web.domain.tld`)',
+            'ddb.emit.docker:binary[npm-simple](workdir)': '/app'
+        }}))
+        assert ['http://test.tld/', 'http://web.domain.tld/'] == sorted(action._retrieve_vhosts_data(Dotty({'labels': {
+            'traefik.http.routers.defaults-project.rule': 'Host(`web.domain.tld`)',
+            'traefik.http.routers.test-project.rule': 'Host(`test.tld`)',
+            'ddb.emit.docker:binary[npm-simple](workdir)': '/app'
+        }})))
+        assert ['http://test.tld/', 'https://web.domain.tld/'] == sorted(action._retrieve_vhosts_data(Dotty({'labels': {
+            'traefik.http.routers.defaults-project.rule': 'Host(`web.domain.tld`)',
+            'traefik.http.routers.defaults-project-tls.rule': 'Host(`web.domain.tld`)',
+            'traefik.http.routers.test-project.rule': 'Host(`test.tld`)',
+            'ddb.emit.docker:binary[npm-simple](workdir)': '/app'
+        }})))
+
+    def test__output_data(self, project_loader):
+        features.register(DockerFeature())
+        load_registered_features()
+        action = actions.get('docker:display-info')  # type:DockerDisplayInfoAction
+
+        config.args.type = None
+
+        assert '' == action._output_data('test', list(), [], [], [])
+
+        test_vhosts = action._retrieve_vhosts_data(Dotty({'labels': {
+            'traefik.http.routers.defaults-project.rule': 'Host(`web.domain.tld`)',
+            'traefik.http.routers.defaults-project-tls.rule': 'Host(`web.domain.tld`)',
+            'traefik.http.routers.test-project.rule': 'Host(`test.tld`)',
+            'ddb.emit.docker:binary[npm-simple](workdir)': '/app'
+        }}))
+
+        assert ('\n'.join(['+-------------------------+',
+                           '| test                    |',
+                           '+-------------------------+',
+                           '| http://test.tld/        |',
+                           '| https://web.domain.tld/ |',
+                           '+-------------------------+'])) == action._output_data('test', list(), [],
+                                                                                   [], test_vhosts)
+
+        test_binaries = action._retrieve_binaries_data(Dotty({'labels': {
+            'ddb.emit.docker:binary[npm](name)': 'npm',
+            'ddb.emit.docker:binary[npm-simple](name)': 'npm-simple',
+            'ddb.emit.docker:binary[npm-simple](workdir)': '/app'
+        }}))
+
+        assert ('\n'.join(['+-------------------------+',
+                           '| test                    |',
+                           '+-------------------------+',
+                           '| npm                     |',
+                           '| npm-simple              |',
+                           '+-------------------------+',
+                           '| http://test.tld/        |',
+                           '| https://web.domain.tld/ |',
+                           '+-------------------------+'])) == action._output_data('test', list(), [],
+                                                                                   test_binaries, test_vhosts)
+
+        test_envs = action._retrieve_environment_data(Dotty({'environment': {'AZERTY': '123'}}))
+        assert ('\n'.join(['+-------------------------+',
+                           '| test                    |',
+                           '+-------------------------+',
+                           '| AZERTY: 123             |',
+                           '+-------------------------+',
+                           '| npm                     |',
+                           '| npm-simple              |',
+                           '+-------------------------+',
+                           '| http://test.tld/        |',
+                           '| https://web.domain.tld/ |',
+                           '+-------------------------+'])) == action._output_data('test', test_envs, [],
+                                                                                   test_binaries, test_vhosts)
+
+        test_ports = action._retrieve_ports_data(Dotty({'ports': [{'published': '12123', 'target': 'test'}]}))
+        assert ('\n'.join(['+-------------------------+',
+                           '| test                    |',
+                           '+-------------------------+',
+                           '| AZERTY: 123             |',
+                           '+-------------------------+',
+                           '| 12123 -> test           |',
+                           '+-------------------------+',
+                           '| npm                     |',
+                           '| npm-simple              |',
+                           '+-------------------------+',
+                           '| http://test.tld/        |',
+                           '| https://web.domain.tld/ |',
+                           '+-------------------------+'])) == action._output_data('test', test_envs, test_ports,
+                                                                                   test_binaries, test_vhosts)
+
+        config.args.type = 'nothing'
+        assert '' == action._output_data('test', list(), [], [], test_vhosts)
+
+        config.args.type = 'vhost'
+        assert ('\n'.join(['+-------------------------+',
+                           '| test                    |',
+                           '+-------------------------+',
+                           '| http://test.tld/        |',
+                           '| https://web.domain.tld/ |',
+                           '+-------------------------+'])) == action._output_data('test', list(), [],
+                                                                                   [], test_vhosts)
+
+    def test_execute_traefik_cert(self, capsys: CaptureFixture, project_loader):
+        project_loader("traefik-cert")
+
+        features.register(DockerFeature())
+        load_registered_features()
+        config.args.type = None
+        action = actions.get('docker:display-info')  # type:DockerDisplayInfoAction
+        action.execute()
+
+        capture = capsys.readouterr()
+        assert capture.out
+        assert not capture.err
+        assert ('\n'.join(['+-------------------------+',
+                           '| web                     |',
+                           '+-------------------------+',
+                           '| https://web.domain.tld/ |',
+                           '+-------------------------+',
+                           '\n'])) == capture.out
+
+    def test_execute_traefik_cert(self, capsys: CaptureFixture, project_loader):
+        project_loader("traefik-cert")
+
+        features.register(DockerFeature())
+        load_registered_features()
+        config.args.type = None
+        action = actions.get('docker:display-info')  # type:DockerDisplayInfoAction
+        action.execute()
+
+        capture = capsys.readouterr()
+        assert capture.out
+        assert not capture.err
+        assert ('\n'.join(['+-------------------------+',
+                           '| web                     |',
+                           '+-------------------------+',
+                           '| https://web.domain.tld/ |',
+                           '+-------------------------+',
+                           '\n'])) == capture.out

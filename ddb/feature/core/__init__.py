@@ -42,11 +42,16 @@ class CoreFeature(Feature):
             parser.add_argument("--variables", action="store_true",
                                 help="Output as a flat list of variables available in template engines")
 
+        def init_config_parser(parser: ArgumentParser):
+            parser.add_argument("--type", action="append",
+                                help="Filter for a type of information between: bin, env, port and vhost")
+
         return (
             DefaultPhase("init", "Initialize project", run_once=True),
             DefaultPhase("configure", "Configure the environment"),
             DefaultPhase("features", "Display enabled features"),
             DefaultPhase("config", "Display effective configuration", config_parser),
+            DefaultPhase("info", "Display useful information", init_config_parser),
         )
 
     @property
@@ -64,6 +69,9 @@ class CoreFeature(Feature):
 
             LifecycleCommand("config", "Display effective configuration",
                              "config"),
+
+            LifecycleCommand("info", "Display useful information",
+                             "info"),
         )
 
     def _configure_defaults(self, feature_config: Dotty):
