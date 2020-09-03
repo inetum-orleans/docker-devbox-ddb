@@ -1,0 +1,5 @@
+user: mysql
+group: mysql
+paths:
+  - /
+  - /var/lib/mysql

@@ -1,0 +1,10 @@
+FROM mysql:5.7.31
+LABEL maintainer="Rémi Alvergnat <remi.alvergnat@gfi.fr>"
+
+# Mount this volume to help loading/exporting dumps
+RUN mkdir /workdir
+VOLUME /workdir
+
+USER mysql
+
+CMD ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]

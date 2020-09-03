@@ -7,6 +7,7 @@ History
 - Shell: Fix binary shims when `-h`/`--help` is given as argument.
 - Core: Add the `info` command which output compacted information about docker containers such as environment 
   variables, virtual host, exposed ports and binaries.
+- Fixuid: Enhance fixuid configuration when image has no entrypoint defined.
 
 
 1.0.3 (2020-09-01)
