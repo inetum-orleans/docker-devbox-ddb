@@ -6,6 +6,17 @@ import tempfile
 from .cache import Cache
 from ..config import config
 
+import dbm
+
+# Easy fix for https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/49
+# pylint:disable=protected-access
+_dbm_names = dbm._names = ['dbm.gnu', 'dbm.ndbm', 'dbm.dumb']
+if 'dbm.dumb' in _dbm_names:
+    # Let's make dbm.dumb the preferred implementation
+    _dbm_names.remove('dbm.dumb')
+    _dbm_names.insert(0, 'dbm.dumb')
+    dbm._names = _dbm_names
+
 
 class ShelveCache(Cache):
     """
@@ -26,14 +37,15 @@ class ShelveCache(Cache):
             os.remove(filename)
         try:
             self._shelf = shelve.open(filename)
-        except IOError as open_error:
+        except Exception as open_error:  # pylint:disable=broad-except
             if os.path.exists(filename):
                 try:
                     os.remove(filename)
-                except IOError as remove_error:
-                    raise remove_error from open_error
-                self._shelf = shelve.open(filename)
-            raise open_error
+                    self._shelf = shelve.open(filename)
+                except Exception as fallback_error:  # pylint:disable=broad-except
+                    raise open_error from fallback_error
+            else:
+                raise open_error
         if config.clear_cache:
             self._shelf.clear()
 
