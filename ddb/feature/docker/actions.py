@@ -413,7 +413,8 @@ class DockerDisplayInfoAction(Action):
                 print(output)
                 print()
 
-    def _retrieve_environment_data(self, service_config: Dotty) -> Dict[str, str]:  # pylint: disable=no-self-use
+    @staticmethod
+    def _retrieve_environment_data(service_config: Dotty) -> Dict[str, str]:
         """
         Retrieve environment data
         :param service_config: the service configuration
@@ -425,7 +426,8 @@ class DockerDisplayInfoAction(Action):
 
         return environments
 
-    def _retrieve_ports_data(self, service_config: Dotty) -> List[Dict[str, int]]:  # pylint: disable=no-self-use
+    @staticmethod
+    def _retrieve_ports_data(service_config: Dotty) -> List[Dict[str, int]]:  # pylint: disable=no-self-use
         """
         Retrieve exposed ports data
         :param service_config: the service configuration
@@ -437,7 +439,8 @@ class DockerDisplayInfoAction(Action):
 
         return ports
 
-    def _retrieve_binaries_data(self, service_config: Dotty) -> List[str]:  # pylint: disable=no-self-use
+    @staticmethod
+    def _retrieve_binaries_data(service_config: Dotty) -> List[str]:  # pylint: disable=no-self-use
         """
         Retrieve binaries data
         :param service_config: the service configuration
@@ -461,7 +464,8 @@ class DockerDisplayInfoAction(Action):
 
         return binaries_labels
 
-    def _retrieve_vhosts_data(self, service_config: Dotty) -> List[str]:  # pylint: disable=no-self-use
+    @staticmethod
+    def _retrieve_vhosts_data(service_config: Dotty) -> List[str]:  # pylint: disable=no-self-use
         """
         Retrieve vhosts data
         :param service_config: the service configuration
@@ -495,7 +499,9 @@ class DockerDisplayInfoAction(Action):
 
         return vhosts_labels
 
-    def _output_data(self, service_name: str, environments: Dict[str, str],  # pylint: disable=no-self-use
+
+    @staticmethod
+    def _output_data(service_name: str, environments: Dict[str, str],  # pylint: disable=no-self-use
                      ports: List[Dict[str, int]], docker_binaries: List[str], vhosts: List[str]):
         """
         Process the data and render it to the user
