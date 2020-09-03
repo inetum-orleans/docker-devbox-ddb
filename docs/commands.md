@@ -100,21 +100,15 @@ binaries in a more readable way.
 
 ```bash 
 +-----------------------------------------------+
-|                  Service: db                  |
+|db                                             |
 +-----------------------------------------------+
-| Environment Variables:                        |
-|                                               |
 | MYSQL_DATABASE : ddb                          |
 | MYSQL_PASSWORD : ddb                          |
 | MYSQL_ROOT_PASSWORD : ddb                     |
 | MYSQL_USER : ddb                              |
 +-----------------------------------------------+
-| Exposed ports:                                |
-|                                               |
-| In container : 3306 || Exposed : 37306        |
+| 37306 -> 3306                                 |
 +-----------------------------------------------+
-| Binaries:                                     |
-|                                               |
 | mysql                                         |
 | mysqldump                                     |
 +-----------------------------------------------+
@@ -129,7 +123,7 @@ binaries in a more readable way.
     
     ```bash 
     +-----------------------------------------------+
-    |                  Service: db                  |
+    | db                                            |
     +-----------------------------------------------+
     | Binaries:                                     |
     |                                               |
