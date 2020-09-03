@@ -208,9 +208,22 @@ class Phase:
         """
 
 
+class Config:
+    """
+    Phase related events.
+    """
+
+    @event("config:reloaded")
+    def reloaded(self):
+        """
+        Config has been reloaded
+        """
+
+
 file = File()
 certs = Certs()
 binary = Binary()
 run = Run()
 docker = Docker()
 phase = Phase()
+config = Config()

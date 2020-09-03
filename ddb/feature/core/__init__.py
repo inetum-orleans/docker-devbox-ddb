@@ -5,7 +5,7 @@ from typing import Iterable, ClassVar
 
 from dotty_dict import Dotty
 
-from .actions import FeaturesAction, ConfigAction
+from .actions import FeaturesAction, ConfigAction, ReloadConfigAction
 from .schema import CoreFeatureSchema
 from ..feature import Feature, FeatureConfigurationAutoConfigureError
 from ..schema import FeatureSchema
@@ -33,7 +33,8 @@ class CoreFeature(Feature):
     def actions(self) -> Iterable[Action]:
         return (
             FeaturesAction(),
-            ConfigAction()
+            ConfigAction(),
+            ReloadConfigAction()
         )
 
     @property

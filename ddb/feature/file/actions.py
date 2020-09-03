@@ -41,6 +41,11 @@ class FileWalkAction(InitializableAction, WatchSupport):
 
         register_project_cache("file")
 
+    def destroy(self):
+        if caches.has("file"):
+            cache = caches.unregister("file")
+            cache.close()
+
     def execute(self):
         """
         Execute action

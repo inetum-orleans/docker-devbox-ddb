@@ -199,6 +199,11 @@ class DockerComposeBinaryAction(InitializableAction):
     def initialize(self):
         register_project_cache("docker.binaries")
 
+    def destroy(self):
+        if caches.has("docker.binaries"):
+            cache = caches.unregister("docker.binaries")
+            cache.close()
+
     def before_events(self, docker_compose_config):
         """
         Reset current binaries dict.

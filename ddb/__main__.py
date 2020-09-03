@@ -28,7 +28,7 @@ from ddb.command import commands
 from ddb.command.command import execute_command, Command
 from ddb.config import config
 from ddb.context import context
-from ddb.event import bus
+from ddb.event import bus, events
 from ddb.feature import features, Feature
 from ddb.feature.certs import CertsFeature
 from ddb.feature.copy import CopyFeature
@@ -74,6 +74,9 @@ _default_available_features = [CertsFeature(),
                                YttFeature()]
 
 _available_features = list(_default_available_features)
+
+_watch_started_event = threading.Event()
+_watch_stop_event = threading.Event()
 
 
 def load_plugins():
@@ -208,7 +211,18 @@ def register_objects(features_list: Iterable[Feature],
         registry.register(obj)
 
 
-def load_registered_features():
+def preload_registered_features():
+    """
+    Load phases and commands from all registered features.
+    """
+    all_features = features.all()
+    enabled_features = [f for f in all_features if not f.disabled]  # type: Iterable[Feature]
+    register_objects(enabled_features, lambda f: f.phases, phases)
+    register_objects(enabled_features, lambda f: f.commands, commands)
+    return enabled_features
+
+
+def load_registered_features(preload=True):
     """
     Load all registered features.
     """
@@ -222,8 +236,10 @@ def load_registered_features():
 
     enabled_features = [f for f in all_features if not f.disabled]  # type: Iterable[Feature]
 
-    register_objects(enabled_features, lambda f: f.phases, phases)
-    register_objects(enabled_features, lambda f: f.commands, commands)
+    if preload:
+        register_objects(enabled_features, lambda f: f.phases, phases)
+        register_objects(enabled_features, lambda f: f.commands, commands)
+
     register_objects(enabled_features, lambda f: [a for a in f.actions if not a.disabled], actions)
     register_objects(enabled_features, lambda f: f.binaries, binaries)
     register_objects(enabled_features, lambda f: f.services, services)
@@ -267,7 +283,7 @@ def configure_logging(level: Union[str, int] = logging.INFO):
     logger.addHandler(handler)
 
 
-def handle_watch(watch_started_event=threading.Event(), watch_stop_event=threading.Event()):
+def handle_watch():
     """
     Handle watch option
     """
@@ -280,21 +296,22 @@ def handle_watch(watch_started_event=threading.Event(), watch_stop_event=threadi
         for watch_support in watch_supports:
             logging.getLogger("ddb.watch").info("Initializing %s watcher ...", watch_support.name)
             watch_support.start_watching()
-        watch_started_event.set()
+        _watch_started_event.set()
         try:
+            context.watching = True
             logging.getLogger("ddb.watch").warning("Watching ... (CTRL+C to terminate)")
-            while not watch_stop_event.wait(1):
+            while not _watch_stop_event.wait(1):
                 pass
         except KeyboardInterrupt:
             pass
+        finally:
+            context.watching = False
         logging.getLogger("ddb.watch").warning("Terminating ...")
-        for action in actions.all():
-            if isinstance(action, WatchSupport):
-                action.stop_watching()
+        for watch_support in watch_supports:
+            watch_support.stop_watching()
 
-        for action in actions.all():
-            if isinstance(action, WatchSupport):
-                action.join_watching()
+        for watch_support in watch_supports:
+            watch_support.join_watching()
     else:
         logging.getLogger("ddb.watch").warning("Watching is supported by none enabled features")
 
@@ -371,16 +388,14 @@ def parse_command_line(args: Optional[Sequence[str]] = None):
     return command, parsed_args, unknown_args
 
 
-def handle_command_line(command: Command,
-                        watch_started_event=threading.Event(),
-                        watch_stop_event=threading.Event()):
+def handle_command_line(command: Command):
     """
     Execute the command and handle additional given arguments like watch mode
     """
     execute_command(command)
 
     if config.args.watch:
-        handle_watch(watch_started_event, watch_stop_event)
+        handle_watch()
 
 
 def _register_action_in_event_bus(action: Action, binding: Union[Callable, str, EventBinding], fail_fast=False):
@@ -416,18 +431,19 @@ def register_actions_in_event_bus(fail_fast=False):
 
 
 def main(args: Optional[Sequence[str]] = None,
-         watch_started_event=threading.Event(),
-         watch_stop_event=threading.Event(),
          reset_disabled=False):
     """
     Load all features and handle command line
     """
+    global _watch_started_event, _watch_stop_event  # pylint:disable=global-statement
+    _watch_started_event = threading.Event()
+    _watch_stop_event = threading.Event()
     try:
         config.load()
         load_plugins()
 
         register_features()
-        load_registered_features()
+        preload_registered_features()
 
         try:
             command, args, unknown_args = parse_command_line(args)
@@ -465,18 +481,50 @@ def main(args: Optional[Sequence[str]] = None,
                 print(get_table_display(version_title, version_content))
             return []
 
+        load_registered_features(False)
         prepare_project_home()
         register_default_caches()
 
         register_actions_in_event_bus(config.args.fail_fast)
 
-        handle_command_line(command, watch_started_event, watch_stop_event)
+        def on_config_reloaded():
+            global _watch_started_event, _watch_stop_event  # pylint:disable=global-statement
+            _watch_stop_event.set()
+            _watch_started_event = threading.Event()
+            _watch_stop_event = threading.Event()
+
+            for action in actions.all():
+                if hasattr(action, "destroy") and callable(action.destroy):
+                    action.destroy()
+                if hasattr(action, "initialized") and action.initialized:
+                    action.initialized = False
+
+            context.reset()
+
+            handle_command_line(command)
+
+        bus.on(events.config.reloaded.name, on_config_reloaded)  # pylint:disable=no-member
+        handle_command_line(command)
         if command.name not in ['activate', 'deactivate', 'run']:
             _check_for_update()
         return context.exceptions
     finally:
         if not reset_disabled:
             reset()
+
+
+def wait_watch_started(timeout: Optional[float] = None):
+    """
+    Wait for watch mode to be started.
+    """
+    return _watch_started_event.wait(timeout)
+
+
+def stop_watch():
+    """
+    Stop watch mode.
+    """
+    _watch_stop_event.set()
 
 
 def _check_for_update():
