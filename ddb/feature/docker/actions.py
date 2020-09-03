@@ -408,9 +408,12 @@ class DockerDisplayInfoAction(Action):
             docker_binaries = self._retrieve_binaries_data(service_config)
             vhosts = self._retrieve_vhosts_data(service_config)
 
-            self._output_data(service_name, environments, ports, docker_binaries, vhosts)
+            output = self._output_data(service_name, environments, ports, docker_binaries, vhosts)
+            if output:
+                print(output)
+                print()
 
-    def _retrieve_environment_data(self, service_config: Dotty) -> Dotty:  # pylint: disable=no-self-use
+    def _retrieve_environment_data(self, service_config: Dotty) -> list:  # pylint: disable=no-self-use
         """
         Retrieve environment data
         :param service_config: the service configuration
@@ -418,7 +421,7 @@ class DockerDisplayInfoAction(Action):
         """
         environments = service_config.get('environment')
         if not environments:
-            return Dotty({})
+            return {}
 
         return environments
 
@@ -434,19 +437,7 @@ class DockerDisplayInfoAction(Action):
 
         return ports
 
-    def _retrieve_labels_data(self, service_config: Dotty):  # pylint: disable=no-self-use
-        """
-        Retrieve useful labels data
-        :param service_config: the service configuration
-        :return: a dict containing useful labels data
-        """
-        ports = service_config.get('labels')
-        if not ports:
-            return Dotty({})
-
-        return ports
-
-    def _retrieve_binaries_data(self, service_config: Dotty) -> list:  # pylint: disable=no-self-use
+    def _retrieve_binaries_data(self, service_config: Dotty) -> []:  # pylint: disable=no-self-use
         """
         Retrieve binaries data
         :param service_config: the service configuration
@@ -486,15 +477,26 @@ class DockerDisplayInfoAction(Action):
         for key in labels.keys():
             value = labels.get(key)
             match = vhosts_regex_re.match(value)
-            if not match or '-tls.' in key:
+            if not match:
                 continue
-            url = 'http://{}/'.format(match.group(1))
-            vhosts_labels.append(url)
+            http_url = 'http://{}/'.format(match.group(1))
+            https_url = 'https://{}/'.format(match.group(1))
+
+            if '-tls.' in key:
+                try:
+                    vhosts_labels.remove(http_url)
+                except ValueError:
+                    pass
+                vhosts_labels.append(https_url)
+                continue
+
+            if https_url not in vhosts_labels:
+                vhosts_labels.append(http_url)
 
         return vhosts_labels
 
-    def _output_data(self, service_name: str, environments, ports, docker_binaries, # pylint: disable=no-self-use
-                     vhosts):
+    def _output_data(self, service_name: str, environments:list, ports: [], # pylint: disable=no-self-use
+                     docker_binaries: [], vhosts: []):
         """
         Process the data and render it to the user
         :param service_name: the service name
@@ -534,5 +536,5 @@ class DockerDisplayInfoAction(Action):
             content.append(tmp_content)
 
         if len(content) > 0:
-            print(get_table_display(header, content, False))
-            print()
+            return get_table_display(header, content, False)
+        return ''
