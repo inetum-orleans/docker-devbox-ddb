@@ -269,8 +269,9 @@ class FixuidDockerComposeAction(Action):
                 cmd = json.dumps(cmd)
         if not cmd:
             cmd = None
-        if entrypoint:
-            parser.entrypoint = FixuidDockerComposeAction._add_fixuid_entrypoint(entrypoint)
+        fixuid_entrypoint = FixuidDockerComposeAction._add_fixuid_entrypoint(entrypoint)
+        if fixuid_entrypoint:
+            parser.entrypoint = fixuid_entrypoint
         if cmd:
             parser.cmd = cmd
         target = copy_from_url(config.data["fixuid.url"],
@@ -376,7 +377,10 @@ class FixuidDockerComposeAction(Action):
         start_quote = ""
         end_quote = ""
 
-        if entrypoint.startswith("["):
+        if not entrypoint or entrypoint == "null":
+            as_list = True
+            entrypoint_list = []
+        elif entrypoint.startswith("["):
             as_list = True
             entrypoint_list = json.loads(entrypoint)
         else:
