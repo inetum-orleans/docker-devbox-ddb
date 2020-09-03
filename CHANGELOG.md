@@ -8,6 +8,9 @@ History
 - Core: Add the `info` command which output compacted information about docker containers such as environment 
   variables, virtual host, exposed ports and binaries.
 - Fixuid: Enhance fixuid configuration when image has no entrypoint defined.
+- Config: Add support for `ddb.yml` configuration watch. If a project configuration file changes, configuration is 
+reloaded and command is runned again to update all generated files. It currently doesn't watch configuration files 
+from ~/.docker-devbox nor ~/.docker-devbox/ddb directories as it's based on `file` feature events.
 
 
 1.0.3 (2020-09-01)

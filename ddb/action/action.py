@@ -77,6 +77,11 @@ class InitializableAction(Action, ABC):  # pylint:disable=abstract-method
         Initialize method, invoked before first event binding execution.
         """
 
+    def destroy(self):
+        """
+        destroy method, invoked on shutdown.
+        """
+
 
 class WatchSupport(ABC):
     """

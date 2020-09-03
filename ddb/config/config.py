@@ -4,7 +4,7 @@ from argparse import Namespace
 from collections import namedtuple
 from os.path import exists
 from pathlib import Path
-from typing import Callable, Any, Union, Iterable
+from typing import Callable, Any, Union, Iterable, Dict
 
 import yaml
 from deepmerge import always_merger
@@ -67,6 +67,7 @@ class Config:  # pylint:disable=too-many-instance-attributes
         self.extensions = extensions
         self.env_additions = {}
         self.data = dotty()
+        self.loaded_data = {}
         self.paths = paths if paths else get_default_config_paths(env_prefix, filenames, extensions)
         self.cwd = None
         self.args = Namespace()
@@ -94,23 +95,33 @@ class Config:  # pylint:disable=too-many-instance-attributes
             return self.args.clear_cache
         return False
 
-    def load(self, env_key='env'):
+    @property
+    def files(self):
         """
-        Load configuration data. Variable in 'env_key' key will be placed loaded as environment variables.
+        Possible configuration files to load.
         """
-        loaded_data = {} if Config.defaults is None else dict(Config.defaults)
-
+        ret = []
         for path in self.paths:
             if not path:
                 continue
             for basename in self.filenames:
                 for ext in self.extensions:
                     file = os.path.join(path, basename + '.' + ext)
-                    if exists(file):
-                        with open(file, 'rb') as stream:
-                            file_data = yaml.load(stream, Loader=yaml.FullLoader)
-                            if file_data:
-                                loaded_data = always_merger.merge(loaded_data, file_data)
+                    ret.append(file)
+        return ret
+
+    def read(self, env_key='env'):
+        """
+        Read configuration data from files. Variable in 'env_key' key will be placed loaded as environment variables.
+        """
+        loaded_data = {} if Config.defaults is None else dict(Config.defaults)
+
+        for file in self.files:
+            if exists(file):
+                with open(file, 'rb') as stream:
+                    file_data = yaml.load(stream, Loader=yaml.FullLoader)
+                    if file_data:
+                        loaded_data = always_merger.merge(loaded_data, file_data)
 
         if env_key in loaded_data:
             env = loaded_data.pop(env_key)
@@ -118,8 +129,20 @@ class Config:  # pylint:disable=too-many-instance-attributes
                 for (name, value) in env.items():
                     os.environ[name] = value
 
-        loaded_data = self.apply_environ_overrides(loaded_data)
-        self.data = dotty(always_merger.merge(self.data, loaded_data))
+        return self.apply_environ_overrides(loaded_data)
+
+    def load_from_data(self, data: Dict):
+        """
+        Load configuration data from readen files.
+        """
+        self.loaded_data = dict(data)
+        self.data = dotty(always_merger.merge(self.data, data))
+
+    def load(self, env_key='env'):
+        """
+        Load configuration data from files. Variable in 'env_key' key will be placed loaded as environment variables.
+        """
+        self.load_from_data(self.read(env_key))
 
     def sanitize_and_validate(self, schema: Schema, key: str, auto_configure: Callable[[Dotty], Any] = None):
         """

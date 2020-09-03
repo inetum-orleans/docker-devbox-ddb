@@ -8,34 +8,30 @@ from typing import Iterable
 import pytest
 from waiting import wait
 
-from ddb.__main__ import main
+from ddb.__main__ import main, wait_watch_started, stop_watch
 from tests.utilstest import expect_gitignore
 
 
 def init_test_watch(watch: bool, command: Iterable[str]):
     thread = None
-    watch_stop_event = threading.Event()
-    watch_started_event = threading.Event()
 
     full_command = ["--watch"] if watch else []
     full_command.extend(command)
 
-    main_runner = lambda: main(full_command,
-                               watch_started_event,
-                               watch_stop_event)
+    main_runner = lambda: main(full_command)
 
     if watch:
         thread = threading.Thread(name="watch",
                                   target=main_runner)
         thread.start()
-        watch_started_event.wait(30)
+        wait_watch_started(30)
         if os.environ.get("TRAVIS") == "true":
             # On TravisCI, it seems there is some race condition that may cause tests to fail without this.
             time.sleep(1)
     else:
         main_runner()
 
-    return thread, watch_stop_event, watch_started_event, main_runner
+    return thread, main_runner
 
 
 class TestWatch:
@@ -46,7 +42,7 @@ class TestWatch:
     def test_watch_file_change(self, project_loader, watch):
         project_loader("watch1")
 
-        thread, watch_stop_event, watch_started_event, main_runner = init_test_watch(watch, ["configure"])
+        thread, main_runner = init_test_watch(watch, ["configure"])
 
         try:
             assert os.path.exists("test.txt")
@@ -65,7 +61,7 @@ class TestWatch:
                  timeout_seconds=5)
         finally:
             if watch:
-                watch_stop_event.set()
+                stop_watch()
 
         if thread:
             thread.join()
@@ -77,7 +73,7 @@ class TestWatch:
     def test_watch_file_created(self, project_loader, watch):
         project_loader("watch1")
 
-        thread, watch_stop_event, watch_started_event, main_runner = init_test_watch(watch, ["configure"])
+        thread, main_runner = init_test_watch(watch, ["configure"])
 
         try:
             assert os.path.exists("test.txt")
@@ -97,7 +93,7 @@ class TestWatch:
                  timeout_seconds=5)
         finally:
             if watch:
-                watch_stop_event.set()
+                stop_watch()
 
         if thread:
             thread.join()
@@ -109,7 +105,7 @@ class TestWatch:
     def test_watch_file_delete(self, project_loader, watch):
         project_loader("watch1")
 
-        thread, watch_stop_event, watch_started_event, main_runner = init_test_watch(watch, ["configure"])
+        thread, main_runner = init_test_watch(watch, ["configure"])
 
         try:
             assert os.path.exists("test.txt")
@@ -123,7 +119,7 @@ class TestWatch:
             wait(lambda: not expect_gitignore(".gitignore", "text.txt"), timeout_seconds=5)
         finally:
             if watch:
-                watch_stop_event.set()
+                stop_watch()
 
         if thread:
             thread.join()
@@ -135,7 +131,7 @@ class TestWatch:
     def test_watch_file_move(self, project_loader, watch):
         project_loader("watch1")
 
-        thread, watch_stop_event, watch_started_event, main_runner = init_test_watch(watch, ["configure"])
+        thread, main_runner = init_test_watch(watch, ["configure"])
 
         try:
             assert os.path.exists("test.txt")
@@ -152,7 +148,7 @@ class TestWatch:
                  timeout_seconds=5)
         finally:
             if watch:
-                watch_stop_event.set()
+                stop_watch()
 
         if thread:
             thread.join()
@@ -166,20 +162,20 @@ class TestWatchFixuid:
     def test_watch_fixuid_order_1(self, project_loader, watch):
         project_loader("watch-fixuid")
 
-        thread, watch_stop_event, watch_started_event, main_runner = init_test_watch(watch, ["configure"])
+        thread, main_runner = init_test_watch(watch, ["configure"])
 
         try:
             os.makedirs(os.path.join(".docker", "db"), exist_ok=True)
 
-            shutil.copy2(os.path.join("..", "files", ".docker", "db", "Dockerfile.jinja"),
+            shutil.copyfile(os.path.join("..", "files", ".docker", "db", "Dockerfile.jinja"),
                          os.path.join(".docker", "db", "Dockerfile.jinja"))
             assert os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
 
-            shutil.copy2(os.path.join("..", "files", ".docker", "db", "fixuid.yml"),
+            shutil.copyfile(os.path.join("..", "files", ".docker", "db", "fixuid.yml"),
                          os.path.join(".docker", "db", "fixuid.yml"))
             assert os.path.exists(os.path.join(".docker", "db", "fixuid.yml"))
 
-            shutil.copy2(os.path.join("..", "files", "docker-compose.yml.jsonnet"),
+            shutil.copyfile(os.path.join("..", "files", "docker-compose.yml.jsonnet"),
                          "docker-compose.yml.jsonnet")
             assert os.path.exists("docker-compose.yml.jsonnet")
 
@@ -205,7 +201,7 @@ class TestWatchFixuid:
 
         finally:
             if watch:
-                watch_stop_event.set()
+                stop_watch()
 
         if thread:
             thread.join()
@@ -234,13 +230,13 @@ class TestWatchFixuid:
         watch, files = parameters
         project_loader("watch-fixuid")
 
-        thread, watch_stop_event, watch_started_event, main_runner = init_test_watch(watch, ["configure"])
+        thread, main_runner = init_test_watch(watch, ["configure"])
 
         try:
             os.makedirs(os.path.join(".docker", "db"), exist_ok=True)
 
             for f in files:
-                shutil.copy2(os.path.join("..", "files", f), f)
+                shutil.copyfile(os.path.join("..", "files", f), f)
                 time.sleep(0.5)
 
             if not watch:
@@ -268,7 +264,37 @@ class TestWatchFixuid:
 
         finally:
             if watch:
-                watch_stop_event.set()
+                stop_watch()
+
+        if thread:
+            thread.join()
+
+
+class TestWatchConfig:
+    def test_watch_config_change(self, project_loader):
+        project_loader("watch-config")
+
+        thread, main_runner = init_test_watch(True, ["configure"])
+
+        try:
+            wait(lambda: os.path.exists("test.txt") and Path("test.txt").read_text() == "app.value: foo",
+                 timeout_seconds=60)
+
+            with open("ddb.yml", "r") as f:
+                ddb_yml_content = f.read()
+
+            ddb_yml_content = ddb_yml_content.replace("foo", "bar")
+            with open("ddb.yml", "w") as f:
+                f.write(ddb_yml_content)
+
+            time.sleep(5)
+
+            print(os.path.exists("test.txt") and Path("test.txt").read_text() == "app.value: bar")
+
+            wait(lambda: os.path.exists("test.txt") and Path("test.txt").read_text() == "app.value: bar",
+                 timeout_seconds=60)
+        finally:
+            stop_watch()
 
         if thread:
             thread.join()

@@ -60,11 +60,12 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
             return True
         except Exception as exception:  # pylint:disable=broad-except
             self._handle_exception(exception)
-            if self.fail_fast:  #  TODO: Ajouter une option à la ligne de commande
+            if self.fail_fast:  # TODO: Ajouter une option à la ligne de commande
                 raise
 
         finally:
-            context.stack.pop()
+            if context.stack:
+                context.stack.pop()
 
     def _execute_action(self, *args, **kwargs):
         """

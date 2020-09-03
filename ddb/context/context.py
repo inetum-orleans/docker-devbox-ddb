@@ -37,7 +37,7 @@ class ContextStackItem:
                                     parameters_repr)
 
 
-class Context:
+class Context:  # pylint:disable=too-many-instance-attributes
     """
     Execution context.
     """
@@ -46,6 +46,7 @@ class Context:
         self.phase = None  # type: Optional['Phase']
         self.command = None  # type: Optional['Command']
         self.stack = []  # type: List[ContextStackItem]
+        self.watching = False  # type: bool
         self.exceptions = []  # type: List[Exception]
         self.processed_sources = dict()  # type: Dict[str, str]
         self.processed_targets = dict()  # type: Dict[str, str]

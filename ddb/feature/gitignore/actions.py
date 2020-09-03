@@ -33,6 +33,11 @@ class UpdateGitignoreAction(InitializableAction):
     def initialize(self):
         register_project_cache("gitignore")
 
+    def destroy(self):
+        if caches.has("gitignore"):
+            cache = caches.unregister("gitignore")
+            cache.close()
+
     @staticmethod
     def find_gitignores(target: str):
         """
