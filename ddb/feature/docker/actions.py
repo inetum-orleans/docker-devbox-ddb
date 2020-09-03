@@ -20,9 +20,6 @@ from ...utils.process import run
 from ...utils.table_display import get_table_display
 
 
-# TODO replace by the right import
-
-
 class EmitDockerComposeConfigAction(Action):
     """
     Emit docker:docker-compose-config event with docker compose configuration,
@@ -508,31 +505,30 @@ class DockerDisplayInfoAction(Action):
         :return: a dict containing useful labels data
         """
 
-        header = 'Service: {}'.format(service_name)
+        header = '{}'.format(service_name)
         content = []
 
-        if (config.args.type is None or 'env' in config.args.type) and len(environments) > 0:
-            tmp_content = ['Environment Variables:', '']
+        if (config.args.type is None or 'env' in config.args.type) and environments:
+            tmp_content = []
             for key in sorted(environments.keys()):
-                tmp_content.append('{} : {}'.format(key, environments.get(key)))
+                tmp_content.append('{}: {}'.format(key, environments.get(key)))
 
             content.append(tmp_content)
 
-        if (config.args.type is None or 'port' in config.args.type) and len(ports) > 0:
-            tmp_content = ['Exposed ports:', '']
+        if (config.args.type is None or 'port' in config.args.type) and ports:
+            tmp_content = []
             for port in ports:
-                tmp_content.append('In container : {} || Exposed : {}'.format(port.get('target'),
-                                                                              port.get('published')))
+                tmp_content.append('{} -> {}'.format(port.get('published'), port.get('target')))
             content.append(tmp_content)
 
-        if (config.args.type is None or 'bin' in config.args.type) and len(docker_binaries) > 0:
-            tmp_content = ['Binaries:', '']
+        if (config.args.type is None or 'bin' in config.args.type) and docker_binaries:
+            tmp_content = []
             for binary in sorted(docker_binaries):
                 tmp_content.append(binary)
             content.append(tmp_content)
 
-        if (config.args.type is None or 'vhost' in config.args.type) and len(vhosts) > 0:
-            tmp_content = ['Virtual Hosts:', '']
+        if (config.args.type is None or 'vhost' in config.args.type) and vhosts:
+            tmp_content = []
             for vhost in sorted(vhosts):
                 tmp_content.append(vhost)
             content.append(tmp_content)

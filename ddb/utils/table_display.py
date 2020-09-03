@@ -34,7 +34,7 @@ def get_table_display(header: str, cells, centered: bool = True):
 
     content = [
         ('+' + (line_length * '-') + '+'),
-        ('|' + _get_content(header, line_length) + '|'),
+        ('|' + _get_content(header, line_length, centered) + '|'),
         ('+' + (line_length * '-') + '+')
     ]
 
