@@ -1,7 +1,7 @@
 History
 =======
 
-1.0.4 (unreleased)
+1.0.4 (2020-09-04)
 ------------------
 
 - Shell: Fix binary shims when `-h`/`--help` is given as argument.
