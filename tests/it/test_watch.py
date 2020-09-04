@@ -3,6 +3,7 @@ import shutil
 import threading
 import time
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import Iterable
 
 import pytest
@@ -154,6 +155,14 @@ class TestWatch:
             thread.join()
 
 
+def copy_from_files(f):
+    with NamedTemporaryFile('w', delete=False) as tmp:
+        with open(os.path.join("..", "files", f)) as source:
+            shutil.copyfileobj(source, tmp)
+
+    os.rename(tmp.name, f)
+
+
 class TestWatchFixuid:
     @pytest.mark.parametrize("watch", [
         True,
@@ -167,16 +176,13 @@ class TestWatchFixuid:
         try:
             os.makedirs(os.path.join(".docker", "db"), exist_ok=True)
 
-            shutil.copyfile(os.path.join("..", "files", ".docker", "db", "Dockerfile.jinja"),
-                         os.path.join(".docker", "db", "Dockerfile.jinja"))
+            copy_from_files(os.path.join(".docker", "db", "Dockerfile.jinja"))
             assert os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
 
-            shutil.copyfile(os.path.join("..", "files", ".docker", "db", "fixuid.yml"),
-                         os.path.join(".docker", "db", "fixuid.yml"))
+            copy_from_files(os.path.join(".docker", "db", "fixuid.yml"))
             assert os.path.exists(os.path.join(".docker", "db", "fixuid.yml"))
 
-            shutil.copyfile(os.path.join("..", "files", "docker-compose.yml.jsonnet"),
-                         "docker-compose.yml.jsonnet")
+            copy_from_files("docker-compose.yml.jsonnet")
             assert os.path.exists("docker-compose.yml.jsonnet")
 
             if not watch:
@@ -236,7 +242,7 @@ class TestWatchFixuid:
             os.makedirs(os.path.join(".docker", "db"), exist_ok=True)
 
             for f in files:
-                shutil.copyfile(os.path.join("..", "files", f), f)
+                copy_from_files(f)
                 time.sleep(0.5)
 
             if not watch:
