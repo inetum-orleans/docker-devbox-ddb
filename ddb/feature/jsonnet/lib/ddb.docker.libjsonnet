@@ -52,7 +52,7 @@ local image_uri(image_name, with_tag = true) =
 local Build(name, image=name, cache_from_image=_docker_cache_from_image, directory=_docker_directory) = Service() + {
     "build": {
         [if (cache_from_image && (_docker_registry_name != null || _docker_registry_repository != null) != null) then "cache_from"]: [
-            image_uri(image, with_tag=false)
+            image_uri(image)
         ],
         "context": std.join("/", [directory, image])
     },

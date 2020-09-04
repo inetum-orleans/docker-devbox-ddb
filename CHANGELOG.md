@@ -7,6 +7,7 @@ History
 - Shell: Fix binary shims when `-h`/`--help` is given as argument.
 - Core: Add the `info` command which output compacted information about docker containers such as environment 
   variables, virtual host, exposed ports and binaries.
+- Jsonnet: Fix `cache_from` value for docker services to match the `image` one 
 - Fixuid: Enhance fixuid configuration when image has no entrypoint defined.
 - Config: Add support for `ddb.yml` configuration watch. If a project configuration file changes, configuration is 
 reloaded and command is runned again to update all generated files. It currently doesn't watch configuration files 
