@@ -34,6 +34,10 @@ class TestUpdateGitIgnoreAction:
         assert os.path.exists('.gitignore')
         assert expect_gitignore('.gitignore', 'to-ignore.yml')
 
+        action.remove("./to-ignore.yml")
+
+        assert not os.path.exists('.gitignore')
+
     def test_already_ignored(self, project_loader):
         project_loader("already_ignored")
 
@@ -52,6 +56,27 @@ class TestUpdateGitIgnoreAction:
             gitignore = f.read()
 
         assert gitignore == expected_gitignore
+
+    def test_remove_comment_block(self, project_loader):
+        project_loader("already_ignored")
+
+        assert os.path.exists('.gitignore')
+        with open('.gitignore', 'r') as f:
+            expected_gitignore = f.read()
+
+        features.register(GitignoreFeature())
+        load_registered_features()
+
+        action = UpdateGitignoreAction()
+        action.execute(target="./another.yml")
+
+        action.remove("./another.yml")
+        assert os.path.exists('.gitignore')
+        with open('.gitignore', 'r') as f:
+            gitignore = f.read()
+
+        assert gitignore == expected_gitignore
+
 
     def test_keep_negated(self, project_loader):
         project_loader("keep_negated")

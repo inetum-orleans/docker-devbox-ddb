@@ -87,9 +87,12 @@ class UpdateGitignoreAction(InitializableAction):
             return
 
         new_gitignore_content = list(filter(lambda line: relative_file != line, gitignore_content))
-
-        excluded = [UpdateGitignoreAction.get_block_limit(True), UpdateGitignoreAction.get_block_limit(False)]
+        before_block = UpdateGitignoreAction.get_block_limit(True)
+        after_block = UpdateGitignoreAction.get_block_limit(False)
+        excluded = [before_block, after_block]
         if new_gitignore_content and new_gitignore_content != excluded:
+            UpdateGitignoreAction._cleanup_gitignore_content(after_block, before_block, new_gitignore_content)
+
             with open(gitignore, "w", encoding="utf-8") as gitignore_file:
                 for line in new_gitignore_content:
                     gitignore_file.write(line)
@@ -98,6 +101,19 @@ class UpdateGitignoreAction(InitializableAction):
             force_remove(gitignore)
 
         context.log.warning("%s removed from %s", file, gitignore)
+
+    @staticmethod
+    def _cleanup_gitignore_content(after_block, before_block, new_gitignore_content):
+        after_block_row = new_gitignore_content.index(after_block)
+        before_block_row = new_gitignore_content.index(before_block)
+        if after_block_row > -1 and before_block_row > -1 and after_block_row - before_block_row == 1:
+            new_gitignore_content.remove(after_block)
+            new_gitignore_content.remove(before_block)
+        while new_gitignore_content and not new_gitignore_content[0].strip():
+            new_gitignore_content.pop(0)
+
+        while new_gitignore_content and not new_gitignore_content[-1].strip():
+            new_gitignore_content.pop(-1)
 
     @staticmethod
     def execute(target: str, source: str = None):
