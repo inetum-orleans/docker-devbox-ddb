@@ -7,6 +7,7 @@ from ..feature import Feature
 from ..schema import FeatureSchema
 from ...action import Action
 from ...command import LifecycleCommand, Command
+from ...command.command import LifecycleWithoutHelpCommand
 from ...phase import Phase, DefaultPhase
 
 
@@ -34,8 +35,8 @@ class RunFeature(Feature):
     @property
     def commands(self) -> Iterable[Command]:
         return (
-            LifecycleCommand("run", "Display command to run project binary",
-                             "run"),
+            LifecycleWithoutHelpCommand("run", "Display command to run project binary",
+                                        "run"),
         )
 
     @property

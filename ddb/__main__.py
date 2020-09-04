@@ -360,7 +360,7 @@ def parse_command_line(args: Optional[Sequence[str]] = None):
 
     subparsers = opts.add_subparsers(dest="command", help='Available commands')
     for command in commands.all():
-        parser = subparsers.add_parser(command.name, help=command.description)
+        parser = command.add_parser(subparsers)
         command.configure_parser(parser)
         command_parsers[command.name] = parser
 

@@ -34,10 +34,12 @@ class RunAction(Action):
             events.run.run(name=name)
 
     @staticmethod
-    def run(name: str):
+    def run(name: str, *args):
         """
         Execute the action
         """
+        if not args:
+            args = config.unknown_args
 
         binary = binaries.get(name)
-        print(subprocess.list2cmdline(binary.command(*config.unknown_args)))
+        print(subprocess.list2cmdline(binary.command(*args)))

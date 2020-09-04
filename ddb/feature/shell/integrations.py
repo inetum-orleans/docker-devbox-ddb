@@ -114,7 +114,7 @@ class BashShellIntegration(ShellIntegration):
         return True
 
     def create_binary_shim(self, shims_path: str, binary: Binary):
-        return self._write_shim(shims_path, binary.name, 'binary', "$(ddb run %s \\\"$@\\\")" % binary.name)
+        return self._write_shim(shims_path, binary.name, 'binary', "$(ddb run %s \"$@\")" % binary.name)
 
     def create_alias_binary_shim(self, shims_path: str, binary: Binary) -> Tuple[bool, str]:
         return self._write_shim(shims_path, binary.name, 'alias', binary.command())

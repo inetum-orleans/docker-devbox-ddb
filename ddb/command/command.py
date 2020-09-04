@@ -32,6 +32,12 @@ class Command(RegistryObject, ABC):
         Configure the argument parser.
         """
 
+    def add_parser(self, subparsers):
+        """
+        Add command parser into given subparsers.
+        """
+        return subparsers.add_parser(self.name, help=self.description)
+
 
 class DefaultCommand(DefaultRegistryObject, Command):
     """
@@ -98,6 +104,17 @@ class LifecycleCommand(DefaultCommand):
         super().execute()
         for phase in self._lifecycle:
             execute_phase(phase)
+
+
+class LifecycleWithoutHelpCommand(LifecycleCommand):
+    """
+    A LifecycleCommand that doesn't add --help option to it's parser.
+    """
+    def add_parser(self, subparsers):
+        """
+        Add command parser into given subparsers.
+        """
+        return subparsers.add_parser(self.name, help=self.description, add_help=False)
 
 
 def execute_command(command: Command):

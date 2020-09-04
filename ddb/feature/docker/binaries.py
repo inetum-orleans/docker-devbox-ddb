@@ -62,7 +62,7 @@ class DockerBinary(Binary):
         :return:
         """
         if condition is not None and options is not None:
-            if simple_eval(condition, functions={}, names={'args': args}):
+            if simple_eval(condition, functions={}, names={'args': ' '.join(args)}):
                 params.extend(shlex.split(options))
         else:
             if options is not None:
