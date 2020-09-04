@@ -558,7 +558,7 @@ def clear_caches():
 
 def reset():
     """
-    Reset all caches and registries to run main method again
+    Close all caches and reset registries to run main method again
     """
     bus.clear()
 
