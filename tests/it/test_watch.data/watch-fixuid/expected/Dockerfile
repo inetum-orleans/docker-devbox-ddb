@@ -1,5 +1,4 @@
-FROM mysql:5.7.31
-LABEL maintainer="Rémi Alvergnat <remi.alvergnat@gfi.fr>"
+FROM alpine:3.12
 
 # Mount this volume to help loading/exporting dumps
 RUN mkdir /workdir
@@ -11,4 +10,4 @@ COPY fixuid.yml /etc/fixuid/config.yml
 USER mysql
 
 CMD ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
-ENTRYPOINT ["fixuid", "-q", "docker-entrypoint.sh"]
+ENTRYPOINT ["fixuid", "-q", "mysql"]
