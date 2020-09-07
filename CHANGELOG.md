@@ -1,7 +1,7 @@
 History
 =======
 
-1.0.5 (unreleased)
+1.0.5 (2020-09-07)
 ------------------
 
 - Jsonnet: Fix `duplicate field name` error when sharing a named volume on many docker-compose services.
