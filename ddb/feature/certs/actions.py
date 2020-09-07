@@ -8,7 +8,7 @@ from ...action import Action
 from ...config import config
 from ...context import context
 from ...event import events
-from ...utils.file import force_remove
+from ...utils.file import force_remove, copy_if_different
 
 
 class GenerateCertAction(Action):
@@ -35,7 +35,7 @@ class GenerateCertAction(Action):
     @staticmethod
     def generate_cfssl(domain, wildcard=True):
         """
-        Generate CA certificate with CFSSL.
+        Generate domain certificate with CFSSL.
         """
         certificate_path, private_key_path = writer.get_certs_path(domain,
                                                                    config.data['certs.cfssl.writer'],
@@ -66,7 +66,7 @@ class GenerateCertAction(Action):
                                            client,
                                            config.data['certs.cfssl.verify_checksum'])
 
-            context.log.success("TLS certificates generated for domain %s", domain)
+            context.log.success("TLS certificate generated for domain %s", domain)
 
             for generated_file in generated.values():
                 events.file.generated(source=None, target=generated_file)
@@ -75,7 +75,7 @@ class GenerateCertAction(Action):
             events.certs.generated(domain=domain, wildcard=wildcard, private_key=certificate_path,
                                    certificate=private_key_path)
         else:
-            context.log.notice("TLS certificates exists for domain %s", domain)
+            context.log.notice("TLS certificate exists for domain %s", domain)
 
         events.certs.available(domain=domain, wildcard=wildcard, private_key=private_key_path,
                                certificate=certificate_path)
@@ -105,7 +105,7 @@ class RemoveCertAction(Action):
     @staticmethod
     def remove_cfssl(domain):
         """
-        Remove CA certificate generated with CFSSL.
+        Remove domain certificate generated with CFSSL.
         """
         certificate_path, private_key_path = writer.get_certs_path(domain,
                                                                    config.data['certs.cfssl.writer'],
@@ -123,3 +123,70 @@ class RemoveCertAction(Action):
             removed = True
 
         return removed
+
+
+class GenerateSignerCertificateAction(Action):
+    """
+    Generate the signer certificate, used to sign domains certificates.
+    """
+
+    @property
+    def event_bindings(self):
+        return events.certs.generated
+
+    @property
+    def name(self) -> str:
+        return "certs:generate-signer"
+
+    @property
+    def disabled(self) -> bool:
+        return config.data.get('certs.type') != 'cfssl'
+
+    @staticmethod
+    def execute(*args, **kwargs):
+        """
+        Generate certificate with CFSSL.
+        """
+        output = ".signer"
+        certificate_path, _ = writer.get_certs_path(output,
+                                                    config.data['certs.cfssl.writer'],
+                                                    config.data['certs.destination'])
+
+        if not os.path.exists(certificate_path):
+            client_config = config.data.get('certs.cfssl.server')
+
+            client = cfssl_client.CFSSL(**client_config)
+            response = client.info('')
+
+            destination = config.data['certs.destination']
+            if not os.path.isdir(destination):
+                os.makedirs(destination)
+
+            generated = writer.write_files(response,
+                                           output,
+                                           None,
+                                           None,
+                                           config.data['certs.cfssl.writer'],
+                                           config.data['certs.destination'],
+                                           False,
+                                           client,
+                                           False)
+
+            context.log.success("Signer TLS certificate generated")
+
+            for generated_file in generated.values():
+                events.file.generated(source=None, target=generated_file)
+        else:
+            context.log.notice("Signer TLS certificate exists")
+
+        signer_destinations = config.data['certs.signer_destinations']
+        if signer_destinations:
+            certificate = os.path.join(config.data['certs.destination'],
+                                       output + config.data['certs.cfssl.writer']['filenames']['certificate'] % '')
+
+            for signer_destination in signer_destinations:
+                dirname = os.path.dirname(signer_destination)
+                if not os.path.isdir(dirname):
+                    os.makedirs(dirname)
+                if copy_if_different(certificate, signer_destination):
+                    events.file.generated(source=certificate, target=signer_destination)

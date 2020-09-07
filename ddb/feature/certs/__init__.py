@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from typing import Iterable, ClassVar
 
-from .actions import GenerateCertAction, RemoveCertAction
+from .actions import GenerateCertAction, RemoveCertAction, GenerateSignerCertificateAction
 from .schema import CertsSchema
 from ..feature import Feature
 from ..schema import FeatureSchema
@@ -25,5 +25,6 @@ class CertsFeature(Feature):
     def actions(self) -> Iterable[Action]:
         return (
             GenerateCertAction(),
-            RemoveCertAction()
+            RemoveCertAction(),
+            GenerateSignerCertificateAction()
         )

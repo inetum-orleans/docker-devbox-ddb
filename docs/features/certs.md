@@ -50,12 +50,12 @@ Feature configuration
 - `cfssl.writer.filenames.private_key`: the template name of private key generated.
     - type: string
     - default: `%s.key`
-- `cfssl.destination`: the destination folder of generated certificates.
-    - type: string
-    - default: `.certs`
 - `destination`: the destination folder of generated certificates.
     - type: string
     - default: `.certs`
+- `signer_destinations`: Additional destinations for signer certificates.
+    - type: List of string
+    - default: `[]`
 - `type`: Definition of the type of certificate management. Currently, only `cfssl` is handled, others will not trigger.
           this feature actions.
     - type: string

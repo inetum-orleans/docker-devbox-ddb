@@ -62,4 +62,5 @@ class CertsSchema(FeatureSchema):
     """
     type = fields.String(required=True, default="cfssl")
     destination = fields.String(required=True, default=".certs")
+    signer_destinations = fields.List(fields.String(), required=False, default=[])
     cfssl = fields.Nested(CfsslSchema(), required=False, default=CfsslSchema())

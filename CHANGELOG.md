@@ -5,6 +5,7 @@ History
 ------------------
 
 - Jsonnet: Fix `duplicate field name` error when sharing a named volume on many docker-compose services.
+- Certs: Add creation of `.signer.crt` to help automation of signer TLS Certificate configuration in the project.
 
 
 1.0.4 (2020-09-04)
