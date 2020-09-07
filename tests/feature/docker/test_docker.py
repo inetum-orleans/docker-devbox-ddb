@@ -56,7 +56,11 @@ class TestDockerFeature:
         action.execute()
 
         assert len(custom_event_listeners) == 1
-        assert custom_event_listeners[0] == {"version": "3.7", "services": {"docker": {"image": "ubuntu"}}}
+        assert custom_event_listeners[0] in [
+            # docker-compose >= 1.27.0 returns major version only. see https://github.com/docker/compose/issues/7730
+            {"version": "3", "services": {"docker": {"image": "ubuntu"}}},
+            {"version": "3.7", "services": {"docker": {"image": "ubuntu"}}}
+        ]
 
     def test_emit_one_arg(self, project_loader):
         project_loader("emit-one-arg")
@@ -120,8 +124,11 @@ class TestDockerFeature:
         assert len(some_events) == 3
         assert {"args": ("emit-one-arg",), "kwargs": {}} in some_events
         assert {"args": ("emit-one-arg-2",), "kwargs": {}} in some_events
+        # docker-compose >= 1.27.0 returns major version only. see https://github.com/docker/compose/issues/7730
         assert {"args": ("emit-some-arg",),
-                "kwargs": {'image': 'ubuntu', 'kw1': 'emit-one-kwarg', 'kw2': 7, 'version': '3.7'}} in some_events
+                "kwargs": {'image': 'ubuntu', 'kw1': 'emit-one-kwarg', 'kw2': 7, 'version': '3.7'}} in some_events or \
+               {"args": ("emit-some-arg",),
+                "kwargs": {'image': 'ubuntu', 'kw1': 'emit-one-kwarg', 'kw2': 7, 'version': '3'}} in some_events
 
         assert len(another_events) == 2
         assert {"args": ("emit-another-arg",), "kwargs": {}} in another_events
