@@ -1,0 +1,24 @@
+networks: {}
+services:
+  s1:
+    image: alpine:3.6
+    init: true
+    restart: 'no'
+    volumes:
+      - shared-volume:/share
+  s2:
+    image: alpine:3.6
+    init: true
+    restart: 'no'
+    volumes:
+      - another-volume:/another
+  s3:
+    image: alpine:3.6
+    init: true
+    restart: 'no'
+    volumes:
+      - shared-volume:/share
+version: '3.7'
+volumes:
+  another-volume: {}
+  shared-volume: {}

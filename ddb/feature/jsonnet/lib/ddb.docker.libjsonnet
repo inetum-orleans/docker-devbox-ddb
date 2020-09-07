@@ -80,7 +80,7 @@ local volume_source(v) =
 
 local Volumes(services) = {
         [key]: {} for key in
-        std.uniq(
+        std.set(
             std.filter(volume_is_named,
                 std.map(volume_source,
                     std.flatMap(function (f) if std.objectHas(services[f], "volumes") then services[f].volumes else [],
