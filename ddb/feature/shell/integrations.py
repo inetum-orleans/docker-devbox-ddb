@@ -140,7 +140,7 @@ class BashShellIntegration(ShellIntegration):
         return {"encoding": "utf-8", "newline": '\n'}
 
     def evaluate_script(self, script_filepath) -> Iterable[str]:
-        yield "source %s" % (script_filepath,)
+        yield ". %s" % (script_filepath,)
 
 
 class CmdShellIntegration(ShellIntegration):
