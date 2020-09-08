@@ -1,7 +1,7 @@
 History
 =======
 
-1.0.6 (unreleased)
+1.0.6 (2020-09-09)
 ------------------
 
 - Copy: Add `file:generated` events on copy to add copied files in `.gitignore`.
