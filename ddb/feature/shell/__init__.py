@@ -4,7 +4,7 @@ from typing import Iterable, ClassVar
 
 from dotty_dict import Dotty
 
-from .actions import ActivateAction, DeactivateAction, CreateBinaryShim, CreateAliasShim
+from .actions import ActivateAction, DeactivateAction, CreateBinaryShim, CreateAliasShim, CheckActivatedAction
 from .integrations import BashShellIntegration, CmdShellIntegration
 from .schema import ShellSchema
 from ..feature import Feature, FeatureConfigurationAutoConfigureError
@@ -34,17 +34,20 @@ class ShellFeature(Feature):
             DeactivateAction(BashShellIntegration()),
             CreateBinaryShim(BashShellIntegration()),
             CreateAliasShim(BashShellIntegration()),
+            CheckActivatedAction(BashShellIntegration()),
             ActivateAction(CmdShellIntegration()),
             DeactivateAction(CmdShellIntegration()),
             CreateBinaryShim(CmdShellIntegration()),
             CreateAliasShim(CmdShellIntegration()),
+            CheckActivatedAction(CmdShellIntegration())
         )
 
     @property
     def phases(self) -> Iterable[Phase]:
         return (
             DefaultPhase("activate", "Write a shell script to be executed to activate environment"),
-            DefaultPhase("deactivate", "Write a shell script to be executed to deactivate environment")
+            DefaultPhase("deactivate", "Write a shell script to be executed to deactivate environment"),
+            DefaultPhase("check-activated", "Check if project is activated in current shell"),
         )
 
     @property
@@ -57,6 +60,10 @@ class ShellFeature(Feature):
             LifecycleCommand("deactivate",
                              "Write a shell script to be executed to deactivate environment",
                              "deactivate"
+                             ),
+            LifecycleCommand("check-activated",
+                             "Check if project is activated in current shell",
+                             "check-activated"
                              ),
         )
 

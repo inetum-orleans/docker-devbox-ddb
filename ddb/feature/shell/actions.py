@@ -9,7 +9,7 @@ import zgitignore
 from dictdiffer import diff
 
 from .integrations import ShellIntegration
-from ...action import Action
+from ...action import Action, actions
 from ...action.action import EventBinding
 from ...binary import Binary
 from ...binary.binary import DefaultBinary
@@ -224,10 +224,22 @@ class ActivateAction(Action):
     def order(self) -> int:
         return -256
 
+    def _deactivate(self):
+        deactivate_action = actions.get("shell:" + self.shell.name + ":deactivate")
+        deactivate_action.execute()
+
     def execute(self):
         """
         Execute action
         """
+        try:
+            check_activated(True)
+            self._deactivate()
+        except CheckAnotherProjectActivatedException:
+            self._deactivate()
+        except CheckNotActivatedException:
+            pass
+
         initial_environ = dict(os.environ.items())
         config_environ = to_environ(config.data, config.env_prefix)
         config_environ.update(config.env_additions)
@@ -339,3 +351,88 @@ class DeactivateAction(Action):
                 previous_temporary_filepath = os.path.join(tempdir, previous_temporary_file)
                 if previous_temporary_filepath != script_filepath:
                     os.remove(previous_temporary_filepath)
+
+
+class CheckActivatedException(Exception):
+    """
+    Exception for activated check
+    """
+
+
+class CheckNotActivatedException(CheckActivatedException):
+    """
+    Exception for activated check
+    """
+
+
+class CheckAnotherProjectActivatedException(CheckActivatedException):
+    """
+    Exception for activated check
+    """
+
+
+def check_activated(do_raise=False, do_log=False):
+    """
+    Check if project is activated in current shell.
+    :return:
+    """
+    project_home_key = config.env_prefix + '_PROJECT_HOME'
+
+    if project_home_key in os.environ:
+        if os.environ[project_home_key] == config.paths.project_home:
+            if do_log:
+                context.log.info("Project is activated.")
+            return True
+        try:
+            raise CheckAnotherProjectActivatedException(
+                "Another project is activated (%s)" % os.environ[project_home_key])
+        except CheckAnotherProjectActivatedException as exc:
+            if do_log:
+                context.log.error(str(exc))
+            if do_raise:
+                raise exc
+        return False
+
+    try:
+        raise CheckNotActivatedException("Project is not activated")
+    except CheckNotActivatedException as exc:
+        if do_log:
+            context.log.error(str(exc))
+        if do_raise:
+            raise exc
+        return False
+
+
+class CheckActivatedAction(Action):
+    """
+    Check if project is activated in current shell
+    """
+
+    def __init__(self, shell: ShellIntegration):
+        super().__init__()
+        self.shell = shell
+
+    @property
+    def event_bindings(self):
+        return "phase:check-activated"
+
+    @property
+    def name(self) -> str:
+        return "shell:" + self.shell.name + ":check-activated"
+
+    @property
+    def description(self) -> str:
+        return super().description + " for " + self.shell.description
+
+    @property
+    def disabled(self) -> bool:
+        return config.data.get('shell.shell') != self.shell.name
+
+    def execute(self):  # pylint:disable=no-self-use
+        """
+        Execute action
+        """
+        try:
+            check_activated(True, True)
+        except CheckActivatedException as exc:
+            context.exceptions.append(exc)
