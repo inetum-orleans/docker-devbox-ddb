@@ -6,10 +6,11 @@ If you run **ddb** with no argument, the usage is displayed.
 !!! info "ddb usage"
     ```
     usage: ddb [-h] [-v] [-vv] [-s] [-x] [-c] [-w] [-ff] [--version]
-               {run,init,configure,features,config,activate,deactivate} ...
+               {run,init,configure,features,config,info,activate,deactivate,check-activated}
+               ...
     
     positional arguments:
-      {run,init,configure,features,config,activate,deactivate}
+      {run,init,configure,features,config,info,activate,deactivate,check-activated}
                             Available commands
         run                 Display command to run project binary
         init                Initialize the environment
@@ -21,6 +22,7 @@ If you run **ddb** with no argument, the usage is displayed.
                             environment
         deactivate          Write a shell script to be executed to deactivate
                             environment
+        check-activated     Check if project is activated in current shell
     
     optional arguments:
       -h, --help            show this help message and exit
@@ -28,11 +30,11 @@ If you run **ddb** with no argument, the usage is displayed.
       -vv, --very-verbose   Enable even more logs
       -s, --silent          Disable all logs
       -x, --exceptions      Display exceptions on errors
-      -c, --clear-cache     Clear all caches
+      -c, --clear-cache     Clear all used caches
       -w, --watch           Enable watch mode (hot reload of generated files)
       -ff, --fail-fast      Stop on first error
       --version             Display the ddb version and check for new ones.
-    ```
+```
 
 Positional argument match **command** names: `run`, `init`, `configure`, `features`, `config`, `activate`, `deactivate`.
 
@@ -100,7 +102,7 @@ binaries in a more readable way.
 
 ```bash 
 +-----------------------------------------------+
-|db                                             |
+| db                                             |
 +-----------------------------------------------+
 | MYSQL_DATABASE : ddb                          |
 | MYSQL_PASSWORD : ddb                          |
@@ -143,6 +145,12 @@ Read more: [Shell feature](features/shell.md)
 
 Display a script for the configured shell that must be evaluated to deactivate the project environment inside the current 
 shell session.
+
+Read more: [Shell feature](features/shell.md)
+
+- **ddb check-activated**
+
+Check if project is activated in current shell.
 
 Read more: [Shell feature](features/shell.md)
 

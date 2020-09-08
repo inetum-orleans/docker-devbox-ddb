@@ -4,8 +4,10 @@ History
 1.0.6 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- Copy: Add `file:generated` events on copy to add copied files in `.gitignore`.
+- Copy: Run copy feature on each `ddb configure` command instead of a single time.
+- Shell: Use `.` instead of `source` to make `/bin/sh` work properly.
+- Shell: Add `check-activated` command and avoid issues when activating the project many times.
 
 1.0.5 (2020-09-07)
 ------------------
