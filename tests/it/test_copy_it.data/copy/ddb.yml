@@ -1,0 +1,6 @@
+copy:
+  specs:
+    - source: source/*
+      destination: destination
+      dispatch:
+        - ".docker/*"

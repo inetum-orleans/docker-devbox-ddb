@@ -67,7 +67,7 @@ class CopyAction(Action):
 
     @property
     def event_bindings(self):
-        return events.phase.init
+        return events.phase.configure
 
     @staticmethod
     def execute():
