@@ -248,7 +248,8 @@ class FixuidDockerComposeAction(Action):
                         context.log.success("Fixuid removed from %s",
                                             os.path.relpath(dockerfile_path, config.paths.project_home))
 
-    def _apply_fixuid_from_parser(self, parser: CustomDockerfileParser, service: BuildServiceDef):
+    @staticmethod
+    def _get_cmd_and_entrypoint(parser):
         entrypoint = parser.entrypoint
         cmd = parser.cmd
         # if entrypoint is defined in Dockerfile, we should not grab cmd from base image
@@ -269,6 +270,10 @@ class FixuidDockerComposeAction(Action):
                 cmd = json.dumps(cmd)
         if not cmd:
             cmd = None
+        return cmd, entrypoint
+
+    def _apply_fixuid_from_parser(self, parser: CustomDockerfileParser, service: BuildServiceDef):
+        cmd, entrypoint = FixuidDockerComposeAction._get_cmd_and_entrypoint(parser)
         fixuid_entrypoint = FixuidDockerComposeAction._add_fixuid_entrypoint(entrypoint)
         if fixuid_entrypoint:
             parser.entrypoint = fixuid_entrypoint
@@ -277,7 +282,8 @@ class FixuidDockerComposeAction(Action):
         target = copy_from_url(config.data["fixuid.url"],
                                service.context,
                                "fixuid.tar.gz")
-        events.file.generated(source=None, target=target)
+        if target:
+            events.file.generated(source=None, target=target)
 
         if self._dockerfile_lines[0] + "\n" not in parser.lines:
             last_instruction_user = parser.get_last_instruction("USER")
