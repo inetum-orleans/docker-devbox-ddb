@@ -20,6 +20,10 @@ password <token>
 machine api.github.com
 login toilal
 password <token>
+
+machine uploads.github.com
+login toilal
+password <token>
 ```
 
 Github personnal access token can be [here](https://github.com/settings/tokens). (repo must be checked)
