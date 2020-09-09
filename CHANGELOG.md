@@ -5,6 +5,7 @@ History
 ------------------
 
 - Config: Fix overriding of default values with `DDB_OVERRIDE_*` environment variables.
+- Core: Use `toilal/pyinstaller-linux` and `toilal/pyinstaller-windows` docker images to build binaries.
 
 1.0.6 (2020-09-09)
 ------------------
