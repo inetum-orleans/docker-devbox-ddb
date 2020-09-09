@@ -155,13 +155,13 @@ class Config:  # pylint:disable=too-many-instance-attributes
             raw_feature_config = {}
         feature_config = schema.dump(raw_feature_config)
 
-        feature_config = self.apply_environ_overrides(feature_config, self.env_override_prefix + "_" + key)
         feature_config = schema.dump(feature_config)
 
         if auto_configure:
             auto_configure(dotty(feature_config))
 
         feature_config = schema.load(feature_config)
+        feature_config = self.apply_environ_overrides(feature_config, self.env_override_prefix + "_" + key)
         self.data[key] = feature_config
 
     def apply_environ_overrides(self, data, prefix=None):
