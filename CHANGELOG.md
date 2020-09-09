@@ -4,8 +4,7 @@ History
 1.0.7 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- Config: Fix overriding of default values with `DDB_OVERRIDE_*` environment variables.
 
 1.0.6 (2020-09-09)
 ------------------

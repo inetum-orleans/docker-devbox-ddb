@@ -68,7 +68,7 @@ class ShellFeature(Feature):
         )
 
     def _configure_defaults(self, feature_config: Dotty):
-        if 'shell' not in feature_config:
+        if not feature_config.get('shell'):
             comspec = os.environ.get('COMSPEC')
             shell = os.environ.get('SHELL')
             if comspec and comspec.endswith('cmd.exe'):
