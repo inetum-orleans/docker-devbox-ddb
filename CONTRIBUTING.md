@@ -10,6 +10,20 @@ Docs are then available on http://localhost:8000.
 
 ## Publish docs
 
+Create the following file inside `~/.netrc` and replace `<token>` with your github Personal access token.
+
+```
+machine github.com
+login toilal
+password <token>
+
+machine api.github.com
+login toilal
+password <token>
+```
+
+Github personnal access token can be [here](https://github.com/settings/tokens). (repo must be checked)
+
 ```bash
 docker run --rm -it -p 8000:8000 --user $(id -u):$(id -g) -v ${PWD}/..:/docs -v ${HOME}/.netrc:/.netrc:ro --workdir=/docs/ddb squidfunk/mkdocs-material gh-deploy
 ```
