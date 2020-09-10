@@ -1,7 +1,7 @@
 History
 =======
 
-1.0.8 (unreleased)
+1.0.8 (2020-09-10)
 ------------------
 
 - Config: Fix issues with custom config parameters
