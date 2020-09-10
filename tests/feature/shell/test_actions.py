@@ -3,7 +3,6 @@ import re
 from abc import ABC, abstractmethod
 
 from _pytest.capture import CaptureFixture
-
 from ddb.__main__ import main, load_registered_features
 from ddb.config import config
 from ddb.config.config import ConfigPaths
@@ -228,6 +227,7 @@ class ActivateActionBase(ABC):
             config.load()
 
             return config
+
         project_loader("global_aliases_projects_in_home", config_provider=project_in_home_config_provider)
 
         main(["configure"])
@@ -298,6 +298,7 @@ class DeactivateActionBase(ABC):
         return {}
 
     def test_run(self, capsys: CaptureFixture):
+        os.environ['DDB_PROJECT_HOME'] = config.paths.project_home
         os.environ['DDB_SHELL_ENVIRON_BACKUP'] = encode_environ_backup(dict(os.environ))
 
         action = DeactivateAction(self.build_shell_integration())
@@ -325,6 +326,7 @@ class DeactivateActionBase(ABC):
 
         os.environ.clear()
         os.environ.update(expected_environ)
+        os.environ['DDB_PROJECT_HOME'] = config.paths.project_home
         os.environ['DDB_SHELL_ENVIRON_BACKUP'] = encode_environ_backup(expected_environ)
 
         action = DeactivateAction(self.build_shell_integration())
@@ -346,13 +348,14 @@ class DeactivateActionBase(ABC):
         unset = dict(unset_match)
         assert unset
 
-        assert sorted(unset.keys()) == sorted(("DDB_SHELL_ENVIRON_BACKUP",))
+        assert sorted(unset.keys()) == sorted(("DDB_PROJECT_HOME", "DDB_SHELL_ENVIRON_BACKUP",))
 
     def test_run_with_changed_env_variable(self, capsys: CaptureFixture):
         expected_environ = {"DDB_CHANGE": "foo", "DDB_NO_CHANGE": "ok", "DDB_REMOVED": "removed"}
 
         os.environ.clear()
         os.environ.update(expected_environ)
+        os.environ['DDB_PROJECT_HOME'] = config.paths.project_home
         os.environ['DDB_SHELL_ENVIRON_BACKUP'] = encode_environ_backup(expected_environ)
 
         removed_item = os.environ.pop("DDB_REMOVED")
@@ -380,8 +383,7 @@ class DeactivateActionBase(ABC):
 
         unset_match = re.findall(self.unset_regex, script, re.MULTILINE)
         unset = dict(unset_match)
-        assert len(unset) == 2
-        assert sorted(unset.keys()) == sorted(("DDB_SHELL_ENVIRON_BACKUP", "DDB_ADDED"))
+        assert sorted(unset.keys()) == sorted(("DDB_PROJECT_HOME", "DDB_SHELL_ENVIRON_BACKUP", "DDB_ADDED"))
 
 
 class TestBashDeactivateAction(DeactivateActionBase):

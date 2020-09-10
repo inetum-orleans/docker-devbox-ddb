@@ -234,10 +234,8 @@ class ActivateAction(Action):
         """
         try:
             check_activated(True)
-            self._deactivate()
-        except CheckAnotherProjectActivatedException:
-            self._deactivate()
-        except CheckNotActivatedException:
+            raise CheckIsActivatedException("project is already activated.")
+        except CheckIsNotActivatedException:
             pass
 
         initial_environ = dict(os.environ.items())
@@ -318,6 +316,11 @@ class DeactivateAction(Action):
         """
         Execute action
         """
+        try:
+            check_activated(True)
+        except CheckAnotherProjectActivatedException:
+            pass
+
         if os.environ.get(_env_environ_backup):
             environ_backup = decode_environ_backup(os.environ[_env_environ_backup])
 
@@ -359,7 +362,13 @@ class CheckActivatedException(Exception):
     """
 
 
-class CheckNotActivatedException(CheckActivatedException):
+class CheckIsActivatedException(CheckActivatedException):
+    """
+    Exception for activated check
+    """
+
+
+class CheckIsNotActivatedException(CheckActivatedException):
     """
     Exception for activated check
     """
@@ -385,7 +394,7 @@ def check_activated(do_raise=False, do_log=False):
             return True
         try:
             raise CheckAnotherProjectActivatedException(
-                "Another project is activated (%s)" % os.environ[project_home_key])
+                "Another project is already activated (%s)" % os.environ[project_home_key])
         except CheckAnotherProjectActivatedException as exc:
             if do_log:
                 context.log.error(str(exc))
@@ -394,8 +403,8 @@ def check_activated(do_raise=False, do_log=False):
         return False
 
     try:
-        raise CheckNotActivatedException("Project is not activated")
-    except CheckNotActivatedException as exc:
+        raise CheckIsNotActivatedException("Project is not activated")
+    except CheckIsNotActivatedException as exc:
         if do_log:
             context.log.error(str(exc))
         if do_raise:
