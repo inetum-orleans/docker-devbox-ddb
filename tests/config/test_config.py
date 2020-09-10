@@ -2,8 +2,8 @@
 import os
 
 import yaml
-
 from ddb.config import Config
+from ddb.config.flatten import flatten
 
 
 def test_defaults():
@@ -61,3 +61,21 @@ def test_load_env_variables(data_dir):
     assert os.environ.get('FOO') == 'bar'
     assert 'env' not in config.data
     assert 'another' in config.data
+
+
+def test_flatten(data_dir):
+    config = Config()
+    config.data = {'empty_tags': [], 'tags': ['test'],
+                   'app': {'another': 'value',
+                           'some': {'empty_tags2': [], 'tags2': ['test2.a', 2],
+                                    'complex_list': ['simple', {'key': 'value'}]}}}
+
+    ret = flatten(config.data)
+    assert ret == {'tags[0]': 'test', 'app.another': 'value', 'app.some.tags2[0]': 'test2.a',
+                   'app.some.tags2[1]': 2, 'app.some.complex_list[0]': 'simple',
+                   'app.some.complex_list[1].key': 'value'}
+
+    ret = flatten(config.data, keep_primitive_list=True)
+    assert ret == {'empty_tags': [], 'tags': ['test'], 'app.another': 'value', 'app.some.empty_tags2': [],
+                   'app.some.tags2': ['test2.a', 2],
+                   'app.some.complex_list[0]': 'simple', 'app.some.complex_list[1].key': 'value'}

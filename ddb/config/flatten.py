@@ -42,7 +42,7 @@ def to_environ(data: Union[Dotty, dict], env_prefix) -> dict:
 
 
 def flatten(data: Union[Dotty, dict], prefix=None, sep=".", array_index_format="[%s]",
-            key_transformer=None, value_transformer=None,
+            key_transformer=None, value_transformer=None, keep_primitive_list=False,
             stop_for_features=None) -> dict:
     """
     Export configuration to a flat dict.
@@ -51,11 +51,11 @@ def flatten(data: Union[Dotty, dict], prefix=None, sep=".", array_index_format="
 
     return _flatten(prefix, sep, array_index_format,
                     key_transformer, value_transformer,
-                    stop_for, data=dict(data))
+                    keep_primitive_list, stop_for, data=dict(data))
 
 
 def _flatten(prefix=None, sep=".", array_index_format="[%s]",
-             key_transformer=None, value_transformer=None,
+             key_transformer=None, value_transformer=None, keep_primitive_list=False,
              stop_for=(), data=None, output=None) -> dict:
     if output is None:
         output = dict()
@@ -77,20 +77,24 @@ def _flatten(prefix=None, sep=".", array_index_format="[%s]",
             key_prefix = key_transformer(key_prefix)
 
             _flatten(key_prefix, sep, array_index_format,
-                     key_transformer, value_transformer,
+                     key_transformer, value_transformer, keep_primitive_list,
                      stop_for, value, output)
 
     elif not stop_recursion and isinstance(data, list):
-        i = 0
-        for value in data:
-            replace_prefix = (prefix if prefix else "") + (array_index_format % str(i))
-            replace_prefix = key_transformer(replace_prefix)
+        if keep_primitive_list and (not data or
+                                    not set(filter(lambda x: x not in (int, float, bool, str), set(map(type, data))))):
+            output[prefix] = value_transformer(data)
+        else:
+            i = 0
+            for value in data:
+                replace_prefix = (prefix if prefix else "") + (array_index_format % str(i))
+                replace_prefix = key_transformer(replace_prefix)
 
-            _flatten(replace_prefix, sep, array_index_format,
-                     key_transformer, value_transformer,
-                     stop_for, value, output)
+                _flatten(replace_prefix, sep, array_index_format,
+                         key_transformer, value_transformer, keep_primitive_list,
+                         stop_for, value, output)
 
-            i += 1
+                i += 1
     else:
         output[prefix] = value_transformer(data)
 

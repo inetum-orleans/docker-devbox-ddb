@@ -1,0 +1,7 @@
+domain: test.test-jsonnet-ext-var0
+network: test_jsonnet_ext_var0_default
+param1: some-value
+pp: 487
+tags:
+- tag1
+- tag2

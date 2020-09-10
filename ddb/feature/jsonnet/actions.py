@@ -51,10 +51,11 @@ class JsonnetAction(AbstractTemplateAction):
 
     @staticmethod
     def _evaluate_jsonnet(template_path):
-        flatten_config = flatten(config.data, stop_for_features=features.all())
-        ext_vars = {k: v for (k, v) in flatten_config.items() if isinstance(v, str)}
+        vars_config = flatten(config.data, stop_for_features=features.all())
+        codes_config = flatten(config.data, keep_primitive_list=True, stop_for_features=features.all())
+        ext_vars = {k: v for (k, v) in vars_config.items() if isinstance(v, str)}
         ext_codes = {k: str(v).lower() if isinstance(v, bool) else str(v) if v is not None else "null"
-                     for (k, v) in flatten_config.items() if not isinstance(v, str)}
+                     for (k, v) in codes_config.items() if not isinstance(v, str)}
         evaluated = evaluate_file(template_path,
                                   ext_vars=ext_vars,
                                   ext_codes=ext_codes,

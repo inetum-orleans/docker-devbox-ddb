@@ -55,7 +55,7 @@ class ConfigAction(Action):
         Execute action
         """
         if config.args.variables:
-            flat = flatten(config.data, stop_for_features=features.all())
+            flat = flatten(config.data, keep_primitive_list=True)
             for key in sorted(flat.keys()):
                 print("%s: %s" % (key, flat[key]))
         else:
