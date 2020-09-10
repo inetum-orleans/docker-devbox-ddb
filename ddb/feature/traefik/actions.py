@@ -7,6 +7,8 @@ from ...context import context
 from ...event import events
 from ...utils.file import write_if_different, copy_if_different, force_remove
 
+from jinja2 import Template
+
 
 class TraefikInstalllCertsAction(Action):
     """
@@ -38,13 +40,17 @@ class TraefikInstalllCertsAction(Action):
         certificate_filename_target = os.path.join(certs_directory, certificate_filename)
         copy_if_different(certificate, certificate_filename_target, log=True)
 
-        ssl_config_template = config.data.get('traefik.ssl_config_template') % (
-            '/'.join([mapped_certs_directory, certificate_filename]),
-            '/'.join([mapped_certs_directory, private_key_filename])
-        )
+        ssl_config_template = Template(config.data.get('traefik.ssl_config_template'))
+        config_data = dict(config.data)
+        config_data['_local'] = {
+            'certFile': '/'.join([mapped_certs_directory, certificate_filename]),
+            'keyFile': '/'.join([mapped_certs_directory, private_key_filename])
+        }
+
+        ssl_config = ssl_config_template.render(config_data)
 
         config_target = os.path.join(config_directory, "%s.ssl.toml" % (domain,))
-        if write_if_different(config_target, ssl_config_template, 'r', 'w'):
+        if write_if_different(config_target, ssl_config, 'r', 'w'):
             context.log.success("SSL Configuration file written for domain %s" % (domain,))
         else:
             context.log.notice("SSL Configuration file exists for domain %s" % (domain,))

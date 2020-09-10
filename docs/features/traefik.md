@@ -23,7 +23,7 @@ Feature configuration
 - `mapped_certs_directory`: The directory in which certificates are generated (public and private key)
     - type: string
     - default: /cert
-- `ssl_config_template`: The template for the traefik configuration file 
+- `ssl_config_template`: The Jinja template for the traefik configuration file registering CFSSL SSL certificates. 
     - type: string
     - default: /cert
 
