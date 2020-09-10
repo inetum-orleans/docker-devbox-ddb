@@ -4,9 +4,10 @@ from typing import Iterable, ClassVar
 
 from dotty_dict import Dotty
 
-from .actions import TraefikInstalllCertsAction, TraefikUninstalllCertsAction
+from ddb.feature.traefik.schema import ExtraServiceSchema
+from .actions import TraefikInstalllCertsAction, TraefikUninstalllCertsAction, TraefikExtraServicesAction
 from .schema import TraefikSchema
-from ..feature import Feature
+from ..feature import Feature, FeatureConfigurationAutoConfigureError
 from ..schema import FeatureSchema
 from ...action import Action
 from ...config import config
@@ -33,7 +34,8 @@ class TraefikFeature(Feature):
     def actions(self) -> Iterable[Action]:
         return (
             TraefikInstalllCertsAction(),
-            TraefikUninstalllCertsAction()
+            TraefikUninstalllCertsAction(),
+            TraefikExtraServicesAction()
             # TODO: Add action to install custom traefik configuration
         )
 
@@ -49,6 +51,15 @@ class TraefikFeature(Feature):
             config_directory = os.path.join(config.paths.home, 'traefik', 'config')
             if os.path.exists(config_directory):
                 feature_config['config_directory'] = config_directory
+
+        extra_services = feature_config.get('extra_services')
+        if extra_services:
+            for extra_service in extra_services.values():
+                if not extra_service.get('rule'):
+                    if not extra_service.get('domain'):
+                        raise FeatureConfigurationAutoConfigureError(self, 'extra_services',
+                                                                     "domain or rule should be defined.")
+                    extra_service['rule'] = "Host(`%s`)" % extra_service.get('domain')
 
         if not feature_config.get('config_directory'):
             feature_config['disabled'] = True

@@ -10,19 +10,19 @@ Docs are then available on http://localhost:8000.
 
 ## Publish docs
 
-Create the following file inside `~/.netrc` and replace `<token>` with your github Personal access token.
+Create the following file inside `~/.netrc` and replace `<account>` and `<token>` with your github account and personal access token.
 
 ```
 machine github.com
-login toilal
+login <account>
 password <token>
 
 machine api.github.com
-login toilal
+login <account>
 password <token>
 
 machine uploads.github.com
-login toilal
+login <account>
 password <token>
 ```
 

@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 import os
+from typing import Dict
+
+from jinja2 import Template
 
 from ddb.config import config
+from ddb.feature.traefik.schema import ExtraServiceSchema
 from ...action import Action
 from ...context import context
 from ...event import events
 from ...utils.file import write_if_different, copy_if_different, force_remove
-
-from jinja2 import Template
 
 
 class TraefikInstalllCertsAction(Action):
@@ -93,3 +95,61 @@ class TraefikUninstalllCertsAction(Action):
         if os.path.exists(certificate_filename_target):
             force_remove(certificate_filename_target)
             context.log.notice("SSL certificate file removed for domain %s" % (domain,))
+
+
+class TraefikExtraServicesAction(Action):
+    """
+    Generates extra services configuration to register any http/https URL inside the traefik reverse proxy.
+    """
+
+    @property
+    def event_bindings(self):
+        return events.phase.configure
+
+    @property
+    def name(self) -> str:
+        return "traefik:extra-services"
+
+    @staticmethod
+    def execute():
+        """
+        Execute action
+        """
+        config_directory = config.data.get('traefik.config_directory')
+        config_template = Template(config.data.get('traefik.extra_services_config_template'))
+
+        extra_services = config.data.get('traefik.extra_services')  # type: Dict[str, ExtraServiceSchema]
+        if extra_services:
+            for id_, extra_service in extra_services.items():
+                data = dict(config.data)
+                local_data = dict(extra_service)
+                local_data['id'] = id_
+                data['_local'] = local_data
+
+                if local_data.get('domain'):
+                    local_data['domain'] = Template(local_data.get('domain')).render(data)
+
+                if local_data.get('rule'):
+                    local_data['rule'] = Template(local_data.get('rule')).render(data)
+
+                if local_data.get('url'):
+                    local_data['url'] = Template(local_data.get('url')).render(data)
+
+                rendered_config = config_template.render(data)
+
+                if local_data.get('domain'):
+                    prefix = local_data.get('domain')
+                else:
+                    prefix = '.'.join(
+                        x for x in ['rule', config.data.get('core.domain.sub'), config.data.get('core.domain.ext')] if x
+                    )
+
+                config_target = os.path.join(config_directory, "%s.extra-service.%s.toml" % (prefix, id_))
+                if write_if_different(config_target, rendered_config, 'r', 'w'):
+                    context.log.success(
+                        "Extra service configuration file written for domain %s" % (prefix,))
+                else:
+                    context.log.notice(
+                        "Extra service configuration file exists for domain %s" % (prefix,))
+
+                # TODO: Handle removal using cache
