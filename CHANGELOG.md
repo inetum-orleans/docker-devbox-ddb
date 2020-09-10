@@ -4,8 +4,8 @@ History
 1.0.8 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- Config: Fix issues with custom config parameters
+- Shell: Raise an error when activate/deactivate was already called
 
 1.0.7 (2020-09-09)
 ------------------
