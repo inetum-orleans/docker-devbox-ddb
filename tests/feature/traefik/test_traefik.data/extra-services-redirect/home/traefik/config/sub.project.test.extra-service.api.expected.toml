@@ -4,10 +4,15 @@
     rule = "Host(`sub.project.test`)"
     entrypoints = ["http"]
     service = "extra-service-api"
+    middlewares = ["extra-service-api-redirect-to-https"]
   [http.routers.extra-service-api-tls]
     rule = "Host(`sub.project.test`)"
     entrypoints = ["https"]
     service = "extra-service-api"
+
+[http.middlewares]
+  [http.middlewares.extra-service-api-redirect-to-https.redirectScheme]
+    scheme = "https"
 
 [http.services]
   [http.services.extra-service-api]

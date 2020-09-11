@@ -68,6 +68,10 @@ It can be used when a service should better run on the developer host instead of
 - `https`: Use http and/or https to expose the service. If `None`, it is exposed with both http and https
     - type: string
     - default: `None`
+- `redirect_to_https`: If `https` is `None` and `redirect_to_https` is `True`, requesting the http url of the service 
+    will redirect to https.
+    - type: string
+    - default: `None` (Use the value of `docker.reverse_proxy.redirect_to_https`)
 - `rule`: The traefik router rule. You should customize it only if you have to support many domains on the same service
     - type: string
     - default: ``Host(`{{_local.domain}}`)``

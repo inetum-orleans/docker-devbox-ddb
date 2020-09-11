@@ -179,4 +179,12 @@ class TraefikExtraServicesAction(InitializableAction):
             extra_service_data['rule'] = Template(extra_service_data.get('rule')).render(data)
         if extra_service_data.get('url'):
             extra_service_data['url'] = Template(extra_service_data.get('url')).render(data)
+
+        if extra_service['https'] is not None:
+            extra_service_data['redirect_to_https'] = False
+        if extra_service_data.get('redirect_to_https'):
+            extra_service['https'] = True
+        if extra_service_data.get('redirect_to_https') is None and extra_service['https'] is None:
+            extra_service_data['redirect_to_https'] = config.data.get('docker.reverse_proxy.redirect_to_https')
+
         return data, extra_service_data

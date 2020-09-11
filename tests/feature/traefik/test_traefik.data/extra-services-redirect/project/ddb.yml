@@ -1,3 +1,6 @@
+docker:
+  reverse_proxy:
+    redirect_to_https: true
 traefik:
   extra_services:
     api:
@@ -7,7 +10,7 @@ traefik:
       rule: Host(`*.web.{{core.domain.sub}}.{{core.domain.ext}}`)
       https: False
       url: http://{{docker.debug.host}}:8080
-    redirect:
+    no-redirect:
       domain: secured.{{core.domain.sub}}.{{core.domain.ext}}
-      redirect_to_https: True
+      redirect_to_https: False
       url: http://192.168.240.211:9999
