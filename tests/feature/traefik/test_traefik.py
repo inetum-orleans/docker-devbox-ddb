@@ -67,6 +67,7 @@ class TestTraefikFeature:
         load_registered_features()
 
         install_action = TraefikExtraServicesAction()
+        install_action.initialize()
         install_action.execute()
 
         api_toml = os.path.join(config.paths.home, "traefik", "config",

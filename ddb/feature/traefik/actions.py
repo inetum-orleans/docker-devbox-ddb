@@ -6,7 +6,8 @@ from jinja2 import Template
 
 from ddb.config import config
 from ddb.feature.traefik.schema import ExtraServiceSchema
-from ...action import Action
+from ...action import Action, InitializableAction
+from ...cache.removal import RemovalCacheSupport
 from ...context import context
 from ...event import events
 from ...utils.file import write_if_different, copy_if_different, force_remove
@@ -97,10 +98,14 @@ class TraefikUninstalllCertsAction(Action):
             context.log.notice("SSL certificate file removed for domain %s" % (domain,))
 
 
-class TraefikExtraServicesAction(Action):
+class TraefikExtraServicesAction(InitializableAction):
     """
     Generates extra services configuration to register any http/https URL inside the traefik reverse proxy.
     """
+
+    def __init__(self):
+        super().__init__()
+        self.removal_cache_support = None  # type: RemovalCacheSupport
 
     @property
     def event_bindings(self):
@@ -110,35 +115,33 @@ class TraefikExtraServicesAction(Action):
     def name(self) -> str:
         return "traefik:extra-services"
 
-    @staticmethod
-    def execute():
+    def initialize(self):
+        self.removal_cache_support = RemovalCacheSupport("traefik.extra-services", {'generated-files', 'certs-domains'})
+
+    def destroy(self):
+        if self.removal_cache_support:
+            self.removal_cache_support.close()
+            self.removal_cache_support = None
+
+    def execute(self):
         """
         Execute action
         """
-        config_directory = config.data.get('traefik.config_directory')
-        config_template = Template(config.data.get('traefik.extra_services_config_template'))
+        self.removal_cache_support.prepare()
 
         extra_services = config.data.get('traefik.extra_services')  # type: Dict[str, ExtraServiceSchema]
         if extra_services:
+            config_directory = config.data.get('traefik.config_directory')
+            config_template = Template(config.data.get('traefik.extra_services_config_template'))
+
             for id_, extra_service in extra_services.items():
-                data = dict(config.data)
-                local_data = dict(extra_service)
-                local_data['id'] = id_
-                data['_local'] = local_data
+                config_data, extra_service_data = TraefikExtraServicesAction._prepare_extra_service_data(
+                    extra_service, id_)
 
-                if local_data.get('domain'):
-                    local_data['domain'] = Template(local_data.get('domain')).render(data)
+                rendered_config = config_template.render(config_data)
 
-                if local_data.get('rule'):
-                    local_data['rule'] = Template(local_data.get('rule')).render(data)
-
-                if local_data.get('url'):
-                    local_data['url'] = Template(local_data.get('url')).render(data)
-
-                rendered_config = config_template.render(data)
-
-                if local_data.get('domain'):
-                    prefix = local_data.get('domain')
+                if extra_service_data.get('domain'):
+                    prefix = extra_service_data.get('domain')
                 else:
                     prefix = '.'.join(
                         x for x in ['rule', config.data.get('core.domain.sub'), config.data.get('core.domain.ext')] if x
@@ -152,7 +155,28 @@ class TraefikExtraServicesAction(Action):
                     context.log.notice(
                         "Extra service configuration file exists for domain %s" % (prefix,))
 
-                if local_data.get('https') is not False:
-                    events.certs.generate(local_data['domain'])
+                self.removal_cache_support.set_current_value('generated-files', config_target)
 
-                # TODO: Handle removal using cache
+                if extra_service_data.get('https') is not False:
+                    events.certs.generate(extra_service_data['domain'])
+                    self.removal_cache_support.set_current_value('certs-domains', extra_service_data['domain'])
+
+        for (key, value) in self.removal_cache_support.get_removed():
+            if key == 'certs-domains':
+                events.certs.remove(value)
+            if key == 'generated-files':
+                force_remove(value)
+
+    @staticmethod
+    def _prepare_extra_service_data(extra_service, id_):
+        data = dict(config.data)
+        extra_service_data = dict(extra_service)
+        extra_service_data['id'] = id_
+        data['_local'] = extra_service_data
+        if extra_service_data.get('domain'):
+            extra_service_data['domain'] = Template(extra_service_data.get('domain')).render(data)
+        if extra_service_data.get('rule'):
+            extra_service_data['rule'] = Template(extra_service_data.get('rule')).render(data)
+        if extra_service_data.get('url'):
+            extra_service_data['url'] = Template(extra_service_data.get('url')).render(data)
+        return data, extra_service_data
