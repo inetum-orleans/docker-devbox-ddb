@@ -1,7 +1,7 @@
 History
 =======
 
-1.0.9 (unreleased)
+1.0.9 (2020-09-12)
 ------------------
 
 - Traefik: Use Jinja template for `ssl_config_template` parameter (Jinja context match the ddb.yml configuration).
