@@ -37,7 +37,12 @@ def get_branch_from_vcs():
     Get branch name from git index
     """
     try:
-        return run("git", "rev-parse", "--abbrev-ref", "HEAD").decode("utf-8").strip()
+        branch = run("git", "rev-parse", "--abbrev-ref", "HEAD").decode("utf-8").strip()
+        if branch == "HEAD":
+            # Most CI checkout a commit hash, making the HEAD detached.
+            # Effective branch can be retrieved with this command
+            return run("git", "for-each-ref", "--format=%(refname:short)", "refs/heads").decode("utf-8").strip()
+        return branch
     except CalledProcessError as exc:
         if exc.returncode == 128:
             return None
