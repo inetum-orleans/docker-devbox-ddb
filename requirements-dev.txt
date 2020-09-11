@@ -4,7 +4,7 @@ tox
 pylint
 pytest
 coverage
-pytest-docker-compose
+https://github.com/Toilal/pytest-docker-compose/archive/configuration-inside-tests.zip
 waiting
 pytest-mock
 pex

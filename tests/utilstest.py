@@ -53,6 +53,7 @@ def setup_cfssl(container_getter):
 
     config.data['certs.cfssl.server.host'] = _get_docker_ip()
     config.data['certs.cfssl.server.port'] = int(cfssl_service.network_info[0].host_port)
+    config.data['certs.cfssl.server.ssl'] = False
 
     _wait_cfssl_ready()
 

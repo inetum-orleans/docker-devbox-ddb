@@ -56,10 +56,10 @@ class TraefikFeature(Feature):
         if extra_services:
             for extra_service in extra_services.values():
                 if not extra_service.get('rule'):
-                    if not extra_service.get('domain'):
-                        raise FeatureConfigurationAutoConfigureError(self, 'extra_services',
-                                                                     "domain or rule should be defined.")
                     extra_service['rule'] = "Host(`%s`)" % extra_service.get('domain')
+                if extra_service.get('https') is not False and not extra_service.get('domain'):
+                    raise FeatureConfigurationAutoConfigureError(self, 'extra_services',
+                                                                 "domain must be defined when https is not False.")
 
         if not feature_config.get('config_directory'):
             feature_config['disabled'] = True

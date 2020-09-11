@@ -9,7 +9,7 @@ class ExtraServiceSchema(Schema):
     """
     https = fields.Bool(required=False, allow_none=True, default=None)
     url = fields.String(required=True, allow_none=False, default=None)
-    domain = fields.String(required=False, allow_none=True, default=None)
+    domain = fields.String(required=True, allow_none=True, default=None)
     rule = fields.String(required=False, allow_none=True, default=None)
 
 

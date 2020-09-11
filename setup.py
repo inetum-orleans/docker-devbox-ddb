@@ -26,7 +26,7 @@ with open(requirements) as f:
     install_requires = list(map(str.strip, f.read().splitlines()))[1:]
 
 with open(requirements_dev) as f:
-    dev_require = list(map(str.strip, f.read().splitlines()))[:-1]
+    dev_require = list(filter(lambda x: not x.startswith('https://'), map(str.strip, f.read().splitlines())))[:-1]
 
 dependency_link_pattern = re.compile("(\S+:\/\/\S+)#egg=(\S+)")
 

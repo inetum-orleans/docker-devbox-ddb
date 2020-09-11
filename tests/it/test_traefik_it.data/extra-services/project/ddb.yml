@@ -1,0 +1,9 @@
+traefik:
+  extra_services:
+    api:
+      domain: sub.{{core.domain.sub}}.{{core.domain.ext}}
+      url: http://127.0.0.1
+    web:
+      rule: Host(`*.web.{{core.domain.sub}}.{{core.domain.ext}}`)
+      https: False
+      url: http://{{docker.debug.host}}:8080

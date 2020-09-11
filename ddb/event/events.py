@@ -40,7 +40,7 @@ class Certs:
     """
 
     @event("certs:generate")
-    def generate(self, domain: str, wildcard: True):
+    def generate(self, domain: str, wildcard=True):
         """
         Ask to generate a certificate.
         :param domain:

@@ -152,4 +152,7 @@ class TraefikExtraServicesAction(Action):
                     context.log.notice(
                         "Extra service configuration file exists for domain %s" % (prefix,))
 
+                if local_data.get('https') is not False:
+                    events.certs.generate(local_data['domain'])
+
                 # TODO: Handle removal using cache
