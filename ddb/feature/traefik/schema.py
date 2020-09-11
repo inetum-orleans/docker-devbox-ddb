@@ -45,6 +45,7 @@ class TraefikSchema(FeatureSchema):
   [http.routers.extra-service-{{_local.id}}-tls]
     rule = "{{_local.rule}}"
     entrypoints = ["https"]
+    tls = true
     service = "extra-service-{{_local.id}}"
 {%- if _local.certresolver is defined %}
     [http.routers.extra-service-{{_local.service}}-tls.tls]

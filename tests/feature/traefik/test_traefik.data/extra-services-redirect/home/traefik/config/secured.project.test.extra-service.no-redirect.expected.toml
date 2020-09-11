@@ -7,6 +7,7 @@
   [http.routers.extra-service-no-redirect-tls]
     rule = "Host(`secured.project.test`)"
     entrypoints = ["https"]
+    tls = true
     service = "extra-service-no-redirect"
 
 [http.services]

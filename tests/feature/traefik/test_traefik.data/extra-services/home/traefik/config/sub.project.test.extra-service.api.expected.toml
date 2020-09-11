@@ -7,6 +7,7 @@
   [http.routers.extra-service-api-tls]
     rule = "Host(`sub.project.test`)"
     entrypoints = ["https"]
+    tls = true
     service = "extra-service-api"
 
 [http.services]
