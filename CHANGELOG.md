@@ -5,13 +5,17 @@ History
 ------------------
 
 - Traefik: Use Jinja template for `ssl_config_template` parameter (Jinja context match the ddb.yml configuration).
+- Traefik: Add `extra_services` in `traefik` feature. Extra service allow to configure a service running 
+  outside of the docker stack inside traefik, so it's included in the docker network and still benefits of 
+  docker-devbox features (domain name, SSL certificates, ...).
+- Version: Make detached repo report the effective branch instead of `HEAD`.
 
 
 1.0.8 (2020-09-10)
 ------------------
 
-- Config: Fix issues with custom config parameters
-- Shell: Raise an error when activate/deactivate was already called
+- Config: Fix issues with custom config parameters.
+- Shell: Raise an error when activate/deactivate was already called.
 
 1.0.7 (2020-09-09)
 ------------------
