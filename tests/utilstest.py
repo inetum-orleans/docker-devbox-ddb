@@ -3,6 +3,7 @@ import re
 import time
 
 from cfssl import cfssl
+from dotty_dict import Dotty
 
 from ddb.config import config
 from ddb.config.config import ConfigPaths
@@ -54,6 +55,8 @@ def setup_cfssl(container_getter):
     config.data['certs.cfssl.server.host'] = _get_docker_ip()
     config.data['certs.cfssl.server.port'] = int(cfssl_service.network_info[0].host_port)
     config.data['certs.cfssl.server.ssl'] = False
+
+    config.defaults.update(config.data)
 
     _wait_cfssl_ready()
 
