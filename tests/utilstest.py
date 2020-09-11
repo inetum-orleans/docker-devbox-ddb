@@ -3,6 +3,7 @@ import re
 import time
 
 from cfssl import cfssl
+from dotty_dict import Dotty
 
 from ddb.config import config
 from ddb.config.config import ConfigPaths
@@ -51,9 +52,14 @@ def _wait_cfssl_ready(max_retry=20):
 def setup_cfssl(container_getter):
     cfssl_service = container_getter.get('cfssl')
 
-    config.data['certs.cfssl.server.host'] = _get_docker_ip()
-    config.data['certs.cfssl.server.port'] = int(cfssl_service.network_info[0].host_port)
-    config.data['certs.cfssl.server.ssl'] = False
+    server = Dotty({})
+
+    server['certs.cfssl.server.host'] = _get_docker_ip()
+    server['certs.cfssl.server.port'] = int(cfssl_service.network_info[0].host_port)
+    server['certs.cfssl.server.ssl'] = False
+
+    config.data.update(server)
+    config.defaults.update(server)
 
     _wait_cfssl_ready()
 

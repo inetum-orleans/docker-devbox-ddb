@@ -1,6 +1,6 @@
 import os
 
-from ddb.__main__ import main
+from ddb.__main__ import main, reset
 from ddb.config import config
 from tests.utilstest import setup_cfssl
 
@@ -24,6 +24,10 @@ class TestTraefik:
         assert os.path.exists(web_toml)
 
         os.remove("ddb.yml")
+
+        reset()
+
+        setup_cfssl(module_scoped_container_getter)
 
         main(["configure"])
 
