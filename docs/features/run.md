@@ -41,7 +41,7 @@ as you would do with a system installation of it.
 
 !!! example "How to use npm natively ?"
     If you follow the [Guide for PostgreSQL, Symfony, VueJS](../guides/psql-symfony-vue.md), you will be able to execute
-    `ddb run npm` which will output the following command `docker-compose run --workdir=/app/. node npm`.
+    `ddb run npm` which will output the following command `docker-compose run --rm --workdir=/app/. node npm`.
     
     But, as explained, ddb will also create a binary for npm that you will be able to run as a native command, which is 
     far more easy to use for everyone.
