@@ -36,7 +36,7 @@ class DockerBinary(Binary):
         return self._name
 
     def command(self, *args) -> Iterable[str]:
-        params = ["exec" if hasattr(self, 'exe') and self.exe else "run"]
+        params = ["exec"] if hasattr(self, 'exe') and self.exe else ["run", "--rm"]
 
         if self.workdir:
             relpath = os.path.relpath(config.cwd if config.cwd else os.getcwd(), config.paths.project_home)

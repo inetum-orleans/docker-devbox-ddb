@@ -166,23 +166,23 @@ class TestDockerFeature:
 
         npm_simple = binaries.get("npm-simple")
         assert npm_simple.command() == (''.join(
-            effective_command("docker-compose")) + " run --workdir=/app/. --label traefik.enable=false node").split()
+            effective_command("docker-compose")) + " run --rm --workdir=/app/. --label traefik.enable=false node").split()
         assert npm_simple.command("serve") == (''.join(
-            effective_command("docker-compose")) + ' run --workdir=/app/. --label traefik.enable=false node').split()
+            effective_command("docker-compose")) + ' run --rm --workdir=/app/. --label traefik.enable=false node').split()
         assert npm_simple.command("run serve") == (''.join(
-            effective_command("docker-compose")) + ' run --workdir=/app/. --label traefik.enable=false node').split()
+            effective_command("docker-compose")) + ' run --rm --workdir=/app/. --label traefik.enable=false node').split()
 
         npm_conditions = binaries.get("npm-conditions")
         assert npm_conditions.command() == (''.join(
-            effective_command("docker-compose")) + " run --workdir=/app/. --label traefik.enable=false node").split()
+            effective_command("docker-compose")) + " run --rm --workdir=/app/. --label traefik.enable=false node").split()
         assert npm_conditions.command("serve") == (''.join(
-            effective_command("docker-compose")) + ' run --workdir=/app/. --label traefik.enable=false node').split()
+            effective_command("docker-compose")) + ' run --rm --workdir=/app/. --label traefik.enable=false node').split()
         assert npm_conditions.command("run serve") == (
-                ''.join(effective_command("docker-compose")) + ' run --workdir=/app/. node').split()
+                ''.join(effective_command("docker-compose")) + ' run --rm --workdir=/app/. node').split()
 
         mysql = binaries.get("mysql")
         assert mysql.command() == (''.join(effective_command(
-            "docker-compose")) + ' run --workdir=/app/. db mysql -hdb -uproject-management-tool -pproject-management-tool').split()
+            "docker-compose")) + ' run --rm --workdir=/app/. db mysql -hdb -uproject-management-tool -pproject-management-tool').split()
 
     def test_local_volume_simple(self, project_loader):
         project_loader("local-volume-simple")

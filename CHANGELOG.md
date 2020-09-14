@@ -4,7 +4,7 @@ History
 1.0.10 (unreleased)
 -------------------
 
-- Nothing changed yet.
+- Docker: Add `--rm` flag to docker-compose run command in binaries
 
 
 1.0.9 (2020-09-12)

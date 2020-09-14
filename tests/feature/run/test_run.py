@@ -94,7 +94,7 @@ class TestRunFeature:
 
         read = capsys.readouterr()
 
-        assert read.out == "docker-compose run --workdir=/app/. service\n"
+        assert read.out == "docker-compose run --rm --workdir=/app/. service\n"
 
     def test_run_docker_binary_workdir(self, project_loader, capsys: CaptureFixture):
         project_loader("empty")
@@ -112,4 +112,4 @@ class TestRunFeature:
 
         read = capsys.readouterr()
 
-        assert read.out == "docker-compose run --workdir=/app/sub service\n"
+        assert read.out == "docker-compose run --rm --workdir=/app/sub service\n"

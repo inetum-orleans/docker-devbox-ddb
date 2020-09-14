@@ -17,7 +17,7 @@ class TestBinaries:
         assert not exceptions
 
         output = capsys.readouterr()
-        assert output.out.strip() == "docker-compose run --workdir=/workdir/. db psql"
+        assert output.out.strip() == "docker-compose run --rm --workdir=/workdir/. db psql"
 
     def test_docker_binaries_exe(self, project_loader, capsys: CaptureFixture):
         project_loader("docker1_exe")
