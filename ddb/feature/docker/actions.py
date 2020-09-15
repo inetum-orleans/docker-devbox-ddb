@@ -5,6 +5,7 @@ from pathlib import PurePosixPath, Path
 from typing import Union, Iterable, List, Dict
 
 import yaml
+from compose.config.types import ServicePort
 from dotty_dict import Dotty
 from simpleeval import simple_eval
 
@@ -409,7 +410,7 @@ class DockerDisplayInfoAction(Action):
         for service_name in sorted(services.keys()):
             service_config = services.get(service_name)
             environments = self._retrieve_environment_data(service_config)
-            ports = self._retrieve_ports_data(service_config)
+            ports = self._retrieve_service_ports(service_config)
             docker_binaries = self._retrieve_binaries_data(service_config)
             vhosts = self._retrieve_vhosts_data(service_config)
 
@@ -432,17 +433,30 @@ class DockerDisplayInfoAction(Action):
         return environments
 
     @staticmethod
-    def _retrieve_ports_data(service_config: Dotty) -> List[Dict[str, int]]:  # pylint: disable=no-self-use
+    def _retrieve_service_ports(service_config: Dotty) -> List[ServicePort]:  # pylint: disable=no-self-use
         """
-        Retrieve exposed ports data
+        Retrieve services ports data
         :param service_config: the service configuration
-        :return: a dict containing exposed ports
+        :return: a list of service port
         """
         ports = service_config.get('ports')
         if not ports:
             return []
 
-        return ports
+        def _to_service_ports(port):
+            if isinstance(port, str):
+                return ServicePort.parse(port)
+
+            parameters = {'target': None, 'published': None, 'protocol': None, 'mode': None, 'external_ip': None}
+            parameters.update(port)
+            return [ServicePort(**parameters)]
+
+        service_ports = []
+        for port in ports:
+            for service_port in _to_service_ports(port):
+                service_ports.append(service_port)
+
+        return service_ports
 
     @staticmethod
     def _retrieve_binaries_data(service_config: Dotty) -> List[str]:  # pylint: disable=no-self-use
@@ -504,10 +518,9 @@ class DockerDisplayInfoAction(Action):
 
         return vhosts_labels
 
-
     @staticmethod
     def _output_data(service_name: str, environments: Dict[str, str],  # pylint: disable=no-self-use
-                     ports: List[Dict[str, int]], docker_binaries: List[str], vhosts: List[str]):
+                     ports: List[ServicePort], docker_binaries: List[str], vhosts: List[str]):
         """
         Process the data and render it to the user
         :param service_name: the service name
@@ -531,7 +544,9 @@ class DockerDisplayInfoAction(Action):
         if (config.args.type is None or 'port' in config.args.type) and ports:
             tmp_content = []
             for port in ports:
-                tmp_content.append('{} -> {}'.format(port.get('published'), port.get('target')))
+                tmp_content.append(port.legacy_repr() if
+                                   hasattr(port, 'legacy_repr') else
+                                   "%s:%s" % (port.published, port.target))
             content.append(tmp_content)
 
         if (config.args.type is None or 'bin' in config.args.type) and docker_binaries:
