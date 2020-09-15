@@ -4,7 +4,9 @@ History
 1.0.10 (unreleased)
 -------------------
 
-- Docker: Add `--rm` flag to docker-compose run command in binaries
+- Docker: Add `--rm` flag to docker-compose run command in binaries.
+- Version: Fix `version.branch` value when using a detached repository and head refs many branches. If no branch is 
+reported in `refs/head`, it will use `refs/remote/origin` to get branche name.
 
 
 1.0.9 (2020-09-12)

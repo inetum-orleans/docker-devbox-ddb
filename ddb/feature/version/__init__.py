@@ -2,9 +2,9 @@
 from subprocess import CalledProcessError
 from typing import ClassVar
 
+from ddb.feature import Feature
 from dotty_dict import Dotty
 
-from ddb.feature import Feature
 from .schema import VersionSchema
 from ...utils.process import run
 
@@ -38,15 +38,44 @@ def get_branch_from_vcs():
     """
     try:
         branch = run("git", "rev-parse", "--abbrev-ref", "HEAD").decode("utf-8").strip()
-        if branch == "HEAD":
-            # Most CI checkout a commit hash, making the HEAD detached.
-            # Effective branch can be retrieved with this command
-            return run("git", "for-each-ref", "--format=%(refname:short)", "refs/heads").decode("utf-8").strip()
-        return branch
     except CalledProcessError as exc:
         if exc.returncode == 128:
             return None
         raise
+
+    if branch == "HEAD":
+        # CI checkout a commit hash, making the HEAD detached.
+        try:
+            refs = run("git", "for-each-ref", "--format=%(refname:short)", "refs/heads") \
+                .decode("utf-8").strip()
+
+            if refs:
+                refs_split = refs.splitlines()
+                if refs_split:
+                    return refs_split[0]
+        except CalledProcessError as exc:
+            if exc.returncode == 128:
+                return branch
+            raise
+
+        # CI may not checkout branches locally, so try with remote origin
+        try:
+            remote = 'origin'
+            refs = run("git", "for-each-ref", "--format=%(refname:short)", "refs/remotes/" + remote) \
+                .decode("utf-8").strip()
+
+            if refs:
+                refs_split = refs.splitlines()
+                if refs_split:
+                    value = refs_split[0]
+                    if value.startswith(remote + '/'):
+                        return value[len(remote + 'origin/'):]
+        except CalledProcessError as exc:
+            if exc.returncode == 128:
+                return branch
+            raise
+
+    return branch
 
 
 def get_version_from_vcs():

@@ -73,7 +73,7 @@ class TestVersionFeature:
 
         assert config.data.get('version.hash') is not None
         assert config.data.get('version.short_hash') is not None
-        assert config.data.get('version.branch') == 'master'
+        assert config.data.get('version.branch') == 'develop'
         assert config.data.get('version.version') is None
         assert config.data.get('version.tag') is None
 
