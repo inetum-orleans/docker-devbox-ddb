@@ -1,8 +1,8 @@
 History
 =======
 
-1.0.10 (unreleased)
--------------------
+1.1.0 (2020-09-21)
+------------------
 
 - Docker: Add `--rm` flag to docker-compose run command in binaries.
 - Version: Fix `version.branch` value when using a detached repository and head refs many branches. If no branch is 
