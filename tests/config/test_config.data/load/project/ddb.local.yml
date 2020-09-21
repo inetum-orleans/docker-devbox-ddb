@@ -1,5 +1,8 @@
 list:
-  - project.local
+  merge: append_if_missing
+  value:
+    - home
+    - project.local
 some:
   deep:
     nested:

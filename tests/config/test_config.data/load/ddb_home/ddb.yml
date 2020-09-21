@@ -1,4 +1,6 @@
 foo: bar
 ddb_home: ddb_home
 list:
-  - ddb_home
+  merge: append
+  value:
+    - ddb_home

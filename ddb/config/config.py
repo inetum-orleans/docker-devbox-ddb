@@ -11,6 +11,8 @@ from deepmerge import always_merger
 from dotty_dict import dotty, Dotty
 from marshmallow import Schema
 
+from ddb.config.merger import config_merger
+
 ConfigPaths = namedtuple('ConfigPaths', ['ddb_home', 'home', 'project_home'])
 
 
@@ -121,7 +123,7 @@ class Config:  # pylint:disable=too-many-instance-attributes
                 with open(file, 'rb') as stream:
                     file_data = yaml.load(stream, Loader=yaml.FullLoader)
                     if file_data:
-                        loaded_data = always_merger.merge(loaded_data, file_data)
+                        loaded_data = config_merger.merge(loaded_data, file_data)
 
         if env_key in loaded_data:
             env = loaded_data.pop(env_key)

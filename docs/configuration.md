@@ -24,6 +24,72 @@ template engines.
 Each feature holds it's **own configuration** section under the **name of the feature**. For details about supported 
 configuration settings, please check the documentation of related feature.
 
+!!! info "Default merge behavior"
+
+    By default, when ddb merge a configuration file, objects are be deeply merged, but any other data type is overriden.
+    
+    *ddb.yml*
+    
+    ```yaml
+    docker:
+      disabled_services: ['python']
+    ```
+    
+    *ddb.local.yml*
+    ```yaml
+    docker:
+      disabled_services: []
+    ```
+    
+    *effective configuration (ddb config)*
+    ```yaml
+    docker:
+      disabled_services: []
+    ```
+    
+    As you can see lists are overriden by default too.
+    
+!!! info "Custom merge behavior"
+
+    You can specify custom merge behavior using an object containing two properties
+
+    - `value`: The actual value to merge
+    - `merge`: The merge strategy to apply 
+
+    For lists, you may use the following merge strategies:
+    
+    - `override` *(default)*
+    - `append`
+    - `prepend`
+    - `append_if_missing`
+    - `prepend_if_missing`
+    
+    For objects, you may use the following merge strategies:
+    
+    - `merge` *(default)*
+    - `override`
+    
+    *ddb.yml*
+    
+    ```yaml
+    docker:
+      disabled_services: ['python']
+    ```
+    
+    *ddb.local.yml*
+    ```yaml
+    docker:
+      disabled_services:
+        merge: append_if_missing
+        value: ['gunicorn']
+    ```
+    
+    *effective configuration (ddb config)*
+    ```yaml
+    docker:
+      disabled_services: ['python', 'gunicorn']
+    ```
+
 !!! info "Configuration and environment variables"
     To override any configuration setting, you may set an environment variable. 
     

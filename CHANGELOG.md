@@ -7,6 +7,8 @@ History
 - Docker: Add `--rm` flag to docker-compose run command in binaries.
 - Version: Fix `version.branch` value when using a detached repository and head refs many branches. If no branch is 
 reported in `refs/head`, it will use `refs/remote/origin` to get branche name.
+- Config: Lists merge strategy is now defined as `override` by default.
+- Config: Add support for `merge`/`value` inside configuration to control merge behavior between configuration files.
 
 
 1.0.9 (2020-09-12)

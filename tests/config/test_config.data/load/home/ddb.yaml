@@ -1,4 +1,6 @@
 foo: bar2
 ddb: ddb
 list:
-  - home
+  merge: append
+  value:
+    - home

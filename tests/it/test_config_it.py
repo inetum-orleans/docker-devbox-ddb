@@ -15,3 +15,22 @@ class TestConfig:
         assert config.data.get('shell.shell') == 'fish'
 
         reset()
+
+    def test_config_local_falsy(self, project_loader):
+        project_loader("local-falsy")
+
+        main(["configure"], reset_disabled=True)
+
+        assert config.data.get('app.disabled_services') == []
+
+        reset()
+
+    def test_config_custom_strategy(self, project_loader):
+        project_loader("local-custom-strategy")
+
+        main(["configure"], reset_disabled=True)
+
+        assert config.data.get('app.disabled_services') == ['python', 'gunicorn', 'another']
+        assert config.data.get('app.another_strategy') == ['another', 'python', 'gunicorn']
+
+        reset()

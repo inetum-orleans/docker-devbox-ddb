@@ -1,7 +1,9 @@
 foo: bar3
 project: project
 list:
-  - project
+  merge: append
+  value:
+    - project
 some:
   deep:
     nested:
