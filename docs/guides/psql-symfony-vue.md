@@ -23,11 +23,11 @@ You should now setup the database container. Create `docker-compose.yml.jsonnet`
 ```json
 local ddb = import 'ddb.docker.libjsonnet';
 
-ddb.Compose() {
+ddb.Compose({
   services: {
     db: ddb.Image("postgres")
   }
-}
+})
 ```
 
 !!! note "Jsonet, a data templating language"
@@ -87,14 +87,14 @@ Add this environment variable to `docker-compose.yml.jsonnet` template.
 ```json
 local ddb = import 'ddb.docker.libjsonnet';
 
-ddb.Compose() {
+ddb.Compose({
   services: {
     db: ddb.Image("postgres") +
     {
       environment+: {POSTGRES_PASSWORD: "ddb"}
     }
   }
-}
+})
 ```
 
 !!! note "Jsonnet"
@@ -170,7 +170,7 @@ Map a named volume to the `db` service inside `docker-compose.yml.jsonnet`.
 ```json
 local ddb = import 'ddb.docker.libjsonnet';
 
-ddb.Compose() {
+ddb.Compose({
 	services: {
 		db: ddb.Image("postgres")
 		  {
@@ -178,7 +178,7 @@ ddb.Compose() {
 		    volumes+: ['db-data:/var/lib/postgresql/data']
 		  }
     }
-}
+})
 ```
 
 Thanks to watch mode, changes are immediately generated in `docker-compose.yml` file
@@ -225,7 +225,7 @@ environment.
 ```json
 local ddb = import 'ddb.docker.libjsonnet';
 
-ddb.Compose() {
+ddb.Compose({
   services: {
     db: ddb.Image("postgres") +
         ddb.Binary("psql", "/project", "psql --dbname=postgresql://postgres:ddb@db/postgres") +
@@ -238,7 +238,7 @@ ddb.Compose() {
           ]
         }
   }
-}
+})
 
 ```
 
@@ -348,7 +348,7 @@ Last step, change in `docker-compose.yml.jsonnet` the service definition to use 
 ```json
 local ddb = import 'ddb.docker.libjsonnet';
 
-ddb.Compose() {
+ddb.Compose({
 	services: {
 		db: ddb.Build("postgres") + ddb.User() +
 		    ddb.Binary("psql", "/project", "psql --dbname=postgresql://postgres:ddb@db/postgres") +
@@ -361,7 +361,7 @@ ddb.Compose() {
 		    ]
 		  }
     }
-}
+})
 ```
 
 Stop containers, destroy data from existing database, and start again.
@@ -389,7 +389,7 @@ So, we are creating a new `php` service inside `docker-compose.yml.jsonnet`, bas
 ```json
 local ddb = import 'ddb.docker.libjsonnet';
 
-ddb.Compose() {
+ddb.Compose({
 	services: {
         ...
         php: ddb.Build("php") +
@@ -401,7 +401,7 @@ ddb.Compose() {
             "php-composer-vendor:/composer/vendor"
           ]
         }
-}
+})
 ```
 
 And the related `Dockerfile.jinja` inside `.docker/php` directory.
@@ -442,7 +442,7 @@ Composer has been installed in the image, so let's make it available by register
 ```jsonnet
 local ddb = import 'ddb.docker.libjsonnet';
 
-ddb.Compose() {
+ddb.Compose({
     services: {
         ...
         php: ddb.Build("php") +
@@ -457,7 +457,7 @@ ddb.Compose() {
               ]
              }
         },
-}
+})
 ```
 
 And activate the project, with `$(ddb activate)`. The composer command in now available right in your PATH.
@@ -489,7 +489,7 @@ local domain_sub = std.extVar("core.domain.sub");
 
 local domain = std.join('.', [domain_sub, domain_ext]);
 
-ddb.Compose() {
+ddb.Compose({
 	services: {
         ...
         web: ddb.Build("web") +
@@ -501,7 +501,7 @@ ddb.Compose() {
                   ]
              },
         },
-}
+})
 ```
 
 !!! note "Use std.extVar(...) inside jsonnet to read a configuration property"

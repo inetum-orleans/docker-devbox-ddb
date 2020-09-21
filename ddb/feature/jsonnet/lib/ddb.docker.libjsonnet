@@ -14,6 +14,7 @@ local _docker_reverse_proxy_network_id = std.extVar("docker.reverse_proxy.networ
 local _docker_reverse_proxy_network_names = std.extVar("docker.reverse_proxy.network_names");
 local _docker_reverse_proxy_certresolver = std.extVar("docker.reverse_proxy.certresolver");
 local _docker_reverse_proxy_redirect_to_https = std.extVar("docker.reverse_proxy.redirect_to_https");
+local _docker_disabled_services = std.extVar("docker.disabled_services");
 local _core_project_name = std.extVar("core.project.name");
 local _core_os = std.extVar("core.os");
 local _core_env_current = std.extVar("core.env.current");
@@ -77,6 +78,16 @@ local volume_source(v) =
         else
             std.join(":", splitted[:std.length(splitted) - 1]);
 
+local apply_disabled_services(compose) =
+    if std.objectHas(compose, 'services') then
+      local services = {
+          [key]: compose.services[key] for key in std.objectFields(compose.services) if std.count(_docker_disabled_services, key) <= 0
+      };
+
+      compose { services: services }
+    else
+      compose;
+
 
 local Volumes(services) = {
         [key]: {} for key in
@@ -127,11 +138,12 @@ local Networks(services, network_names=_docker_reverse_proxy_network_names) = {
         )
 };
 
-local Compose(network_names=_docker_reverse_proxy_network_names, version="3.7") = {
-	"version": version,
-	"networks": Networks(self.services, network_names),
-	"volumes": Volumes(self.services)
-};
+local Compose(config={}, network_names=_docker_reverse_proxy_network_names, version="3.7") =
+  apply_disabled_services(config) + {
+    "version": version,
+    "networks": Networks(self.services, network_names),
+    "volumes": Volumes(self.services)
+  };
 
 local TraefikCertLabels(hostname, service_name, certresolver=null) = {
     [if certresolver != null then "traefik.http.routers." + service_name + "-tls.tls.certresolver"]: certresolver,

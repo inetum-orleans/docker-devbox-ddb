@@ -110,7 +110,7 @@ Each declared binary inside `.jsonnet` file generates a shim inside the `.bin` p
     ```json
     local ddb = import 'ddb.docker.libjsonnet';
     
-    ddb.Compose() {
+    ddb.Compose({
         services: {
             db: ddb.Image("postgres") +
                 ddb.Binary("psql", "/project", "psql --dbname=postgresql://postgres:ddb@db/postgres") +
@@ -123,7 +123,7 @@ Each declared binary inside `.jsonnet` file generates a shim inside the `.bin` p
                 ]
               }
         }
-    }
+    })
     ```
     
     Then, run `ddb configure`, which will generate executable shim file in the `.bin` folder.

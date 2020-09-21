@@ -69,4 +69,4 @@ local services = {
         ]
     }
 };
-ddb.Compose() { "services": services }
+ddb.Compose({ "services": services })

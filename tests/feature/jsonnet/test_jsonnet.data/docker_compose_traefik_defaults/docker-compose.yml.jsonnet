@@ -1,6 +1,6 @@
 local ddb = import 'ddb.docker.libjsonnet';
 
-ddb.Compose() {
+ddb.Compose({
 	"services": {
 		"web": ddb.Build("web") + ddb.VirtualHost("80", "web.domain.tld") {
 			"volumes": [
@@ -9,4 +9,4 @@ ddb.Compose() {
 			]
 		}
 	}
-}
+})

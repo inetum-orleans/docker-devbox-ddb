@@ -1,9 +1,9 @@
 local ddb = import 'ddb.docker.libjsonnet';
 
 
-ddb.Compose() {
+ddb.Compose({
 	services: {
 	  db: ddb.Build("db") +
 	      ddb.User()
 	      }
-}
+})

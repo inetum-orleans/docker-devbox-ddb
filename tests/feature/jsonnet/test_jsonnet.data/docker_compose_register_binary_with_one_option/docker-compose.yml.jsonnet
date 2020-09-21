@@ -3,7 +3,7 @@ local ddb = import 'ddb.docker.libjsonnet';
 local user = "biometrie";
 local password = "biometrie";
 
-ddb.Compose() {
+ddb.Compose({
 	"services": {
 		"db": ddb.Build("db") + ddb.User() + {
 			"environment": {
@@ -110,4 +110,4 @@ ddb.Compose() {
 			]
 		}
 	}
-}
+})

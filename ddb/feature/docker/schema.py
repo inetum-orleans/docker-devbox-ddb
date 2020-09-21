@@ -68,3 +68,4 @@ class DockerSchema(FeatureSchema):
     build_image_tag_from_version = fields.Boolean(required=False, default=True)
     reverse_proxy = fields.Nested(ReverseProxySchema(), required=True, default=ReverseProxySchema())
     path_mapping = fields.Dict(required=False)  # default is set in feature _configure_defaults
+    disabled_services = fields.List(fields.String(), required=False, default=[])

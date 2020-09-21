@@ -1,6 +1,6 @@
 local ddb = import 'ddb.docker.libjsonnet';
 
-ddb.Compose() {
+ddb.Compose({
 	services: {
     s1:
       ddb.Image("alpine:3.6") +
@@ -17,4 +17,4 @@ ddb.Compose() {
         volumes+: ['shared-volume:/share']
       },
     },
-}
+})
