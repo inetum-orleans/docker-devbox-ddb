@@ -52,5 +52,6 @@ class TestConfig:
         main(["configure"], reset_disabled=True)
 
         assert config.data.get('app.test')
+        assert not os.path.islink("ddb.yml")
 
         reset()

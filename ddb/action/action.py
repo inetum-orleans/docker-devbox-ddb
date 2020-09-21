@@ -4,6 +4,7 @@ from abc import abstractmethod, ABC
 from typing import Callable, Iterable, Union, Tuple
 
 from ddb.cache import register_project_cache, caches
+from ddb.config import config
 from ddb.context import context
 from ddb.event import events
 from ddb.registry import RegistryObject
@@ -170,6 +171,10 @@ class AbstractTemplateAction(InitializableAction, ABC):  # pylint:disable=abstra
         """
         Render a template
         """
+        if os.path.abspath(os.path.join(os.getcwd(), target)) in config.files:
+            # Never write a file that match ddb configuration file
+            return
+
         for rendered, destination in self._render_template(template, target):
             written = False
             if not isinstance(rendered, bool):
