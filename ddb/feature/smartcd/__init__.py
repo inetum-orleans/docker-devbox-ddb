@@ -16,6 +16,10 @@ class SmartcdFeature(Feature):
         return "smartcd"
 
     @property
+    def dependencies(self) -> Iterable[str]:
+        return ["core"]
+
+    @property
     def actions(self) -> Iterable[Action]:
         return (
             SmartcdAction(),

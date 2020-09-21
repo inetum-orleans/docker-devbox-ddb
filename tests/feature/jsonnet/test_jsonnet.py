@@ -218,10 +218,10 @@ class TestJsonnetAction:
         assert variables == variables_expected
 
     @pytest.mark.parametrize("variant", [
-        "dev",
-        "ci",
-        "stage",
-        "prod",
+        "test-dev",
+        "test-ci",
+        "test-stage",
+        "test-prod",
     ])
     def test_docker_compose_traefik(self, project_loader, variant):
         def before_load_config():

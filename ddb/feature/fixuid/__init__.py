@@ -18,12 +18,12 @@ class FixuidFeature(Feature):
         return "fixuid"
 
     @property
-    def schema(self) -> ClassVar[FeatureSchema]:
-        return FixuidSchema
+    def dependencies(self) -> Iterable[str]:
+        return ["core", "docker[optional]"]
 
     @property
-    def dependencies(self) -> Iterable[str]:
-        return ["docker[optional]"]
+    def schema(self) -> ClassVar[FeatureSchema]:
+        return FixuidSchema
 
     @property
     def actions(self) -> Iterable[Action]:

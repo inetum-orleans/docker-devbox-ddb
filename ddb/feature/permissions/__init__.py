@@ -17,6 +17,10 @@ class PermissionsFeature(Feature):
         return "permissions"
 
     @property
+    def dependencies(self) -> Iterable[str]:
+        return ["core"]
+
+    @property
     def schema(self) -> ClassVar[PermissionsSchema]:
         return PermissionsSchema
 

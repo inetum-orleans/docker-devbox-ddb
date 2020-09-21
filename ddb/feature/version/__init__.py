@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from subprocess import CalledProcessError
-from typing import ClassVar
+from typing import ClassVar, Iterable
 
-from ddb.feature import Feature
 from dotty_dict import Dotty
 
+from ddb.feature import Feature
 from .schema import VersionSchema
 from ...utils.process import run
 
@@ -122,6 +122,10 @@ class VersionFeature(Feature):
     @property
     def name(self) -> str:
         return "version"
+
+    @property
+    def dependencies(self) -> Iterable[str]:
+        return ["core"]
 
     @property
     def schema(self) -> ClassVar[VersionSchema]:

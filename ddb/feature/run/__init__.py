@@ -21,6 +21,10 @@ class RunFeature(Feature):
         return "binary"
 
     @property
+    def dependencies(self) -> Iterable[str]:
+        return ["core"]
+
+    @property
     def schema(self) -> ClassVar[FeatureSchema]:
         return RunSchema
 

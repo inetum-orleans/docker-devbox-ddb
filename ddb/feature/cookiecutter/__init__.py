@@ -17,6 +17,10 @@ class CookiecutterFeature(Feature):
         return "cookiecutter"
 
     @property
+    def dependencies(self) -> Iterable[str]:
+        return ["core"]
+
+    @property
     def schema(self) -> ClassVar[CookiecutterFeatureSchema]:
         return CookiecutterFeatureSchema
 

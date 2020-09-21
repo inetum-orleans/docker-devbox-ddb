@@ -21,7 +21,7 @@ class JsonnetFeature(Feature):
 
     @property
     def dependencies(self) -> Iterable[str]:
-        return ["file"]
+        return ["core", "file"]
 
     @property
     def schema(self) -> ClassVar[JsonnetSchema]:

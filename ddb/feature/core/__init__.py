@@ -75,6 +75,24 @@ class CoreFeature(Feature):
                              "info"),
         )
 
+    def configure(self):
+        super().configure()
+        self._load_environment_configuration()
+
+    def _load_environment_configuration(self):
+        """
+        Loading enviromnent configuration file, if exists.
+        """
+        current = config.data.get('core.env.current')
+
+        filenames = list(config.filenames)
+        filenames.insert(1, filenames[0] + '.' + current)
+
+        config.clear()
+        config.filenames = tuple(filenames)
+        config.load()
+        super().configure()
+
     def _configure_defaults(self, feature_config: Dotty):
         if not feature_config.get('project.name'):
             project_name = os.path.basename(config.paths.project_home)
@@ -102,6 +120,3 @@ class CoreFeature(Feature):
         config.path = ConfigPaths(ddb_home=feature_config.get('path.ddb_home'),
                                   home=feature_config.get('path.home'),
                                   project_home=feature_config.get('path.project_home'))
-
-    def before_load(self):
-        config.load()

@@ -34,3 +34,23 @@ class TestConfig:
         assert config.data.get('app.another_strategy') == ['another', 'python', 'gunicorn']
 
         reset()
+
+    def test_config_env_ddb(self, project_loader):
+        project_loader("env-ddb")
+
+        main(["configure"], reset_disabled=True)
+
+        assert not config.data.get('app.test')
+
+        reset()
+
+    def test_config_env_ddb2(self, project_loader):
+        project_loader("env-ddb")
+
+        os.rename('ddb.dev.tmp.yml', 'ddb.dev.yml')
+
+        main(["configure"], reset_disabled=True)
+
+        assert config.data.get('app.test')
+
+        reset()

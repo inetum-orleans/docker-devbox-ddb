@@ -23,12 +23,12 @@ class TraefikFeature(Feature):
         return "traefik"
 
     @property
-    def schema(self) -> ClassVar[FeatureSchema]:
-        return TraefikSchema
+    def dependencies(self) -> Iterable[str]:
+        return ["core", "certs[optional]"]
 
     @property
-    def dependencies(self) -> Iterable[str]:
-        return ["certs[optional]"]
+    def schema(self) -> ClassVar[FeatureSchema]:
+        return TraefikSchema
 
     @property
     def actions(self) -> Iterable[Action]:

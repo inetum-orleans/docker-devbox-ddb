@@ -17,6 +17,10 @@ class GitFeature(Feature):
         return "git"
 
     @property
+    def dependencies(self) -> Iterable[str]:
+        return ["core"]
+
+    @property
     def schema(self) -> ClassVar[GitSchema]:
         return GitSchema
 

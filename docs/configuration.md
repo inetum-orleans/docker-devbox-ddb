@@ -4,7 +4,8 @@ Configuration
 **ddb** use **yaml configuration files**:
 
 - `ddb.yml`, the main configuration file
-- `ddb.local.yml`, the configuration file override.
+- `ddb.<env>.yml`, the environment configuration file override, where `<env>` can be `dev`, `stage`, `ci` or `prod`.
+- `ddb.local.yml`, the configuration file local override.
 
 Those files can be placed in those **directories**:
 

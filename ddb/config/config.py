@@ -62,7 +62,10 @@ class Config:  # pylint:disable=too-many-instance-attributes
                  env_prefix='DDB',
                  env_override_prefix='DDB_OVERRIDE',
                  filenames=('ddb', 'ddb.local'),
-                 extensions=('yml', 'yaml')):
+                 extensions=('yml', 'yaml'),
+                 cwd=None,
+                 args=None,
+                 unknown_args=None):
         self.env_prefix = env_prefix
         self.env_override_prefix = env_override_prefix
         self.filenames = filenames
@@ -71,9 +74,9 @@ class Config:  # pylint:disable=too-many-instance-attributes
         self.data = dotty()
         self.loaded_data = {}
         self.paths = paths if paths else get_default_config_paths(env_prefix, filenames, extensions)
-        self.cwd = None
-        self.args = Namespace()
-        self.unknown_args = []
+        self.cwd = cwd
+        self.args = args if args else Namespace()
+        self.unknown_args = unknown_args if unknown_args else []
 
     def reset(self, *args, **kwargs):
         """
