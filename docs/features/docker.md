@@ -39,6 +39,9 @@ As docker is at the heart of ddb, it has one of the largest collection of parame
 - `compose.network_name`: The name of the default docker network for this project. 
     - type: string
     - default: retrieved from compose.project.name, suffixed with _default
+- `disabled_services`: docker-compose services listed inside this property are filtered out by jsonnet automation.
+    - type: List of string
+    - default: []
 - `debug.disabled`: Enable or disable debug functionalities integrated in docker-compose.yml.jsonnet automation.
     - type: boolean
     - default: False
