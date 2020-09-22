@@ -4,7 +4,7 @@ History
 1.1.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Build: Fix `ModuleNotFoundError: No module named 'compose'` error in binaries built of ddb.
 
 
 1.1.0 (2020-09-21)

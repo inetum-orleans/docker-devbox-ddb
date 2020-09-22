@@ -27,4 +27,6 @@ cryptography
 watchdog
 gitpython
 chmod-monkey>=1.1.1
+docker-compose
+paramiko
 wcmatch
