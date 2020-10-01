@@ -38,7 +38,7 @@ Frequently Asked Questions
     
     Read more: [Configuration](configuration.md)
     
-??? question "How to disable/enable branch tracking for your docker image setup"
-    In your project `ddb.yml` file, you may disable this option in the docker feature with `build_image_tag_from_version` set to false.
+??? question "How to disable/enable tags from docker images defined in generated docker-compose.yml file ?"
+    In your project `ddb.yml` file, you may disable this option in the docker feature with `docker.build_image_tag_from_version` set to false.
     
     Read more: [Configuration](configuration.md)
