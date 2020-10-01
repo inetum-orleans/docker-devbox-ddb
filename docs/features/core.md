@@ -21,6 +21,9 @@ Feature configuration
 - `env.available`: The list of environments available.
     - type: Array<string>
     - default: ['prod', 'stage', 'ci', 'dev']
+- `env.current`: The list of environments available.
+    - type: Array<string>
+    - default: Last value of `env.available`: `dev`
 - `os`: The current operating system
     - type: string
     - default: 'posix' for linux based environment
