@@ -7,11 +7,10 @@ from pathlib import Path
 from typing import Callable, Any, Union, Iterable, Dict
 
 import yaml
+from ddb.config.merger import config_merger
 from deepmerge import always_merger
 from dotty_dict import dotty, Dotty
 from marshmallow import Schema
-
-from ddb.config.merger import config_merger
 
 ConfigPaths = namedtuple('ConfigPaths', ['ddb_home', 'home', 'project_home'])
 
@@ -90,6 +89,15 @@ class Config:  # pylint:disable=too-many-instance-attributes
         """
         self.data.clear()
         self.env_additions.clear()
+
+    @property
+    def eject(self):
+        """
+        Check if command line is running configure command with --eject flag.
+        :return:
+        """
+        return 'command' in self.args and self.args.command == 'configure' and \
+               'eject' in self.args and self.args.eject
 
     @property
     def clear_cache(self):
@@ -179,6 +187,14 @@ class Config:  # pylint:disable=too-many-instance-attributes
 
         environ_value = os.environ.get(prefix)
         if environ_value:
+            if environ_value.lower() == str(True):
+                environ_value = True
+            elif environ_value.lower() == str(False):
+                environ_value = False
+            elif environ_value.isdigit():
+                environ_value = int(environ_value)
+            if isinstance(data, bool):
+                environ_value = bool(environ_value)
             return environ_value
 
         if isinstance(data, dict):

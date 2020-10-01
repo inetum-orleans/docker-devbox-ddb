@@ -3,7 +3,6 @@ import os
 import pathlib
 
 import zgitignore
-
 from ddb.action.action import EventBinding, InitializableAction
 from ddb.cache import caches, register_project_cache
 from ddb.config import config

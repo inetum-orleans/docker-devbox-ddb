@@ -5,7 +5,7 @@ from typing import Iterable, ClassVar
 
 from dotty_dict import Dotty
 
-from .actions import FeaturesAction, ConfigAction, ReloadConfigAction
+from .actions import FeaturesAction, ConfigAction, ReloadConfigAction, EjectAction
 from .schema import CoreFeatureSchema
 from ..feature import Feature, FeatureConfigurationAutoConfigureError
 from ..schema import FeatureSchema
@@ -34,25 +34,30 @@ class CoreFeature(Feature):
         return (
             FeaturesAction(),
             ConfigAction(),
-            ReloadConfigAction()
+            ReloadConfigAction(),
+            EjectAction()
         )
 
     @property
     def phases(self) -> Iterable[Phase]:
+        def configure_parser(parser: ArgumentParser):
+            parser.add_argument("--eject", action="store_true",
+                                help="Eject the project using the current configuration")
+
         def config_parser(parser: ArgumentParser):
             parser.add_argument("--variables", action="store_true",
                                 help="Output as a flat list of variables available in template engines")
 
-        def init_config_parser(parser: ArgumentParser):
+        def info_parser(parser: ArgumentParser):
             parser.add_argument("--type", action="append",
                                 help="Filter for a type of information between: bin, env, port and vhost")
 
         return (
             DefaultPhase("init", "Initialize project", run_once=True),
-            DefaultPhase("configure", "Configure the environment"),
+            DefaultPhase("configure", "Configure the environment", configure_parser),
             DefaultPhase("features", "Display enabled features"),
             DefaultPhase("config", "Display effective configuration", config_parser),
-            DefaultPhase("info", "Display useful information", init_config_parser),
+            DefaultPhase("info", "Display useful information", info_parser),
         )
 
     @property
@@ -78,6 +83,7 @@ class CoreFeature(Feature):
     def configure(self):
         super().configure()
         self._load_environment_configuration()
+        self._apply_eject_configuration()
 
     def _load_environment_configuration(self):
         """
@@ -92,6 +98,17 @@ class CoreFeature(Feature):
         config.filenames = tuple(filenames)
         config.load()
         super().configure()
+
+    @staticmethod
+    def _apply_eject_configuration():
+        """
+        Override some configuration that doesn't make sense without ddb
+        :return:
+        """
+        if config.eject:
+            config.data['core.path.ddb_home'] = '.ddb-home'
+            config.data['core.path.home'] = '.docker-devbox-home'
+            config.data['core.path.project_home'] = '.'
 
     def _configure_defaults(self, feature_config: Dotty):
         if not feature_config.get('project.name'):

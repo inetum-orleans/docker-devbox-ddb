@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import os
+from typing import Optional
 
 import yaml
+from ddb.utils.file import force_remove
 
 from .. import features
 from ...action import Action
@@ -60,6 +62,43 @@ class ConfigAction(Action):
                 print("%s: %s" % (key, flat[key]))
         else:
             print(yaml.dump(dict(config.data)))
+
+
+class EjectAction(Action):
+    """
+    Dump configuration
+    """
+
+    @property
+    def event_bindings(self):
+        return (
+            EventBinding(events.file.generated, self.delete_generated_source)
+        )
+
+    @property
+    def name(self) -> str:
+        return "core:eject"
+
+    @property
+    def order(self):
+        return 1024 * 1024
+
+    @property
+    def disabled(self) -> bool:
+        if not config.eject:
+            return True
+        return super().disabled
+
+    @staticmethod
+    def delete_generated_source(source: Optional[str], target: str):
+        """
+        Execute action
+        """
+        if source:
+            # check source is inside project directory ...
+            force_remove(source)
+            events.file.deleted(source)
+            events.file.deleted(target)
 
 
 class ReloadConfigAction(Action):

@@ -53,6 +53,9 @@ class JsonnetAction(AbstractTemplateAction):
     def _evaluate_jsonnet(template_path):
         vars_config = flatten(config.data, stop_for_features=features.all())
         codes_config = flatten(config.data, keep_primitive_list=True, stop_for_features=features.all())
+        codes_config['_config.eject'] = config.eject
+        codes_config['_config.args'] = vars(config.args)
+        codes_config['_config.unknown_args'] = config.unknown_args
         ext_vars = {k: v for (k, v) in vars_config.items() if isinstance(v, str)}
         ext_codes = {k: str(v).lower() if isinstance(v, bool) else str(v) if v is not None else "null"
                      for (k, v) in codes_config.items() if not isinstance(v, str)}

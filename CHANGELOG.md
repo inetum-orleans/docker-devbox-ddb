@@ -4,7 +4,8 @@ History
 1.1.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Core: Add `--eject` option to `configure` command. This option can be used to convert the project to a static version 
+  and detach it from ddb.
 
 
 1.1.1 (2020-09-22)

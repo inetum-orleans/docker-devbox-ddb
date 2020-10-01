@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-
-from marshmallow import fields, Schema
-
 from ddb.feature.schema import FeatureSchema
+from marshmallow import fields, Schema
 
 
 class UserSchema(Schema):
@@ -48,6 +46,14 @@ class DebugSchema(Schema):
     host = fields.String(required=True, default=None)  # default is set in feature _configure_defaults
 
 
+class JsonnetSchema(Schema):
+    """
+    Jsonnet schema
+    """
+    binary_disabled = fields.Boolean(required=False, default=False)
+    virtualhost_disabled = fields.Boolean(required=False, default=False)
+
+
 class DockerSchema(FeatureSchema):
     """
     Docker schema.
@@ -55,6 +61,7 @@ class DockerSchema(FeatureSchema):
     user = fields.Nested(UserSchema(), required=True, default=UserSchema())
     ip = fields.String(required=True, default=None)  # default is set in feature _configure_defaults
     debug = fields.Nested(DebugSchema(), default=DebugSchema())
+    jsonnet = fields.Nested(JsonnetSchema(), default=JsonnetSchema())
     restart_policy = fields.String(required=False, allow_none=True,
                                    default=None)  # default is set in feature _configure_defaults
     port_prefix = fields.Integer(required=False)  # default is set in feature _configure_defaults

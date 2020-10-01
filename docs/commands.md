@@ -82,7 +82,7 @@ Display the effective configuration after merge of all configuration files from 
 
 Read more: [Configuration](configuration.md)
     
-!!! tip "Tip: Use --variables to check what is available in template engines"
+!!! tip "Use --variables to check what is available in template engines"
     
     ddb effective configuration is used as context inside all template engine processing (Jinja, jsonnet, ytt, ...)
     
@@ -93,7 +93,23 @@ Read more: [Configuration](configuration.md)
 
 - **ddb configure**
 
-TODO
+Configure the project by scanning project files and performing actions supported by all features.
+
+!!! tip "Use --eject to convert the project to a static version"
+
+    `--eject` option can be used to convert the project to a static version and detach it from ddb. 
+    Templates files are removed after generating destination files.
+
+    It can be used to distribute sources of your project targeting current configuration only.
+
+    You may also also set `docker.jsonnet.virtualhost_disabled` and `docker.jsonnet.binary_disabled` to `True` to remove 
+    jsonnet virtualhosts and binaries from generated docker-compose.yml.
+
+    ```bash
+    DDB_OVERRIDE_DOCKER_JSONNET_VIRTUALHOST_DISABLED=1 \
+    DDB_OVERRIDE_DOCKER_JSONNET_BINARY_DISABLED=1 \
+    ddb configure --eject
+    ```
 
 - **ddb info**
 

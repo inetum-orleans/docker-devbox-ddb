@@ -1,0 +1,29 @@
+networks: {}
+services:
+  db:
+    build:
+      context: .docker/db
+    environment:
+      POSTGRES_PASSWORD: dummy-eject
+      POSTGRES_USER: dummy-eject
+    init: true
+    labels:
+      ddb.emit.docker:binary[pg_dump](args): pg_dump --dbname=postgresql://dummy-eject:dummy-eject@db/dummy-eject
+      ddb.emit.docker:binary[pg_dump](name): pg_dump
+      ddb.emit.docker:binary[pg_dump](workdir): /workdir
+      ddb.emit.docker:binary[pg_restore](args): pg_restore
+      ddb.emit.docker:binary[pg_restore](name): pg_restore
+      ddb.emit.docker:binary[pg_restore](workdir): /workdir
+      ddb.emit.docker:binary[psql](args): psql --dbname=postgresql://dummy-eject:dummy-eject@db/dummy-eject
+      ddb.emit.docker:binary[psql](name): psql
+      ddb.emit.docker:binary[psql](workdir): /workdir
+    ports:
+    - 41632:5432
+    restart: 'no'
+    user: 1000:1000
+    volumes:
+    - .:/workdir
+    - db-data:/var/lib/postgresql/data
+version: '3.7'
+volumes:
+  db-data: {}

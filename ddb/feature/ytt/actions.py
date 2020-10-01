@@ -38,6 +38,10 @@ class YttAction(AbstractTemplateAction):
                 if escaped_k not in value.keys():
                     new[escaped_k] = value
             new[key] = value
+        new['_config'] = dict()
+        new['_config']['eject'] = config.eject
+        new['_config']['args'] = vars(config.args)
+        new['_config']['unknown_args'] = config.unknown_args
         return new
 
     def _render_template(self, template: str, target: str) -> Iterable[Tuple[Union[str, bytes, bool], str]]:

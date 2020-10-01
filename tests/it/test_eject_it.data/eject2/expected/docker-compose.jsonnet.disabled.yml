@@ -1,0 +1,31 @@
+networks: {}
+services:
+  db:
+    build:
+      context: .docker/db
+    environment:
+      POSTGRES_PASSWORD: dummy-eject
+      POSTGRES_USER: dummy-eject
+    init: true
+    ports:
+    - 41632:5432
+    restart: 'no'
+    user: 1000:1000
+    volumes:
+    - .:/workdir
+    - db-data:/var/lib/postgresql/data
+  elastic:
+    environment:
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      discovery.type: single-node
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.1
+    init: true
+    ports:
+    - 41692:9200
+    restart: 'no'
+    volumes:
+    - elastic-data:/usr/share/elasticsearch/data
+version: '3.7'
+volumes:
+  db-data: {}
+  elastic-data: {}

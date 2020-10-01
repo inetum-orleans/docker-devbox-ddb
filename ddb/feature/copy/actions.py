@@ -26,7 +26,7 @@ def copy_from_url(source, destination, filename=None):
         content_disposition = response.headers['content-disposition']
         filename = re.findall("filename=(.+)", content_disposition)[0]
     target_path = os.path.join(destination, filename)
-    if write_if_different(target_path, response.content, 'rb', 'wb', log_source=source):
+    if write_if_different(target_path, response.content, 'rb', 'wb', log_source=source) or config.eject:
         return target_path
     return None
 
@@ -106,10 +106,10 @@ class CopyAction(Action):
         elif os.path.exists(source):
             filename = spec.get('filename', os.path.basename(source))
             target_path = os.path.join(destination, filename)
-            if copy_if_different(source, target_path, 'rb', 'wb', log=True):
+            if copy_if_different(source, target_path, 'rb', 'wb', log=True) or config.eject:
                 events.file.generated(source=source, target=target_path)
         else:
             for file in glob.glob(source):
                 target_path = os.path.join(destination, os.path.basename(file))
-                if copy_if_different(file, target_path, 'rb', 'wb', log=True):
+                if copy_if_different(file, target_path, 'rb', 'wb', log=True) or config.eject:
                     events.file.generated(source=file, target=target_path)

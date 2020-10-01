@@ -52,6 +52,10 @@ class JinjaAction(AbstractTemplateAction):
         self.env.tests.update(custom_tests)
 
         self.context = dict(config.data)
+        self.context['_config'] = dict()
+        self.context['_config']['eject'] = config.eject
+        self.context['_config']['args'] = vars(config.args)
+        self.context['_config']['unknown_args'] = config.unknown_args
 
     def _render_template(self, template: str, target: str) -> Iterable[Tuple[Union[str, bytes, bool], str]]:
         template_name = os.path.relpath(os.path.normpath(template),

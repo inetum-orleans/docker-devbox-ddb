@@ -188,5 +188,5 @@ class GenerateSignerCertificateAction(Action):
                 dirname = os.path.dirname(signer_destination)
                 if not os.path.isdir(dirname):
                     os.makedirs(dirname)
-                if copy_if_different(certificate, signer_destination):
+                if copy_if_different(certificate, signer_destination) or config.eject:
                     events.file.generated(source=certificate, target=signer_destination)

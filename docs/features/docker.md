@@ -53,6 +53,12 @@ As docker is at the heart of ddb, it has one of the largest collection of parame
 - `interface`: TODO explain what it is used for.
     - type: string
     - default: value : docker0
+- `jsonnet.virtualhost_disabled`: Enable or disable virtualhost support throw jsonnet.
+    - type: boolean
+    - default: False
+- `jsonnet.binary_disabled`: Enable or disable binary support throw jsonnet.
+    - type: boolean
+    - default: False
 - `ip`: TODO explain what it is used for.
     - type: string
     - default: value : 172.17.0.1

@@ -186,7 +186,7 @@ class AbstractTemplateAction(InitializableAction, ABC):  # pylint:disable=abstra
                 caches.get(self._cache_key).set(target, rendered)
             context.mark_as_processed(template, destination)
 
-            if written or rendered is True:
+            if written or rendered is True or config.eject:
                 events.file.generated(source=template, target=destination)
 
     def _target_is_modified(self, template: str, target: str) -> bool:

@@ -112,7 +112,9 @@ class CreateBinaryShim(Action):
         Remove binary shim
         """
         directories = config.data.get('shell.path.directories')
-        self.shell.remove_binary_shim(directories[0], binary)
+        removed = self.shell.remove_binary_shim(directories[0], binary)
+        if removed:
+            events.file.deleted(removed)
 
     def execute(self, binary: Binary):
         """
@@ -125,7 +127,7 @@ class CreateBinaryShim(Action):
         else:
             context.log.notice("Shim exists: %s", shim)
 
-        if written:
+        if written or config.eject:
             events.file.generated(source=None, target=shim)
 
 
@@ -191,8 +193,9 @@ class CreateAliasShim(Action):
             else:
                 context.log.notice("Shim exists: %s", shim)
 
-            if written and not global_alias:
-                events.file.generated(source=None, target=shim)
+            if not global_alias:
+                if written or config.eject:
+                    events.file.generated(source=None, target=shim)
 
 
 class ActivateAction(Action):

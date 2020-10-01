@@ -1,0 +1,13 @@
+core:
+  project:
+    name: dummy-eject
+docker:
+  compose:
+    project_name: dummy-eject
+  reverse_proxy:
+    redirect_to_https: true
+app:
+  db:
+    name: dummy-eject
+    username: dummy-eject
+    password: dummy-eject

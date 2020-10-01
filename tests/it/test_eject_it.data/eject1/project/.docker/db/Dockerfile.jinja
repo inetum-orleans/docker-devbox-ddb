@@ -1,0 +1,8 @@
+FROM postgres:11.3
+LABEL maintainer="Rémi Alvergnat <remi.alvergnat@gfi.world>"
+
+# Mount this volume to help loading/exporting dumps
+RUN mkdir /workdir
+VOLUME /workdir
+
+USER postgres

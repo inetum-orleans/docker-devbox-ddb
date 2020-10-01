@@ -9,6 +9,8 @@ local _docker_debug_disabled = std.extVar("docker.debug.disabled");
 local _docker_cache_from_image = std.extVar("docker.cache_from_image");
 local _docker_build_image_tag = std.extVar("docker.build_image_tag");
 local _docker_directory = std.extVar("docker.directory");
+local _docker_jsonnet_virtualhost_disabled = std.extVar("docker.jsonnet.virtualhost_disabled");
+local _docker_jsonnet_binary_disabled = std.extVar("docker.jsonnet.binary_disabled");
 local _docker_reverse_proxy_type = std.extVar("docker.reverse_proxy.type");
 local _docker_reverse_proxy_network_id = std.extVar("docker.reverse_proxy.network_id");
 local _docker_reverse_proxy_network_names = std.extVar("docker.reverse_proxy.network_names");
@@ -22,6 +24,7 @@ local _core_env_available = std.extVar("core.env.available");
 local _core_path_project_home = std.extVar("core.path.project_home");
 local _core_path_ddb_home = std.extVar("core.path.ddb_home");
 local _core_path_home = std.extVar("core.path.home");
+local _eject = std.extVar("_config.eject");
 
 # local sep = if _core_os == "nt" then std.char(92) else "/"; # Backslash can't be escaped properly, so use std.char
 
@@ -65,7 +68,7 @@ local User(uid=_docker_user_uid, gid=_docker_user_gid) = {
 };
 
 local volume_is_named(v) =
-    !std.setMember("/", v) && !std.setMember(std.char(92), v);
+    !std.setMember("/", v) && !std.setMember(std.char(92), v) && v != ".";
 
 local volume_source(v) =
     if std.type(v) == 'object' then
@@ -210,15 +213,13 @@ local envIs(env) =
 {
     Image: Image,
     Build: Build,
-    TraefikVirtualHost: TraefikVirtualHost,
-    NoVirtualHost: NoVirtualHost,
-    VirtualHost: VirtualHost,
-    TraefikLabels: TraefikLabels,
-    TraefikCertLabels: TraefikCertLabels,
-    Binary: Binary,
-    BinaryLabels: BinaryLabels,
-    BinaryOptions: BinaryOptions,
-    BinaryOptionsLabels: BinaryOptionsLabels,
+    VirtualHost: if _docker_jsonnet_virtualhost_disabled then function(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id, certresolver=null, router_rule=null, redirect_to_https=null){} else VirtualHost,
+    TraefikLabels: if _docker_jsonnet_virtualhost_disabled then function(port, hostname, name=null, certresolver=null, router_rule=null, redirect_to_https=null){} else TraefikLabels,
+    TraefikCertLabels: if _docker_jsonnet_virtualhost_disabled then function(hostname, service_name, certresolver=null){} else TraefikCertLabels,
+    Binary: if _docker_jsonnet_binary_disabled then function(name, workdir = null, args = null, options = null, options_condition = null, exe = null){} else Binary,
+    BinaryLabels: if _docker_jsonnet_binary_disabled then function(name, workdir = null, args = null, options = null, options_condition = null, exe = null){} else BinaryLabels,
+    BinaryOptions: if _docker_jsonnet_binary_disabled then function(name, options, condition = null, index = null){} else BinaryOptions,
+    BinaryOptionsLabels: if _docker_jsonnet_binary_disabled then function(name, options, options_condition = null, index = null){} else BinaryOptionsLabels,
     XDebug: XDebug,
     Compose: Compose,
     Volumes: Volumes,

@@ -1,7 +1,7 @@
 import os
 import shlex
 from abc import ABC, abstractmethod
-from typing import Tuple, Iterable, Dict, Any
+from typing import Tuple, Iterable, Dict, Any, Optional
 
 from ddb.binary import Binary
 from ddb.utils.file import force_remove, write_if_different, chmod
@@ -35,9 +35,10 @@ class ShellIntegration(ABC):
         """
 
     @abstractmethod
-    def remove_binary_shim(self, shims_path: str, binary: Binary) -> bool:
+    def remove_binary_shim(self, shims_path: str, binary: Binary) -> Optional[str]:
         """
         Delete a binary shim for this shell.
+        @return removed filepath
         """
 
     @abstractmethod
@@ -106,12 +107,12 @@ class BashShellIntegration(ShellIntegration):
         for shim in shims:
             force_remove(shim)
 
-    def remove_binary_shim(self, shims_path: str, binary: Binary) -> bool:
+    def remove_binary_shim(self, shims_path: str, binary: Binary) -> Optional[str]:
         shim = os.path.join(shims_path, binary.name)
         if not os.path.isfile(shim):
-            return False
-        force_remove(os.path.join(shims_path, binary.name))
-        return True
+            return None
+        force_remove(shim)
+        return shim
 
     def create_binary_shim(self, shims_path: str, binary: Binary):
         return self._write_shim(shims_path, binary.name, 'binary', "$(ddb run %s \"$@\")" % binary.name)
@@ -170,12 +171,12 @@ class CmdShellIntegration(ShellIntegration):
         for shim in shims:
             force_remove(shim)
 
-    def remove_binary_shim(self, shims_path: str, binary: Binary) -> bool:
+    def remove_binary_shim(self, shims_path: str, binary: Binary) -> Optional[str]:
         shim = os.path.join(shims_path, binary.name + '.bat')
         if not os.path.isfile(shim):
-            return False
-        force_remove(os.path.join(shims_path, binary.name + '.bat'))
-        return True
+            return None
+        force_remove(shim)
+        return shim
 
     def create_binary_shim(self, shims_path: str, binary: Binary):
         commands = [
