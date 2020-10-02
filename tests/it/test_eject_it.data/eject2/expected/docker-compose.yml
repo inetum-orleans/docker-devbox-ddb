@@ -23,7 +23,6 @@ services:
     ports:
     - 41632:5432
     restart: 'no'
-    user: 1000:1000
     volumes:
     - .:/workdir
     - db-data:/var/lib/postgresql/data

@@ -11,7 +11,6 @@ local db = {
 ddb.Compose({
 	services: {
 	  db: ddb.Build("db") +
-	      ddb.User() +
           ddb.Binary("psql", "/workdir", "psql --dbname=postgresql://" + db.username + ":" + db.password + "@db/" + db.name) +
           ddb.Binary("pg_dump", "/workdir", "pg_dump --dbname=postgresql://" + db.username + ":" + db.password + "@db/" + db.name) +
           ddb.Binary("pg_restore", "/workdir", "pg_restore") +
