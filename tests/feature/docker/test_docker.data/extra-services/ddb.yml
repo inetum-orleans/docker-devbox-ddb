@@ -1,0 +1,12 @@
+docker:
+  debug:
+    host: 192.168.99.1
+core:
+  domain:
+    sub: sub
+    ext: test
+traefik:
+  extra_services:
+    foo:
+      domain: "{{core.domain.sub}}.{{core.domain.ext}}"
+      url: "http://{{docker.debug.host}}:8080"

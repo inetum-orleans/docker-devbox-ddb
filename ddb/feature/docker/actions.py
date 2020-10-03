@@ -6,6 +6,8 @@ from typing import Union, Iterable, List, Dict
 
 import yaml
 from compose.config.types import ServicePort
+from ddb.feature import features
+from ddb.feature.traefik import TraefikExtraServicesAction
 from dotty_dict import Dotty
 from simpleeval import simple_eval
 
@@ -419,6 +421,12 @@ class DockerDisplayInfoAction(Action):
                 print(output)
                 print()
 
+        if features.has('traefik'):
+            for id_, extra_service_data, _ in TraefikExtraServicesAction.get_extra_services():
+                output = self._output_traefik_data(id_, extra_service_data)
+                print(output)
+                print()
+
     @staticmethod
     def _retrieve_environment_data(service_config: Dotty) -> Dict[str, str]:
         """
@@ -564,3 +572,19 @@ class DockerDisplayInfoAction(Action):
         if len(content) > 0:
             return get_table_display(header, content, False)
         return ''
+
+    @staticmethod
+    def _output_traefik_data(id_, extra_service_data):
+        if 'domain' in extra_service_data:
+            domain = extra_service_data.get('domain')
+            if extra_service_data.get('https') in [None, True]:
+                domain = 'https://' + domain
+            else:
+                domain = 'http://' + domain
+        else:
+            domain = extra_service_data.get('rule')
+
+        content = [
+            [domain + ' --> ' + extra_service_data.get('url')]
+        ]
+        return get_table_display(id_ + " (extra)", content, False)

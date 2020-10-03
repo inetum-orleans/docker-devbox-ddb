@@ -1,0 +1,24 @@
+version: '3.7'
+services:
+  web:
+    image: gfiorleans.azurecr.io/defaults-project/web
+    init: true
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.defaults-project-tls.rule: Host(`web.domain.tld`)
+      traefik.http.routers.defaults-project-tls.service: defaults-project
+      traefik.http.routers.defaults-project-tls.tls: "true"
+      traefik.http.routers.defaults-project.rule: Host(`web.domain.tld`)
+      traefik.http.routers.defaults-project.service: defaults-project
+      traefik.http.services.defaults-project.loadbalancer.server.port: '80'
+      ddb.emit.certs:generate[defaults-project]: web.domain.tld
+    networks:
+      - default
+      - reverse-proxy
+    restart: "no"
+networks:
+  reverse-proxy:
+    external: true
+    name: reverse-proxy
+volumes: {}
+

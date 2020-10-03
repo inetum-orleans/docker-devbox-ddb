@@ -3,8 +3,6 @@ import shutil
 
 from _pytest.capture import CaptureFixture
 from compose.config.types import ServicePort
-from dotty_dict import Dotty
-
 from ddb.__main__ import load_registered_features, register_actions_in_event_bus
 from ddb.action import actions
 from ddb.binary import binaries
@@ -13,10 +11,11 @@ from ddb.event import bus
 from ddb.feature import features
 from ddb.feature.certs import CertsFeature
 from ddb.feature.core import CoreFeature
+from ddb.feature.docker import DockerDisplayInfoAction
 from ddb.feature.docker import DockerFeature, EmitDockerComposeConfigAction
 from ddb.feature.traefik import TraefikFeature
 from ddb.utils.process import effective_command
-from ddb.feature.docker import DockerDisplayInfoAction
+from dotty_dict import Dotty
 from tests.utilstest import setup_cfssl
 
 
@@ -167,17 +166,22 @@ class TestDockerFeature:
 
         npm_simple = binaries.get("npm-simple")
         assert npm_simple.command() == (''.join(
-            effective_command("docker-compose")) + " run --rm --workdir=/app/. --label traefik.enable=false node").split()
+            effective_command(
+                "docker-compose")) + " run --rm --workdir=/app/. --label traefik.enable=false node").split()
         assert npm_simple.command("serve") == (''.join(
-            effective_command("docker-compose")) + ' run --rm --workdir=/app/. --label traefik.enable=false node').split()
+            effective_command(
+                "docker-compose")) + ' run --rm --workdir=/app/. --label traefik.enable=false node').split()
         assert npm_simple.command("run serve") == (''.join(
-            effective_command("docker-compose")) + ' run --rm --workdir=/app/. --label traefik.enable=false node').split()
+            effective_command(
+                "docker-compose")) + ' run --rm --workdir=/app/. --label traefik.enable=false node').split()
 
         npm_conditions = binaries.get("npm-conditions")
         assert npm_conditions.command() == (''.join(
-            effective_command("docker-compose")) + " run --rm --workdir=/app/. --label traefik.enable=false node").split()
+            effective_command(
+                "docker-compose")) + " run --rm --workdir=/app/. --label traefik.enable=false node").split()
         assert npm_conditions.command("serve") == (''.join(
-            effective_command("docker-compose")) + ' run --rm --workdir=/app/. --label traefik.enable=false node').split()
+            effective_command(
+                "docker-compose")) + ' run --rm --workdir=/app/. --label traefik.enable=false node').split()
         assert npm_conditions.command("run serve") == (
                 ''.join(effective_command("docker-compose")) + ' run --rm --workdir=/app/. node').split()
 
@@ -294,9 +298,11 @@ class TestDockerDisplayInfoAction:
 
         assert [] == action._retrieve_service_ports(Dotty({}))
         assert [] == action._retrieve_service_ports(Dotty({'toto': 'toto'}))
-        assert [ServicePort(45, 123, None, None, None)] == action._retrieve_service_ports(Dotty({'ports': [{'published': '123', 'target': '45'}]}))
+        assert [ServicePort(45, 123, None, None, None)] == action._retrieve_service_ports(
+            Dotty({'ports': [{'published': '123', 'target': '45'}]}))
         assert [ServicePort(45, 123, None, None, None)] == action._retrieve_service_ports(Dotty({'ports': ['123:45']}))
-        assert [ServicePort(45, 123, 'tcp', None, None)] == action._retrieve_service_ports(Dotty({'ports': ['123:45/tcp']}))
+        assert [ServicePort(45, 123, 'tcp', None, None)] == action._retrieve_service_ports(
+            Dotty({'ports': ['123:45/tcp']}))
 
     def test_retrieve_binaries_data(self):
         features.register(DockerFeature())
@@ -440,4 +446,30 @@ class TestDockerDisplayInfoAction:
                            '+-------------------------+',
                            '| https://web.domain.tld/ |',
                            '+-------------------------+',
+                           '\n'])) == capture.out
+
+    def test_execute_extra_services(self, capsys: CaptureFixture, project_loader):
+        project_loader("extra-services")
+
+        features.register(DockerFeature())
+        features.register(TraefikFeature())
+        load_registered_features()
+        config.args.type = None
+        action = actions.get('docker:display-info')  # type:DockerDisplayInfoAction
+        action.execute()
+
+        capture = capsys.readouterr()
+        assert capture.out
+        assert not capture.err
+        assert ('\n'.join(['+-------------------------+',
+                           '| web                     |',
+                           '+-------------------------+',
+                           '| https://web.domain.tld/ |',
+                           '+-------------------------+',
+                           '',
+                           '+-----------------------------------------------+',
+                           '| foo (extra)                                   |',
+                           '+-----------------------------------------------+',
+                           '| https://sub.test --> http://192.168.99.1:8080 |',
+                           '+-----------------------------------------------+',
                            '\n'])) == capture.out

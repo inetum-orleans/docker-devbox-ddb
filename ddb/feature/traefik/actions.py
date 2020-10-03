@@ -2,10 +2,10 @@
 import os
 from typing import Dict
 
-from jinja2 import Template
-
 from ddb.config import config
 from ddb.feature.traefik.schema import ExtraServiceSchema
+from jinja2 import Template
+
 from ...action import Action, InitializableAction
 from ...cache.removal import RemovalCacheSupport
 from ...context import context
@@ -123,43 +123,50 @@ class TraefikExtraServicesAction(InitializableAction):
             self.removal_cache_support.close()
             self.removal_cache_support = None
 
+    @staticmethod
+    def get_extra_services():
+        """
+        Get extra services defined in configuration
+        """
+        extra_services = config.data.get('traefik.extra_services')  # type: Dict[str, ExtraServiceSchema]
+        if extra_services:
+            for id_, extra_service in extra_services.items():
+                extra_service_data, config_data = \
+                    TraefikExtraServicesAction._prepare_extra_service_data(extra_service, id_)
+                yield id_, extra_service_data, config_data
+
     def execute(self):
         """
         Execute action
         """
         self.removal_cache_support.prepare()
 
-        extra_services = config.data.get('traefik.extra_services')  # type: Dict[str, ExtraServiceSchema]
-        if extra_services:
-            config_directory = config.data.get('traefik.config_directory')
-            config_template = Template(config.data.get('traefik.extra_services_config_template'))
+        config_directory = config.data.get('traefik.config_directory')
+        config_template = Template(config.data.get('traefik.extra_services_config_template'))
 
-            for id_, extra_service in extra_services.items():
-                config_data, extra_service_data = TraefikExtraServicesAction._prepare_extra_service_data(
-                    extra_service, id_)
+        for id_, extra_service_data, config_data in TraefikExtraServicesAction.get_extra_services():
+            rendered_config = config_template.render(config_data)
 
-                rendered_config = config_template.render(config_data)
+            if extra_service_data.get('domain'):
+                prefix = extra_service_data.get('domain')
+            else:
+                prefix = '.'.join(
+                    x for x in ['rule', config.data.get('core.domain.sub'), config.data.get('core.domain.ext')] if x
+                )
 
-                if extra_service_data.get('domain'):
-                    prefix = extra_service_data.get('domain')
-                else:
-                    prefix = '.'.join(
-                        x for x in ['rule', config.data.get('core.domain.sub'), config.data.get('core.domain.ext')] if x
-                    )
+            config_target = os.path.join(config_directory, "%s.extra-service.%s.toml" % (prefix, id_))
+            if write_if_different(config_target, rendered_config, 'r', 'w'):
+                context.log.success(
+                    "Extra service configuration file written for domain %s" % (prefix,))
+            else:
+                context.log.notice(
+                    "Extra service configuration file exists for domain %s" % (prefix,))
 
-                config_target = os.path.join(config_directory, "%s.extra-service.%s.toml" % (prefix, id_))
-                if write_if_different(config_target, rendered_config, 'r', 'w'):
-                    context.log.success(
-                        "Extra service configuration file written for domain %s" % (prefix,))
-                else:
-                    context.log.notice(
-                        "Extra service configuration file exists for domain %s" % (prefix,))
+            self.removal_cache_support.set_current_value('generated-files', config_target)
 
-                self.removal_cache_support.set_current_value('generated-files', config_target)
-
-                if extra_service_data.get('https') is not False:
-                    events.certs.generate(extra_service_data['domain'])
-                    self.removal_cache_support.set_current_value('certs-domains', extra_service_data['domain'])
+            if extra_service_data.get('https') is not False:
+                events.certs.generate(extra_service_data['domain'])
+                self.removal_cache_support.set_current_value('certs-domains', extra_service_data['domain'])
 
         for (key, value) in self.removal_cache_support.get_removed():
             if key == 'certs-domains':
@@ -187,4 +194,4 @@ class TraefikExtraServicesAction(InitializableAction):
         if extra_service_data.get('redirect_to_https') is None and extra_service['https'] is None:
             extra_service_data['redirect_to_https'] = config.data.get('docker.reverse_proxy.redirect_to_https')
 
-        return data, extra_service_data
+        return extra_service_data, data
