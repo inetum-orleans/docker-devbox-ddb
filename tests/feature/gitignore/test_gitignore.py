@@ -77,7 +77,6 @@ class TestUpdateGitIgnoreAction:
 
         assert gitignore == expected_gitignore
 
-
     def test_keep_negated(self, project_loader):
         project_loader("keep_negated")
 
@@ -113,3 +112,13 @@ class TestUpdateGitIgnoreAction:
         # assert not expect_gitignore('.gitignore', '*ddb.local.*')
         # assert expect_gitignore('.gitignore', 'config.txt')
 
+    def test_stage_env(self, project_loader):
+        project_loader("stage-env")
+
+        gitignore_feature = GitignoreFeature()
+
+        features.register(CoreFeature())
+        features.register(gitignore_feature)
+        load_registered_features()
+
+        assert gitignore_feature.disabled
