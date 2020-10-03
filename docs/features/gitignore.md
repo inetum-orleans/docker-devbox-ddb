@@ -8,7 +8,7 @@ Feature Configuration
 
 - `disabled`: Definition of the status of the feature. If set to True, all gitignore automations will be disabled.
     - type: boolean
-    - default: False
+    - default: False on `dev` environment, True on any other environment.
 - `enforce`: A list of file to force into the gitignore when running `ddb configure`
     - type: array of string
     - default: ['*ddb.local.*']

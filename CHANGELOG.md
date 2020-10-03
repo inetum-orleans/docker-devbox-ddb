@@ -6,6 +6,8 @@ History
 
 - Core: Add `--eject` option to `configure` command. This option can be used to convert the project to a static version 
   and detach it from ddb.
+- Info: Add `traefik.extra_services` to `ddb info` command output.
+- Gitignore: Gitignore feature is now disabled by default on non-dev environment.
 
 
 1.1.1 (2020-09-22)
