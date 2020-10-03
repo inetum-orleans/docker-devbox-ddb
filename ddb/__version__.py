@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 # pragma: no cover
-__version__ = '1.1.2.dev0'
+__version__ = '1.2.0'

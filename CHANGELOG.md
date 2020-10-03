@@ -1,7 +1,7 @@
 History
 =======
 
-1.1.2 (unreleased)
+1.2.0 (2020-10-03)
 ------------------
 
 - Core: Add `--eject` option to `configure` command. This option can be used to convert the project to a static version 
