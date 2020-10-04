@@ -2,7 +2,7 @@ name: mkdocs
 on:
   push:
     branches:
-      - feature/dh_actions_mkdocs
+      - master
 jobs:
   deploy:
     runs-on: ubuntu-latest
