@@ -62,7 +62,11 @@ local services = {
 }
 
 + {
-    "web": ddb.Build("web") + ddb.VirtualHost("80", "api.biometrie.test", "api", certresolver=certresolver, router_rule=router_rule) {
+    "web": ddb.Build("web") + ddb.VirtualHost("80", "api.biometrie.test", "api", certresolver=certresolver, router_rule=router_rule) + {
+        "labels"+: {
+            "traefik.http.middlewares.biometrie-auth.basicauth.users":"biometrie:$$apr1$$oTBtKtGR$$JlgPB1ZdGh1bYfPonp0IB0",
+            ["traefik.http.routers." + ddb.ServiceName("api") + "-tls.middlewares"]:"biometrie-auth"
+        },
         "volumes": [
             ddb.path.project + "/.docker/web/nginx.conf:/etc/nginx/conf.d/default.conf:rw",
             ddb.path.project + ":/var/www/html:rw"

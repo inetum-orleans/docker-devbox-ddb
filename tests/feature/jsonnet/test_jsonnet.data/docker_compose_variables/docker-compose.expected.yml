@@ -83,6 +83,8 @@ services:
     image: gfiorleans.azurecr.io/gli-biometrie/web
     init: true
     labels:
+      traefik.http.middlewares.biometrie-auth.basicauth.users: "biometrie:$$apr1$$oTBtKtGR$$JlgPB1ZdGh1bYfPonp0IB0"
+      traefik.http.routers.gli-biometrie-api-tls.middlewares: "biometrie-auth"
       traefik.enable: "true"
       traefik.http.routers.gli-biometrie-api-tls.rule: Host(`api.biometrie.test`)
       traefik.http.routers.gli-biometrie-api-tls.service: gli-biometrie-api

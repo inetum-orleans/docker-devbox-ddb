@@ -154,6 +154,30 @@ The `restart` configuration will be set with the `docker.restart_policy` ddb con
     image: nginx:latest
     ```
 
+### ServiceName
+This function generates the right service name for a service.
+
+The main purpose is to have more easy way to manage Labels for traefik and easily add a middleware to a specific 
+service.
+
+It concatenates the given name with the name of the project.
+
+!!! abstract "Parameters"
+    - `name`: 
+    The name of the service
+        - type: string
+
+
+!!! example
+    With a project named "ddb" 
+    ```json 
+    ddb.ServiceName("test")
+    ```
+    will return
+    ```yaml
+    ddb-test
+    ```
+
 ### User
 This function generates the `user` configuration for a service.
 

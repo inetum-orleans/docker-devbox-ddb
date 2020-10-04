@@ -91,6 +91,7 @@ local apply_disabled_services(compose) =
     else
       compose;
 
+local ServiceName(name=null) = std.join("-", std.prune([_core_project_name, name]));
 
 local Volumes(services) = {
         [key]: {} for key in
@@ -171,14 +172,14 @@ local TraefikRedirectToHttpsLabels(hostname, service_name, redirect_to_https=nul
 local TraefikLabels(port, hostname, name=null, certresolver=null, router_rule=null, redirect_to_https=null) =
 {
     "traefik.enable": "true",
-    ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + ".service"]: std.join("-", std.prune([_core_project_name, name])),
-    ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + "-tls.service"]: std.join("-", std.prune([_core_project_name, name])),
-    ["traefik.http.routers." + std.join("-", std.prune([_core_project_name, name])) + "-tls.tls"]: "true",
-    ["traefik.http.services." + std.join("-", std.prune([_core_project_name, name])) + ".loadbalancer.server.port"]: port
+    ["traefik.http.routers." + ServiceName(name) + ".service"]: ServiceName(name),
+    ["traefik.http.routers." + ServiceName(name) + "-tls.service"]: ServiceName(name),
+    ["traefik.http.routers." + ServiceName(name) + "-tls.tls"]: "true",
+    ["traefik.http.services." + ServiceName(name) + ".loadbalancer.server.port"]: port
 }
-+ TraefikCertLabels(hostname, std.join("-", std.prune([_core_project_name, name])), certresolver)
-+ TraefikRoutersRuleLabels(hostname, std.join("-", std.prune([_core_project_name, name])), router_rule)
-+ TraefikRedirectToHttpsLabels(hostname, std.join("-", std.prune([_core_project_name, name])), redirect_to_https);
++ TraefikCertLabels(hostname, ServiceName(name), certresolver)
++ TraefikRoutersRuleLabels(hostname, ServiceName(name), router_rule)
++ TraefikRedirectToHttpsLabels(hostname, ServiceName(name), redirect_to_https);
 
 local TraefikVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id, certresolver=null, router_rule=null, redirect_to_https=null) =
   local vh = {
@@ -216,6 +217,7 @@ local envIs(env) =
     VirtualHost: if _docker_jsonnet_virtualhost_disabled then function(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id, certresolver=null, router_rule=null, redirect_to_https=null){} else VirtualHost,
     TraefikLabels: if _docker_jsonnet_virtualhost_disabled then function(port, hostname, name=null, certresolver=null, router_rule=null, redirect_to_https=null){} else TraefikLabels,
     TraefikCertLabels: if _docker_jsonnet_virtualhost_disabled then function(hostname, service_name, certresolver=null){} else TraefikCertLabels,
+    ServiceName: ServiceName,
     Binary: if _docker_jsonnet_binary_disabled then function(name, workdir = null, args = null, options = null, options_condition = null, exe = null){} else Binary,
     BinaryLabels: if _docker_jsonnet_binary_disabled then function(name, workdir = null, args = null, options = null, options_condition = null, exe = null){} else BinaryLabels,
     BinaryOptions: if _docker_jsonnet_binary_disabled then function(name, options, condition = null, index = null){} else BinaryOptions,
