@@ -4,7 +4,6 @@ import os
 import re
 
 import requests
-
 from ddb.action import Action
 from ddb.cache import caches, requests_cache_name
 from ddb.config import config
@@ -78,6 +77,8 @@ class CopyAction(Action):
         if not specs:
             return
 
+        generated_events = []
+
         for spec in specs:
             source = spec['source']
             destination = spec.get('destination')
@@ -95,21 +96,25 @@ class CopyAction(Action):
                 else:
                     file_destination = os.path.relpath(dispatch_directory)
 
-                CopyAction._copy_from_spec(file_destination, source, spec)
+                for source, target in CopyAction._copy_from_spec(file_destination, source, spec):
+                    generated_events.append((source, target))
+
+        for source, target in generated_events:
+            events.file.generated(source=source, target=target)
 
     @staticmethod
     def _copy_from_spec(destination, source, spec):
         if source.startswith('http://') or source.startswith('https://'):
             target_path = copy_from_url(source, destination, spec.get('filename'))
             if target_path:
-                events.file.generated(source=None, target=target_path)
+                yield None, target_path
         elif os.path.exists(source):
             filename = spec.get('filename', os.path.basename(source))
             target_path = os.path.join(destination, filename)
             if copy_if_different(source, target_path, 'rb', 'wb', log=True) or config.eject:
-                events.file.generated(source=source, target=target_path)
+                yield source, target_path
         else:
             for file in glob.glob(source):
                 target_path = os.path.join(destination, os.path.basename(file))
                 if copy_if_different(file, target_path, 'rb', 'wb', log=True) or config.eject:
-                    events.file.generated(source=file, target=target_path)
+                    yield file, target_path
