@@ -1,7 +1,7 @@
 History
 =======
 
-1.2.1 (unreleased)
+1.2.1 (2020-10-06)
 ------------------
 
 - Jsonnet: Add ServiceName function available globally.
