@@ -4,7 +4,9 @@ History
 1.2.1 (unreleased)
 ------------------
 
-- Jsonnet: Add ServiceName function available globally
+- Jsonnet: Add ServiceName function available globally.
+- Core: Avoid `--eject` to delete files outside of project directory.
+
 
 
 1.2.0 (2020-10-03)
