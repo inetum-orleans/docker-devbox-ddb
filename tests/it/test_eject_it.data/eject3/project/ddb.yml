@@ -1,0 +1,5 @@
+copy:
+  specs:
+    - source: "../home/test.txt"
+      dispatch:
+        - ".docker/*"

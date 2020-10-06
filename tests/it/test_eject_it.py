@@ -118,3 +118,22 @@ class TestEject:
             expected_data = yaml.load(expected_dc_file, yaml.SafeLoader)
 
         assert data == expected_data
+
+    def test_eject3(self, project_loader):
+        project_loader("eject3")
+
+        main(["configure"])
+
+        assert os.path.exists("../home/test.txt")
+        assert os.path.exists(".docker/c1/test.txt")
+        assert os.path.exists(".docker/c2/test.txt")
+        assert os.path.exists("config.jinja.txt")
+        assert os.path.exists("config.txt")
+
+        main(["configure", "--eject"])
+
+        assert os.path.exists("../home/test.txt")
+        assert os.path.exists(".docker/c1/test.txt")
+        assert os.path.exists(".docker/c2/test.txt")
+        assert not os.path.exists("config.jinja.txt")
+        assert os.path.exists("config.txt")

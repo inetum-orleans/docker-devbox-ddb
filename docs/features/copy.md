@@ -42,11 +42,11 @@ Spec configuration :
 !!! example "Configuration with specs"
     ```yaml
     copy:
-      disabled: false
       specs: 
-        - source: 'https://github.com/boxboat/fixuid/releases/download/v0.4/fixuid-0.4-linux-amd64.tar.gz'
+        - source: 'https://github.com/boxboat/fixuid/releases/download/v0.5/fixuid-0.5-linux-amd64.tar.gz'
           destination: '.docker'
           filename: 'fixuid.tar.gz'
     ```
-    When running `ddb init` with this configuration, it will download the file from the source and copy it into
-    `<project_root>/.docker/fixuid.tar.gz`
+
+    When running `ddb init` with this configuration, it will download the file from the source and copy it to destination.
+    

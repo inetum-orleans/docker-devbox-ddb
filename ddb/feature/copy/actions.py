@@ -96,11 +96,11 @@ class CopyAction(Action):
                 else:
                     file_destination = os.path.relpath(dispatch_directory)
 
-                for source, target in CopyAction._copy_from_spec(file_destination, source, spec):
-                    generated_events.append((source, target))
+                for event_source, event_target in CopyAction._copy_from_spec(file_destination, source, spec):
+                    generated_events.append((event_source, event_target))
 
-        for source, target in generated_events:
-            events.file.generated(source=source, target=target)
+        for event_source, event_target in generated_events:
+            events.file.generated(source=event_source, target=event_target)
 
     @staticmethod
     def _copy_from_spec(destination, source, spec):

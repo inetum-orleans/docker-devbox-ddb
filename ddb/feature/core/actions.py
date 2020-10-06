@@ -71,8 +71,14 @@ class EjectAction(Action):
 
     @property
     def event_bindings(self):
+        def eject_processor(source: Optional[str], target: str):
+            if not source or not \
+                    os.path.abspath(source).startswith(config.paths.project_home):
+                return False
+            return (), {"source": source, "target": target}
+
         return (
-            EventBinding(events.file.generated, self.delete_generated_source)
+            EventBinding(events.file.generated, self.delete_generated_source, eject_processor)
         )
 
     @property
@@ -94,11 +100,9 @@ class EjectAction(Action):
         """
         Execute action
         """
-        if source:
-            # check source is inside project directory ...
-            force_remove(source)
-            events.file.deleted(source)
-            events.file.deleted(target)
+        force_remove(source)
+        events.file.deleted(source)
+        events.file.deleted(target)
 
 
 class ReloadConfigAction(Action):
