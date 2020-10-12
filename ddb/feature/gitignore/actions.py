@@ -3,6 +3,7 @@ import os
 import pathlib
 
 import zgitignore
+
 from ddb.action.action import EventBinding, InitializableAction
 from ddb.cache import caches, register_project_cache
 from ddb.config import config
@@ -66,7 +67,7 @@ class UpdateGitignoreAction(InitializableAction):
                 if pattern.startswith("!"):
                     inversed_gitignore_content.append(pattern[1:])
 
-            relative_file = os.path.normpath(os.path.relpath(file, os.path.dirname(gitignore)))
+            relative_file = UpdateGitignoreAction._get_relative_path(file, gitignore)
 
             zgitignore_helper = zgitignore.ZgitIgnore(gitignore_content)
             inversed_zgitignore_helper = zgitignore.ZgitIgnore(inversed_gitignore_content)
@@ -115,6 +116,13 @@ class UpdateGitignoreAction(InitializableAction):
             new_gitignore_content.pop(-1)
 
     @staticmethod
+    def _get_relative_path(target: str, gitignore: str, first_slash: bool = True):
+        relpath = pathlib.Path(os.path.relpath(target, os.path.dirname(gitignore))).as_posix()
+        if first_slash:
+            return "/" + relpath
+        return relpath
+
+    @staticmethod
     def execute(target: str, source: str = None):
         """
         Execute action
@@ -128,7 +136,7 @@ class UpdateGitignoreAction(InitializableAction):
         except StopIteration:
             gitignore = ".gitignore"
 
-        relative_target = pathlib.Path(os.path.relpath(target, os.path.dirname(gitignore))).as_posix()
+        relative_target = UpdateGitignoreAction._get_relative_path(target=target, gitignore=gitignore, first_slash=True)
         UpdateGitignoreAction.add_file(gitignore, relative_target)
         context.log.success("%s added to %s", relative_target, gitignore)
 
