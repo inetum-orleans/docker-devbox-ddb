@@ -4,7 +4,7 @@ History
 1.2.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Gitignore: add first slash to set full relative path of file added to the gitignore
 
 
 1.2.1 (2020-10-06)
