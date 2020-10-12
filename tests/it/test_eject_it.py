@@ -15,25 +15,25 @@ class TestEject:
 
         assert os.path.exists("docker-compose.yml")
         assert os.path.exists("docker-compose.yml.jsonnet")
-        assert expect_gitignore(".gitignore", "docker-compose.yml")
+        assert expect_gitignore(".gitignore", "/docker-compose.yml")
 
         assert os.path.exists(os.path.join(".bin", "psql"))
-        assert expect_gitignore(".gitignore", ".bin/psql")
+        assert expect_gitignore(".gitignore", "/.bin/psql")
 
         assert os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
-        assert expect_gitignore(".gitignore", ".docker/db/Dockerfile")
+        assert expect_gitignore(".gitignore", "/.docker/db/Dockerfile")
 
         main(["configure", "--eject"])
 
         assert os.path.exists("docker-compose.yml")
         assert not os.path.exists("docker-compose.yml.jsonnet")
-        assert not expect_gitignore(".gitignore", "docker-compose.yml")
+        assert not expect_gitignore(".gitignore", "/docker-compose.yml")
 
         assert os.path.exists(os.path.join(".bin", "psql"))
-        assert expect_gitignore(".gitignore", ".bin/psql")
+        assert expect_gitignore(".gitignore", "/.bin/psql")
 
         assert not os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
-        assert not expect_gitignore(".gitignore", ".docker/db/Dockerfile")
+        assert not expect_gitignore(".gitignore", "/.docker/db/Dockerfile")
 
         with open('docker-compose.yml', 'r') as dc_file:
             data = yaml.load(dc_file, yaml.SafeLoader)
@@ -52,25 +52,25 @@ class TestEject:
 
         assert os.path.exists("docker-compose.yml")
         assert os.path.exists("docker-compose.yml.jsonnet")
-        assert expect_gitignore(".gitignore", "docker-compose.yml")
+        assert expect_gitignore(".gitignore", "/docker-compose.yml")
 
         assert os.path.exists(os.path.join(".bin", "psql"))
-        assert expect_gitignore(".gitignore", ".bin/psql")
+        assert expect_gitignore(".gitignore", "/.bin/psql")
 
         assert os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
-        assert expect_gitignore(".gitignore", ".docker/db/Dockerfile")
+        assert expect_gitignore(".gitignore", "/.docker/db/Dockerfile")
 
         main(["configure", "--eject"])
 
         assert os.path.exists("docker-compose.yml")
         assert not os.path.exists("docker-compose.yml.jsonnet")
-        assert not expect_gitignore(".gitignore", "docker-compose.yml")
+        assert not expect_gitignore(".gitignore", "/docker-compose.yml")
 
         assert os.path.exists(os.path.join(".bin", "psql"))
-        assert expect_gitignore(".gitignore", ".bin/psql")
+        assert expect_gitignore(".gitignore", "/.bin/psql")
 
         assert not os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
-        assert not expect_gitignore(".gitignore", ".docker/db/Dockerfile")
+        assert not expect_gitignore(".gitignore", "/.docker/db/Dockerfile")
 
         with open('docker-compose.yml', 'r') as dc_file:
             data = yaml.load(dc_file, yaml.SafeLoader)
@@ -89,13 +89,13 @@ class TestEject:
 
         assert os.path.exists("docker-compose.yml")
         assert os.path.exists("docker-compose.yml.jsonnet")
-        assert expect_gitignore(".gitignore", "docker-compose.yml")
+        assert expect_gitignore(".gitignore", "/docker-compose.yml")
 
         assert os.path.exists(os.path.join(".bin", "psql"))
-        assert expect_gitignore(".gitignore", ".bin/psql")
+        assert expect_gitignore(".gitignore", "/.bin/psql")
 
         assert os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
-        assert expect_gitignore(".gitignore", ".docker/db/Dockerfile")
+        assert expect_gitignore(".gitignore", "/.docker/db/Dockerfile")
 
         os.environ['DDB_OVERRIDE_DOCKER_JSONNET_VIRTUALHOST_DISABLED'] = "1"
         os.environ['DDB_OVERRIDE_DOCKER_JSONNET_BINARY_DISABLED'] = "True"
@@ -103,13 +103,13 @@ class TestEject:
 
         assert os.path.exists("docker-compose.yml")
         assert not os.path.exists("docker-compose.yml.jsonnet")
-        assert not expect_gitignore(".gitignore", "docker-compose.yml")
+        assert not expect_gitignore(".gitignore", "/docker-compose.yml")
 
         assert not os.path.exists(os.path.join(".bin", "psql"))
-        assert not expect_gitignore(".gitignore", ".bin/psql")
+        assert not expect_gitignore(".gitignore", "/.bin/psql")
 
         assert not os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
-        assert not expect_gitignore(".gitignore", ".docker/db/Dockerfile")
+        assert not expect_gitignore(".gitignore", "/.docker/db/Dockerfile")
 
         with open('docker-compose.yml', 'r') as dc_file:
             data = yaml.load(dc_file, yaml.SafeLoader)

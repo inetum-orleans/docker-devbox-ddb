@@ -25,8 +25,8 @@ class TestPermissionsAction:
         action.initialize()
         action.execute()
 
-        assert stat.S_IMODE(os.lstat("script.sh").st_mode) == int('775', 8)
-        assert stat.S_IMODE(os.lstat(os.path.join("subdirectory", "another-script.sh")).st_mode) == int('664', 8)
+        assert os.access("script.sh", os.X_OK)
+        assert not os.access(os.path.join("subdirectory", "another-script.sh"), os.X_OK)
 
     def test_project2(self, project_loader):
         project_loader("project2")
@@ -41,8 +41,8 @@ class TestPermissionsAction:
         action.initialize()
         action.execute()
 
-        assert stat.S_IMODE(os.lstat("script.sh").st_mode) == int('775', 8)
-        assert stat.S_IMODE(os.lstat(os.path.join("subdirectory", "another-script.sh")).st_mode) == int('775', 8)
+        assert os.access("script.sh", os.X_OK)
+        assert os.access(os.path.join("subdirectory", "another-script.sh"), os.X_OK)
 
     def test_project3(self, project_loader):
         project_loader("project3")
@@ -57,5 +57,5 @@ class TestPermissionsAction:
         action.initialize()
         action.execute()
 
-        assert stat.S_IMODE(os.lstat("script.sh").st_mode) == int('775', 8)
-        assert stat.S_IMODE(os.lstat(os.path.join("subdirectory", "another-script.sh")).st_mode) == int('775', 8)
+        assert os.access("script.sh", os.X_OK)
+        assert os.access(os.path.join("subdirectory", "another-script.sh"), os.X_OK)

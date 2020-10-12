@@ -15,7 +15,7 @@ class TestCopy:
         assert os.path.exists("destination/test1")
         assert os.path.exists("destination/test2")
 
-        assert expect_gitignore('.gitignore', 'destination/test1', 'destination/test2')
+        assert expect_gitignore('.gitignore', '/destination/test1', '/destination/test2')
 
         os.remove("destination/test1")
 
@@ -23,4 +23,4 @@ class TestCopy:
 
         assert os.path.exists("destination/test1")
         assert os.path.exists("destination/test2")
-        assert expect_gitignore('.gitignore', 'destination/test1', 'destination/test2')
+        assert expect_gitignore('.gitignore', '/destination/test1', '/destination/test2')

@@ -33,7 +33,7 @@ class TestFilesGenerated:
         assert os.path.islink("test.yml")
 
         assert os.path.exists(".gitignore")
-        assert expect_gitignore('.gitignore', 'test.dev.yml.jsonnet', 'test.dev.yml', 'test.yml')
+        assert expect_gitignore('.gitignore', '/test.dev.yml.jsonnet', '/test.dev.yml', '/test.yml')
 
     def test_ensure_chaining_with_custom_dependencies(self, project_loader):
         project_loader("ensure-chaining-with-custom-dependencies")
@@ -61,7 +61,7 @@ class TestFilesGenerated:
         assert os.path.islink("test.yml")
 
         assert os.path.exists(".gitignore")
-        assert expect_gitignore('.gitignore', 'test.dev.yml.jinja', 'test.dev.yml', 'test.yml')
+        assert expect_gitignore('.gitignore', '/test.dev.yml.jinja', '/test.dev.yml', '/test.yml')
 
     def test_directories_overriden(self, project_loader):
         project_loader("directories-overriden")
