@@ -90,6 +90,6 @@ class DockerBinary(Binary):
             return True
 
         if not DockerUtils.is_container_up(self.docker_compose_service):
-            DockerUtils.up(self.docker_compose_service)
+            DockerUtils.service_up(self.docker_compose_service)
 
         return True

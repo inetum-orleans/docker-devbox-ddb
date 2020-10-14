@@ -5,9 +5,12 @@ from ddb.utils.process import run
 
 
 class DockerUtils:
+    """
+    A set of tools to manipulate docker using docker and docker-compose system commands
+    """
 
     @staticmethod
-    def up(name: str = None):
+    def service_up(name: str = None):
         """
         Execute docker-compose up -d
         :param name: the name of a specific service to up
@@ -22,7 +25,7 @@ class DockerUtils:
             run("docker-compose", "up", "-d", name)
 
     @staticmethod
-    def stop(name: str):
+    def service_stop(name: str):
         """
         Execute docker-compose stop
         :param name: the name of a specific service to stop
@@ -53,7 +56,7 @@ class DockerUtils:
         return container_id in containers
 
     @staticmethod
-    def config():
+    def get_config():
         """
         Get the docker-compose.yml configuration content.
         :raise DockerComposeYamlMissingException: in case of missing docker-compose.yml
@@ -72,4 +75,5 @@ class DockerComposeYamlMissingException(Exception):
     """
 
     def __init__(self):
+        Exception.__init__()
         self.message = "There is no docker-compose.yml file in current folder ({})".format(os.getcwd())

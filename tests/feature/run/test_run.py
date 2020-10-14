@@ -131,7 +131,7 @@ class TestRunFeature:
                                        args="echo",
                                        exe=True))
 
-        DockerUtils.stop('web')
+        DockerUtils.service_stop('web')
         assert not DockerUtils.is_container_up('web')
 
         action = RunAction()
