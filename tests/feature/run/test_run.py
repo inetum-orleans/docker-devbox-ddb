@@ -11,9 +11,13 @@ from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.docker.binaries import DockerBinary
 from ddb.feature.run import RunFeature, RunAction
+from ddb.utils.docker import DockerUtils
 
 
 class BinaryMock(Binary):
+    def pre_execute(self):
+        return True
+
     def __init__(self, name, *command):
         self._name = name
         self._command = command
@@ -113,3 +117,28 @@ class TestRunFeature:
         read = capsys.readouterr()
 
         assert read.out == "docker-compose run --rm --workdir=/app/sub service\n"
+
+    def test_run_docker_binary_exe(self, project_loader, capsys: CaptureFixture):
+        project_loader("exe")
+
+        features.register(CoreFeature())
+        features.register(RunFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
+
+        binaries.register(DockerBinary("echo",
+                                       docker_compose_service="web",
+                                       args="echo",
+                                       exe=True))
+
+        DockerUtils.stop('web')
+        assert not DockerUtils.is_container_up('web')
+
+        action = RunAction()
+        action.run("echo")
+
+        read = capsys.readouterr()
+
+        assert read.out == "docker-compose exec web echo\n"
+
+        assert DockerUtils.is_container_up('web')

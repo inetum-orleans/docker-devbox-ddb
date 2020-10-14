@@ -17,12 +17,20 @@ class Binary(RegistryObject, ABC):
         """
 
     @abstractmethod
+    def pre_execute(self):
+        """
+        Add action to be executed before running the command
+        :return: True or False depending on it's the same or not
+        """
+
+    @abstractmethod
     def is_same(self, binary) -> bool:
         """
         Check if given binary is the same as the current one
         :param binary: Binary object
         :return: True or False depending on it's the same or not
         """
+
 
 class DefaultBinary(Binary):
     """
@@ -42,3 +50,6 @@ class DefaultBinary(Binary):
 
     def is_same(self, binary) -> bool:
         return self.command() == binary.command()
+
+    def pre_execute(self):
+        return True

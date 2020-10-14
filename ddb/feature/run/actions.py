@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import subprocess
 
+from ...context import context
 from ...action import Action
 from ...action.action import EventBinding
 from ...binary import binaries
@@ -42,4 +43,7 @@ class RunAction(Action):
             args = config.unknown_args
 
         binary = binaries.get(name)
-        print(subprocess.list2cmdline(binary.command(*args)))
+        if binary.pre_execute():
+            print(subprocess.list2cmdline(binary.command(*args)))
+        else:
+            context.log.error("An error occurred in pre-execution controls of the binary")
