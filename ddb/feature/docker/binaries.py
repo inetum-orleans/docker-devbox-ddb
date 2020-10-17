@@ -8,6 +8,7 @@ from simpleeval import simple_eval
 from ddb.binary import Binary
 from ddb.config import config
 from ddb.utils.process import effective_command
+from ddb.utils.docker import DockerUtils
 
 
 class DockerBinary(Binary):
@@ -82,4 +83,13 @@ class DockerBinary(Binary):
             return False
         if self.options_condition != binary.options_condition:
             return False
+        return True
+
+    def pre_execute(self):
+        if not self.exe:
+            return True
+
+        if not DockerUtils.is_container_up(self.docker_compose_service):
+            DockerUtils.service_up(self.docker_compose_service)
+
         return True

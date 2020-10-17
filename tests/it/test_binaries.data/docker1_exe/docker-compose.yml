@@ -1,7 +1,7 @@
 version: "3.7"
 services:
   db:
-    image: psql
+    image: nginx
     environment:
       POSTGRES_PASSWORD: planireza
       POSTGRES_USER: planireza

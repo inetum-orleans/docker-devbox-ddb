@@ -5,6 +5,8 @@ History
 ------------------
 
 - Gitignore: add first slash to set full relative path of file added to the gitignore
+- Docker Binary: Check if the container is up if user run "ddb run <binary>" on a command flagged "exe". If it is down,
+  it will be launch.
 
 
 1.2.1 (2020-10-06)
