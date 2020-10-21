@@ -4,6 +4,8 @@ History
 1.2.2 (unreleased)
 ------------------
 
+- Docker: Add `docker.build_image_tag_from` and deprecates `docker.build_image_tag_from_version`.
+- Watch: Fix file exclusion issues when an ancestor directory is excluded
 - Gitignore: add first slash to set full relative path of file added to the gitignore
 - Docker Binary: Check if the container is up if user run "ddb run <binary>" on a command flagged "exe". If it is down,
   it will be launch.

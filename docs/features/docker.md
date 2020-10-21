@@ -28,7 +28,7 @@ As docker is at the heart of ddb, it has one of the largest collection of parame
     - default: True
 - `build_image_tag`: The tag added to the image name in docker-compose file.
     - type: string
-    - default: <retrieved from git branch or tag name>
+    - default: retrieved from git branch or tag name
 - `cache_from_image`: 
     Mainly used for build purpose in CI, it enable the cache_from settings for services in docker-compose.yml generation.
     - type: boolean
