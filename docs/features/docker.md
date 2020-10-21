@@ -23,8 +23,8 @@ As docker is at the heart of ddb, it has one of the largest collection of parame
 - `disabled`: Definition of the status of the feature. If set to True, docker feature will not be triggered.
     - type: boolean
     - default: False
-- `build_image_tag_from_version`: Define if an automatic tag must be added to image name in docker-compose file.
-    - type: boolean
+- `build_image_tag_from`: Define if an automatic tag must be added to image name in docker-compose file. If set to a string, it should match a configuration key to use as tag source, like `version.tag`, `version.branch`, `version.version`.
+    - type: boolean|string
     - default: True
 - `build_image_tag`: The tag added to the image name in docker-compose file.
     - type: string

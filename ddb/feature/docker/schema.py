@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from ddb.feature.schema import FeatureSchema
 from marshmallow import fields, Schema
+from marshmallow_union import Union
 
 
 class UserSchema(Schema):
@@ -72,7 +73,9 @@ class DockerSchema(FeatureSchema):
     cache_from_image = fields.Boolean(required=True, default=False)
     build_image_tag = fields.String(required=False, allow_none=True,
                                     default=None)  # default is set in feature _configure_defaults
-    build_image_tag_from_version = fields.Boolean(required=False, default=True)
+    build_image_tag_from = Union(fields=[fields.Boolean(), fields.String()],
+                                 required=False, allow_none=True, default=False)
+    build_image_tag_from_version = fields.Boolean(required=False, default=False)  # This field is deprecated.
     reverse_proxy = fields.Nested(ReverseProxySchema(), required=True, default=ReverseProxySchema())
     path_mapping = fields.Dict(required=False)  # default is set in feature _configure_defaults
     disabled_services = fields.List(fields.String(), required=False, default=[])

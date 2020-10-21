@@ -3,10 +3,12 @@ import hashlib
 import os
 import pathlib
 import re
+import warnings
 from typing import Iterable, ClassVar
 
 import netifaces
 from dotty_dict import Dotty
+from slugify import slugify
 
 from .actions import EmitDockerComposeConfigAction, DockerComposeBinaryAction, LocalVolumesAction, \
     DockerDisplayInfoAction
@@ -164,17 +166,29 @@ class DockerFeature(Feature):
     @staticmethod
     def _configure_defaults_build_image_tag(feature_config):
         build_image_tag_from_version = feature_config.get('build_image_tag_from_version')
+        if build_image_tag_from_version:
+            warnings.warn(
+                "docker.build_image_tag_from_version configuration setting is deprecated. "
+                "Use docker.build_image_tag_from instead.",
+                DeprecationWarning)
+        build_image_tag_from = feature_config.get('build_image_tag_from', build_image_tag_from_version)
         build_image_tag = feature_config.get('build_image_tag')
-        if build_image_tag is None and build_image_tag_from_version:
-            # Use tag if we are exactly on a tag, branch otherwise
-            tag = config.data.get('version.tag')
-            version = config.data.get('version.version')
-            branch = config.data.get('version.branch')
-            if tag and version and tag == version:
-                build_image_tag = tag
+        if build_image_tag is None and build_image_tag_from:
+            if isinstance(build_image_tag_from, str):
+                tag = config.data.get(build_image_tag_from)
+                if tag:
+                    build_image_tag = tag
             else:
-                build_image_tag = branch
-            feature_config['build_image_tag'] = build_image_tag
+                # Use tag if we are exactly on a tag, branch otherwise
+                tag = config.data.get('version.tag')
+                version = config.data.get('version.version')
+                branch = config.data.get('version.branch')
+                if tag and version and tag == version:
+                    build_image_tag = tag
+                elif branch:
+                    build_image_tag = branch
+            if build_image_tag:
+                feature_config['build_image_tag'] = slugify(build_image_tag, regex_pattern=r'[^\w][^\w.-]{0,127}')
 
     @staticmethod
     def _configure_defaults_restart_policy(feature_config):
