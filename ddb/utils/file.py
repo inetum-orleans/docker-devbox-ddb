@@ -8,7 +8,6 @@ from typing import List, Union, Optional, Tuple
 
 import chmod_monkey
 from braceexpand import braceexpand
-
 from ddb.config import config
 from ddb.context import context
 
@@ -209,6 +208,17 @@ class FileWalker:
         return excluded
 
     @staticmethod
+    def _has_ancestor_excluded(candidate_path: Path, *excludes: List[str]) -> bool:
+        while True:
+            candidate_path_parent = candidate_path.parent
+            if not candidate_path_parent or candidate_path_parent == candidate_path:
+                break
+            candidate_path = candidate_path_parent
+            if FileWalker._is_excluded(str(candidate_path), *excludes):
+                return True
+        return False
+
+    @staticmethod
     def _prefix_path_to_current_folder(path: str):
         if path[0:2] == './':
             return path
@@ -219,7 +229,8 @@ class FileWalker:
         Check if a source path is filtered out by includes/excludes
         """
         return not self._is_included(candidate, *self.includes) or \
-               self._is_excluded(candidate, *self.excludes)
+               self._is_excluded(candidate, *self.excludes) or \
+               self._has_ancestor_excluded(Path(candidate), *self.excludes)
 
     @staticmethod
     def _is_included(candidate: str, *includes: List[str]) -> bool:
