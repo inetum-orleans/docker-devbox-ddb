@@ -1,7 +1,7 @@
 History
 =======
 
-1.2.2 (unreleased)
+1.2.2 (2020-10-21)
 ------------------
 
 - Docker: Add `docker.build_image_tag_from` and deprecates `docker.build_image_tag_from_version`.
