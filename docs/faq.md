@@ -42,3 +42,10 @@ Frequently Asked Questions
     In your project `ddb.yml` file, you may disable this option in the docker feature with `docker.build_image_tag_from_version` set to false.
     
     Read more: [Configuration](configuration.md)
+    
+??? question "CI fails with the following message: "the input device is not a TTY""
+
+    If no TTY is available, you have to set the following environment variable to workaround this issue
+
+    COMPOSE_INTERACTIVE_NO_CLI=1
+
