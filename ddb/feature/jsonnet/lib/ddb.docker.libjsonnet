@@ -28,6 +28,17 @@ local _eject = std.extVar("_config.eject");
 
 # local sep = if _core_os == "nt" then std.char(92) else "/"; # Backslash can't be escaped properly, so use std.char
 
+/**
+ * Join objects from an array
+ */
+local JoinObjectArray(object_array) =
+    local join(array, index, result) =
+        if index >= std.length(array) then
+            result
+        else
+            join(array, index + 1, result + array[index]);
+    join(object_array, 0, {});
+
 local mapPath(path) =
   local key = std.filter(function(mapping_field) std.startsWith(path, mapping_field), std.objectFields(_docker_path_mapping));
   if std.length(key) > 0 then _docker_path_mapping[key[0]] + std.substr(path, std.length(_docker_path_mapping[key[0]]), std.length(path)) else path;
@@ -230,5 +241,6 @@ local envIs(env) =
       index: envIndex,
       is: envIs
     },
-    path: path
+    path: path,
+    JoinObjectArray: JoinObjectArray
 }

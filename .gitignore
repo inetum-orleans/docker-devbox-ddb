@@ -9,6 +9,7 @@ __pycache__/
 *.pyo
 ./.idea
 .idea
-dist/
-build/
-site/
+/dist/
+/build/
+/site/
+/out/

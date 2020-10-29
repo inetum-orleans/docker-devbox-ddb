@@ -93,6 +93,13 @@ services:
       traefik.http.routers.gli-biometrie-api.service: gli-biometrie-api
       traefik.http.services.gli-biometrie-api.loadbalancer.server.port: '80'
       ddb.emit.certs:generate[gli-biometrie-api]: api.biometrie.test
+      traefik.http.routers.gli-biometrie-www-tls.rule: Host(`www.biometrie.test`)
+      traefik.http.routers.gli-biometrie-www-tls.service: gli-biometrie-www
+      traefik.http.routers.gli-biometrie-www-tls.tls: "true"
+      traefik.http.routers.gli-biometrie-www.rule: Host(`www.biometrie.test`)
+      traefik.http.routers.gli-biometrie-www.service: gli-biometrie-www
+      traefik.http.services.gli-biometrie-www.loadbalancer.server.port: '80'
+      ddb.emit.certs:generate[gli-biometrie-www]: www.biometrie.test
     networks:
       - default
       - reverse-proxy
