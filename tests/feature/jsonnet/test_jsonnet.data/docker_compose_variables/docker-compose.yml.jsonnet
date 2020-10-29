@@ -4,6 +4,7 @@ local user = "biometrie";
 local password = "biometrie";
 local certresolver = if ddb.env.is("ci") then "anothercertresolver" else null;
 local router_rule = if ddb.env.is("ci") then "HostRegexp(`traefik.io`, `{subdomain:[a-z]+}.traefik.io`, ...)" else null;
+local sites = std.extVar('app.sites');
 
 local services = {
     'db' : ddb.Build("db") + ddb.User() + {
@@ -62,15 +63,17 @@ local services = {
 }
 
 + {
-    "web": ddb.Build("web") + ddb.VirtualHost("80", "api.biometrie.test", "api", certresolver=certresolver, router_rule=router_rule) + {
-        "labels"+: {
-            "traefik.http.middlewares.biometrie-auth.basicauth.users":"biometrie:$$apr1$$oTBtKtGR$$JlgPB1ZdGh1bYfPonp0IB0",
-            ["traefik.http.routers." + ddb.ServiceName("api") + "-tls.middlewares"]:"biometrie-auth"
-        },
-        "volumes": [
-            ddb.path.project + "/.docker/web/nginx.conf:/etc/nginx/conf.d/default.conf:rw",
-            ddb.path.project + ":/var/www/html:rw"
-        ]
-    }
+    "web": ddb.Build("web")
+        + ddb.JoinObjectArray([ddb.VirtualHost("80", std.join('.', [site, "biometrie.test"]), site, certresolver=certresolver, router_rule=router_rule) for site in sites])
+        + {
+            "labels"+: {
+                "traefik.http.middlewares.biometrie-auth.basicauth.users":"biometrie:$$apr1$$oTBtKtGR$$JlgPB1ZdGh1bYfPonp0IB0",
+                ["traefik.http.routers." + ddb.ServiceName("api") + "-tls.middlewares"]:"biometrie-auth"
+            },
+            "volumes": [
+                ddb.path.project + "/.docker/web/nginx.conf:/etc/nginx/conf.d/default.conf:rw",
+                ddb.path.project + ":/var/www/html:rw"
+            ]
+        }
 };
 ddb.Compose({ "services": services })

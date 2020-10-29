@@ -5,3 +5,6 @@ docker:
   registry:
     name: "gfiorleans.azurecr.io"
     repository: "gli-biometrie"
+
+app:
+  sites: ['api', 'www']

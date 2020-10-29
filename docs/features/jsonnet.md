@@ -442,6 +442,50 @@ Path is easy access to ddb configuration paths `core.path` values.
 
 It is mostly used to add a folder as volume to service.
 
+### JoinObjectArray
+
+This function allows the generation of an array of object programmatically and then merge them which is not possible 
+otherwise natively with jsonnet. 
+
+!!! abstract "Parameters"
+    - `object_array`: the array of objects to merge
+        - type: array of objects
+    
+!!! example
+    With the following jsonnet declaration :  
+    ```jsonnet 
+    local sites = ['www', 'api'];
+    
+    {
+        "web": ddb.Build("web")
+            + ddb.JoinObjectArray([ddb.VirtualHost("80", std.join('.', [site, "domain.tld"]), site) for site in sites])
+            + {
+                "volumes": [
+                    ddb.path.project + "/.docker/web/nginx.conf:/etc/nginx/conf.d/default.conf:rw",
+                    ddb.path.project + ":/var/www/html:rw"
+                ]
+            }
+    }
+    ```
+    
+    The result will be
+    ```yaml
+    labels: 
+      traefik.enable: "true"
+      traefik.http.routers.your-project-api-tls.rule: Host(`api.domain.tld`)
+      traefik.http.routers.your-project-api-tls.service: your-project-api
+      traefik.http.routers.your-project-api-tls.tls: "true"
+      traefik.http.routers.your-project-api.rule: Host(`api.domain.tld`)
+      traefik.http.routers.your-project-api.service: your-project-api
+      traefik.http.services.your-project-api.loadbalancer.server.port: '80'
+      traefik.http.routers.your-project-www-tls.rule: Host(`www.domain.tld`)
+      traefik.http.routers.your-project-www-tls.service: your-project-www
+      traefik.http.routers.your-project-www-tls.tls: "true"
+      traefik.http.routers.your-project-www.rule: Host(`www.domain.tld`)
+      traefik.http.routers.your-project-www.service: your-project-www
+      traefik.http.services.your-project-www.loadbalancer.server.port: '80'
+    ```
+    
 ### path.mapPath
 
 TODO
