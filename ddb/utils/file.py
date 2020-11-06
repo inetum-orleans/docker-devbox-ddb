@@ -105,6 +105,8 @@ def force_remove(file: str):
         # On windows, removing a readonly file raise this error.
         chmod(file, '+w', logging=False)
         os.remove(file)
+    except FileNotFoundError:
+        context.log.warning("%s can't be removed because it's already absent", file)
 
 
 def chmod(file: str, mode: str, logging=True):

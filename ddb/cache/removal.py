@@ -47,12 +47,10 @@ class RemovalCacheSupport:  # pylint:disable=too-many-instance-attributes
         cache = caches.get(self.cache_name)
 
         for key in self.keys:
-            cache.set(key, self.cached[key])
-
-        for key in self.keys:
             to_remove_values = self.previous[key] - self.current[key]
             for to_remove in to_remove_values:
                 yield key, to_remove
+            cache.set(key, self.current[key])
 
     @staticmethod
     def close():

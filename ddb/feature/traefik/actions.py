@@ -171,7 +171,7 @@ class TraefikExtraServicesAction(InitializableAction):
         for (key, value) in self.removal_cache_support.get_removed():
             if key == 'certs-domains':
                 events.certs.remove(value)
-            if key == 'generated-files':
+            elif key == 'generated-files':
                 force_remove(value)
 
     @staticmethod
