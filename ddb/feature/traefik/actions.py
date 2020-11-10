@@ -194,7 +194,4 @@ class TraefikExtraServicesAction(InitializableAction):
         if extra_service_data.get('redirect_to_https') is None and extra_service['https'] is None:
             extra_service_data['redirect_to_https'] = config.data.get('docker.reverse_proxy.redirect_to_https')
 
-        if extra_service_data['redirect_to_https'] or extra_service_data['path_prefix']:
-            extra_service_data['middleware'] = True
-
         return extra_service_data, data

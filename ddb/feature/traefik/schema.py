@@ -58,7 +58,7 @@ class TraefikSchema(FeatureSchema):
       certResolver = "{{_local.certresolver}}"
 {%- endif %}
 {%- endif %}
-{%- if _local.middleware %}
+{%- if _local.redirect_to_https or _local.path_prefix  %}
 
 [http.middlewares]
 {%- if _local.redirect_to_https %}
