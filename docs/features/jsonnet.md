@@ -258,6 +258,11 @@ If this configuration is anything else, there will be no output.
     ddb configuration is sets to true.
         - type: boolean|null
         - default: null
+    - `path_prefix`:
+    Add reverse proxy rules in order to use path prefix.
+    For example, it allows you to use URL like https://your-app.test/service for your container exposure.
+        - type: string|null
+        - default: null
 
 !!! example "Example with traefik as reverse proxy"
     ```json 

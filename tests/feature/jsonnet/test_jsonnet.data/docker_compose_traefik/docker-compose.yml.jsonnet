@@ -101,7 +101,10 @@ ddb.Compose({
 				ddb.path.project + ":/var/www/html:rw"
 			]
 		},
-		"web": ddb.Build("web") + ddb.VirtualHost("80", "api.biometrie.test", "api", certresolver=certresolver, router_rule=router_rule, redirect_to_https=redirect_to_https) {
+		"web": ddb.Build("web")
+		    + ddb.VirtualHost("80", "api.biometrie.test", "api", certresolver=certresolver, router_rule=router_rule, redirect_to_https=redirect_to_https)
+		    + (if ddb.env.is("dev") then ddb.VirtualHost("80", "api.biometrie.test", "path_prefix", certresolver=certresolver, router_rule=router_rule, redirect_to_https=redirect_to_https, path_prefix="/path_prefix") else {})
+		    {
 			"volumes": [
 				ddb.path.project + "/.docker/web/nginx.conf:/etc/nginx/conf.d/default.conf:rw",
 				ddb.path.project + ":/var/www/html:rw"
