@@ -89,6 +89,10 @@ class TestTraefikFeature:
             "secured_path_prefix": {
                 "generated": "secured.project.test.extra-service.path_prefix.toml",
                 "expected": "secured.project.test.extra-service.path_prefix.expected.toml"
+            },
+            "secured_path_prefix_with_redirect": {
+                "generated": "secured.project.test.extra-service.path_prefix_with_redirect.toml",
+                "expected": "secured.project.test.extra-service.path_prefix_with_redirect.expected.toml"
             }
         }
 

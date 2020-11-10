@@ -78,6 +78,9 @@ It can be used when a service should better run on the developer host instead of
 - `path_prefix`: The traefik prefix path. You should customize it only if you have to support sub folder on on a domain
     - type: string
     - default: `None`
+- `redirect_to_path_prefix`: Redirect to defined `path_prefix` when accessing VirtualHost root path.
+    - type: boolean|null
+    - default: `None`
     
 Jinja templating is available for `url`, `domain` and `rule` fields, with the usual configuration as data context, 
 and additional `_local` dict containing the extra_service entry configuration.
