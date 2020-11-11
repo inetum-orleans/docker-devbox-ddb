@@ -10,6 +10,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: [ 3.5, 3.6, 3.7, 3.8 ]
     steps:
@@ -48,6 +49,7 @@ jobs:
         run: |
           pip freeze
           pip install -r requirements-dev.txt
+          pip install coveralls
           pip freeze
 
       - run: pylint ddb
@@ -56,19 +58,7 @@ jobs:
 
       - uses: technote-space/workflow-conclusion-action@v2
       - name: Coveralls
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ github.token }}
-          flag-name: run-${{ matrix.python-version }}
-          parallel: true
+        run: coveralls
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         if: env.WORKFLOW_CONCLUSION == 'success'
-
-  finish:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Coveralls Finished
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ github.token }}
-          parallel-finished: true
