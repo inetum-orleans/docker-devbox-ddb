@@ -18,8 +18,10 @@ jobs:
         with:
           docker_version: "19.03"
           docker_channel: "stable"
-      - run: "echo '{\"mtu\": 1460}' | sudo dd of=/etc/docker/daemon.json"
-      - run: sudo service docker restart
+      - name: "Change Docker Pull MTU"
+        run: |
+        "echo '{\"mtu\": 1460}' | sudo dd of=/etc/docker/daemon.json"
+        sudo service docker restart
 
       # Setup docker
       - name: Set up Python ${{ matrix.python-version }}
@@ -32,10 +34,10 @@ jobs:
       # Install
       - name: "Install YTT"
         run: |
-          mkdir -p $GIHUB_WORKSPACE/bin
-          curl -Lo $GIHUB_WORKSPACE/bin/ytt https://github.com/k14s/ytt/releases/download/v0.26.0/ytt-linux-amd64
-          echo "::add-path::$GIHUB_WORKSPACE/bin"
-          chmod +x $GIHUB_WORKSPACE/bin/ytt
+          mkdir -p $HOME/bin
+          curl -Lo $HOME/bin/ytt https://github.com/k14s/ytt/releases/download/v0.26.0/ytt-linux-amd64
+          echo "::add-path::$HOME/bin"
+          chmod +x $HOME/bin/ytt
 
       - name: "Install Dependencies"
         run: |
