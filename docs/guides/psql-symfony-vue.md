@@ -434,7 +434,17 @@ RUN mkdir -p "$COMPOSER_HOME/cache" \
 VOLUME /composer/cache
 ```
 
-Then the docker image should build when running `docker-compose build`.
+And `fixuid.yml` to fix file permission issues.
+
+```yaml
+user: www-data
+group: www-data
+paths:
+  - /
+  - /composer/cache
+```
+
+Then build the docker image with `docker-compose build`.
 
 Composer has been installed in the image, so let's make it available by registering a binary into 
 `docker-compose.yml.jsonnet`. We can also register the `php` binary for it to be available locally too.
@@ -500,7 +510,6 @@ ddb.Compose({
                      ddb.path.project + "/.docker/web/apache.conf:/usr/local/apache2/conf/custom/apache.conf",
                   ]
              },
-        },
 })
 ```
 
@@ -615,9 +624,13 @@ RUN sed -i '/LoadModule rewrite_module/s/^#//g' /usr/local/apache2/conf/httpd.co
 </VirtualHost>
 ```
 
-And now, we are ready start all containers : `docker-compose up -d`. You should be able to view Symfony landing page at 
-[http://api.ddb-quickstart.test](http://api.ddb-quickstart.test) and 
-[https://api.ddb-quickstart.test](https://api.ddb-quickstart.test).
+And now, we are ready start all containers : `docker-compose up -d`. 
+
+Run `ddb info` command to check the URL of your virtualhost for the web service.
+
+You should be able to view Symfony landing page at 
+[http://ddb-quickstart.test](http://api.ddb-quickstart.test) and 
+[https://ddb-quickstart.test](https://api.ddb-quickstart.test).
 
 !!! note "You may have to restart traefik container"
     If you have some issues with certificate validity on the https:// url, you may need to restart traefik container : 
