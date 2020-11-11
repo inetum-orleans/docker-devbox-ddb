@@ -1,14 +1,17 @@
 name: quality
 on:
   push:
-    branches:
-      - feature/github-actions
+    branches: [feature/github-actions]
+#  push:
+#    branches: [ develop ]
+#  pull_request:
+#    branches: [ develop ]
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ 2.7, 3.5, 3.6, 3.7, 3.8 ]
+        python-version: [ 3.5, 3.6, 3.7, 3.8 ]
     steps:
       # Setup docker
       - uses: docker-practice/actions-setup-docker@master
@@ -27,7 +30,7 @@ jobs:
       - uses: actions/checkout@v2
 
       # Install
-      - run: curl -Lo $HOME/bin/ytt https://github.com/k14s/ytt/releases/download/v0.26.0/ytt-linux-amd64 && chmod +x $HOME/bin/ytt
+      - run: mkdir -p $HOME/bin && curl -Lo $HOME/bin/ytt https://github.com/k14s/ytt/releases/download/v0.26.0/ytt-linux-amd64 && chmod +x $HOME/bin/ytt
       - run: pip freeze
       - run: pip install -r requirements-dev.txt
       - run: pip install coveralls
