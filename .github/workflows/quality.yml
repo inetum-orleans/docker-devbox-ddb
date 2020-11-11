@@ -18,10 +18,10 @@ jobs:
         with:
           docker_version: "19.03"
           docker_channel: "stable"
-      - name: "Change Docker Pull MTU"
-        run: |
-          "echo '{\"mtu\": 1460}' | sudo dd of=/etc/docker/daemon.json"
-          sudo service docker restart
+#      - name: "Change Docker Pull MTU"
+#        run: |
+#          "echo '{\"mtu\": 1460}' | sudo dd of=/etc/docker/daemon.json"
+#          sudo service docker restart
 
       # Setup docker
       - name: Set up Python ${{ matrix.python-version }}
