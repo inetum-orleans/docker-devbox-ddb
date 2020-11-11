@@ -1,11 +1,9 @@
 name: quality
 on:
   push:
-    branches: [feature/github-actions]
-#  push:
-#    branches: [ develop ]
-#  pull_request:
-#    branches: [ develop ]
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
 jobs:
   test:
     runs-on: ubuntu-latest
