@@ -154,12 +154,14 @@ services:
       traefik.http.routers.gli-biometrie-api.service: gli-biometrie-api
       traefik.http.services.gli-biometrie-api.loadbalancer.server.port: '80'
       traefik.http.routers.gli-biometrie-path_prefix-tls.rule: Host(`api.biometrie.test`) && PathPrefix(`/path_prefix{regex:$$|/.*}`)
+      traefik.http.routers.gli-biometrie-path_prefix-tls.middlewares: gli-biometrie-path_prefix-stripprefix
       traefik.http.routers.gli-biometrie-path_prefix-tls.service: gli-biometrie-path_prefix
       traefik.http.routers.gli-biometrie-path_prefix-tls.tls: "true"
       traefik.http.routers.gli-biometrie-path_prefix.rule: Host(`api.biometrie.test`) && PathPrefix(`/path_prefix{regex:$$|/.*}`)
       traefik.http.routers.gli-biometrie-path_prefix.service: gli-biometrie-path_prefix
+      traefik.http.routers.gli-biometrie-path_prefix.middlewares: gli-biometrie-path_prefix-stripprefix
       traefik.http.services.gli-biometrie-path_prefix.loadbalancer.server.port: '80'
-      http.middlewares.gli-biometrie-path_prefix-stripprefix.stripPrefix: "/path_prefix"
+      traefik.http.middlewares.gli-biometrie-path_prefix-stripprefix.stripPrefix.prefixes: "/path_prefix"
       ddb.emit.certs:generate[gli-biometrie-api]: api.biometrie.test
       ddb.emit.certs:generate[gli-biometrie-path_prefix]: api.biometrie.test
     networks:

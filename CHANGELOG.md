@@ -4,7 +4,13 @@ History
 1.2.3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Jsonnet: Add "JoinObjectArray" method.
+- Jsonnet: Add `path_prefix` option for a VirtualHost.
+- Docker: Add `docker.reverse_proxy.redirect_to_path_prefix` which force redirection to `path_prefix` if defined on a
+  VirtualHost.
+- Traefik: Add `path_prefix` option for a service.
+- Traefik: Add `redirect_to_path_prefix` option for a service which force redirection to `path_prefix` if defined on the
+  service.
 
 
 1.2.2 (2020-10-21)

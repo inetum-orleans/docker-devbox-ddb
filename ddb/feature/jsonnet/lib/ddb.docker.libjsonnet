@@ -177,19 +177,24 @@ local TraefikRoutersRuleLabels(hostname, service_name, router_rule=null) = {
 local TraefikPathPrefixLabels(hostname, service_name, path_prefix=null) =
     local effective_rule = "Host(`" + hostname + "`) && PathPrefix(`" + path_prefix + "{regex:$$|/.*}`)";
     {
-        [if path_prefix != null then "http.middlewares." + service_name + "-stripprefix.stripPrefix"]: path_prefix,
+        [if path_prefix != null then "traefik.http.middlewares." + service_name + "-stripprefix.stripPrefix.prefixes"]: path_prefix,
         [if path_prefix != null then "traefik.http.routers." + service_name + ".rule"]: effective_rule,
         [if path_prefix != null then "traefik.http.routers." + service_name + "-tls.rule"]: effective_rule,
+        [if path_prefix != null then "traefik.http.routers." + service_name + ".middlewares"]: service_name + "-stripprefix",
+        [if path_prefix != null then "traefik.http.routers." + service_name + "-tls.middlewares"]: service_name + "-stripprefix",
     };
 
 local TraefikPathPrefixRedirectLabels(hostname, service_name, path_prefix=null, redirect_to_path_prefix=null) =
     local effective_redirect_to_path_prefix = if redirect_to_path_prefix != null then redirect_to_path_prefix else _docker_reverse_proxy_redirect_to_path_prefix;
     local effective_rule = "Host(`" + hostname + "`)";
     {
-        [if path_prefix != null && effective_redirect_to_path_prefix != null then "http.middlewares." + service_name + "-redirect_to_path_prefix.redirectregex.regex"]: '^/$$',
-        [if path_prefix != null && effective_redirect_to_path_prefix != null then "http.middlewares." + service_name + "-redirect_to_path_prefix.redirectregex.replacement"]: path_prefix,
-        [if path_prefix != null && effective_redirect_to_path_prefix != null then "traefik.http.routers." + service_name + "-redirect-to-path-prefix.rule"]: effective_rule,
-        [if path_prefix != null && effective_redirect_to_path_prefix != null then "traefik.http.routers." + service_name + "-redirect-to-path-prefix-tls.rule"]: effective_rule,
+        [if path_prefix != null && effective_redirect_to_path_prefix != null then "traefik.http.middlewares." + service_name + "-redirect_to_path_prefix.redirectregex.regex"]: '^https?://' + hostname + '/?$$',
+        [if path_prefix != null && effective_redirect_to_path_prefix != null then "traefik.http.middlewares." + service_name + "-redirect_to_path_prefix.redirectregex.replacement"]: path_prefix,
+        [if path_prefix != null && effective_redirect_to_path_prefix != null then "traefik.http.routers." + service_name + "-redirect_to_path_prefix.rule"]: effective_rule,
+        [if path_prefix != null && effective_redirect_to_path_prefix != null then "traefik.http.routers." + service_name + "-redirect_to_path_prefix-tls.rule"]: effective_rule,
+        [if path_prefix != null && effective_redirect_to_path_prefix != null then "traefik.http.routers." + service_name + "-redirect_to_path_prefix.middlewares"]: service_name + "-redirect_to_path_prefix",
+        [if path_prefix != null && effective_redirect_to_path_prefix != null then "traefik.http.routers." + service_name + "-redirect_to_path_prefix-tls.middlewares"]: service_name + "-redirect_to_path_prefix",
+        [if path_prefix != null && effective_redirect_to_path_prefix != null then "traefik.http.routers." + service_name + "-redirect_to_path_prefix-tls.tls"]: "true",
     };
 
 local TraefikRedirectToHttpsLabels(hostname, service_name, redirect_to_https=null) =
