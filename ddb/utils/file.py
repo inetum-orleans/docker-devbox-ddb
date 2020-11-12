@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import List, Union, Optional, Tuple
 
 import chmod_monkey
+import requests
 from braceexpand import braceexpand
 from ddb.config import config
 from ddb.context import context
@@ -121,6 +122,36 @@ def chmod(file: str, mode: str, logging=True):
     else:
         if logging:
             context.log.notice("chmod %s %s", mode, file)
+
+
+class FileUtils:
+    """
+    Some file management functions
+    """
+
+    @staticmethod
+    def get_file_content(url: str) -> str:
+        """
+        Get the content of the file
+        :param url: the path to the file (https? or file)
+        :return:
+        """
+        if url.startswith('file://'):
+            return FileUtils._get_local_file_content(url)
+        return requests.get(url).text
+
+    @staticmethod
+    def _get_local_file_content(file_path: str) -> str:
+        """
+        Get the content of the file
+        :param file_path: the path to the file (absolute or relative)
+        :return:
+        """
+        file_path = file_path.replace('file://', '')
+        if not os.path.isabs(file_path):
+            file_path = os.path.join(config.path.project_home, file_path)
+        with open(file_path, 'rb') as file:
+            return file.read().decode("utf-8")
 
 
 class FileWalker:

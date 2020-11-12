@@ -24,12 +24,18 @@ Feature configuration
     - type: string
     - default: `/cert`
 - `ssl_config_template`: The Jinja template for the traefik configuration file registering CFSSL SSL certificates. 
+    This template can be a template string, or a link to a file containing the template, prefixed with `http(s)//` for 
+    web files, or `file://` for local ones. 
+    In case of local template, you can define it relative to your project path, or absolute.
     - type: string
     - default: A jinja template
 - `extra-services`: A dict of {id: ExtraService} configuration
     - type: list of Spec configuration
     - default: `{}`
 - `extra_services_config_template`: The Jinja template for extra-services configuration file. 
+    This template can be a template string, or a link to a file containing the template, prefixed with `http(s)//` for 
+    web files, or `file://` for local ones. 
+    In case of local template, you can define it relative to your project path, or absolute.
     - type: string
     - default: A jinja template
 
