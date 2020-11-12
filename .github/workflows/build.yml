@@ -50,9 +50,7 @@ jobs:
       - run: coverage run --source=ddb -m pytest
       - run: python setup.py build
 
-      - uses: technote-space/workflow-conclusion-action@v2
       - name: Coveralls
         run: coveralls
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-        if: env.WORKFLOW_CONCLUSION == 'success'
