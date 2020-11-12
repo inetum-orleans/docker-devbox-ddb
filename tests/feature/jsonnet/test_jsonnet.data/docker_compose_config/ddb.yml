@@ -1,0 +1,14 @@
+core:
+  project:
+    name: gli-biometrie
+docker:
+  compose:
+    file_version: '3'
+    service_init: false
+    service_context_root: true
+  registry:
+    name: "gfiorleans.azurecr.io"
+    repository: "gli-biometrie"
+
+app:
+  sites: ['api', 'www']
