@@ -1,0 +1,56 @@
+name: build
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ 3.5, 3.6, 3.7, 3.8 ]
+    steps:
+      # Setup docker
+      - uses: docker-practice/actions-setup-docker@master
+        with:
+          docker_version: "19.03"
+          docker_channel: "stable"
+
+      # Setup docker
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - uses: actions/checkout@v2
+
+      # Install
+      - name: "Install YTT"
+        run: |
+          mkdir -p $HOME/bin
+          curl -Lo $HOME/bin/ytt https://github.com/k14s/ytt/releases/download/v0.26.0/ytt-linux-amd64
+          echo "$HOME/bin" >> $GITHUB_PATH
+          chmod +x $HOME/bin/ytt
+
+      - name: "Git User config"
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "Github Action"
+
+      - name: "Install Dependencies"
+        run: |
+          pip freeze
+          pip install -r requirements-dev.txt
+          pip install coveralls
+          pip freeze
+
+      - run: pylint ddb
+      - run: coverage run --source=ddb -m pytest
+      - run: python setup.py build
+
+      - name: Coveralls
+        run: coveralls
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}

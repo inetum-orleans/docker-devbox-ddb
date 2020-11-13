@@ -39,6 +39,15 @@ As docker is at the heart of ddb, it has one of the largest collection of parame
 - `compose.network_name`: The name of the default docker network for this project. 
     - type: string
     - default: retrieved from compose.project.name, suffixed with _default
+- `compose.file_version`: The version of docker-compose to write in the file.
+    - type: string
+    - default: '3.7'
+- `compose.service_init`: If the `"init":true` must be set in services. 
+    - type: boolean
+    - default: true
+- `compose.service_context_root`: Define if the service's context is root (true) or the `docker.directory` (false).
+    - type: boolean
+    - default: false
 - `disabled_services`: docker-compose services listed inside this property are filtered out by jsonnet automation.
     - type: List of string
     - default: []

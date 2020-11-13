@@ -26,6 +26,9 @@ class ComposeSchema(Schema):
     """
     project_name = fields.String(required=True, default=None)  # default is set in feature _configure_defaults
     network_name = fields.String(required=True, default=None)  # default is set in feature _configure_defaults
+    file_version = fields.String(required=True, default="3.7")
+    service_init = fields.Boolean(required=False, default=True)
+    service_context_root = fields.Boolean(required=False, default=False)
 
 
 class ReverseProxySchema(Schema):
