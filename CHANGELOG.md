@@ -1,7 +1,7 @@
 History
 =======
 
-1.2.3 (unreleased)
+1.2.3 (2020-11-13)
 ------------------
 
 - Jsonnet: Add "JoinObjectArray" method.
