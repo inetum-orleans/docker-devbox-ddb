@@ -1,0 +1,14 @@
+traefik:
+  extra_services_config_template: file://extra_services_config_template.toml
+  extra_services:
+    api:
+      domain: sub.{{core.domain.sub}}.{{core.domain.ext}}
+      url: http://127.0.0.1
+    web:
+      rule: Host(`*.web.{{core.domain.sub}}.{{core.domain.ext}}`)
+      https: False
+      url: http://{{docker.debug.host}}:8080
+    redirect:
+      domain: secured.{{core.domain.sub}}.{{core.domain.ext}}
+      redirect_to_https: True
+      url: http://192.168.240.211:9999

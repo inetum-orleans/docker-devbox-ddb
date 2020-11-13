@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import re
 from typing import Dict
 
 from ddb.config import config
@@ -10,7 +11,18 @@ from ...action import Action, InitializableAction
 from ...cache.removal import RemovalCacheSupport
 from ...context import context
 from ...event import events
-from ...utils.file import write_if_different, copy_if_different, force_remove
+from ...utils.file import write_if_different, copy_if_different, force_remove, FileUtils
+
+
+def get_template(template: str) -> Template:
+    """
+    Retrieve the template object base on the input template string
+    :param template: the template
+    :return:
+    """
+    if re.compile('^(https?|file)://').match(template):
+        return Template(FileUtils.get_file_content(template))
+    return Template(template)
 
 
 class TraefikInstalllCertsAction(Action):
@@ -43,14 +55,13 @@ class TraefikInstalllCertsAction(Action):
         certificate_filename_target = os.path.join(certs_directory, certificate_filename)
         copy_if_different(certificate, certificate_filename_target, log=True)
 
-        ssl_config_template = Template(config.data.get('traefik.ssl_config_template'))
         config_data = dict(config.data)
         config_data['_local'] = {
             'certFile': '/'.join([mapped_certs_directory, certificate_filename]),
             'keyFile': '/'.join([mapped_certs_directory, private_key_filename])
         }
 
-        ssl_config = ssl_config_template.render(config_data)
+        ssl_config = get_template(config.data.get('traefik.ssl_config_template')).render(config_data)
 
         config_target = os.path.join(config_directory, "%s.ssl.toml" % (domain,))
         if write_if_different(config_target, ssl_config, 'r', 'w'):
@@ -142,7 +153,7 @@ class TraefikExtraServicesAction(InitializableAction):
         self.removal_cache_support.prepare()
 
         config_directory = config.data.get('traefik.config_directory')
-        config_template = Template(config.data.get('traefik.extra_services_config_template'))
+        config_template = get_template(config.data.get('traefik.extra_services_config_template'))
 
         for id_, extra_service_data, config_data in TraefikExtraServicesAction.get_extra_services():
             rendered_config = config_template.render(config_data)

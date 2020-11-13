@@ -107,6 +107,45 @@ class TestTraefikFeature:
                     expected = expected.replace(replace, files.get(file).get('replaces').get(replace))
             assert expected == Path(generated).read_text()
 
+    def test_extra_services_template(self, project_loader):
+        project_loader("extra-services-template")
+
+        features.register(CoreFeature())
+        features.register(TraefikFeature())
+        features.register(DockerFeature())
+        load_registered_features()
+
+        install_action = TraefikExtraServicesAction()
+        install_action.initialize()
+        install_action.execute()
+
+        api_toml = os.path.join(config.paths.home, "traefik", "config",
+                                "sub.project.test.extra-service.api.toml")
+        assert os.path.exists(api_toml)
+
+        api_toml_expected = Path(os.path.join(config.paths.home, "traefik", "config",
+                                              "sub.project.test.extra-service.api.expected.toml"))
+
+        assert api_toml_expected.read_text() == Path(api_toml).read_text()
+
+        web_toml = os.path.join(config.paths.home, "traefik", "config", "rule.project.test.extra-service.web.toml")
+        assert os.path.exists(web_toml)
+
+        web_toml_expected = Path(os.path.join(config.paths.home, "traefik", "config",
+                                              "rule.project.test.extra-service.web.expected.toml"))
+
+        assert web_toml_expected.read_text().replace('{{ip}}', config.data.get('docker.debug.host')) == Path(
+            web_toml).read_text()
+
+        secured_toml = os.path.join(config.paths.home, "traefik", "config",
+                                    "secured.project.test.extra-service.redirect.toml")
+        assert os.path.exists(secured_toml)
+
+        secured_toml_expected = Path(os.path.join(config.paths.home, "traefik", "config",
+                                                  "secured.project.test.extra-service.redirect.expected.toml"))
+
+        assert secured_toml_expected.read_text() == Path(secured_toml).read_text()
+
     def test_extra_services_redirect(self, project_loader):
         project_loader("extra-services-redirect")
 
