@@ -4,7 +4,8 @@ History
 1.2.3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Docker: Add configurations for `docker-compose.yml` generation 
+  (`file_version`, `service_init` and `service_context_root`).
 
 
 1.2.2 (2020-10-21)

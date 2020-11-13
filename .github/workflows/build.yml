@@ -1,4 +1,4 @@
-name: quality
+name: build
 on:
   push:
     branches: [ develop ]
@@ -17,10 +17,6 @@ jobs:
         with:
           docker_version: "19.03"
           docker_channel: "stable"
-#      - name: "Change Docker Pull MTU"
-#        run: |
-#          "echo '{\"mtu\": 1460}' | sudo dd of=/etc/docker/daemon.json"
-#          sudo service docker restart
 
       # Setup docker
       - name: Set up Python ${{ matrix.python-version }}
@@ -35,7 +31,7 @@ jobs:
         run: |
           mkdir -p $HOME/bin
           curl -Lo $HOME/bin/ytt https://github.com/k14s/ytt/releases/download/v0.26.0/ytt-linux-amd64
-          echo "::add-path::$HOME/bin"
+          echo "$HOME/bin" >> $GITHUB_PATH
           chmod +x $HOME/bin/ytt
 
       - name: "Git User config"
@@ -54,9 +50,7 @@ jobs:
       - run: coverage run --source=ddb -m pytest
       - run: python setup.py build
 
-      - uses: technote-space/workflow-conclusion-action@v2
       - name: Coveralls
         run: coveralls
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-        if: env.WORKFLOW_CONCLUSION == 'success'

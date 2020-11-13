@@ -9,6 +9,9 @@ local _docker_debug_disabled = std.extVar("docker.debug.disabled");
 local _docker_cache_from_image = std.extVar("docker.cache_from_image");
 local _docker_build_image_tag = std.extVar("docker.build_image_tag");
 local _docker_directory = std.extVar("docker.directory");
+local _docker_compose_file_version = std.extVar("docker.compose.file_version");
+local _docker_compose_service_init = std.extVar("docker.compose.service_init");
+local _docker_compose_service_context_root = std.extVar("docker.compose.service_context_root");
 local _docker_jsonnet_virtualhost_disabled = std.extVar("docker.jsonnet.virtualhost_disabled");
 local _docker_jsonnet_binary_disabled = std.extVar("docker.jsonnet.binary_disabled");
 local _docker_reverse_proxy_type = std.extVar("docker.reverse_proxy.type");
@@ -52,7 +55,7 @@ local path = {
 };
 
 local Service(restart_policy=_docker_restart_policy) = {
-    "init": true,
+    [ if _docker_compose_service_init then "init"]: true,
     "restart": restart_policy,
 };
 
@@ -68,9 +71,13 @@ local Build(name, image=name, cache_from_image=_docker_cache_from_image, directo
     "build": {
         [if (cache_from_image && (_docker_registry_name != null || _docker_registry_repository != null) != null) then "cache_from"]: [
             image_uri(image)
-        ],
-        "context": std.join("/", [directory, image])
-    },
+        ]
+    }
+    +
+    (if _docker_compose_service_context_root then {
+        "context": ".",
+        "dockerfile": std.join("/", [directory, image, "Dockerfile"])
+    } else {"context": std.join("/", [directory, image])}),
     [if (image != null && (_docker_registry_name != null || _docker_registry_repository != null)) then "image"]: image_uri(image)
 };
 
@@ -153,12 +160,13 @@ local Networks(services, network_names=_docker_reverse_proxy_network_names) = {
         )
 };
 
-local Compose(config={}, network_names=_docker_reverse_proxy_network_names, version="3.7") =
-  apply_disabled_services(config) + {
-    "version": version,
-    "networks": Networks(self.services, network_names),
-    "volumes": Volumes(self.services)
-  };
+local Compose(config={}, network_names=_docker_reverse_proxy_network_names, version=null) =
+    local effective_version = if version != null then version else _docker_compose_file_version;
+    apply_disabled_services(config) + {
+        "version": effective_version,
+        "networks": Networks(self.services, network_names),
+        "volumes": Volumes(self.services)
+    };
 
 local TraefikCertLabels(hostname, service_name, certresolver=null) = {
     [if certresolver != null then "traefik.http.routers." + service_name + "-tls.tls.certresolver"]: certresolver,
