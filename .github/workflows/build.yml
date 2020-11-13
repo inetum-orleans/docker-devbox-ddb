@@ -31,7 +31,7 @@ jobs:
         run: |
           mkdir -p $HOME/bin
           curl -Lo $HOME/bin/ytt https://github.com/k14s/ytt/releases/download/v0.26.0/ytt-linux-amd64
-          echo "::add-path::$HOME/bin"
+          echo "$HOME/bin" >> $GITHUB_PATH
           chmod +x $HOME/bin/ytt
 
       - name: "Git User config"
