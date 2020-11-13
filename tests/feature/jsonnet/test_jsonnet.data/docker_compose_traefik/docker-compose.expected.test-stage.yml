@@ -114,14 +114,31 @@ services:
     image: gfiorleans.azurecr.io/gli-biometrie/web
     init: true
     labels:
-      traefik.http.routers.gli-biometrie-api-tls.tls.certresolver: anothercertresolver
       traefik.enable: "true"
+      traefik.http.routers.gli-biometrie-api-tls.tls.certresolver: anothercertresolver
       traefik.http.routers.gli-biometrie-api-tls.rule: HostRegexp(`traefik.io`, `{subdomain:[a-z]+}.traefik.io`, ...)
       traefik.http.routers.gli-biometrie-api-tls.service: gli-biometrie-api
       traefik.http.routers.gli-biometrie-api-tls.tls: "true"
       traefik.http.routers.gli-biometrie-api.rule: HostRegexp(`traefik.io`, `{subdomain:[a-z]+}.traefik.io`, ...)
       traefik.http.routers.gli-biometrie-api.service: gli-biometrie-api
       traefik.http.services.gli-biometrie-api.loadbalancer.server.port: '80'
+      traefik.http.routers.gli-biometrie-path_prefix-tls.rule: Host(`api.biometrie.test`) && PathPrefix(`/path_prefix{regex:$$|/.*}`)
+      traefik.http.routers.gli-biometrie-path_prefix-tls.middlewares: gli-biometrie-path_prefix-stripprefix
+      traefik.http.routers.gli-biometrie-path_prefix-tls.service: gli-biometrie-path_prefix
+      traefik.http.routers.gli-biometrie-path_prefix-tls.tls: "true"
+      traefik.http.routers.gli-biometrie-path_prefix-tls.tls.certresolver: anothercertresolver
+      traefik.http.routers.gli-biometrie-path_prefix.rule: Host(`api.biometrie.test`) && PathPrefix(`/path_prefix{regex:$$|/.*}`)
+      traefik.http.routers.gli-biometrie-path_prefix.service: gli-biometrie-path_prefix
+      traefik.http.routers.gli-biometrie-path_prefix.middlewares: gli-biometrie-path_prefix-stripprefix
+      traefik.http.services.gli-biometrie-path_prefix.loadbalancer.server.port: '80'
+      traefik.http.routers.gli-biometrie-path_prefix-redirect_to_path_prefix-tls.middlewares: gli-biometrie-path_prefix-redirect_to_path_prefix
+      traefik.http.routers.gli-biometrie-path_prefix-redirect_to_path_prefix-tls.rule: Host(`api.biometrie.test`)
+      traefik.http.routers.gli-biometrie-path_prefix-redirect_to_path_prefix-tls.tls: "true"
+      traefik.http.routers.gli-biometrie-path_prefix-redirect_to_path_prefix.middlewares: gli-biometrie-path_prefix-redirect_to_path_prefix
+      traefik.http.routers.gli-biometrie-path_prefix-redirect_to_path_prefix.rule: Host(`api.biometrie.test`)
+      traefik.http.middlewares.gli-biometrie-path_prefix-stripprefix.stripPrefix.prefixes: /path_prefix
+      traefik.http.middlewares.gli-biometrie-path_prefix-redirect_to_path_prefix.redirectregex.regex: ^https?://api.biometrie.test/?$$
+      traefik.http.middlewares.gli-biometrie-path_prefix-redirect_to_path_prefix.redirectregex.replacement: /path_prefix
     networks:
       - default
       - reverse-proxy
