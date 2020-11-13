@@ -71,14 +71,13 @@ local Build(name, image=name, cache_from_image=_docker_cache_from_image, directo
     "build": {
         [if (cache_from_image && (_docker_registry_name != null || _docker_registry_repository != null) != null) then "cache_from"]: [
             image_uri(image)
-        ],
-        "context": std.join("/", [directory, image])
+        ]
     }
     +
     (if _docker_compose_service_context_root then {
         "context": ".",
         "dockerfile": std.join("/", [directory, image, "Dockerfile"])
-    } else {}),
+    } else {"context": std.join("/", [directory, image])}),
     [if (image != null && (_docker_registry_name != null || _docker_registry_repository != null)) then "image"]: image_uri(image)
 };
 
