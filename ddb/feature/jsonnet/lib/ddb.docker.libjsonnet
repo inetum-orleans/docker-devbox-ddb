@@ -241,17 +241,19 @@ local NoVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_
 
 local VirtualHost = if _docker_reverse_proxy_type == "traefik" then TraefikVirtualHost else NoVirtualHost;
 
+// XDebug 3 configuration has changed.
+// Default TCP port has changed from 9000 to 9003, but we still configure it to 9000 to avoid confusion while configuring code editors.
 local XDebug(version=null) =
-local xdebug2_configs = ["remote_enable=on","remote_autostart=off", "idekey=" + _core_project_name, "remote_host=" + _docker_debug_host];
-local xdebug3_configs = ["client_host=" + _docker_debug_host, "client_port=9000"];
+local xdebug2_config = ["remote_enable=on","remote_autostart=off", "idekey=" + _core_project_name, "remote_host=" + _docker_debug_host];
+local xdebug3_config = ["client_host=" + _docker_debug_host, "client_port=9000"];
 {
     [if !_docker_debug_disabled then "environment"]: {
-        [if !_docker_debug_disabled && (version == null || version == 2) then "PHP_IDE_CONFIG"]: "serverName=" + _core_project_name,
-        [if !_docker_debug_disabled && (version == null || version == 3) then "XDEBUG_MODE"]: "debug",
-        [if !_docker_debug_disabled && (version == null || version == 3) then "XDEBUG_SESSION"]: _core_project_name,
-        [if !_docker_debug_disabled && (version == 2) then "XDEBUG_CONFIG"]: std.join(' ', xdebug2_configs),
-        [if !_docker_debug_disabled && (version == 3) then "XDEBUG_CONFIG"]: std.join(' ', xdebug3_configs),
-        [if !_docker_debug_disabled && (version == null) then "XDEBUG_CONFIG"]: std.join(' ', (xdebug2_configs + xdebug3_configs))
+        [if version == null || version == 2 then "PHP_IDE_CONFIG"]: "serverName=" + _core_project_name,
+        [if version == null || version == 3 then "XDEBUG_MODE"]: "debug",
+        [if version == null || version == 3 then "XDEBUG_SESSION"]: _core_project_name,
+        [if version == 2 then "XDEBUG_CONFIG"]: std.join(' ', xdebug2_config),
+        [if version == 3 then "XDEBUG_CONFIG"]: std.join(' ', xdebug3_config),
+        [if version == null then "XDEBUG_CONFIG"]: std.join(' ', (xdebug2_config + xdebug3_config))
     }
 };
 
