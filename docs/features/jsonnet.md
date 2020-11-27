@@ -186,10 +186,10 @@ In ddb, it is mainly use for `fixuid` automatic integration
 !!! abstract "Parameters"
     - `uid`: The uid to use
         - type: string
-        - default: : `docker.user.uid` ddb configuration value
+        - default: `docker.user.uid` ddb configuration value
     - `gid`: The gid to use
         - type: string
-        - default: : `docker.user.gid` ddb configuration value
+        - default: `docker.user.gid` ddb configuration value
 
 !!! example 
     ```json 
@@ -203,12 +203,21 @@ In ddb, it is mainly use for `fixuid` automatic integration
 ### XDebug (PHP)
 This function generates `environment` configuration used for XDebug (PHP Debugger).
 
-There is not parameter, but it will generate `PHP_IDE_CONFIG` and `XDEBUG_CONFIG` if `docker.debug.disabled` 
-ddb configuration is set to `False`.
+If `docker.debug.disabled` is set to False, the function will return nothing.
 
-For the `serverName` and `idekey`, it will be set with the ddb configuration `core.project.name`.
+It will use the following `ddb` configuration to generate appropriate `environment`:
 
-For the `remote_host`, it will be set with the ddb configuration `docker.debug.host`.
+* `core.project.name`: 
+    * XDebug 2: set `serverName` and `idekey`; 
+    * XDebug 3: set `XDEBUG_SESSION`;
+* `docker.debug.host`: 
+    * XDebug 2: set `remote_host`; 
+    * XDebug 3: set `client_host`;
+
+!!! abstract "Parameters"
+    - `version`: The XDebug version to configure
+        - type: number (2 or 3)
+        - default: 2
 
 !!! example 
     ```json 

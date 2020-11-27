@@ -1,0 +1,6 @@
+core:
+  project:
+    name: no_debug
+docker:
+  debug:
+    disabled: true

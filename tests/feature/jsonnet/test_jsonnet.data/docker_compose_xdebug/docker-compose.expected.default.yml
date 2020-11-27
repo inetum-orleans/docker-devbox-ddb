@@ -1,0 +1,13 @@
+version: '3.7'
+services:
+  php:
+    environment:
+      PHP_IDE_CONFIG: serverName=default
+      XDEBUG_CONFIG: remote_enable=on remote_autostart=off idekey=default remote_host=%docker.debug.host%
+    image: php:7.4-fpm
+    init: true
+    restart: "no"
+    user: %uid%:%gid%
+
+networks: { }
+volumes: { }

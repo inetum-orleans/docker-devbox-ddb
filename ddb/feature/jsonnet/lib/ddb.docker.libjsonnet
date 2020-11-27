@@ -241,12 +241,21 @@ local NoVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_
 
 local VirtualHost = if _docker_reverse_proxy_type == "traefik" then TraefikVirtualHost else NoVirtualHost;
 
-local XDebug() = {
+local XDebug2() = {
     [if !_docker_debug_disabled then "environment"]: {
         "PHP_IDE_CONFIG": "serverName=" + _core_project_name,
         "XDEBUG_CONFIG": "remote_enable=on remote_autostart=off idekey=" + _core_project_name + " remote_host=" + _docker_debug_host
     }
 };
+local XDebug3() = {
+    [if !_docker_debug_disabled then "environment"]: {
+        "XDEBUG_MODE": "debug",
+        "XDEBUG_SESSION": _core_project_name,
+        "XDEBUG_CONFIG": "client_host=" + _docker_debug_host + " client_port=9000"
+    }
+};
+
+local XDebug(version=2) = (if version == 3 then XDebug3() else XDebug2());
 
 local envIndex(env=_core_env_current) =
     local indexes = std.find(env, _core_env_available);

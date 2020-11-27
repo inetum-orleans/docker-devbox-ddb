@@ -1,0 +1,10 @@
+version: '3.7'
+services:
+  php:
+    image: php:7.4-fpm
+    init: true
+    restart: "no"
+    user: %uid%:%gid%
+
+networks: {}
+volumes: {}
