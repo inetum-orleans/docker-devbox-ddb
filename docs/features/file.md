@@ -11,7 +11,7 @@ Feature Configuration
     - type: boolean
     - default: False
               
-- `excluded`: The list of directories or files to exclude from processing
+- `excludes`: The list of directories or files to exclude from processing
     - type: array of string
     - default: `['**/_*', '**/.git', '**/node_modules', '**/vendor']`
     

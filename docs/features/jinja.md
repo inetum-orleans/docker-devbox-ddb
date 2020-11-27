@@ -11,7 +11,7 @@ Feature Configuration
 - `disabled`: Definition of the status of the feature. If set to True, all gitignore automations will be disabled.
     - type: boolean
     - default: False
-- `excluded`: A list of file or filename template to exclude from the this feature processing
+- `excludes`: A list of file or filename template to exclude from the this feature processing
     - type: array of string
     - default: []
 - `extensions`: TODO
@@ -42,7 +42,7 @@ Jinja template processing
 --- 
 
 When running the `ddb configuration` command, ddb will look for files matching the list of `includes` configuration and 
-not in the `excluded` list.
+not in the `excludes` list.
 
 For each file, it will be processed into his final form. 
 

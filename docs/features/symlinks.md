@@ -11,7 +11,7 @@ Feature Configuration
 - `disabled`: Definition of the status of the feature. If set to True, this feature will not be triggered.
     - type: boolean
     - default: False
-- `excluded`: The list of file to exclude from the symlink creation.
+- `excludes`: The list of file to exclude from the symlink creation.
     - type: array of string
     - default: []
 - `includes`: The source file format to search for. If not override, it is generated using the `suffixes` list.
@@ -20,7 +20,7 @@ Feature Configuration
 - `suffixes`: The list of suffixes to generate symlink for. If not override, it is generated using the `core.env.current`
     configuration.
     - type: array of string
-    - default: ['.<core.env.current>']
+    - default: ['<core.env.current>']
 
 !!! example "Configuration."
     ```yaml
