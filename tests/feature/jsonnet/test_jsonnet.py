@@ -413,14 +413,15 @@ class TestJsonnetAction:
     @pytest.mark.parametrize("variant", [
         "default",
         "no_debug",
-        "xdebug3",
     ])
-    def test_docker_compose_traefik_defaults(self, project_loader, variant):
+    def test_docker_compose_xdebug(self, project_loader, variant):
         def before_load_config():
             os.rename("ddb.%s.yml" % variant, "ddb.yml")
             os.rename("docker-compose.expected.%s.yml" % variant, "docker-compose.expected.yml")
 
         project_loader("docker_compose_xdebug", before_load_config)
+
+        print(os.getcwd())
 
         features.register(CoreFeature())
         features.register(FileFeature())

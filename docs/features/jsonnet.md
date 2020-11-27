@@ -215,9 +215,9 @@ It will use the following `ddb` configuration to generate appropriate `environme
     * XDebug 3: set `client_host`;
 
 !!! abstract "Parameters"
-    - `version`: The XDebug version to configure
-        - type: number (2 or 3)
-        - default: 2
+    - `version`: The XDebug version to configure. If set to null, both XDebug 2 and 3 configurations will be set.
+        - type: number (2 or 3) or null
+        - default: null
 
 !!! example 
     ```json 

@@ -52,7 +52,7 @@ local services = {
 }
 
 + {
-    "php": ddb.Build("php") + ddb.User() + ddb.XDebug() {
+    "php": ddb.Build("php") + ddb.User() + ddb.XDebug(version=2) {
         "volumes": [
             "php-composer-cache:/composer/cache:rw",
             "php-composer-vendor:/composer/vendor:rw",

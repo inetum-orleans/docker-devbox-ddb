@@ -5,8 +5,14 @@ local password = "biometrie";
 
 ddb.Compose({
 	"services": {
-		"php": ddb.Image("php:7.4-fpm")
+		"php-default": ddb.Image("php:7.4-fpm")
 		       + ddb.User()
-		       + (if std.extVar('core.project.name') == 'xdebug3' then ddb.XDebug(version=3) else ddb.XDebug()),
+		       + ddb.XDebug(),
+		"php-xdebug2": ddb.Image("php:7.4-fpm")
+		       + ddb.User()
+		       + ddb.XDebug(version=2),
+		"php-xdebug3": ddb.Image("php:7.4-fpm")
+		       + ddb.User()
+		       + ddb.XDebug(version=3),
 	}
 })
