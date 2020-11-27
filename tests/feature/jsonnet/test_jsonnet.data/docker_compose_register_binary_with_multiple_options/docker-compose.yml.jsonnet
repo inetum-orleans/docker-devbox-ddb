@@ -95,7 +95,7 @@ ddb.Compose({
 		},
 		"php": ddb.Build("php")
 		       + ddb.User()
-		       + ddb.XDebug()
+		       + ddb.XDebug(version=2)
 		       + ddb.Binary("php", "/var/www/html")
                + ddb.Binary("composer", "/var/www/html", "composer") {
 			"volumes": [

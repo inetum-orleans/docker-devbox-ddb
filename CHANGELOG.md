@@ -4,8 +4,7 @@ History
 1.2.4 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- JSonnet: Add XDebug Version 3 support.
 
 1.2.3 (2020-11-13)
 ------------------

@@ -241,10 +241,17 @@ local NoVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_
 
 local VirtualHost = if _docker_reverse_proxy_type == "traefik" then TraefikVirtualHost else NoVirtualHost;
 
-local XDebug() = {
+local XDebug(version=null) =
+local xdebug2_configs = ["remote_enable=on","remote_autostart=off", "idekey=" + _core_project_name, "remote_host=" + _docker_debug_host];
+local xdebug3_configs = ["client_host=" + _docker_debug_host, "client_port=9000"];
+{
     [if !_docker_debug_disabled then "environment"]: {
-        "PHP_IDE_CONFIG": "serverName=" + _core_project_name,
-        "XDEBUG_CONFIG": "remote_enable=on remote_autostart=off idekey=" + _core_project_name + " remote_host=" + _docker_debug_host
+        [if !_docker_debug_disabled && (version == null || version == 2) then "PHP_IDE_CONFIG"]: "serverName=" + _core_project_name,
+        [if !_docker_debug_disabled && (version == null || version == 3) then "XDEBUG_MODE"]: "debug",
+        [if !_docker_debug_disabled && (version == null || version == 3) then "XDEBUG_SESSION"]: _core_project_name,
+        [if !_docker_debug_disabled && (version == 2) then "XDEBUG_CONFIG"]: std.join(' ', xdebug2_configs),
+        [if !_docker_debug_disabled && (version == 3) then "XDEBUG_CONFIG"]: std.join(' ', xdebug3_configs),
+        [if !_docker_debug_disabled && (version == null) then "XDEBUG_CONFIG"]: std.join(' ', (xdebug2_configs + xdebug3_configs))
     }
 };
 

@@ -409,3 +409,42 @@ class TestJsonnetAction:
             expected = yaml.load(expected_data, yaml.SafeLoader)
 
         assert rendered == expected
+
+    @pytest.mark.parametrize("variant", [
+        "default",
+        "no_debug",
+    ])
+    def test_docker_compose_xdebug(self, project_loader, variant):
+        def before_load_config():
+            os.rename("ddb.%s.yml" % variant, "ddb.yml")
+            os.rename("docker-compose.expected.%s.yml" % variant, "docker-compose.expected.yml")
+
+        project_loader("docker_compose_xdebug", before_load_config)
+
+        print(os.getcwd())
+
+        features.register(CoreFeature())
+        features.register(FileFeature())
+        features.register(DockerFeature())
+        features.register(JsonnetFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
+
+        action = FileWalkAction()
+        action.initialize()
+        action.execute()
+
+        assert os.path.exists('docker-compose.yml')
+        with open('docker-compose.yml', 'r') as f:
+            rendered = yaml.load(f.read(), yaml.SafeLoader)
+
+        with open('docker-compose.expected.yml', 'r') as f:
+            expected_data = f.read()
+
+            expected_data = expected_data.replace("%uid%", str(config.data.get('docker.user.uid')))
+            expected_data = expected_data.replace("%gid%", str(config.data.get('docker.user.gid')))
+            expected_data = expected_data.replace("%docker.debug.host%", str(config.data.get('docker.debug.host')))
+
+            expected = yaml.load(expected_data, yaml.SafeLoader)
+
+        assert rendered == expected
