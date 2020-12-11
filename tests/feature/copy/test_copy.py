@@ -51,3 +51,14 @@ class TestCopyFeature:
         assert os.path.exists(os.path.join('.docker', 'service1', 'fixuid-0.5-linux-amd64.tar.gz'))
         assert os.path.exists(os.path.join('.docker', 'service2', 'fixuid-0.5-linux-amd64.tar.gz'))
         assert not os.path.exists(os.path.join('.docker', '.not-a-service', 'fixuid-0.5-linux-amd64.tar.gz'))
+
+    def test_copy_no_dispatch(self, project_loader):
+        project_loader("copy-no-dispatch")
+
+        features.register(CopyFeature())
+        load_registered_features()
+        register_default_caches()
+
+        action = CopyAction()
+        action.execute()
+        assert os.path.exists(os.path.join('.', 'some-cert.crt'))

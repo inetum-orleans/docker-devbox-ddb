@@ -10,7 +10,6 @@ from ddb.config import config
 from ddb.event import events
 from ddb.utils.file import write_if_different, copy_if_different
 
-
 def copy_from_url(source, destination, filename=None):
     """
     Copy from an URL source.
@@ -35,22 +34,22 @@ def get_dispatch_directories(dispatch):
     Get dispatch directories from dispatch glob
     """
     dispatch_directories = []
-
-    for dispatch_expr in dispatch:
-        if dispatch_expr.startswith("!"):
-            matches = glob.glob(dispatch_expr[1:])
-            dirs = [match for match in matches if os.path.isdir(match)]
-            for to_remove in dirs:
-                try:
-                    dispatch_directories.remove(to_remove)
-                except ValueError:
-                    pass
-        else:
-            matches = glob.glob(dispatch_expr)
-            dirs = [match for match in matches if os.path.isdir(match)]
-            for to_add in dirs:
-                if to_add not in dispatch_directories:
-                    dispatch_directories.append(to_add)
+    if dispatch:
+        for dispatch_expr in dispatch:
+            if dispatch_expr.startswith("!"):
+                matches = glob.glob(dispatch_expr[1:])
+                dirs = [match for match in matches if os.path.isdir(match)]
+                for to_remove in dirs:
+                    try:
+                        dispatch_directories.remove(to_remove)
+                    except ValueError:
+                        pass
+            else:
+                matches = glob.glob(dispatch_expr)
+                dirs = [match for match in matches if os.path.isdir(match)]
+                for to_add in dirs:
+                    if to_add not in dispatch_directories:
+                        dispatch_directories.append(to_add)
 
     return dispatch_directories
 
