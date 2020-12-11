@@ -1,0 +1,5 @@
+core:
+  configuration:
+    extra: [ 'some.custom.yml', 'another.config.file' ]
+app:
+  value: default

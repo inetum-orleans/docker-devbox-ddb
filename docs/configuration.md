@@ -102,7 +102,20 @@ configuration settings, please check the documentation of related feature.
     
     When activating the environment `$(ddb activate)` with [shell feature (Environment activation)](#environment-activation), 
     the whole configuration is also exported as environment variables using the same naming convention.
-    
+
+!!! info "Extra configuration files"
+    You may add additional configuration files using core.configuration.extra_files configuration property into default 
+    configuration files.
+
+    ```yml
+    core:
+      configuration:
+        extra: ['ddb.custom.yml']
+    ```
+
+    This will load `ddb.custom.yml` configuration file from each supported configuration directories. `ddb.local.yml` 
+    still has the priority other those extra configuration files.
+
 !!! abstract "Default configuration"
     ```ddb config``` can provide default configuration if `ddb.yml` configuration file is empty.
 

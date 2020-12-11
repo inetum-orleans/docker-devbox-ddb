@@ -55,3 +55,14 @@ class TestConfig:
         assert not os.path.islink("ddb.yml")
 
         reset()
+
+    def test_config_extra_filenames(self, project_loader):
+        project_loader("extra-filenames")
+
+        main(["configure"], reset_disabled=True)
+
+        assert config.data.get('another') is True
+        assert config.data.get('some') is True
+        assert config.data.get('app.value') == 'local'
+
+        reset()

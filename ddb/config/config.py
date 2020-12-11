@@ -119,7 +119,10 @@ class Config:  # pylint:disable=too-many-instance-attributes
                 continue
             for basename in self.filenames:
                 for ext in self.extensions:
-                    file = os.path.join(path, basename + '.' + ext)
+                    if basename.endswith('.' + ext) and os.path.exists(os.path.join(path, basename)):
+                        file = os.path.join(path, basename)
+                    else:
+                        file = os.path.join(path, basename + '.' + ext)
                     ret.append(file)
         return ret
 

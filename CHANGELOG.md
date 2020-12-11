@@ -4,7 +4,8 @@ History
 1.2.4 (unreleased)
 ------------------
 
-- JSonnet: Add XDebug Version 3 support.
+- Jsonnet: Add XDebug Version 3 support.
+- Configuration: Add `core.configuration.extra` to load additional configuration files.
 
 1.2.3 (2020-11-13)
 ------------------

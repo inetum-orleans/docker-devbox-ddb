@@ -47,6 +47,13 @@ class ProcessSchema(Schema):
     append = fields.Raw(required=False, allow_none=True, default=None)  # List[str] or str splitted with shlex
 
 
+class ConfigurationSchema(Schema):
+    """
+    Process settings for core feature schema.
+    """
+    extra = fields.List(fields.String(), required=False)
+
+
 class CoreFeatureSchema(FeatureSchema):
     """
     Core feature schema.
@@ -57,3 +64,4 @@ class CoreFeatureSchema(FeatureSchema):
     os = fields.String(required=True, default=os.name)
     path = fields.Nested(PathSchema(), default=PathSchema())
     process = fields.Dict(fields.String(), fields.Nested(ProcessSchema()), default={})  # Process binary mappings
+    configuration = fields.Nested(ConfigurationSchema(), default=ConfigurationSchema())

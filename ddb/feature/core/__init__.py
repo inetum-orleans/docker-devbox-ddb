@@ -92,7 +92,12 @@ class CoreFeature(Feature):
         current = config.data.get('core.env.current')
 
         filenames = list(config.filenames)
-        filenames.insert(1, filenames[0] + '.' + current)
+        filenames.insert(len(filenames) - 1, filenames[0] + '.' + current)
+
+        extra = config.data.get('core.configuration.extra')
+        if extra:
+            for extra_item in extra:
+                filenames.insert(len(filenames) - 1, extra_item)
 
         config.clear()
         config.filenames = tuple(filenames)
