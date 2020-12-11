@@ -1,0 +1,3 @@
+copy:
+  specs:
+    - source: "ca-certificates/some-*.crt"
