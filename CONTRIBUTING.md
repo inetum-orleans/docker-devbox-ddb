@@ -32,6 +32,94 @@ Github personnal access token can be [here](https://github.com/settings/tokens).
 docker run --rm -it -p 8000:8000 --user $(id -u):$(id -g) -v ${PWD}/..:/docs -v ${HOME}/.netrc:/.netrc:ro --workdir=/docs/ddb squidfunk/mkdocs-material gh-deploy
 ```
 
+## Configure development environment (Windows)
+
+- Clone this repository and cd into it
+
+You should use [pyenv-win](https://github.com/pyenv-win/pyenv-win) to install and manage your python versions on Windows.
+
+- Install python 3.7.x
+
+```
+pyenv install 3.7.9
+pyenv local 3.7.9
+pyenv rehash
+python --version  # Python 3.7.9
+```
+
+- Create virtualenv
+
+```
+python -m venv %USERPROFILE%\.pyenv\pyenv-win\versions\3.7.9-ddb
+pyenv local 3.7.9-ddb
+pyenv rehash
+python --version  # Python 3.7.9
+```
+
+- Install dependencies
+
+```
+pip install whl/jsonnet-0.15.0-cp37-cp37m-win_amd64.whl
+pip install -r requirements-dev.txt
+```
+
+- Download [ytt](https://get-ytt.io/) binary and make it available in PATH
+
+- Check development version is available in your virtualenv
+
+```
+# On windows, use `python -m ddb` instead of ddb only
+python -m ddb --version  # Should display a version ending with .dev0
+```
+
+- Run tests with pytest
+
+```
+pytest
+```
+
+## Configure development environment (Linux)
+
+You should use [pyenv](https://github.com/pyenv/pyenv) to install and manage your python versions on Linux.
+
+- Clone this repository and cd into it
+
+- Install python 3.7.x
+
+```
+pyenv install 3.7.9
+pyenv local 3.7.9
+python --version  # Python 3.7.9
+```
+
+- Create virtualenv
+
+```
+pyenv virtualenv 3.7.9 3.7.9-ddb
+pyenv local 3.7.9-ddb
+python --version  # Python 3.7.9
+```
+
+- Install dependencies
+
+```
+pip install -r requirements-dev.txt
+```
+
+- Download [ytt](https://get-ytt.io/) binary and make it available in PATH
+
+- Check development version is available in your virtualenv
+
+```
+ddb --version  # Should display a version ending with .dev0
+```
+
+- Run tests with pytest
+
+```
+pytest
+```
+
 ## Build and release process
 
 The release process requires docker with custom images of `cdrx/pyinstaller-linux` and `cdrx/pyinstaller-windows`.
