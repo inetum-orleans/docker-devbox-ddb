@@ -1,0 +1,5 @@
+core:
+  env:
+    available:
+      merge: insert
+      value: [1, 'prod', 'stage']

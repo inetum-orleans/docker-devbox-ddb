@@ -62,8 +62,10 @@ configuration settings, please check the documentation of related feature.
     - `override` *(default)*
     - `append`
     - `prepend`
+    - `insert`
     - `append_if_missing`
     - `prepend_if_missing`
+    - `insert_if_missing`
     
     For objects, you may use the following merge strategies:
     

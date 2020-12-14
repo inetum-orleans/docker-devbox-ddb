@@ -35,6 +35,16 @@ class TestConfig:
 
         reset()
 
+    def test_config_deep_custom_strategy(self, project_loader):
+        project_loader("deep-local-custom-strategy")
+
+        main(["configure"], reset_disabled=True)
+
+        assert config.data.get('app.deep.disabled_services') == ['python', 'gunicorn', 'another']
+        assert config.data.get('app.deep.another_strategy') == ['another', 'python', 'gunicorn']
+
+        reset()
+
     def test_config_env_ddb(self, project_loader):
         project_loader("env-ddb")
 
@@ -64,5 +74,47 @@ class TestConfig:
         assert config.data.get('another') is True
         assert config.data.get('some') is True
         assert config.data.get('app.value') == 'local'
+
+        reset()
+
+    def test_config_merge_default(self, project_loader):
+        project_loader("merge-default")
+
+        main(["configure"], reset_disabled=True)
+
+        assert config.data.get('core.env.current') == 'dev-services'
+        assert config.data.get('core.env.available') == ['prod', 'stage', 'ci', 'dev', 'dev-services']
+
+        reset()
+
+    def test_config_merge_insert_strategy(self, project_loader):
+        project_loader("merge-insert-strategy")
+
+        main(["configure"], reset_disabled=True)
+
+        assert config.data.get('core.env.current') == 'dev'
+        assert config.data.get('core.env.available') == ['prod', 'stage', 'ci', 'dev-services', 'dev-services2', 'dev']
+
+        reset()
+
+    def test_config_merge_insert_strategy2(self, project_loader):
+        project_loader("merge-insert-strategy2")
+
+        main(["configure"], reset_disabled=True)
+
+        assert config.data.get('core.env.current') == 'dev'
+        assert config.data.get('core.env.available') == ['prod', 'prod-services', 'prod-services2', 'stage', 'ci',
+                                                         'dev']
+
+        reset()
+
+    def test_config_merge_insert_strategy3(self, project_loader):
+        project_loader("merge-insert-strategy3")
+
+        main(["configure"], reset_disabled=True)
+
+        assert config.data.get('core.env.current') == 'dev'
+        assert config.data.get('core.env.available') == ['prod', 'prod', 'stage', 'stage', 'ci',
+                                                         'dev']
 
         reset()

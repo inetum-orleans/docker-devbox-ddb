@@ -1,7 +1,6 @@
 import os
 
 import pytest
-
 from ddb.__main__ import load_registered_features, register_actions_in_event_bus
 from ddb.feature import features
 from ddb.feature.core import CoreFeature

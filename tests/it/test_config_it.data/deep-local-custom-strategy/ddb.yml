@@ -1,0 +1,4 @@
+app:
+  deep:
+    disabled_services: ['python', 'gunicorn']
+    another_strategy: ['python', 'gunicorn']

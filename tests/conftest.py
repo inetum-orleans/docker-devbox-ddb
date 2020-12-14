@@ -8,12 +8,12 @@ from typing import Callable, Optional
 import pytest
 from _pytest.fixtures import FixtureRequest
 from _pytest.tmpdir import TempPathFactory
+from ddb.__main__ import reset, configure_logging
+from ddb.config import Config
 from pytest_mock import MockerFixture
 from verboselogs import SPAM
 
-from ddb.__main__ import reset, configure_logging
-from ddb.config import Config
-from .utilstest import load_config
+from .utilstest import init_config_paths, load_config
 
 pytest_plugins = ["docker_compose"]
 
@@ -34,17 +34,9 @@ def data_dir(global_data_dir: str, request: FixtureRequest) -> str:
 
 
 @pytest.fixture()
-def config_loader(data_dir: str) -> Callable[[Optional[str]], Config]:
-    def load(name: str = None):
-        return load_config(data_dir, name)
-
-    return load
-
-
-@pytest.fixture()
 def project_loader(data_dir: str, tmp_path_factory: TempPathFactory, request: FixtureRequest) -> Callable[
     [Optional[str]], Config]:
-    def load(name: str = None, before_load_config=None, config_provider=load_config):
+    def load(name: str = None, before_load_config=None, config_provider=init_config_paths):
         root_dir = os.path.join(data_dir, name) if name else data_dir
 
         tmp_path = tmp_path_factory.mktemp(request.function.__name__)  # type: Path

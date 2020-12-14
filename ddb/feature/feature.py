@@ -3,7 +3,7 @@ from abc import ABC
 from os import linesep
 from typing import ClassVar, Iterable, Union
 
-from dotty_dict import Dotty
+from dotty_dict import Dotty, dotty
 from marshmallow import ValidationError
 
 from .schema import FeatureSchema
@@ -72,15 +72,35 @@ class Feature(RegistryObject, ABC):  # pylint:disable=abstract-method
         """
         return []
 
-    def configure(self):
+    def configure(self, bootstrap=False):
         """
         Configure this feature.
         """
-        schema = self.schema()
+        feature_config = config.data.get(self.name)
         try:
-            config.sanitize_and_validate(schema, self.name, self._configure_defaults)
+            valid_feature_config = self.validate_feature_configuration(feature_config, bootstrap)
         except ValidationError as err:
             raise FeatureConfigurationValidationError(self, err) from err
+        config.data[self.name] = valid_feature_config
+
+    def validate_feature_configuration(self, feature_config: Dotty, bootstrap=False):
+        """
+        Sanitize and validate using given schema part of the configuration.
+        """
+        schema = self.schema()
+        raw_feature_config = feature_config
+
+        if not raw_feature_config:
+            raw_feature_config = {}
+        feature_config = schema.dump(raw_feature_config)
+
+        if not bootstrap:
+            self._configure_defaults(dotty(feature_config))
+
+            feature_config = schema.load(feature_config)
+        feature_config = config.apply_environ_overrides(feature_config, config.env_override_prefix + "_" + self.name)
+
+        return feature_config
 
     def _configure_defaults(self, feature_config: Dotty):
         """

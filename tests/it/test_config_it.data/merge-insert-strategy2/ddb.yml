@@ -1,0 +1,5 @@
+core:
+  env:
+    available:
+      merge: insert_if_missing
+      value: [1, 'prod-services', 'prod-services2']

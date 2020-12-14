@@ -4,13 +4,12 @@ from argparse import Namespace
 from collections import namedtuple
 from os.path import exists
 from pathlib import Path
-from typing import Callable, Any, Union, Iterable, Dict
+from typing import Union, Iterable, Dict
 
 import yaml
+from dotty_dict import dotty
+
 from ddb.config.merger import config_merger
-from deepmerge import always_merger
-from dotty_dict import dotty, Dotty
-from marshmallow import Schema
 
 ConfigPaths = namedtuple('ConfigPaths', ['ddb_home', 'home', 'project_home'])
 
@@ -76,6 +75,7 @@ class Config:  # pylint:disable=too-many-instance-attributes
         self.cwd = cwd
         self.args = args if args else Namespace()
         self.unknown_args = unknown_args if unknown_args else []
+        self.env_key = 'env'
 
     def reset(self, *args, **kwargs):
         """
@@ -126,21 +126,27 @@ class Config:  # pylint:disable=too-many-instance-attributes
                     ret.append(file)
         return ret
 
-    def read(self, env_key='env'):
+    def read(self, defaults=None, files=None):
         """
-        Read configuration data from files. Variable in 'env_key' key will be placed loaded as environment variables.
+        Read configuration data from files.
         """
-        loaded_data = {} if Config.defaults is None else dict(Config.defaults)
+        if defaults is None:
+            loaded_data = {}
+        else:
+            loaded_data = dict(defaults)
 
-        for file in self.files:
+        if files is None:
+            files = self.files
+
+        for file in files:
             if exists(file):
                 with open(file, 'rb') as stream:
                     file_data = yaml.load(stream, Loader=yaml.FullLoader)
                     if file_data:
                         loaded_data = config_merger.merge(loaded_data, file_data)
 
-        if env_key in loaded_data:
-            env = loaded_data.pop(env_key)
+        if self.env_key in loaded_data:
+            env = loaded_data.pop(self.env_key)
             if env:
                 for (name, value) in env.items():
                     os.environ[name] = value
@@ -151,34 +157,17 @@ class Config:  # pylint:disable=too-many-instance-attributes
         """
         Load configuration data from readen files.
         """
-        self.loaded_data = dict(data)
-        self.data = dotty(always_merger.merge(self.data, data))
+        self.data = dotty(config_merger.merge(dict(self.data), data))
 
-    def load(self, env_key='env'):
+    def load(self, defaults=None, files=None):
         """
         Load configuration data from files. Variable in 'env_key' key will be placed loaded as environment variables.
         """
-        self.load_from_data(self.read(env_key))
-
-    def sanitize_and_validate(self, schema: Schema, key: str, auto_configure: Callable[[Dotty], Any] = None):
-        """
-        Sanitize and validate using given schema part of the configuration given by configuration key.
-        """
-
-        raw_feature_config = self.data.get(key)
-
-        if not raw_feature_config:
-            raw_feature_config = {}
-        feature_config = schema.dump(raw_feature_config)
-
-        feature_config = schema.dump(feature_config)
-
-        if auto_configure:
-            auto_configure(dotty(feature_config))
-
-        feature_config = schema.load(feature_config)
-        feature_config = self.apply_environ_overrides(feature_config, self.env_override_prefix + "_" + key)
-        self.data[key] = feature_config
+        defaults_to_apply = {} if Config.defaults is None else dict(Config.defaults)
+        if defaults:
+            # Config.defaults should have the priority over given defaults.
+            defaults_to_apply = config_merger.merge(defaults, defaults_to_apply)
+        self.load_from_data(self.read(defaults_to_apply, files))
 
     def apply_environ_overrides(self, data, prefix=None):
         """

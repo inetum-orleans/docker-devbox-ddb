@@ -11,11 +11,8 @@ from gettext import gettext as _
 from importlib import import_module
 from typing import Optional, Sequence, Iterable, Callable, Union, List
 
-import pkg_resources
 import verboselogs
 from colorlog import default_log_colors, ColoredFormatter
-from toposort import toposort_flatten
-
 from ddb import __version__
 from ddb.action import actions
 from ddb.action.action import EventBinding, Action, WatchSupport
@@ -30,50 +27,14 @@ from ddb.config import config
 from ddb.context import context
 from ddb.event import bus, events
 from ddb.feature import features, Feature
-from ddb.feature.certs import CertsFeature
-from ddb.feature.copy import CopyFeature
-from ddb.feature.core import CoreFeature
-from ddb.feature.docker import DockerFeature
-from ddb.feature.file import FileFeature
-from ddb.feature.fixuid import FixuidFeature
-from ddb.feature.git import GitFeature
-from ddb.feature.gitignore import GitignoreFeature
-from ddb.feature.jinja import JinjaFeature
-from ddb.feature.jsonnet import JsonnetFeature
-from ddb.feature.permissions import PermissionsFeature
-from ddb.feature.run import RunFeature
-from ddb.feature.shell import ShellFeature
-from ddb.feature.smartcd import SmartcdFeature
-from ddb.feature.symlinks import SymlinksFeature
-from ddb.feature.traefik import TraefikFeature
-from ddb.feature.version import VersionFeature
-from ddb.feature.ytt import YttFeature
+from ddb.feature.bootstrap import reset_available_features, append_available_feature, \
+    load_bootstrap_config, bootstrap_register_features
 from ddb.phase import phases
 from ddb.registry import Registry, RegistryObject
 from ddb.service import services
 from ddb.utils.release import ddb_repository, get_lastest_release_version
 from ddb.utils.table_display import get_table_display
-
-_default_available_features = [CertsFeature(),
-                               CopyFeature(),
-                               CoreFeature(),
-                               DockerFeature(),
-                               FileFeature(),
-                               FixuidFeature(),
-                               GitFeature(),
-                               GitignoreFeature(),
-                               JinjaFeature(),
-                               JsonnetFeature(),
-                               PermissionsFeature(),
-                               RunFeature(),
-                               SmartcdFeature(),
-                               ShellFeature(),
-                               SymlinksFeature(),
-                               TraefikFeature(),
-                               VersionFeature(),
-                               YttFeature()]
-
-_available_features = list(_default_available_features)
+from ddb.feature.core import ConfigureSecondPassException
 
 _watch_started_event = threading.Event()
 _watch_stop_event = threading.Event()
@@ -109,71 +70,7 @@ def _load_plugins_module(module_name):
                 not clazz.__name__.startswith("_") and \
                 issubclass(clazz, Feature):
             feature = clazz()
-            _available_features.append(feature)
-
-
-def register_features(to_register: Iterable[Feature] = None):
-    """
-    Register default features and setuptools entrypoint 'ddb_features' inside features registry.
-    Features are registered in order for their dependency to be registered first with a topological sort.
-    Withing a command phase, actions are executed in the order of their feature registration.
-    """
-    if to_register is None:
-        to_register = _available_features
-
-    entrypoint_features = {f.name: f for f in to_register}
-    for entry_point in pkg_resources.iter_entry_points('ddb_features'):
-        feature = entry_point.load()()
-        entrypoint_features[feature.name] = feature
-
-    required_dependencies, toposort_data = _prepare_dependencies_data(entrypoint_features)
-    _check_missing_dependencies(entrypoint_features, required_dependencies)
-
-    dependencies = config.data.get('dependencies')
-    if dependencies:
-        for feat, feat_dependencies in dependencies.items():
-            if feat not in toposort_data:
-                toposort_data[feat] = set()
-            for feat_dependency in feat_dependencies:
-                toposort_data[feat].add(feat_dependency)
-
-    sorted_feature_names = toposort_flatten(toposort_data, sort=True)
-    for feature_name in sorted_feature_names:
-        feature = entrypoint_features.get(feature_name)
-        if feature:
-            features.register(feature)
-
-
-def _prepare_dependencies_data(entrypoint_features):
-    """
-    Compute required dependencies and toposort data.
-    """
-    required_dependencies = {}
-    toposort_data = {}
-    for name, feat in entrypoint_features.items():
-        feat_required_dependencies = []
-        dependencies = set()
-        for dependency_item in feat.dependencies:
-            if not dependency_item.endswith('[optional]'):
-                feat_required_dependencies.append(dependency_item)
-            else:
-                dependency_item = dependency_item[0:len(dependency_item) - len('[optional]')]
-            dependencies.add(dependency_item)
-
-        toposort_data[name] = dependencies
-        required_dependencies[name] = feat_required_dependencies
-    return required_dependencies, toposort_data
-
-
-def _check_missing_dependencies(entrypoint_features, required_dependencies):
-    """
-    Check missing required dependencies
-    """
-    for name, feat_required_dependencies in required_dependencies.items():
-        for required_dependency in feat_required_dependencies:
-            if required_dependency not in entrypoint_features.keys():
-                raise ValueError("A required dependency is missing for " +
-                                 name + " feature (" + required_dependency + ")")
+            append_available_feature(feature)
 
 
 def prepare_project_home():
@@ -215,6 +112,7 @@ def preload_registered_features():
     """
     Load phases and commands from all registered features.
     """
+    load_bootstrap_config()
     all_features = features.all()
     enabled_features = [f for f in all_features if not f.disabled]  # type: Iterable[Feature]
     register_objects(enabled_features, lambda f: f.phases, phases)
@@ -226,13 +124,23 @@ def load_registered_features(preload=True):
     """
     Load all registered features.
     """
+    if preload:
+        load_bootstrap_config()
+
     all_features = features.all()
 
     for feature in all_features:
         feature.before_load()
 
-    for feature in all_features:
-        feature.configure()
+    try:
+        for feature in all_features:
+            feature.configure()
+    except ConfigureSecondPassException:
+        config.clear()
+        load_bootstrap_config()
+
+        for feature in all_features:
+            feature.configure()
 
     enabled_features = [f for f in all_features if not f.disabled]  # type: Iterable[Feature]
 
@@ -431,7 +339,7 @@ def register_actions_in_event_bus(fail_fast=False):
 
 
 def main(args: Optional[Sequence[str]] = None,
-         reset_disabled=False):
+         reset_disabled=False, before_handle_command_line=None):
     """
     Load all features and handle command line
     """
@@ -439,10 +347,8 @@ def main(args: Optional[Sequence[str]] = None,
     _watch_started_event = threading.Event()
     _watch_stop_event = threading.Event()
     try:
-        config.load()
         load_plugins()
-
-        register_features()
+        bootstrap_register_features()
         preload_registered_features()
 
         try:
@@ -573,8 +479,7 @@ def reset():
     context.reset()
     config.reset()
 
-    global _available_features  # pylint:disable=global-statement
-    _available_features = list(_default_available_features)
+    reset_available_features()
 
 
 def console_script():  # pragma: no cover

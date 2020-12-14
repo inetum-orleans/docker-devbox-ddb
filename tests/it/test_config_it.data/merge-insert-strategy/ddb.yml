@@ -1,0 +1,5 @@
+core:
+  env:
+    available:
+      merge: insert_if_missing
+      value: [-1, 'dev-services', 'dev-services2']
