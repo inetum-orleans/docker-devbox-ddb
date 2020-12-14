@@ -6,6 +6,8 @@ History
 
 - Jsonnet: Add XDebug Version 3 support.
 - Configuration: Add `core.configuration.extra` to load additional configuration files.
+- Configuration: Allow merging from default values
+- Configuration: Add `insert`/`insert_if_missing` strategies for 
 
 1.2.3 (2020-11-13)
 ------------------

@@ -1,0 +1,8 @@
+app:
+  deep:
+    disabled_services:
+      merge: append
+      value: ['another']
+    another_strategy:
+      merge: prepend
+      value: ['another']

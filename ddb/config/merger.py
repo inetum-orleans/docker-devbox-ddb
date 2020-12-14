@@ -59,6 +59,30 @@ class ExtendedListStrategies(ListStrategies):
         filtered_nxt = [item for item in nxt if item not in base]
         return ListStrategies.strategy_prepend(config, path, base, filtered_nxt)
 
+    @staticmethod
+    def strategy_insert_if_missing(config, path, base, nxt):
+        """ use the list nxt. """
+        idx = nxt.pop(0)
+        filtered_nxt = [item for item in nxt if item not in base]
+        if idx >= 0:
+            filtered_nxt = list(reversed(filtered_nxt))
+        ret = list(base)
+        for filtered_nxt_item in filtered_nxt:
+            ret.insert(idx, filtered_nxt_item)
+        return ret
+
+    @staticmethod
+    def strategy_insert(config, path, base, nxt):
+        """ use the list nxt. """
+        idx = nxt.pop(0)
+        ordered_nxt = list(nxt)
+        if idx >= 0:
+            ordered_nxt = list(reversed(ordered_nxt))
+        ret = list(base)
+        for ordered_nxt_item in ordered_nxt:
+            ret.insert(idx, ordered_nxt_item)
+        return ret
+
 
 def merge_value_strategy_wrapper(strategy):
     """

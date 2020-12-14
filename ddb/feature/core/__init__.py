@@ -16,6 +16,12 @@ from ...config.config import ConfigPaths
 from ...phase import Phase, DefaultPhase
 
 
+class ConfigureSecondPassException(Exception):
+    """
+    Exception that should be raised when an additional configuration file is to be loaded.
+    """
+
+
 class CoreFeature(Feature):
     """
     Default commands and configuration support.
@@ -80,29 +86,38 @@ class CoreFeature(Feature):
                              "info"),
         )
 
-    def configure(self):
-        super().configure()
+    def configure(self, bootstrap=False):
+        super().configure(bootstrap)
+        if bootstrap:
+            return
         self._load_environment_configuration()
         self._apply_eject_configuration()
 
-    def _load_environment_configuration(self):
+    @staticmethod
+    def _load_environment_configuration():
         """
         Loading enviromnent configuration file, if exists.
         """
         current = config.data.get('core.env.current')
 
-        filenames = list(config.filenames)
-        filenames.insert(len(filenames) - 1, filenames[0] + '.' + current)
+        if config.filenames:
+            filenames = list(config.filenames)
+            original_filenames = list(config.filenames)
 
-        extra = config.data.get('core.configuration.extra')
-        if extra:
-            for extra_item in extra:
-                filenames.insert(len(filenames) - 1, extra_item)
+            current_env_filename = filenames[0] + '.' + current
+            if current_env_filename not in filenames:
+                filenames.insert(len(filenames) - 1, current_env_filename)
 
-        config.clear()
-        config.filenames = tuple(filenames)
-        config.load()
-        super().configure()
+            extra = config.data.get('core.configuration.extra')
+            if extra:
+                for extra_item in extra:
+                    if extra_item not in filenames:
+                        filenames.insert(len(filenames) - 1, extra_item)
+
+            if filenames != original_filenames:
+                config.filenames = tuple(filenames)
+
+                raise ConfigureSecondPassException()
 
     @staticmethod
     def _apply_eject_configuration():

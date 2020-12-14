@@ -3,14 +3,21 @@ import re
 import time
 
 from cfssl import cfssl
-from dotty_dict import Dotty
-
 from ddb.config import config
 from ddb.config.config import ConfigPaths
+from ddb.feature.bootstrap import get_sorted_features, bootstrap_features_configuration
 from ddb.feature.gitignore import UpdateGitignoreAction
 
 
 def load_config(data_dir: str = None, name: str = None):
+    init_config_paths(data_dir, name)
+
+    bootstrap_features_configuration()
+    config.load(config.data)
+
+    return config
+
+def init_config_paths(data_dir: str = None, name: str = None):
     root_dir = os.path.join(data_dir, name) if name else data_dir
 
     paths = ConfigPaths(ddb_home=os.path.join(root_dir, 'ddb_home'), home=os.path.join(root_dir, 'home'),
@@ -20,7 +27,6 @@ def load_config(data_dir: str = None, name: str = None):
         paths = ConfigPaths(ddb_home=None, home=None, project_home=root_dir)
 
     config.paths = paths
-    config.load()
 
     return config
 
