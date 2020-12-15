@@ -1,0 +1,29 @@
+core:
+  project:
+    name: atout
+  env:
+    available: ['prod', 'stage', 'ci', 'dev-services', 'dev']
+docker:
+  compose:
+    project_name: atout
+  registry:
+    name: gfiorleans.azurecr.io
+    repository: alm-atout
+  reverse_proxy:
+    redirect_to_https: true
+symlinks:
+  excludes:
+    - 'web-pu/sites/default/settings.*.php'
+file:
+  excludes:
+    - '**/_*'
+    - '**/.git'
+    - '**/node_modules'
+    - '**/vendor'
+    - '**/target'
+    - 'web-pu/sites/*/libraries/**/*'
+    - 'web-pu/modules/**/*'
+    - 'share'
+    - 'logs'
+    - 'scripts'
+    - 'data'

@@ -16,6 +16,20 @@ class TestConfig:
 
         reset()
 
+    def test_config_override_ci(self, project_loader):
+        project_loader("override-ci")
+
+        os.chdir("sub")
+
+        main(["config"], reset_disabled=True)
+
+        assert config.data.get('core.env.current') == 'ci'
+        assert config.data.get('docker.cache_from_image') is True
+        assert config.data.get('docker.registry.name') == "gfiorleans.azurecr.io"
+        assert config.data.get('docker.registry.repository') == "alm-atout"
+
+        reset()
+
     def test_config_local_falsy(self, project_loader):
         project_loader("local-falsy")
 

@@ -1,0 +1,13 @@
+core:
+  env:
+    current: ci
+certs:
+  disabled: true
+docker:
+  cache_from_image: true
+  reverse_proxy:
+    type: none
+traefik:
+  disabled: true
+smartcd:
+  disabled: true
