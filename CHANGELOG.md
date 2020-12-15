@@ -8,6 +8,7 @@ History
 - Configuration: Add `core.configuration.extra` to load additional configuration files.
 - Configuration: Allow merging from default values
 - Configuration: Add `insert`/`insert_if_missing` strategies for 
+- Shell: Allow special characters from configuration to be properly exported in shell.
 
 1.2.3 (2020-11-13)
 ------------------
