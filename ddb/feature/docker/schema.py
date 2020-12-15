@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-from ddb.feature.schema import FeatureSchema
 from marshmallow import fields, Schema
 from marshmallow_union import Union
+
+from ddb.feature.schema import FeatureSchema
 
 
 class UserSchema(Schema):
@@ -10,6 +11,11 @@ class UserSchema(Schema):
     """
     uid = fields.Integer(required=True, default=None)  # default is set in feature _configure_defaults
     gid = fields.Integer(required=True, default=None)  # default is set in feature _configure_defaults
+    name = fields.String(required=False, allow_none=True, default=None)  # default is set in feature _configure_defaults
+    group = fields.String(required=False, allow_none=True,
+                          default=None)  # default is set in feature _configure_defaults
+    name_to_uid = fields.Dict(required=True, default={})
+    group_to_gid = fields.Dict(required=True, default={})
 
 
 class RegistrySchema(Schema):

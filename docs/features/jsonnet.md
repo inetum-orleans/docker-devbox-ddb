@@ -200,6 +200,19 @@ In ddb, it is mainly use for `fixuid` automatic integration
     user: 1000:1000
     ```
 
+!!! info "userNameToUid/groupNameToGid to retrieve host uid/gid from names"
+    ```json
+    ddb.User(gid=ddb.groupNameToGid("docker"))
+    ```
+    will produce
+    ```yaml
+    user: 1000:998
+    ```
+    when `getent group docker` returns `docker:x:998:` on the host.
+    
+    It can be used when you need the container to access the docker socket through a volume mount.
+
+
 ### XDebug (PHP)
 This function generates `environment` configuration used for XDebug (PHP Debugger).
 

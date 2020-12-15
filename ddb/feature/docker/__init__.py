@@ -46,7 +46,9 @@ class DockerFeature(Feature):
         )
 
     def _configure_defaults(self, feature_config: Dotty):
+        self._configure_defaults_user_from_name_and_group(feature_config)
         self._configure_defaults_user(feature_config)
+        self._configure_defaults_user_maps(feature_config)
         self._configure_defaults_ip(feature_config)
         self._configure_defaults_debug(feature_config)
         self._configure_defaults_path_mapping(feature_config)
@@ -54,6 +56,65 @@ class DockerFeature(Feature):
         self._configure_defaults_compose_project_name(feature_config)
         self._configure_defaults_build_image_tag(feature_config)
         self._configure_defaults_restart_policy(feature_config)
+
+    @staticmethod
+    def _configure_defaults_user_from_name_and_group(feature_config):
+        uid = feature_config.get('user.uid')
+        gid = feature_config.get('user.gid')
+
+        if uid is None or gid is None:
+            name = feature_config.get('user.name')
+            if name:
+                try:
+                    import pwd  # pylint:disable=import-outside-toplevel
+                    struct_passwd = pwd.getpwnam(name)
+                    if uid is None:
+                        uid = struct_passwd.pwd_uid
+                        feature_config['user.uid'] = uid
+                    if gid is None:
+                        gid = struct_passwd.pwd_gid
+                        feature_config['user.gid'] = gid
+                except ImportError:
+                    pass
+                except KeyError:
+                    pass
+
+            group = feature_config.get('user.group')
+            if group:
+                try:
+                    import grp  # pylint:disable=import-outside-toplevel
+                    struct_group = grp.getgrnam(group)
+                    gid = struct_group.gr_id
+                    feature_config['user.gid'] = gid
+                except ImportError:
+                    pass
+                except KeyError:
+                    pass
+
+    @staticmethod
+    def _configure_defaults_user_maps(feature_config):
+        name_to_uid = feature_config.get('user.name_to_uid')
+        group_to_gid = feature_config.get('user.group_to_gid')
+
+        try:
+            import pwd  # pylint:disable=import-outside-toplevel
+            struct_passwds = pwd.getpwall()
+            for struct_passwd in struct_passwds:
+                name_to_uid[struct_passwd.pw_name] = struct_passwd.pw_uid
+                group_to_gid[struct_passwd.pw_name] = struct_passwd.pw_gid
+            feature_config['user.name_to_uid'] = name_to_uid
+            feature_config['user.group_to_gid'] = group_to_gid
+        except ImportError:
+            pass
+
+        try:
+            import grp  # pylint:disable=import-outside-toplevel
+            struct_groups = grp.getgrall()
+            for struct_group in struct_groups:
+                group_to_gid[struct_group.gr_name] = struct_group.gr_gid
+            feature_config['user.group_to_gid'] = group_to_gid
+        except ImportError:
+            pass
 
     @staticmethod
     def _configure_defaults_user(feature_config):

@@ -3,6 +3,8 @@ local _docker_registry_repository = std.extVar("docker.registry.repository");
 local _docker_restart_policy = std.extVar("docker.restart_policy");
 local _docker_user_uid = std.extVar("docker.user.uid");
 local _docker_user_gid = std.extVar("docker.user.gid");
+local _docker_user_name_to_uid = std.extVar("docker.user.name_to_uid");
+local _docker_user_group_to_gid = std.extVar("docker.user.group_to_gid");
 local _docker_path_mapping = std.extVar("docker.path_mapping");
 local _docker_debug_host = std.extVar("docker.debug.host");
 local _docker_debug_disabled = std.extVar("docker.debug.disabled");
@@ -85,6 +87,12 @@ local Build(name, image=name, cache_from_image=_docker_cache_from_image, directo
 local User(uid=_docker_user_uid, gid=_docker_user_gid) = {
     "user": uid + ":" + gid
 };
+
+local userNameToUid(name) =
+    _docker_user_name_to_uid[name];
+
+local groupNameToGid(group) =
+    _docker_user_group_to_gid[group];
 
 local volume_is_named(v) =
     !std.setMember("/", v) && !std.setMember(std.char(92), v) && v != ".";
@@ -280,6 +288,8 @@ local envIs(env) =
     Compose: Compose,
     Volumes: Volumes,
     User: User,
+    userNameToUid: userNameToUid,
+    groupNameToGid: groupNameToGid,
     env: {
       index: envIndex,
       is: envIs

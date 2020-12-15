@@ -104,7 +104,13 @@ As docker is at the heart of ddb, it has one of the largest collection of parame
 - `user.gid`: The GID to use inside a container
     - type: number
     - default: Automatically retrieve the GID of the current user
-    
+- `user.name`: The host username that will get converted to UID to use inside a container
+  - type: string
+  - default: null
+- `user.group`: The host group name that will get converted to UID to use inside a container
+  - type: number
+  - default: null
+
 !!! example "Configuration"
     ```yaml
     docker:
