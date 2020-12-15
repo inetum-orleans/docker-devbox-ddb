@@ -3,6 +3,7 @@ import shlex
 from abc import ABC, abstractmethod
 from typing import Tuple, Iterable, Dict, Any, Optional
 
+from slugify import slugify
 from ddb.binary import Binary
 from ddb.utils.file import force_remove, write_if_different, chmod
 
@@ -89,11 +90,15 @@ class BashShellIntegration(ShellIntegration):
     def __init__(self):
         super().__init__("bash", "Bash")
 
+    @staticmethod
+    def _sanitize_key(key):
+        return slugify(key, regex_pattern=r'[^-a-zA-Z0-9_]+').upper()
+
     def set_environment_variable(self, key, value):
-        yield "export " + key + "=" + shlex.quote(value)
+        yield "export " + self._sanitize_key(key) + "=" + shlex.quote(value)
 
     def remove_environment_variable(self, key):
-        yield "unset " + key
+        yield "unset " + self._sanitize_key(key)
 
     def remove_all_binary_shims(self, shims_path: str):
         shims = []
@@ -152,12 +157,16 @@ class CmdShellIntegration(ShellIntegration):
     def __init__(self):
         super().__init__("cmd", "Windows cmd.exe")
 
+    @staticmethod
+    def _sanitize_key(key):
+        return slugify(key, regex_pattern=r'[^-a-zA-Z0-9_]+').upper()
+
     def set_environment_variable(self, key, value):
         # TODO: Maybe use subprocess.list2cmdline for Windows ?
-        yield "set " + key + "=" + value.replace('\n', '!NL! ^\n')
+        yield "set " + self._sanitize_key(key) + "=" + value.replace('\n', '!NL! ^\n')
 
     def remove_environment_variable(self, key):
-        yield "set " + key + "="
+        yield "set " + self._sanitize_key(key) + "="
 
     def remove_all_binary_shims(self, shims_path: str):
         shims = []

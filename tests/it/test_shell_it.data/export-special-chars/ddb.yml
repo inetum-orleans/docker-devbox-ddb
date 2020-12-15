@@ -1,0 +1,3 @@
+permissions:
+  specs:
+    "bin/dependency-check": "+x"
