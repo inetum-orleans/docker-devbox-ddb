@@ -32,7 +32,7 @@ from ddb.feature.bootstrap import reset_available_features, append_available_fea
 from ddb.phase import phases
 from ddb.registry import Registry, RegistryObject
 from ddb.service import services
-from ddb.utils.release import ddb_repository, get_lastest_release_version
+from ddb.utils.release import ddb_repository, get_latest_release_version
 from ddb.utils.table_display import get_table_display
 from ddb.feature.core import ConfigureSecondPassException
 
@@ -374,7 +374,7 @@ def main(args: Optional[Sequence[str]] = None,
                     ]
                 ]
 
-                last_release = get_lastest_release_version()
+                last_release = get_latest_release_version()
                 if last_release and __version__ < last_release:
                     version_content.append([
                         '',
@@ -440,7 +440,7 @@ def _check_for_update():
     today = date.today()
 
     if last_check is None or last_check < today:
-        last_release = get_lastest_release_version()
+        last_release = get_latest_release_version()
         if last_release and __version__ < last_release:
             header = 'A new version is available : {}'.format(last_release)
             content = [[
