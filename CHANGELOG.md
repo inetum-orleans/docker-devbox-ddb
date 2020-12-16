@@ -1,17 +1,7 @@
 History
 =======
 
-1.2.4 (unreleased)
-------------------
-
-- Jsonnet: Add XDebug Version 3 support.
-- Configuration: Add `core.configuration.extra` to load additional configuration files.
-- Configuration: Allow merging from default values
-- Configuration: Add `insert`/`insert_if_missing` strategies for 
-- Shell: Allow special characters from configuration to be properly exported in shell.
-- Docker: Add `userNameToUid`/`groupNameToGid` jsonnet functions.
-- Docker: Add `docker.user.name`/`docker.user.group` configuration parameters.
-- Docker: Add `https` option to reverse-proxy features (libjsonnet and configuration).
+<!--next-version-placeholder-->
 
 1.2.3 (2020-11-13)
 ------------------
