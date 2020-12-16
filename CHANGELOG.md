@@ -4,7 +4,22 @@ History
 <!--next-version-placeholder-->
 
 ## v1.3.0 (2020-12-16)
+### Feature
+* **docker:** Add https option to reverse-proxy features (libjsonnet and configuration) ([`c2c1fad`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/c2c1fad347a338d38b3f9cd4e16bf4d634d72741))
+* **docker:** Add support for named user and group ([`62ab647`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/62ab647872360b06c0b644513021d890e5173291))
+* **configuration:** Add insert/insert_if_missing merge strategies. ([`00d62b9`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/00d62b9fdfd9d150f9574f04419fc620d644ff25))
+* **configuration:** Add core.configuration.extra to include additional configuration files ([`b7d30de`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/b7d30de2ba9ec73b8e36dc96143adb8f10185730))
+* **xdebug:** Add more parameters to XDebug jsonnet function ([`cf5dc74`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/cf5dc742399061034fa17d86c2f3b69b380adee1))
+* **JSonnet:** Add support for XDebug 3 ([`6bc337c`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/6bc337c98d27925f40e55386f41748ba749d54cf))
 
+### Fix
+* **docker:** Add tests and fix issues with named user and group ([`b88470c`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/b88470c43d381b6093b609d7064042fac8af78db))
+* **shell:** Slufigy environment variable names ([`0513038`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/0513038b3bab499d2bf681e2e012c3fb867bd629))
+* **copy:** Correction du NoneType error ([`4b798bd`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/4b798bd733c9dbf770961cb3127452611d2a6850))
+* **docs:** Fix typo for excludes configuration properties ([`d0cda14`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/d0cda1490d2e82b2bd5330d46f507b1f75a6c814))
+
+### Documentation
+* **changelog:** Reformat changelog ([`7440081`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/744008161fc4f22035e0436427b4e8475dc9f69f))
 
 ## v1.2.3 (2020-11-13)
 
