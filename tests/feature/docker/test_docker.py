@@ -3,6 +3,8 @@ import shutil
 
 from _pytest.capture import CaptureFixture
 from compose.config.types import ServicePort
+from dotty_dict import Dotty
+
 from ddb.__main__ import load_registered_features, register_actions_in_event_bus
 from ddb.action import actions
 from ddb.binary import binaries
@@ -15,7 +17,6 @@ from ddb.feature.docker import DockerDisplayInfoAction
 from ddb.feature.docker import DockerFeature, EmitDockerComposeConfigAction
 from ddb.feature.traefik import TraefikFeature
 from ddb.utils.process import effective_command
-from dotty_dict import Dotty
 from tests.utilstest import setup_cfssl
 
 
@@ -278,6 +279,15 @@ class TestDockerFeature:
         assert os.path.exists(os.path.join(config.paths.home, "certs", "web-changed.domain.tld.key"))
         assert os.path.exists(os.path.join(config.paths.home, "certs", "web-changed.domain.tld.crt"))
         assert os.path.exists(os.path.join(config.paths.home, "traefik", "config", "web-changed.domain.tld.ssl.toml"))
+
+    def test_named_user_group(self, project_loader):
+        project_loader("empty")
+
+        features.register(DockerFeature())
+        load_registered_features()
+
+        assert config.data.get('docker.user.name_to_uid')
+        assert config.data.get('docker.user.group_to_gid')
 
 
 class TestDockerDisplayInfoAction:

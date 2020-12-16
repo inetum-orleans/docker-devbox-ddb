@@ -69,10 +69,10 @@ class DockerFeature(Feature):
                     import pwd  # pylint:disable=import-outside-toplevel
                     struct_passwd = pwd.getpwnam(name)
                     if uid is None:
-                        uid = struct_passwd.pwd_uid
+                        uid = struct_passwd.pw_uid
                         feature_config['user.uid'] = uid
                     if gid is None:
-                        gid = struct_passwd.pwd_gid
+                        gid = struct_passwd.pw_gid
                         feature_config['user.gid'] = gid
                 except ImportError:
                     pass

@@ -1,0 +1,9 @@
+networks: {}
+services:
+  maven:
+    image: ubuntu
+    init: true
+    restart: 'no'
+    user: 0:65534
+version: '3.7'
+volumes: {}
