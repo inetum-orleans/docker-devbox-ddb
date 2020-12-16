@@ -10,7 +10,8 @@ Docs are then available on http://localhost:8000.
 
 ## Publish docs
 
-Create the following file inside `~/.netrc` and replace `<account>` and `<token>` with your github account and personal access token.
+Create the following file inside `~/.netrc` and replace `<account>` and `<token>` with your github account and personal
+access token.
 
 ```
 machine github.com
@@ -32,15 +33,30 @@ Github personnal access token can be [here](https://github.com/settings/tokens).
 docker run --rm -it -p 8000:8000 --user $(id -u):$(id -g) -v ${PWD}/..:/docs -v ${HOME}/.netrc:/.netrc:ro --workdir=/docs/ddb squidfunk/mkdocs-material gh-deploy
 ```
 
+## Semantic release and conventional commits
+
+ddb [Changelog](./CHANGELOG.md)
+and [released version number](https://github.com/gfi-centre-ouest/docker-devbox-ddb/releases) are automatically
+generated from your commit messages using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
+
+Any pull request containing invalid commit messages will be rejected.
+
+Your can use commitizen to help create commit with valid messages.
+
+```bash
+cz commit
+```
+
 ## Configure development environment (Windows)
 
 - Clone this repository and cd into it
 
-You should use [pyenv-win](https://github.com/pyenv-win/pyenv-win) to install and manage your python versions on Windows.
+You should use [pyenv-win](https://github.com/pyenv-win/pyenv-win) to install and manage your python versions on
+Windows.
 
 - Install python 3.7.x
 
-```
+```bash
 pyenv install 3.7.9
 pyenv local 3.7.9
 pyenv rehash
@@ -49,7 +65,7 @@ python --version  # Python 3.7.9
 
 - Create virtualenv
 
-```
+```bash
 python -m venv %USERPROFILE%\.pyenv\pyenv-win\versions\3.7.9-ddb
 pyenv local 3.7.9-ddb
 pyenv rehash
@@ -58,10 +74,15 @@ python --version  # Python 3.7.9
 
 - Install dependencies
 
-```
+```bash
 pip install whl/jsonnet-0.15.0-cp37-cp37m-win_amd64.whl
 pip install -r requirements-dev.txt
 ```
+
+- Enable pre-commit hooks
+
+``bash pre-commit install
+``
 
 - Download [ytt](https://get-ytt.io/) binary and make it available in PATH
 
@@ -74,7 +95,7 @@ python -m ddb --version  # Should display a version ending with .dev0
 
 - Run tests with pytest
 
-```
+```bash
 pytest
 ```
 
@@ -86,7 +107,7 @@ You should use [pyenv](https://github.com/pyenv/pyenv) to install and manage you
 
 - Install python 3.7.x
 
-```
+```bash
 pyenv install 3.7.9
 pyenv local 3.7.9
 python --version  # Python 3.7.9
@@ -94,7 +115,7 @@ python --version  # Python 3.7.9
 
 - Create virtualenv
 
-```
+```bash
 pyenv virtualenv 3.7.9 3.7.9-ddb
 pyenv local 3.7.9-ddb
 python --version  # Python 3.7.9
@@ -102,15 +123,20 @@ python --version  # Python 3.7.9
 
 - Install dependencies
 
-```
+```bash
 pip install -r requirements-dev.txt
 ```
+
+- Enable pre-commit hooks
+
+``bash pre-commit install
+``
 
 - Download [ytt](https://get-ytt.io/) binary and make it available in PATH
 
 - Check development version is available in your virtualenv
 
-```
+```bash
 ddb --version  # Should display a version ending with .dev0
 ```
 
@@ -126,7 +152,8 @@ The release process requires docker with custom images of `cdrx/pyinstaller-linu
 
 A [pull request is opened](https://github.com/cdrx/docker-pyinstaller/pull/90) and I hope it will be merged soon.
 
-Those custom images are available on Docker Hub under `toilal/pyinstaller-linux` and `toilal/pyinstaller-windows` repositories.
+Those custom images are available on Docker Hub under `toilal/pyinstaller-linux` and `toilal/pyinstaller-windows`
+repositories.
 
 ```
 prerelease

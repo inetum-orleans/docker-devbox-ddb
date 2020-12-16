@@ -1,4 +1,6 @@
-zest.releaser[recommended]
+python-semantic-release
+commitizen
+pre-commit
 githubrelease
 tox
 pylint
