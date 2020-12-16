@@ -1,5 +1,6 @@
 import os
 
+import pytest
 import yaml
 
 from ddb.__main__ import main
@@ -35,3 +36,9 @@ class TestDockerJsonnet:
             docker_compose_expected = yaml.load(f, yaml.SafeLoader)
 
         assert docker_compose == docker_compose_expected
+
+    def test_named_invalid_user_group(self, project_loader):
+        project_loader("named-invalid-user-group")
+
+        with pytest.raises(RuntimeError):
+            main(["configure"])
