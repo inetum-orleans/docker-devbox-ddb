@@ -20,6 +20,7 @@ local _docker_reverse_proxy_type = std.extVar("docker.reverse_proxy.type");
 local _docker_reverse_proxy_network_id = std.extVar("docker.reverse_proxy.network_id");
 local _docker_reverse_proxy_network_names = std.extVar("docker.reverse_proxy.network_names");
 local _docker_reverse_proxy_certresolver = std.extVar("docker.reverse_proxy.certresolver");
+local _docker_reverse_proxy_https = std.extVar("docker.reverse_proxy.https");
 local _docker_reverse_proxy_redirect_to_https = std.extVar("docker.reverse_proxy.redirect_to_https");
 local _docker_reverse_proxy_redirect_to_path_prefix = std.extVar("docker.reverse_proxy.redirect_to_path_prefix");
 local _docker_disabled_services = std.extVar("docker.disabled_services");
@@ -183,34 +184,38 @@ local TraefikCertLabels(hostname, service_name, certresolver=null) = {
     [if (certresolver == null && _docker_reverse_proxy_certresolver == null) then "ddb.emit.certs:generate[" + service_name + "]"]: hostname,
 };
 
-local TraefikRoutersRuleLabels(hostname, service_name, router_rule=null) = {
+local TraefikRoutersRuleLabels(hostname, service_name, router_rule=null, https=null) =
+    local effective_https = if https != null then https else _docker_reverse_proxy_https;
+{
     [if router_rule == null then "traefik.http.routers." + service_name + ".rule"]: "Host(`" + hostname + "`)",
-    [if router_rule == null then "traefik.http.routers." + service_name + "-tls.rule"]: "Host(`" + hostname + "`)",
+    [if router_rule == null && effective_https == true then "traefik.http.routers." + service_name + "-tls.rule"]: "Host(`" + hostname + "`)",
     [if router_rule != null then "traefik.http.routers." + service_name + ".rule"]: router_rule,
-    [if router_rule != null then "traefik.http.routers." + service_name + "-tls.rule"]: router_rule,
+    [if router_rule != null && effective_https == true then "traefik.http.routers." + service_name + "-tls.rule"]: router_rule,
 };
 
-local TraefikPathPrefixLabels(hostname, service_name, path_prefix=null) =
+local TraefikPathPrefixLabels(hostname, service_name, path_prefix=null, https=null) =
+    local effective_https = if https != null then https else _docker_reverse_proxy_https;
     local effective_rule = "Host(`" + hostname + "`) && PathPrefix(`" + path_prefix + "{regex:$$|/.*}`)";
     {
         [if path_prefix != null then "traefik.http.middlewares." + service_name + "-stripprefix.stripPrefix.prefixes"]: path_prefix,
         [if path_prefix != null then "traefik.http.routers." + service_name + ".rule"]: effective_rule,
-        [if path_prefix != null then "traefik.http.routers." + service_name + "-tls.rule"]: effective_rule,
+        [if path_prefix != null && effective_https == true then "traefik.http.routers." + service_name + "-tls.rule"]: effective_rule,
         [if path_prefix != null then "traefik.http.routers." + service_name + ".middlewares"]: service_name + "-stripprefix",
-        [if path_prefix != null then "traefik.http.routers." + service_name + "-tls.middlewares"]: service_name + "-stripprefix",
+        [if path_prefix != null && effective_https == true then "traefik.http.routers." + service_name + "-tls.middlewares"]: service_name + "-stripprefix",
     };
 
-local TraefikPathPrefixRedirectLabels(hostname, service_name, path_prefix=null, redirect_to_path_prefix=null) =
+local TraefikPathPrefixRedirectLabels(hostname, service_name, path_prefix=null, redirect_to_path_prefix=null, https=null) =
+    local effective_https = if https != null then https else _docker_reverse_proxy_https;
     local effective_redirect_to_path_prefix = if redirect_to_path_prefix != null then redirect_to_path_prefix else _docker_reverse_proxy_redirect_to_path_prefix;
     local effective_rule = "Host(`" + hostname + "`)";
     {
         [if path_prefix != null && effective_redirect_to_path_prefix != null then "traefik.http.middlewares." + service_name + "-redirect_to_path_prefix.redirectregex.regex"]: '^https?://' + hostname + '/?$$',
         [if path_prefix != null && effective_redirect_to_path_prefix != null then "traefik.http.middlewares." + service_name + "-redirect_to_path_prefix.redirectregex.replacement"]: path_prefix,
         [if path_prefix != null && effective_redirect_to_path_prefix != null then "traefik.http.routers." + service_name + "-redirect_to_path_prefix.rule"]: effective_rule,
-        [if path_prefix != null && effective_redirect_to_path_prefix != null then "traefik.http.routers." + service_name + "-redirect_to_path_prefix-tls.rule"]: effective_rule,
+        [if path_prefix != null && effective_redirect_to_path_prefix != null && effective_https == true then "traefik.http.routers." + service_name + "-redirect_to_path_prefix-tls.rule"]: effective_rule,
         [if path_prefix != null && effective_redirect_to_path_prefix != null then "traefik.http.routers." + service_name + "-redirect_to_path_prefix.middlewares"]: service_name + "-redirect_to_path_prefix",
-        [if path_prefix != null && effective_redirect_to_path_prefix != null then "traefik.http.routers." + service_name + "-redirect_to_path_prefix-tls.middlewares"]: service_name + "-redirect_to_path_prefix",
-        [if path_prefix != null && effective_redirect_to_path_prefix != null then "traefik.http.routers." + service_name + "-redirect_to_path_prefix-tls.tls"]: "true",
+        [if path_prefix != null && effective_redirect_to_path_prefix != null && effective_https == true then "traefik.http.routers." + service_name + "-redirect_to_path_prefix-tls.middlewares"]: service_name + "-redirect_to_path_prefix",
+        [if path_prefix != null && effective_redirect_to_path_prefix != null && effective_https == true then "traefik.http.routers." + service_name + "-redirect_to_path_prefix-tls.tls"]: "true",
     };
 
 local TraefikRedirectToHttpsLabels(hostname, service_name, redirect_to_https=null) =
@@ -220,23 +225,24 @@ local TraefikRedirectToHttpsLabels(hostname, service_name, redirect_to_https=nul
       [if effective_redirect_to_https == true then "traefik.http.middlewares." + service_name + "-redirect-to-https.redirectscheme.scheme"]: "https",
     };
 
-local TraefikLabels(port, hostname, name=null, certresolver=null, router_rule=null, redirect_to_https=null, path_prefix=null, redirect_to_path_prefix=null) =
+local TraefikLabels(port, hostname, name=null, certresolver=null, router_rule=null, redirect_to_https=null, https=null, path_prefix=null, redirect_to_path_prefix=null) =
+local effective_https = if https != null then https else _docker_reverse_proxy_https;
 {
     "traefik.enable": "true",
     ["traefik.http.routers." + ServiceName(name) + ".service"]: ServiceName(name),
-    ["traefik.http.routers." + ServiceName(name) + "-tls.service"]: ServiceName(name),
-    ["traefik.http.routers." + ServiceName(name) + "-tls.tls"]: "true",
+    [if effective_https == true then "traefik.http.routers." + ServiceName(name) + "-tls.service"]: ServiceName(name),
+    [if effective_https == true then "traefik.http.routers." + ServiceName(name) + "-tls.tls"]: "true",
     ["traefik.http.services." + ServiceName(name) + ".loadbalancer.server.port"]: port
 }
-+ TraefikCertLabels(hostname, ServiceName(name), certresolver)
-+ TraefikRoutersRuleLabels(hostname, ServiceName(name), router_rule)
-+ TraefikPathPrefixLabels(hostname, ServiceName(name), path_prefix)
-+ TraefikPathPrefixRedirectLabels(hostname, ServiceName(name), path_prefix, redirect_to_path_prefix)
++ (if effective_https == true then TraefikCertLabels(hostname, ServiceName(name), certresolver) else {})
++ TraefikRoutersRuleLabels(hostname, ServiceName(name), router_rule, https)
++ TraefikPathPrefixLabels(hostname, ServiceName(name), path_prefix, https)
++ TraefikPathPrefixRedirectLabels(hostname, ServiceName(name), path_prefix, redirect_to_path_prefix, https)
 + TraefikRedirectToHttpsLabels(hostname, ServiceName(name), redirect_to_https);
 
-local TraefikVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id, certresolver=null, router_rule=null, redirect_to_https=null, path_prefix=null) =
+local TraefikVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id, certresolver=null, router_rule=null, redirect_to_https=null, https=null, path_prefix=null, redirect_to_path_prefix=null) =
   local vh = {
-    labels +: TraefikLabels(port, hostname, name, certresolver, router_rule, redirect_to_https, path_prefix),
+    labels +: TraefikLabels(port, hostname, name, certresolver, router_rule, redirect_to_https, https, path_prefix, redirect_to_path_prefix),
     networks +: [
         "default",
         network_id
@@ -245,7 +251,7 @@ local TraefikVirtualHost(port, hostname, name=null, network_id=_docker_reverse_p
 
   vh + {networks: std.uniq(vh.networks)};
 
-local NoVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id, certresolver=null, router_rule=null, redirect_to_https=null, path_prefix=null) = {};
+local NoVirtualHost(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id, certresolver=null, router_rule=null, redirect_to_https=null, https=null, path_prefix=null, redirect_to_path_prefix=null) = {};
 
 local VirtualHost = if _docker_reverse_proxy_type == "traefik" then TraefikVirtualHost else NoVirtualHost;
 
@@ -276,7 +282,7 @@ local envIs(env) =
 {
     Image: Image,
     Build: Build,
-    VirtualHost: if _docker_jsonnet_virtualhost_disabled then function(port, hostname, name=null, network_id=_docker_reverse_proxy_network_id, certresolver=null, router_rule=null, redirect_to_https=null){} else VirtualHost,
+    VirtualHost: if _docker_jsonnet_virtualhost_disabled then NoVirtualHost else VirtualHost,
     TraefikLabels: if _docker_jsonnet_virtualhost_disabled then function(port, hostname, name=null, certresolver=null, router_rule=null, redirect_to_https=null){} else TraefikLabels,
     TraefikCertLabels: if _docker_jsonnet_virtualhost_disabled then function(hostname, service_name, certresolver=null){} else TraefikCertLabels,
     ServiceName: ServiceName,

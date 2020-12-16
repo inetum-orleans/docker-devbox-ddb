@@ -1,0 +1,14 @@
+core:
+  env:
+    current: stage
+  project:
+    name: gli-biometrie
+docker:
+  cache_from_image: True
+  restart_policy: "no"
+  registry:
+    name: "gfiorleans.azurecr.io"
+    repository: "gli-biometrie"
+  reverse_proxy:
+    redirect_to_path_prefix: true
+    https: false

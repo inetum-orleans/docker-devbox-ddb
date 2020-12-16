@@ -45,6 +45,7 @@ class ReverseProxySchema(Schema):
     network_id = fields.String(required=True, default="reverse-proxy")
     network_names = fields.Dict(required=True, default={"reverse-proxy": "reverse-proxy"})
     certresolver = fields.String(required=False, allow_none=True, default=None)
+    https = fields.Boolean(required=True, default=True)
     redirect_to_https = fields.Boolean(required=False, allow_none=True, default=None)
     redirect_to_path_prefix = fields.Boolean(required=False, allow_none=True, default=None)
 

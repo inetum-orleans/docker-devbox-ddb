@@ -92,6 +92,9 @@ As docker is at the heart of ddb, it has one of the largest collection of parame
 - `reverse_proxy.network_names`: TODO explain what it is used for.
     - type: object
     - default: {reverse-proxy: reverse-proxy} # TODO
+- `reverse_proxy.https`: Set if https should be enabled.
+    - type: boolean|null
+    - default: true
 - `reverse_proxy.redirect_to_https`: Set if all traffic must be redirected to https.
     - type: boolean|null
     - default: null

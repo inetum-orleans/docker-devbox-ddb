@@ -11,6 +11,7 @@ History
 - Shell: Allow special characters from configuration to be properly exported in shell.
 - Docker: Add `userNameToUid`/`groupNameToGid` jsonnet functions.
 - Docker: Add `docker.user.name`/`docker.user.group` configuration parameters.
+- Docker: Add `https` option to reverse-proxy features (libjsonnet and configuration).
 
 1.2.3 (2020-11-13)
 ------------------

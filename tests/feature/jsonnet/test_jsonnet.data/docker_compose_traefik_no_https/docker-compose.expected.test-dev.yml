@@ -1,0 +1,164 @@
+version: '3.7'
+services:
+  db:
+    build:
+      context: .docker/db
+    environment:
+      POSTGRES_PASSWORD: biometrie
+      POSTGRES_USER: biometrie
+    image: gfiorleans.azurecr.io/gli-biometrie/db
+    init: true
+    ports:
+      - "16032:5432"
+    restart: "no"
+    user: %uid%:%gid%
+    volumes:
+      - db-data:/var/lib/postgresql/data:rw
+      - source: %ddb.path.project%
+        target: /workdir
+        type: bind
+  db-test:
+    build:
+      context: .docker/db
+    environment:
+      POSTGRES_PASSWORD: biometrie
+      POSTGRES_USER: biometrie
+    image: gfiorleans.azurecr.io/gli-biometrie/db
+    init: true
+    ports:
+      - "16033:5432"
+    restart: "no"
+    user: %uid%:%gid%
+    volumes:
+      - db-test-data:/var/lib/postgresql/data:rw
+      - %ddb.path.project%:/workdir
+  keycloak:
+    command:
+      - -b 0.0.0.0 -Dkeycloak.import=/opt/jboss/keycloak/keycloak/realm-export.json
+    depends_on:
+      - keycloak-db
+    environment:
+      DB_ADDR: keycloak-db
+      DB_DATABASE: biometrie
+      DB_PASSWORD: biometrie
+      DB_USER: biometrie
+      DB_VENDOR: postgres
+      KEYCLOAK_PASSWORD: biometrie
+      KEYCLOAK_USER: biometrie
+      PROXY_ADDRESS_FORWARDING: "true"
+    image: jboss/keycloak:8.0.1
+    init: true
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.gli-biometrie-keycloak.rule: Host(`keycloak.biometrie.test`)
+      traefik.http.routers.gli-biometrie-keycloak.service: gli-biometrie-keycloak
+      traefik.http.services.gli-biometrie-keycloak.loadbalancer.server.port: '8080'
+    links:
+      - keycloak-db:postgres
+    networks:
+      - default
+      - reverse-proxy
+    restart: "no"
+    volumes:
+      - %ddb.path.project%/keycloak:/opt/jboss/keycloak/keycloak:rw
+  keycloak-db:
+    build:
+      context: .docker/keycloak-db
+    environment:
+      POSTGRES_DB: biometrie
+      POSTGRES_PASSWORD: biometrie
+      POSTGRES_USER: biometrie
+    image: gfiorleans.azurecr.io/gli-biometrie/keycloak-db
+    init: true
+    ports:
+      - "16042:5432"
+    restart: "no"
+    volumes:
+      - %ddb.path.project%/keycloak/init.sql:/docker-entrypoint-initdb.d/init.sql:rw
+      - keycloak-db-data:/var/lib/postgresql/data:rw
+      - %ddb.path.project%:/workdir:rw
+  ldap:
+    build:
+      context: .docker/ldap
+    command: --copy-service --loglevel debug
+    environment:
+      LDAP_ADMIN_PASSWORD: biometrie
+      LDAP_DOMAIN: biometrie.test
+      LDAP_ORGANISATION: biometrie
+    image: gfiorleans.azurecr.io/gli-biometrie/ldap
+    init: true
+    ports:
+      - "16089:389"
+      - "16036:636"
+    restart: "no"
+  node:
+    build:
+      context: .docker/node
+    image: gfiorleans.azurecr.io/gli-biometrie/node
+    init: true
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.gli-biometrie.rule: Host(`biometrie.test`)
+      traefik.http.routers.gli-biometrie.service: gli-biometrie
+      traefik.http.services.gli-biometrie.loadbalancer.server.port: '8080'
+      traefik.http.routers.gli-biometrie-gulp.rule: Host(`gulp.biometrie.test`)
+      traefik.http.routers.gli-biometrie-gulp.service: gli-biometrie-gulp
+      traefik.http.services.gli-biometrie-gulp.loadbalancer.server.port: '3000'
+    networks:
+      - default
+      - reverse-proxy
+    restart: "no"
+    user: %uid%:%gid%
+    volumes:
+      - %ddb.path.project%:/app:rw
+      - node-cache:/home/node/.cache:rw
+      - node-npm-packages:/home/node/.npm-packages:rw
+  php:
+    build:
+      context: .docker/php
+    environment:
+      PHP_IDE_CONFIG: serverName=gli-biometrie
+      XDEBUG_CONFIG: remote_enable=on remote_autostart=off idekey=gli-biometrie remote_host=%docker.debug.host%
+    image: gfiorleans.azurecr.io/gli-biometrie/php
+    init: true
+    restart: "no"
+    user: %uid%:%gid%
+    volumes:
+      - php-composer-cache:/composer/cache:rw
+      - php-composer-vendor:/composer/vendor:rw
+      - %ddb.path.project%/.docker/php/conf.d/php-config.ini:/usr/local/etc/php/conf.d/php-config.ini:rw
+      - %ddb.path.project%:/var/www/html:rw
+  web:
+    build:
+      context: .docker/web
+    image: gfiorleans.azurecr.io/gli-biometrie/web
+    init: true
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.gli-biometrie-api.rule: Host(`api.biometrie.test`)
+      traefik.http.routers.gli-biometrie-api.service: gli-biometrie-api
+      traefik.http.services.gli-biometrie-api.loadbalancer.server.port: '80'
+      traefik.http.routers.gli-biometrie-path_prefix.rule: Host(`api.biometrie.test`) && PathPrefix(`/path_prefix{regex:$$|/.*}`)
+      traefik.http.routers.gli-biometrie-path_prefix.service: gli-biometrie-path_prefix
+      traefik.http.routers.gli-biometrie-path_prefix.middlewares: gli-biometrie-path_prefix-stripprefix
+      traefik.http.services.gli-biometrie-path_prefix.loadbalancer.server.port: '80'
+      traefik.http.middlewares.gli-biometrie-path_prefix-stripprefix.stripPrefix.prefixes: "/path_prefix"
+    networks:
+      - default
+      - reverse-proxy
+    restart: "no"
+    volumes:
+      - %ddb.path.project%/.docker/web/nginx.conf:/etc/nginx/conf.d/default.conf:rw
+      - %ddb.path.project%:/var/www/html:rw
+networks:
+  reverse-proxy:
+    external: true
+    name: reverse-proxy
+volumes:
+  db-data: {}
+  db-test-data: {}
+  keycloak-db-data: {}
+  node-cache: {}
+  node-npm-packages: {}
+  php-composer-cache: {}
+  php-composer-vendor: {}

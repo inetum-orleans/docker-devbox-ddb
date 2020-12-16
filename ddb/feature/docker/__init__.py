@@ -56,6 +56,7 @@ class DockerFeature(Feature):
         self._configure_defaults_compose_project_name(feature_config)
         self._configure_defaults_build_image_tag(feature_config)
         self._configure_defaults_restart_policy(feature_config)
+        self._configure_defaults_https(feature_config)
 
     @staticmethod
     def _configure_defaults_user_from_name_and_group(feature_config):
@@ -259,3 +260,11 @@ class DockerFeature(Feature):
                 feature_config['restart_policy'] = 'no'
             else:
                 feature_config['restart_policy'] = 'unless-stopped'
+
+    @staticmethod
+    def _configure_defaults_https(feature_config):
+        https = feature_config.get('reverse_proxy.https')
+        redirect_to_https = feature_config.get('reverse_proxy.redirect_to_https')
+
+        if redirect_to_https and not https:
+            feature_config['reverse_proxy.redirect_to_https'] = False

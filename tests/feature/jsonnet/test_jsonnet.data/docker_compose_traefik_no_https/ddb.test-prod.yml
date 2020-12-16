@@ -1,0 +1,12 @@
+core:
+  env:
+    current: prod
+  project:
+    name: gli-biometrie
+docker:
+  registry:
+    name: "gfiorleans.azurecr.io"
+    repository: "gli-biometrie"
+  reverse_proxy:
+    certresolver: "letsencrypt"
+    https: false
