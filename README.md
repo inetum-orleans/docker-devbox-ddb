@@ -6,6 +6,7 @@ ddb
 [![PyPI - License](https://img.shields.io/pypi/l/docker-devbox-ddb)](https://github.com/gfi-centre-ouest/docker-devbox-ddb/blob/develop/LICENSE)
 [![Build Status](https://github.com/gfi-centre-ouest/docker-devbox-ddb/workflows/build/badge.svg)](https://github.com/gfi-centre-ouest/docker-devbox-ddb/actions?query=workflow%3Abuild)
 [![Code coverage](https://img.shields.io/coveralls/github/gfi-centre-ouest/docker-devbox-ddb)](https://coveralls.io/github/gfi-centre-ouest/docker-devbox-ddb)
+[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/relekang/python-semantic-release)
 
 **[Erase environment differences, make developers happy !](https://gfi-centre-ouest.github.io/docker-devbox-ddb)**
 
