@@ -32,7 +32,7 @@ jobs:
         run: pip install -r requirements-dev.txt
 
       - name: "Publish release"
-        run: semantic-release publish --minor
+        run: semantic-release publish
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
