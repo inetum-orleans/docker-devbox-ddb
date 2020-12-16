@@ -36,3 +36,13 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+
+      - name: "Merger master to develop"
+        uses: robotology/gh-action-nightly-merge@v1.3.1
+        with:
+          stable_branch: 'master'
+          development_branch: 'devel'
+          allow_ff: true
+          user_name: github-actions
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
