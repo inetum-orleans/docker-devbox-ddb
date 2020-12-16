@@ -3,6 +3,10 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.3.1 (2020-12-16)
+### Fix
+* **version:** Version check now removes "v" first character from tag ([#129](https://github.com/gfi-centre-ouest/docker-devbox-ddb/pull/129)) ([`71a3567`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/71a3567e58e3a0a93b279c83668275a1c64a72f5))
+
 ## v1.3.0 (2020-12-16)
 ### Feature
 * **docker:** Add https option to reverse-proxy features (libjsonnet and configuration) ([`c2c1fad`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/c2c1fad347a338d38b3f9cd4e16bf4d634d72741))
