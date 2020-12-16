@@ -1,4 +1,4 @@
-python-semantic-release
+git+https://github.com/Toilal/python-semantic-release.git#egg=python-semantic-release
 commitizen
 pre-commit
 githubrelease
