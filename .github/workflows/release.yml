@@ -3,7 +3,7 @@ on:
   push:
     branches: [ master ]
 jobs:
-  test:
+  release:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -34,4 +34,5 @@ jobs:
       - name: "Publish release"
         run: python setup.py publish
         env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
