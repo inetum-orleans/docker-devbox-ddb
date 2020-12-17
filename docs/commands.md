@@ -4,36 +4,37 @@ Commands
 If you run **ddb** with no argument, the usage is displayed.
 
 !!! info "ddb usage"
-    ```
-    usage: ddb [-h] [-v] [-vv] [-s] [-x] [-c] [-w] [-ff] [--version]
-               {run,init,configure,features,config,info,activate,deactivate,check-activated}
-               ...
-    
+```
+usage: ddb [-h] [-v] [-vv] [-s] [-x] [-c] [-w] [-ff] [--version]
+{init,configure,features,config,info,run,self-update,activate,deactivate,check-activated} ...
+
     positional arguments:
-      {run,init,configure,features,config,info,activate,deactivate,check-activated}
-                            Available commands
-        run                 Display command to run project binary
-        init                Initialize the environment
-        configure           Configure the environment
-        features            List enabled features
-        config              Display effective configuration
-        info                Display useful information
-        activate            Write a shell script to be executed to activate
-                            environment
-        deactivate          Write a shell script to be executed to deactivate
-                            environment
-        check-activated     Check if project is activated in current shell
+    {init,configure,features,config,info,run,self-update,activate,deactivate,check-activated}
+    Available commands
+    init                Initialize the environment
+    configure           Configure the environment
+    features            List enabled features
+    config              Display effective configuration
+    info                Display useful information
+    run                 Display command to run project binary
+    self-update         Update ddb to latest version
+    activate            Write a shell script to be executed to activate
+    environment
+    deactivate          Write a shell script to be executed to deactivate
+    environment
+    check-activated     Check if project is activated in current shell
     
     optional arguments:
-      -h, --help            show this help message and exit
-      -v, --verbose         Enable more logs
-      -vv, --very-verbose   Enable even more logs
-      -s, --silent          Disable all logs
-      -x, --exceptions      Display exceptions on errors
-      -c, --clear-cache     Clear all used caches
-      -w, --watch           Enable watch mode (hot reload of generated files)
-      -ff, --fail-fast      Stop on first error
-      --version             Display the ddb version and check for new ones.
+    -h, --help            show this help message and exit
+    -v, --verbose         Enable more logs
+    -vv, --very-verbose   Enable even more logs
+    -s, --silent          Disable all logs
+    -x, --exceptions      Display exceptions on errors
+    -c, --clear-cache     Clear all used caches
+    -w, --watch           Enable watch mode (hot reload of generated files)
+    -ff, --fail-fast      Stop on first error
+    --version             Display the ddb version and check for new ones.
+
 ```
 
 Positional argument match **command** names: `run`, `init`, `configure`, `features`, `config`, `activate`, `deactivate`.
@@ -68,9 +69,14 @@ Those are placed **after the command name**.
 Available commands
 ---
 
-- **ddb-init**
+- **ddb init**
 
 TODO
+
+- **ddb self-update**
+
+If ddb is installed with the standalone binary and a new version is available on github, it will automatically download 
+it and update the current binary.
 
 - **ddb features**
 
@@ -133,7 +139,7 @@ binaries in a more readable way.
 ```
 
 !!! tip "Tip: Use --type to filter for a type of information"
-    
+
     For instance, you want to see only virtual hosts information. 
     
     Instead of displaying every section, by writing `ddb info --type bin` you will be provided with a filtered result.
@@ -152,15 +158,15 @@ binaries in a more readable way.
 
 - **ddb activate**
 
-Display a script for the configured shell that must be evaluated to active the project environment inside the current 
+Display a script for the configured shell that must be evaluated to active the project environment inside the current
 shell session.
 
 Read more: [Shell feature](features/shell.md)
 
 - **ddb deactivate**
 
-Display a script for the configured shell that must be evaluated to deactivate the project environment inside the current 
-shell session.
+Display a script for the configured shell that must be evaluated to deactivate the project environment inside the
+current shell session.
 
 Read more: [Shell feature](features/shell.md)
 
