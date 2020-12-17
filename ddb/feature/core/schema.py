@@ -65,3 +65,4 @@ class CoreFeatureSchema(FeatureSchema):
     path = fields.Nested(PathSchema(), default=PathSchema())
     process = fields.Dict(fields.String(), fields.Nested(ProcessSchema()), default={})  # Process binary mappings
     configuration = fields.Nested(ConfigurationSchema(), default=ConfigurationSchema())
+    github_repository = fields.String(required=True, default="gfi-centre-ouest/docker-devbox-ddb")

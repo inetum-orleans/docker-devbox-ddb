@@ -1,17 +1,145 @@
 # -*- coding: utf-8 -*-
 import os
+import shutil
+import sys
+from datetime import date
+from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import Optional
+from urllib.error import HTTPError
 
+import requests
 import yaml
-from ddb.utils.file import force_remove
+from progress.bar import IncrementalBar
 
+from ddb import __version__
+from ddb.action import Action, InitializableAction
+from ddb.cache import caches, register_global_cache
+from ddb.config import config
+from ddb.event import events
+from ddb.utils.file import force_remove
+from ddb.utils.table_display import get_table_display
 from .. import features
-from ...action import Action
 from ...action.action import EventBinding
-from ...config import config
 from ...config.flatten import flatten
 from ...context import context
-from ...event import events
+
+
+def get_latest_release_version(github_repository: str):
+    """
+    Retrieve latest release version from GitHub API
+    :param github_repository github repository to check
+    :return: Version from tag_name retrieved from GitHub API
+    """
+    response = requests.get('https://api.github.com/repos/{}/releases/latest'.format(github_repository))
+    try:
+        response.raise_for_status()
+        tag_name = response.json().get('tag_name')
+        if tag_name and tag_name.startswith('v'):
+            tag_name = tag_name[1:]
+        return tag_name
+    except HTTPError:  # pylint:disable=bare-except
+        return None
+
+
+def get_current_version():
+    """
+    Get the current version
+    :return:
+    """
+    return __version__
+
+
+def print_version(github_repository, silent=False):
+    """
+    Print the version and informations.
+    :return:
+    """
+    if silent:
+        print(get_current_version())
+        return
+
+    version_title = 'ddb ' + get_current_version()
+    version_content = []
+
+    last_release = get_latest_release_version(github_repository)
+
+    if last_release and get_current_version() < last_release:
+        version_content.append(_build_update_header(last_release))
+        version_content.append(_build_update_details(github_repository, last_release))
+    version_content.append([
+        'Please report any bug or feature request at',
+        'https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues'
+    ])
+    print(get_table_display(version_title, version_content))
+
+
+def check_for_update(github_repository: str, output=False, details=False):
+    """
+    Check if a new version is available on github.
+    :param github_repository github repository to check
+    :param output: if True, new version information will be displayed.
+    :param details: if True, will display more details.
+    :return: True if an update is available.
+    """
+    last_release = get_latest_release_version(github_repository)
+
+    if last_release and get_current_version() < last_release:
+        if output:
+            header = _build_update_header(last_release)
+            if details:
+                row = _build_update_details(github_repository, last_release)
+                print(get_table_display(header, [row]))
+            else:
+                for row in header:
+                    print(row)
+        return True
+    return False
+
+
+def _build_update_header(last_release):
+    return ['A new version is available: {}'.format(last_release)]
+
+
+def _build_update_details(github_repository, last_release):
+    row = []
+    if is_binary():
+        row.append('run "ddb self-update" command to update.')
+    row.extend((
+        'For more information, check the following links:',
+        'https://github.com/{}/releases/tag/{}'.format(github_repository, last_release),
+        'https://github.com/{}/releases/tag/{}/CHANGELOG.md'.format(github_repository, last_release),
+    ))
+    return row
+
+
+def is_binary():
+    """
+    Check if current process is binary.
+    :return:
+    """
+    return getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
+
+
+def get_binary_path():
+    """
+    Get the binary path
+    :return:
+    """
+    return sys.argv[0]
+
+
+def get_binary_destination_path(binary_path: str):
+    """
+    Get binary path destination
+    :param binary_path:
+    :return:
+    """
+    if binary_path.endswith('.py') \
+            and Path(binary_path).read_text().startswith("#!/usr/bin/env python"):
+        # Avoid removing main source file when running on development.
+        binary_path = binary_path[:-3] + ".bin"
+    return binary_path
 
 
 class FeaturesAction(Action):
@@ -149,3 +277,136 @@ class ReloadConfigAction(Action):
                 except Exception as exc:  # pylint:disable=broad-except
                     context.log.warning("Configuration has fail to reload: %s", str(exc))
                     return
+
+
+class VersionAction(Action):
+    """
+    Display display version information when --version flag is used.
+    """
+
+    @property
+    def name(self) -> str:
+        return "core:version"
+
+    @property
+    def event_bindings(self):
+        return events.main.version
+
+    @staticmethod
+    def execute(silent: bool):
+        """
+        Check for updates
+        :param command command name
+        :return:
+        """
+        github_repository = config.data.get('core.github_repository')
+        print_version(github_repository, silent)
+
+
+class MainCheckForUpdateAction(InitializableAction):
+    """
+    Check if a new version is available on github.
+    """
+
+    def initialize(self):
+        register_global_cache('core.check_for_update.version')
+
+    @property
+    def name(self) -> str:
+        return "core:check-for-update"
+
+    @property
+    def event_bindings(self):
+        return events.main.terminate
+
+    @staticmethod
+    def execute(command: str):
+        """
+        Check for updates
+        :param command command name
+        :return:
+        """
+        if command not in ['activate', 'deactivate', 'run', 'self-update']:
+            cache = caches.get('core.check_for_update.version')
+            last_check = cache.get('last_check', None)
+            today = date.today()
+
+            if last_check is None or last_check < today:
+                github_repository = config.data.get('core.github_repository')
+                check_for_update(github_repository, True, True)
+
+            cache.set('last_check', today)
+
+
+class SelfUpdateAction(Action):
+    """
+    Self update ddb if a newer version is available.
+    """
+
+    @property
+    def name(self) -> str:
+        return "core:selfupdate"
+
+    @property
+    def event_bindings(self):
+        return events.phase.selfupdate
+
+    def execute(self):
+        """
+        Execute action
+        """
+        github_repository = config.data.get('core.github_repository')
+
+        if not is_binary():
+            print('ddb is running from a package mode than doesn\'t support self-update.')
+            print(
+                'You can download binary package supporting it ' +
+                'from github: https://github.com/{}/releases'.format(github_repository)
+            )
+            return
+
+        last_release = get_latest_release_version(github_repository)
+
+        if not check_for_update(True):
+            print('ddb is already up to date.')
+            if not config.args.force:
+                return
+
+        self.self_update_binary(github_repository, last_release)
+
+    @staticmethod
+    def self_update_binary(github_repository, version):
+        """
+        Self update the ddb binary
+        :param github_repository:
+        :param version:
+        :return:
+        """
+        binary_path = get_binary_path()
+
+        if not os.access(binary_path, os.W_OK):
+            raise PermissionError("You don't have permission to write on ddb binary file. ({})".format(sys.argv[0]))
+
+        remote_filename = 'ddb.exe' if os.name == 'nt' else 'ddb'
+        url = 'https://github.com/{}/releases/download/v{}/{}'.format(github_repository, version, remote_filename)
+
+        progress_bar = None
+        with requests.get(url, stream=True) as response:
+            response.raise_for_status()
+
+            with NamedTemporaryFile() as tmp:
+                if not progress_bar:
+                    content_length = int(response.headers['content-length'])
+                    progress_bar = IncrementalBar('Downloading', max=content_length)
+
+                for chunk in response.iter_content(32 * 1024):
+                    progress_bar.next(len(chunk))  # pylint:disable=not-callable
+                    tmp.write(chunk)
+                tmp.flush()
+
+                binary_path = get_binary_destination_path(binary_path)
+                shutil.copyfile(tmp.name, binary_path)
+
+            progress_bar.finish()
+
+        print("ddb has been updated.")

@@ -7,12 +7,12 @@ from ddb import __version__
 from ddb.__main__ import main
 
 
-class TestSelfUpdate:
+class TestCore:
     bin = './bin/ddb'
 
     def test_self_update_no_binary(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
-        mocker.patch('ddb.feature.selfupdate.actions.get_binary_path', lambda *args, **kwargs: self.bin)
-        mocker.patch('ddb.feature.selfupdate.actions.is_binary', lambda *args, **kwargs: False)
+        mocker.patch('ddb.feature.core.actions.get_binary_path', lambda *args, **kwargs: self.bin)
+        mocker.patch('ddb.feature.core.actions.is_binary', lambda *args, **kwargs: False)
 
         project_loader("empty")
 
@@ -27,9 +27,9 @@ class TestSelfUpdate:
                               'https://github.com/gfi-centre-ouest/docker-devbox-ddb/releases\n')
 
     def test_self_update_up_to_date(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
-        mocker.patch('ddb.feature.selfupdate.actions.get_binary_path', lambda *args, **kwargs: self.bin)
-        mocker.patch('ddb.feature.selfupdate.actions.is_binary', lambda *args, **kwargs: True)
-        mocker.patch('ddb.feature.selfupdate.actions.get_latest_release_version', lambda *args, **kwargs: __version__)
+        mocker.patch('ddb.feature.core.actions.get_binary_path', lambda *args, **kwargs: self.bin)
+        mocker.patch('ddb.feature.core.actions.is_binary', lambda *args, **kwargs: True)
+        mocker.patch('ddb.feature.core.actions.get_latest_release_version', lambda *args, **kwargs: __version__)
 
         project_loader("empty")
 
@@ -42,10 +42,10 @@ class TestSelfUpdate:
         assert outerr.out == 'ddb is already up to date.\n'
 
     def test_self_update_outdated(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
-        mocker.patch('ddb.feature.selfupdate.actions.get_binary_path', lambda *args, **kwargs: self.bin)
-        mocker.patch('ddb.feature.selfupdate.actions.is_binary', lambda *args, **kwargs: True)
-        mocker.patch('ddb.feature.selfupdate.actions.get_latest_release_version', lambda *args, **kwargs: '1.3.1')
-        mocker.patch('ddb.feature.selfupdate.actions.get_current_version', lambda *args, **kwargs: '1.3.0')
+        mocker.patch('ddb.feature.core.actions.get_binary_path', lambda *args, **kwargs: self.bin)
+        mocker.patch('ddb.feature.core.actions.is_binary', lambda *args, **kwargs: True)
+        mocker.patch('ddb.feature.core.actions.get_latest_release_version', lambda *args, **kwargs: '1.3.1')
+        mocker.patch('ddb.feature.core.actions.get_current_version', lambda *args, **kwargs: '1.3.0')
 
         project_loader("empty")
 
@@ -58,10 +58,10 @@ class TestSelfUpdate:
         assert outerr.out == 'ddb has been updated.\n'
 
     def test_self_update_up_to_date_force(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
-        mocker.patch('ddb.feature.selfupdate.actions.get_binary_path', lambda *args, **kwargs: self.bin)
-        mocker.patch('ddb.feature.selfupdate.actions.is_binary', lambda *args, **kwargs: True)
-        mocker.patch('ddb.feature.selfupdate.actions.get_latest_release_version', lambda *args, **kwargs: '1.3.0')
-        mocker.patch('ddb.feature.selfupdate.actions.get_current_version', lambda *args, **kwargs: '1.3.0')
+        mocker.patch('ddb.feature.core.actions.get_binary_path', lambda *args, **kwargs: self.bin)
+        mocker.patch('ddb.feature.core.actions.is_binary', lambda *args, **kwargs: True)
+        mocker.patch('ddb.feature.core.actions.get_latest_release_version', lambda *args, **kwargs: '1.3.0')
+        mocker.patch('ddb.feature.core.actions.get_current_version', lambda *args, **kwargs: '1.3.0')
 
         project_loader("empty")
 
@@ -74,10 +74,10 @@ class TestSelfUpdate:
         assert outerr.out == 'ddb is already up to date.\nddb has been updated.\n'
 
     def test_self_update_up_to_date(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
-        mocker.patch('ddb.feature.selfupdate.actions.get_binary_path', lambda *args, **kwargs: self.bin)
-        mocker.patch('ddb.feature.selfupdate.actions.is_binary', lambda *args, **kwargs: True)
-        mocker.patch('ddb.feature.selfupdate.actions.get_latest_release_version', lambda *args, **kwargs: '1.3.0')
-        mocker.patch('ddb.feature.selfupdate.actions.get_current_version', lambda *args, **kwargs: '1.3.0')
+        mocker.patch('ddb.feature.core.actions.get_binary_path', lambda *args, **kwargs: self.bin)
+        mocker.patch('ddb.feature.core.actions.is_binary', lambda *args, **kwargs: True)
+        mocker.patch('ddb.feature.core.actions.get_latest_release_version', lambda *args, **kwargs: '1.3.0')
+        mocker.patch('ddb.feature.core.actions.get_current_version', lambda *args, **kwargs: '1.3.0')
 
         project_loader("empty")
 
@@ -90,10 +90,10 @@ class TestSelfUpdate:
         assert outerr.out == 'ddb is already up to date.\n'
 
     def test_version_up_to_date(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
-        mocker.patch('ddb.feature.selfupdate.actions.get_binary_path', lambda *args, **kwargs: self.bin)
-        mocker.patch('ddb.feature.selfupdate.actions.is_binary', lambda *args, **kwargs: True)
-        mocker.patch('ddb.feature.selfupdate.actions.get_latest_release_version', lambda *args, **kwargs: '1.3.0')
-        mocker.patch('ddb.feature.selfupdate.actions.get_current_version', lambda *args, **kwargs: '1.3.0')
+        mocker.patch('ddb.feature.core.actions.get_binary_path', lambda *args, **kwargs: self.bin)
+        mocker.patch('ddb.feature.core.actions.is_binary', lambda *args, **kwargs: True)
+        mocker.patch('ddb.feature.core.actions.get_latest_release_version', lambda *args, **kwargs: '1.3.0')
+        mocker.patch('ddb.feature.core.actions.get_current_version', lambda *args, **kwargs: '1.3.0')
 
         project_loader("empty")
 
@@ -109,10 +109,10 @@ class TestSelfUpdate:
 +--------------------------------------------------------------+\n'''
 
     def test_version_outdated_binary(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
-        mocker.patch('ddb.feature.selfupdate.actions.get_binary_path', lambda *args, **kwargs: self.bin)
-        mocker.patch('ddb.feature.selfupdate.actions.is_binary', lambda *args, **kwargs: True)
-        mocker.patch('ddb.feature.selfupdate.actions.get_latest_release_version', lambda *args, **kwargs: '1.3.1')
-        mocker.patch('ddb.feature.selfupdate.actions.get_current_version', lambda *args, **kwargs: '1.3.0')
+        mocker.patch('ddb.feature.core.actions.get_binary_path', lambda *args, **kwargs: self.bin)
+        mocker.patch('ddb.feature.core.actions.is_binary', lambda *args, **kwargs: True)
+        mocker.patch('ddb.feature.core.actions.get_latest_release_version', lambda *args, **kwargs: '1.3.1')
+        mocker.patch('ddb.feature.core.actions.get_current_version', lambda *args, **kwargs: '1.3.0')
 
         project_loader("empty")
 

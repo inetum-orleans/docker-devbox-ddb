@@ -5,7 +5,8 @@ from typing import Iterable, ClassVar
 
 from dotty_dict import Dotty
 
-from .actions import FeaturesAction, ConfigAction, ReloadConfigAction, EjectAction
+from .actions import FeaturesAction, ConfigAction, ReloadConfigAction, EjectAction, SelfUpdateAction, \
+    MainCheckForUpdateAction, VersionAction
 from .schema import CoreFeatureSchema
 from ..feature import Feature, FeatureConfigurationAutoConfigureError
 from ..schema import FeatureSchema
@@ -41,7 +42,10 @@ class CoreFeature(Feature):
             FeaturesAction(),
             ConfigAction(),
             ReloadConfigAction(),
-            EjectAction()
+            EjectAction(),
+            SelfUpdateAction(),
+            MainCheckForUpdateAction(),
+            VersionAction()
         )
 
     @property
@@ -58,12 +62,16 @@ class CoreFeature(Feature):
             parser.add_argument("--type", action="append",
                                 help="Filter for a type of information between: bin, env, port and vhost")
 
+        def selfupdate_parser(parser: ArgumentParser):
+            parser.add_argument("--force", action="store_true", help="Force update")
+
         return (
             DefaultPhase("init", "Initialize project", run_once=True),
             DefaultPhase("configure", "Configure the environment", configure_parser),
             DefaultPhase("features", "Display enabled features"),
             DefaultPhase("config", "Display effective configuration", config_parser),
             DefaultPhase("info", "Display useful information", info_parser),
+            DefaultPhase("selfupdate", "Update ddb binary with latest version", parser=selfupdate_parser)
         )
 
     @property
@@ -84,6 +92,9 @@ class CoreFeature(Feature):
 
             LifecycleCommand("info", "Display useful information",
                              "info"),
+
+            LifecycleCommand("self-update", "Update ddb to latest version",
+                             "selfupdate"),
         )
 
     def configure(self, bootstrap=False):

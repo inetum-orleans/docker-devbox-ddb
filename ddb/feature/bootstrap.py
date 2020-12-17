@@ -18,7 +18,6 @@ from .jinja import JinjaFeature
 from .jsonnet import JsonnetFeature
 from .permissions import PermissionsFeature
 from .run import RunFeature
-from .selfupdate import SelfUpdateFeature
 from .shell import ShellFeature
 from .smartcd import SmartcdFeature
 from .symlinks import SymlinksFeature
@@ -39,7 +38,6 @@ _default_available_features = [CertsFeature(),
                                JsonnetFeature(),
                                PermissionsFeature(),
                                RunFeature(),
-                               SelfUpdateFeature(),
                                SmartcdFeature(),
                                ShellFeature(),
                                SymlinksFeature(),
