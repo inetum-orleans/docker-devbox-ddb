@@ -31,3 +31,4 @@ docker-compose
 paramiko
 wcmatch
 marshmallow-union
+progress
