@@ -82,7 +82,7 @@ def check_for_update(github_repository: str, output=False, details=False):
     :param github_repository github repository to check
     :param output: if True, new version information will be displayed.
     :param details: if True, will display more details.
-    :return: True if an update is available.
+    :return: Version of the latest release if it doesn't match the current one.
     """
     last_release = get_latest_release_version(github_repository)
 
@@ -95,8 +95,8 @@ def check_for_update(github_repository: str, output=False, details=False):
             else:
                 for row in header:
                     print(row)
-        return True
-    return False
+        return last_release
+    return None
 
 
 def _build_update_header(last_release):
@@ -417,12 +417,14 @@ class SelfUpdateAction(Action):
             )
             return
 
-        last_release = get_latest_release_version(github_repository)
-
-        if not check_for_update(True):
+        last_release = check_for_update(github_repository, True)
+        if not last_release:
             print('ddb is already up to date.')
             if not config.args.force:
                 return
+
+        if not last_release:
+            last_release = get_latest_release_version(github_repository)
 
         self.self_update_binary(github_repository, last_release)
 

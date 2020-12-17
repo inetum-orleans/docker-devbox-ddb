@@ -56,7 +56,7 @@ class TestCore:
 
         outerr = capsys.readouterr()
         assert outerr.err == ""
-        assert outerr.out == 'ddb has been updated.\n'
+        assert outerr.out == 'A new version is available: 1.3.1\nddb has been updated.\n'
 
     def test_self_update_up_to_date_force(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
         mocker.patch('ddb.feature.core.actions.get_binary_path', lambda *args, **kwargs: self.bin)
