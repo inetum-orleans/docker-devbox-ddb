@@ -3,6 +3,10 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.4.1 (2020-12-17)
+### Fix
+* **core:** Fix self-update command ([`843cf67`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/843cf6736dff9290ececc39334a23c2a2446b3c3))
+
 ## v1.4.0 (2020-12-17)
 ### Feature
 * **core:** Add `core.required_version` parameter to enforce project ddb version requirement ([#75](https://github.com/gfi-centre-ouest/docker-devbox-ddb/pull/75)) ([`bbf32e6`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/bbf32e61353121332870e3670d84d647fa7df812))
