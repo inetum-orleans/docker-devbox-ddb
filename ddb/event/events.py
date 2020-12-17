@@ -2,9 +2,9 @@ from typing import Optional, Union
 
 from ddb.binary import Binary as BinaryType
 from . import event
-
-
 # pylint:disable=redefined-outer-name
+from ..command import Command
+
 
 class File:
     """
@@ -231,8 +231,14 @@ class Main:
     Main function related events.
     """
 
+    @event("main:start")
+    def start(self, command: Command):
+        """
+        Main start
+        """
+
     @event("main:terminate")
-    def terminate(self, command: str):
+    def terminate(self, command: Command):
         """
         Main terminate
         """

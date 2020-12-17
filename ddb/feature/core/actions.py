@@ -21,6 +21,7 @@ from ddb.utils.file import force_remove
 from ddb.utils.table_display import get_table_display
 from .. import features
 from ...action.action import EventBinding
+from ...command import Command
 from ...config.flatten import flatten
 from ...context import context
 
@@ -320,13 +321,13 @@ class MainCheckForUpdateAction(InitializableAction):
         return events.main.terminate
 
     @staticmethod
-    def execute(command: str):
+    def execute(command: Command):
         """
         Check for updates
         :param command command name
         :return:
         """
-        if command not in ['activate', 'deactivate', 'run', 'self-update']:
+        if command.name not in ['activate', 'deactivate', 'run', 'self-update']:
             cache = caches.get('core.check_for_update.version')
             last_check = cache.get('last_check', None)
             today = date.today()

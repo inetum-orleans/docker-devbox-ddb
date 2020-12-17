@@ -386,6 +386,8 @@ def main(args: Optional[Sequence[str]] = None,
             handle_command_line(command)
 
         bus.on(events.config.reloaded.name, on_config_reloaded)  # pylint:disable=no-member
+
+        events.main.start(command=command)
         handle_command_line(command)
 
         events.main.terminate(command=command)
