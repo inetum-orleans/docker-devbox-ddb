@@ -2,6 +2,7 @@
 import os
 import shutil
 import sys
+from datetime import date
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from urllib.error import HTTPError
@@ -10,7 +11,8 @@ import requests
 from progress.bar import IncrementalBar
 
 from ddb import __version__
-from ddb.action import Action
+from ddb.action import Action, InitializableAction
+from ddb.cache import caches, register_global_cache
 from ddb.config import config
 from ddb.event import events
 from ddb.utils.table_display import get_table_display
@@ -41,7 +43,7 @@ def get_current_version():
     return __version__
 
 
-def print_version(silent=False):
+def print_version(github_repository, silent=False):
     """
     Print the version and informations.
     :return:
@@ -52,8 +54,6 @@ def print_version(silent=False):
 
     version_title = 'ddb ' + get_current_version()
     version_content = []
-
-    github_repository = config.data.get('selfupdate.github_repository')
 
     last_release = get_latest_release_version(github_repository)
 
@@ -67,15 +67,14 @@ def print_version(silent=False):
     print(get_table_display(version_title, version_content))
 
 
-def check_for_update(output=False, details=False):
+def check_for_update(github_repository: str, output=False, details=False):
     """
     Check if a new version is available on github.
+    :param github_repository github repository to check
     :param output: if True, new version information will be displayed.
     :param details: if True, will display more details.
     :return: True if an update is available.
     """
-    github_repository = config.data.get('selfupdate.github_repository')
-
     last_release = get_latest_release_version(github_repository)
 
     if last_release and get_current_version() < last_release:
@@ -134,6 +133,65 @@ def get_binary_destination_path(binary_path: str):
         # Avoid removing main source file when running on development.
         binary_path = binary_path[:-3] + ".bin"
     return binary_path
+
+
+class VersionAction(Action):
+    """
+    Display display version information when --version flag is used.
+    """
+
+    @property
+    def name(self) -> str:
+        return "selfupdate:version"
+
+    @property
+    def event_bindings(self):
+        return events.main.version
+
+    @staticmethod
+    def execute(silent: bool):
+        """
+        Check for updates
+        :param command command name
+        :return:
+        """
+        github_repository = config.data.get('selfupdate.github_repository')
+        print_version(github_repository, silent)
+
+
+class MainCheckForUpdateAction(InitializableAction):
+    """
+    Check if a new version is available on github.
+    """
+
+    def initialize(self):
+        register_global_cache('selfupdate.version')
+
+    @property
+    def name(self) -> str:
+        return "selfupdate:check-for-update"
+
+    @property
+    def event_bindings(self):
+        return events.main.terminate
+
+    @staticmethod
+    def execute(command: str):
+        """
+        Check for updates
+        :param command command name
+        :return:
+        """
+        if command not in ['activate', 'deactivate', 'run', 'self-update']:
+            cache = caches.get('selfupdate.version')
+            last_check = cache.get('last_check', None)
+            today = date.today()
+
+            if last_check is None or last_check < today:
+                github_repository = config.data.get('selfupdate.github_repository')
+                check_for_update(github_repository, True, True)
+
+            cache.set('last_check', today)
 
 
 class SelfUpdateAction(Action):

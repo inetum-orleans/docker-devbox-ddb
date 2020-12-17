@@ -6,7 +6,6 @@ import os
 import sys
 import threading
 from argparse import ArgumentParser, Namespace
-from datetime import date
 from gettext import gettext as _
 from importlib import import_module
 from typing import Optional, Sequence, Iterable, Callable, Union, List
@@ -30,7 +29,6 @@ from ddb.feature import features, Feature
 from ddb.feature.bootstrap import reset_available_features, append_available_feature, \
     load_bootstrap_config, bootstrap_register_features
 from ddb.feature.core import ConfigureSecondPassException
-from ddb.feature.selfupdate.actions import print_version, check_for_update
 from ddb.phase import phases
 from ddb.registry import Registry, RegistryObject
 from ddb.service import services
@@ -361,15 +359,15 @@ def main(args: Optional[Sequence[str]] = None,
                 exc.opts.print_help()
                 raise
 
+        load_registered_features(False)
+        register_actions_in_event_bus(config.args.fail_fast)
+
         if config.args.version:
-            print_version(config.args.silent)
+            events.main.version(silent=config.args.silent)
             return []
 
-        load_registered_features(False)
         prepare_project_home()
         register_default_caches()
-
-        register_actions_in_event_bus(config.args.fail_fast)
 
         def on_config_reloaded():
             global _watch_started_event, _watch_stop_event  # pylint:disable=global-statement
@@ -390,8 +388,8 @@ def main(args: Optional[Sequence[str]] = None,
         bus.on(events.config.reloaded.name, on_config_reloaded)  # pylint:disable=no-member
         handle_command_line(command)
 
-        if command.name not in ['activate', 'deactivate', 'run', 'self-update']:
-            _check_for_update()
+        events.main.terminate(command=command)
+
         return context.exceptions
     finally:
         if not reset_disabled:
@@ -410,22 +408,6 @@ def stop_watch():
     Stop watch mode.
     """
     _watch_stop_event.set()
-
-
-def _check_for_update():
-    """
-    Check for updates
-    :return:
-    """
-    register_global_cache('core.version')
-    cache = caches.get('core.version')
-    last_check = cache.get('last_check', None)
-    today = date.today()
-
-    if last_check is None or last_check < today:
-        check_for_update(True, True)
-
-    cache.set('last_check', today)
 
 
 def clear_caches():

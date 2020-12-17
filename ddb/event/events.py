@@ -226,6 +226,24 @@ class Config:
         """
 
 
+class Main:
+    """
+    Main function related events.
+    """
+
+    @event("main:terminate")
+    def terminate(self, command: str):
+        """
+        Main terminate
+        """
+
+    @event("main:version")
+    def version(self, silent: bool):
+        """
+        Main version
+        """
+
+
 file = File()
 certs = Certs()
 binary = Binary()
@@ -233,3 +251,4 @@ run = Run()
 docker = Docker()
 phase = Phase()
 config = Config()
+main = Main()

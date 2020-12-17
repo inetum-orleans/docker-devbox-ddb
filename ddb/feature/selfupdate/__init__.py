@@ -2,7 +2,7 @@
 from argparse import ArgumentParser
 from typing import Iterable, ClassVar
 
-from .actions import SelfUpdateAction
+from .actions import SelfUpdateAction, MainCheckForUpdateAction, VersionAction
 from .schema import SelfUpdateSchema
 from ..feature import Feature
 from ..schema import FeatureSchema
@@ -47,4 +47,6 @@ class SelfUpdateFeature(Feature):
     def actions(self) -> Iterable[Action]:
         return (
             SelfUpdateAction(),
+            MainCheckForUpdateAction(),
+            VersionAction()
         )

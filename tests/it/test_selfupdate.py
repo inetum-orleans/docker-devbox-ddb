@@ -44,7 +44,7 @@ class TestSelfUpdate:
     def test_self_update_outdated(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
         mocker.patch('ddb.feature.selfupdate.actions.get_binary_path', lambda *args, **kwargs: self.bin)
         mocker.patch('ddb.feature.selfupdate.actions.is_binary', lambda *args, **kwargs: True)
-        mocker.patch('ddb.feature.selfupdate.actions.get_latest_release_version', lambda *args, **kwargs: __version__)
+        mocker.patch('ddb.feature.selfupdate.actions.get_latest_release_version', lambda *args, **kwargs: '1.3.1')
         mocker.patch('ddb.feature.selfupdate.actions.get_current_version', lambda *args, **kwargs: '1.3.0')
 
         project_loader("empty")
@@ -55,7 +55,7 @@ class TestSelfUpdate:
 
         outerr = capsys.readouterr()
         assert outerr.err == ""
-        assert outerr.out == 'A new version is available: 1.3.1\nddb has been updated.\n'
+        assert outerr.out == 'ddb has been updated.\n'
 
     def test_self_update_up_to_date_force(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
         mocker.patch('ddb.feature.selfupdate.actions.get_binary_path', lambda *args, **kwargs: self.bin)
