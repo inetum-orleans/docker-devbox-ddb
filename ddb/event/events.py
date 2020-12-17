@@ -207,6 +207,12 @@ class Phase:
         Run phase
         """
 
+    @event("phase:selfupdate")
+    def selfupdate(self):
+        """
+        Selfupdate phase
+        """
+
 
 class Config:
     """

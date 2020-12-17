@@ -13,7 +13,7 @@ from typing import Optional, Sequence, Iterable, Callable, Union, List
 
 import verboselogs
 from colorlog import default_log_colors, ColoredFormatter
-from ddb import __version__
+
 from ddb.action import actions
 from ddb.action.action import EventBinding, Action, WatchSupport
 from ddb.action.runnerfactory import action_event_binding_runner_factory
@@ -29,12 +29,11 @@ from ddb.event import bus, events
 from ddb.feature import features, Feature
 from ddb.feature.bootstrap import reset_available_features, append_available_feature, \
     load_bootstrap_config, bootstrap_register_features
+from ddb.feature.core import ConfigureSecondPassException
+from ddb.feature.selfupdate.actions import print_version, check_for_update
 from ddb.phase import phases
 from ddb.registry import Registry, RegistryObject
 from ddb.service import services
-from ddb.utils.release import ddb_repository, get_latest_release_version
-from ddb.utils.table_display import get_table_display
-from ddb.feature.core import ConfigureSecondPassException
 
 _watch_started_event = threading.Event()
 _watch_stop_event = threading.Event()
@@ -363,28 +362,7 @@ def main(args: Optional[Sequence[str]] = None,
                 raise
 
         if config.args.version:
-            if config.args.silent:
-                print(__version__)
-            else:
-                version_title = 'ddb ' + __version__
-                version_content = [
-                    [
-                        'Please report any bug or feature request at',
-                        'https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues'
-                    ]
-                ]
-
-                last_release = get_latest_release_version()
-                if last_release and __version__ < last_release:
-                    version_content.append([
-                        '',
-                        'A new version is available : ' + last_release,
-                        'https://github.com/' + ddb_repository + '/releases/tag/' + last_release,
-                        'https://github.com/' + ddb_repository + '/blob/' + last_release + '/CHANGELOG.md',
-                        ''
-                    ])
-
-                print(get_table_display(version_title, version_content))
+            print_version(config.args.silent)
             return []
 
         load_registered_features(False)
@@ -411,7 +389,8 @@ def main(args: Optional[Sequence[str]] = None,
 
         bus.on(events.config.reloaded.name, on_config_reloaded)  # pylint:disable=no-member
         handle_command_line(command)
-        if command.name not in ['activate', 'deactivate', 'run']:
+
+        if command.name not in ['activate', 'deactivate', 'run', 'self-update']:
             _check_for_update()
         return context.exceptions
     finally:
@@ -434,21 +413,17 @@ def stop_watch():
 
 
 def _check_for_update():
+    """
+    Check for updates
+    :return:
+    """
     register_global_cache('core.version')
     cache = caches.get('core.version')
     last_check = cache.get('last_check', None)
     today = date.today()
 
     if last_check is None or last_check < today:
-        last_release = get_latest_release_version()
-        if last_release and __version__ < last_release:
-            header = 'A new version is available : {}'.format(last_release)
-            content = [[
-                'For more information, check the following links :',
-                'https://github.com/{}/releases/tag/{}'.format(ddb_repository, last_release),
-                'https://github.com/{}/releases/tag/{}/CHANGELOG.md'.format(ddb_repository, last_release),
-            ]]
-            print(get_table_display(header, content))
+        check_for_update(True, True)
 
     cache.set('last_check', today)
 

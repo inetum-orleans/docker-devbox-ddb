@@ -37,21 +37,14 @@ class TestFileUtils:
         features.register(CoreFeature())
         load_registered_features()
 
-        url = 'https://raw.githubusercontent.com/gfi-centre-ouest/docker-devbox-ddb/develop/tox.ini'
+        url = 'https://raw.githubusercontent.com/gfi-centre-ouest/docker-devbox-ddb/b4f11276a37a4e4b1142f6b54b3d0763ccf5639e/ddb/__init__.py'
         path = 'test_file_content.txt'
 
         expected_file_content = '\n'.join([
-            '# content of: tox.ini , put in same dir as setup.py',
-            '[tox]',
-            'envlist = py35,py36,py37,py38',
-            'requires = tox-venv',
-            '           setuptools >= 30.0.0',
+            '# -*- coding: utf-8 -*-',
             '',
-            '[testenv]',
-            'deps = -r requirements-dev.txt',
-            'commands =',
-            '  pylint ddb',
-            '  pytest',
+            'from .__version__ import __version__',
+            ''
         ])
 
         url_content = FileUtils.get_file_content(url)
