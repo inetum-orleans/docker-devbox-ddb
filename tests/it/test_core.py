@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from _pytest.capture import CaptureFixture
@@ -18,7 +19,7 @@ class TestCore:
 
         main(["self-update"])
 
-        assert Path('./bin/ddb').read_text() == "binary"
+        assert Path('./bin/ddb').read_bytes() == b"binary"
 
         outerr = capsys.readouterr()
         assert outerr.err == ""
@@ -119,7 +120,6 @@ class TestCore:
         main(["--version"])
 
         outerr = capsys.readouterr()
-        print(outerr.out)
         assert outerr.err == ""
         assert outerr.out == '''+---------------------------------------------------------------------------------------+
 |                                       ddb 1.3.0                                       |
@@ -134,3 +134,56 @@ class TestCore:
 |                      Please report any bug or feature request at                      |
 |             https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues              |
 +---------------------------------------------------------------------------------------+\n'''
+
+    def test_required_version_eq(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
+        mocker.patch('ddb.feature.core.actions.get_current_version', lambda *args, **kwargs: '1.3.0')
+
+        project_loader("required-version")
+
+        exceptions = main(["configure"])
+
+        assert not exceptions
+        assert os.path.exists('test')
+
+    def test_required_version_lt(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
+        mocker.patch('ddb.feature.core.actions.get_current_version', lambda *args, **kwargs: '1.2.9')
+
+        project_loader("required-version")
+
+        exceptions = main(["configure"])
+        assert len(exceptions) == 1
+        assert str(exceptions[0]) == "This project requires ddb 1.3.0+. Current version is 1.2.9."
+
+        outerr = capsys.readouterr()
+        assert "This project requires ddb 1.3.0+. Current version is 1.2.9." in outerr.err
+        assert outerr.out == ""
+
+        assert not os.path.exists('test')
+
+    def test_required_version_lt_binary(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
+        mocker.patch('ddb.feature.core.actions.is_binary', lambda *args, **kwargs: True)
+        mocker.patch('ddb.feature.core.actions.get_current_version', lambda *args, **kwargs: '1.2.9')
+
+        project_loader("required-version")
+
+        exceptions = main(["configure"])
+        assert len(exceptions) == 1
+        assert str(exceptions[0]) == "This project requires ddb 1.3.0+. " \
+                                     "Current version is 1.2.9. " \
+                                     "run \"ddb self-update\" command to update."
+
+        outerr = capsys.readouterr()
+        assert "This project requires ddb 1.3.0+. Current version is 1.2.9." in outerr.err
+        assert outerr.out == ""
+
+        assert not os.path.exists('test')
+
+    def test_required_version_gt(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
+        mocker.patch('ddb.feature.core.actions.get_current_version', lambda *args, **kwargs: '1.3.1')
+
+        project_loader("required-version")
+
+        exceptions = main(["configure"])
+
+        assert not exceptions
+        assert os.path.exists('test')

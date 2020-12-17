@@ -6,7 +6,7 @@ from typing import Iterable, ClassVar
 from dotty_dict import Dotty
 
 from .actions import FeaturesAction, ConfigAction, ReloadConfigAction, EjectAction, SelfUpdateAction, \
-    MainCheckForUpdateAction, VersionAction
+    CheckForUpdateAction, VersionAction, CheckRequiredVersion
 from .schema import CoreFeatureSchema
 from ..feature import Feature, FeatureConfigurationAutoConfigureError
 from ..schema import FeatureSchema
@@ -44,8 +44,9 @@ class CoreFeature(Feature):
             ReloadConfigAction(),
             EjectAction(),
             SelfUpdateAction(),
-            MainCheckForUpdateAction(),
-            VersionAction()
+            CheckForUpdateAction(),
+            VersionAction(),
+            CheckRequiredVersion()
         )
 
     @property

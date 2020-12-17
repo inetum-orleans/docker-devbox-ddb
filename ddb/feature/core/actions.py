@@ -21,6 +21,7 @@ from ddb.utils.file import force_remove
 from ddb.utils.table_display import get_table_display
 from .. import features
 from ...action.action import EventBinding
+from ...action.runner import FailFastError, ExpectedError
 from ...command import Command
 from ...config.flatten import flatten
 from ...context import context
@@ -104,14 +105,21 @@ def _build_update_header(last_release):
 
 def _build_update_details(github_repository, last_release):
     row = []
-    if is_binary():
-        row.append('run "ddb self-update" command to update.')
+    update_tip = _build_update_tip()
+    if update_tip:
+        row.append(update_tip)
     row.extend((
         'For more information, check the following links:',
         'https://github.com/{}/releases/tag/{}'.format(github_repository, last_release),
         'https://github.com/{}/releases/tag/{}/CHANGELOG.md'.format(github_repository, last_release),
     ))
     return row
+
+
+def _build_update_tip():
+    if is_binary():
+        return 'run "ddb self-update" command to update.'
+    return ''
 
 
 def is_binary():
@@ -304,7 +312,7 @@ class VersionAction(Action):
         print_version(github_repository, silent)
 
 
-class MainCheckForUpdateAction(InitializableAction):
+class CheckForUpdateAction(InitializableAction):
     """
     Check if a new version is available on github.
     """
@@ -337,6 +345,49 @@ class MainCheckForUpdateAction(InitializableAction):
                 check_for_update(github_repository, True, True)
 
             cache.set('last_check', today)
+
+
+class RequiredVersionError(FailFastError, ExpectedError):
+    """
+    Exception that should be raised when the current version doesn't fullfil the required one.
+    """
+
+    def log_error(self):
+        context.log.error(str(self))
+
+
+class CheckRequiredVersion(Action):
+    """
+    Check if a new version is available on github.
+    """
+
+    @property
+    def name(self) -> str:
+        return "core:check-required-version"
+
+    @property
+    def event_bindings(self):
+        return events.main.start
+
+    @staticmethod
+    def execute(command: Command):
+        """
+        Check for updates
+        :param command command name
+        :return:
+        """
+        if command.name not in ['self-update']:
+            required_version = config.data.get('core.required_version')
+            if not required_version:
+                return
+            if required_version > get_current_version():
+                update_tip = _build_update_tip()
+                if update_tip:
+                    update_tip = ' ' + update_tip
+                raise RequiredVersionError(
+                    "This project requires ddb {}+. Current version is {}.{}".format(required_version,
+                                                                                     get_current_version(),
+                                                                                     update_tip))
 
 
 class SelfUpdateAction(Action):

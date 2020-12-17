@@ -11,6 +11,28 @@ from ddb.context.context import ContextStackItem
 A = TypeVar('A', bound=Action)  # pylint:disable=invalid-name
 
 
+class FailFastError(Exception):
+    """
+    A base exception that should always fail fast, even when flag is not enabled.
+    """
+
+
+class ExpectedError(Exception):
+    """
+    A base exception that can display it's own message in logs.
+    """
+
+    def log_error(self):
+        """
+        Log the error
+        :return:
+        """
+        log_error = context.log.exception if \
+            context.log.isEnabledFor(logging.DEBUG) or config.args.exceptions \
+            else context.log.error
+        log_error(str(self))
+
+
 # pylint:disable=too-few-public-methods
 
 
@@ -60,7 +82,7 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
             return True
         except Exception as exception:  # pylint:disable=broad-except
             self._handle_exception(exception)
-            if self.fail_fast:  # TODO: Ajouter une option à la ligne de commande
+            if self.fail_fast or isinstance(exception, FailFastError):
                 raise
 
         finally:
@@ -82,9 +104,12 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
         log_error = context.log.exception if \
             context.log.isEnabledFor(logging.DEBUG) or config.args.exceptions \
             else context.log.error
-        log_error("An unexpected error has occured %s: %s",
-                  context.stack,
-                  str(exception).strip())
+        if isinstance(exception, ExpectedError):
+            exception.log_error()
+        else:
+            log_error("An unexpected error has occured %s: %s",
+                      context.stack,
+                      str(exception).strip())
         if isinstance(exception, CalledProcessError):
             if exception.stderr:
                 for err_line in exception.stderr.decode("utf-8").splitlines():

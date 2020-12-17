@@ -42,6 +42,12 @@ Feature configuration
 - `project.name`: The name of the project
     - type: string
     - default: <the name of the project directory>
+- `required_version`: The minimal required ddb version for the project to work properly. If the required version is higher than the currently running one, ddb will stop working until it's updated.
+  - type: string
+  - default: null
+- `github_repository`: Github repository used to check new release of ddb. Should not be changed.
+  - type: string
+  - default: 'gfi-centre-ouest/docker-devbox-ddb'
 
 !!! example "Configuration"
     ```yaml
@@ -57,6 +63,7 @@ Feature configuration
         - ci
         - dev
         current: dev
+      github_repository: gfi-centre-ouest/docker-devbox-ddb
       os: posix
       path:
         ddb_home: /home/devbox/.docker-devbox/ddb

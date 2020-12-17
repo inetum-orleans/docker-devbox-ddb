@@ -15,6 +15,7 @@ from colorlog import default_log_colors, ColoredFormatter
 
 from ddb.action import actions
 from ddb.action.action import EventBinding, Action, WatchSupport
+from ddb.action.runner import ExpectedError
 from ddb.action.runnerfactory import action_event_binding_runner_factory
 from ddb.binary import binaries
 from ddb.cache import caches, global_cache_name, requests_cache_name, \
@@ -393,6 +394,8 @@ def main(args: Optional[Sequence[str]] = None,
         events.main.terminate(command=command)
 
         return context.exceptions
+    except ExpectedError as exception:
+        return [exception]
     finally:
         if not reset_disabled:
             reset()
