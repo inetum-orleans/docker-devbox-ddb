@@ -3,6 +3,10 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.4.0 (2020-12-17)
+### Feature
+* **core:** Add `core.required_version` parameter to enforce project ddb version requirement ([#75](https://github.com/gfi-centre-ouest/docker-devbox-ddb/pull/75)) ([`bbf32e6`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/bbf32e61353121332870e3670d84d647fa7df812))
+
 ## v1.3.1 (2020-12-16)
 ### Fix
 * **version:** Version check now removes "v" first character from tag ([#129](https://github.com/gfi-centre-ouest/docker-devbox-ddb/pull/129)) ([`71a3567`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/71a3567e58e3a0a93b279c83668275a1c64a72f5))
