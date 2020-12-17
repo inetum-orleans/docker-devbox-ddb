@@ -6,6 +6,13 @@ History
 ## v1.4.0 (2020-12-17)
 ### Feature
 * **core:** Add `core.required_version` parameter to enforce project ddb version requirement ([#75](https://github.com/gfi-centre-ouest/docker-devbox-ddb/pull/75)) ([`bbf32e6`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/bbf32e61353121332870e3670d84d647fa7df812))
+* **main:** Add main:start event ([`8764d01`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/8764d013a7642beb900e7d2333c974c87b0d11d8))
+* **self-update:** Add self-update command to update binary from github ([#131](https://github.com/gfi-centre-ouest/docker-devbox-ddb/pull/131)) ([`0171f37`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/0171f37fcd1dfd6c1f93d8bec2aa4f9608542bec))
+* Add Python 3.9 support and drop Python 3.5 support ([`83e97e9`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/83e97e94d053d3338b1307f7e491c12e5c6683c3))
+
+### Documentation
+* **self-update:** Add docs for the new self-update command ([`86b5ef8`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/86b5ef8467af0e45b6b176c42553f9cc77c99a99))
+* **contributing:** We are now using github actions and semantic release ([`b4f1127`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/b4f11276a37a4e4b1142f6b54b3d0763ccf5639e))
 
 ## v1.3.1 (2020-12-16)
 ### Fix
