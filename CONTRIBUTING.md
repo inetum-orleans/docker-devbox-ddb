@@ -148,25 +148,5 @@ pytest
 
 ## Build and release process
 
-The release process requires docker with custom images of `cdrx/pyinstaller-linux` and `cdrx/pyinstaller-windows`.
-
-A [pull request is opened](https://github.com/cdrx/docker-pyinstaller/pull/90) and I hope it will be merged soon.
-
-Those custom images are available on Docker Hub under `toilal/pyinstaller-linux` and `toilal/pyinstaller-windows`
-repositories.
-
-```
-prerelease
-
-rm -Rf dist/ &&\
-python setup.py clean build bdist bdist_wheel bdist_pex --pex-args="--disable-cache" --bdist-all &&\
-docker run --rm --init -v "$(pwd):/src/" -e "DISABLE_REQUIREMENTS=1" toilal/pyinstaller-linux:xenial "pip install --upgrade setuptools && pip install -r requirements.txt && pyinstaller --clean -y --dist ./dist --workpath /tmp *.spec" &&\
-docker run --rm --init -v "$(pwd):/src/" -e "DISABLE_REQUIREMENTS=1" toilal/pyinstaller-windows "pip install --upgrade setuptools && pip install whl/jsonnet-0.15.0-cp37-cp37m-win_amd64.whl && pip install -r requirements.txt && pyinstaller --clean -y --dist ./dist --workpath /tmp *.spec"
-
-release
-
-githubrelease release gfi-centre-ouest/docker-devbox-ddb create $(python -m ddb --version -s) --name $(python -m ddb --version -s) --publish "dist/*"
-
-postrelease
-```
-
+The release process is automated through Github Actions and 
+[semantic-release](https://python-semantic-release.readthedocs.io/en/latest/), triggered when pushing to `master`.
