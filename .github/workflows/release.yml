@@ -37,11 +37,12 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
 
-      - name: "Merger master to develop"
-        uses: robotology/gh-action-nightly-merge@v1.3.1
+      - name: "Merge master to develop"
+        # uses: robotology/gh-action-nightly-merge@v1.3.1  # Wait PR merge https://github.com/robotology/gh-action-nightly-merge/pull/5
+        uses: Toilal/gh-action-nightly-merge@master
         with:
           stable_branch: 'master'
-          development_branch: 'devel'
+          development_branch: 'develop'
           allow_ff: true
           user_name: github-actions
         env:
