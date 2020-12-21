@@ -304,8 +304,6 @@ class FixuidDockerComposeAction(Action):
         for line in lines:
             for pattern in patterns:
                 if re.match(pattern, line):
-                    print(pattern)
-                    print(line)
                     return True
         return False
 
