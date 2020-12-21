@@ -272,30 +272,80 @@ class FixuidDockerComposeAction(Action):
             cmd = None
         return cmd, entrypoint
 
+    @staticmethod
+    def _has_fixuid_disabled_comment(lines: Iterable[str]):
+        return FixuidDockerComposeAction._has_comment(
+            ['no-fixuid', 'fixuid-no', 'fixuid-disabled?', 'disabled?-fixuid'], lines)
+
+    @staticmethod
+    def _has_fixuid_manual_comment(lines: Iterable[str]):
+        return FixuidDockerComposeAction._has_comment(
+            ['manual-fixuid', 'fixuid-manual', 'custom-fixuid', 'fixuid-custom'], lines)
+
+    @staticmethod
+    def _has_fixuid_manual_entrypoint_comment(lines: Iterable[str]):
+        return FixuidDockerComposeAction._has_comment(
+            ['manual-fixuid-entrypoint',
+             'fixuid-manual-entrypoint',
+             'custom-fixuid-entrypoint',
+             'fixuid-custom-entrypoint'], lines)
+
+    @staticmethod
+    def _has_fixuid_manual_install_comment(lines: Iterable[str]):
+        return FixuidDockerComposeAction._has_comment(
+            ('manual-fixuid-install',
+             'fixuid-manual-install',
+             'custom-fixuid-install',
+             'fixuid-custom-install'), lines)
+
+    @staticmethod
+    def _has_comment(keywords: Iterable[str], lines: Iterable[str]):
+        patterns = [r'^#\s*' + keyword + r'\s*$' for keyword in keywords]
+        for line in lines:
+            for pattern in patterns:
+                if re.match(pattern, line):
+                    print(pattern)
+                    print(line)
+                    return True
+        return False
+
     def _apply_fixuid_from_parser(self, parser: CustomDockerfileParser, service: BuildServiceDef):
-        cmd, entrypoint = FixuidDockerComposeAction._get_cmd_and_entrypoint(parser)
-        fixuid_entrypoint = FixuidDockerComposeAction._add_fixuid_entrypoint(entrypoint)
-        if fixuid_entrypoint:
-            parser.entrypoint = fixuid_entrypoint
-        if cmd:
-            parser.cmd = cmd
+        if self._has_fixuid_disabled_comment(parser.lines):
+            return False
+
         target = copy_from_url(config.data["fixuid.url"],
                                service.context,
                                "fixuid.tar.gz")
         if target:
             events.file.generated(source=None, target=target)
 
-        if self._dockerfile_lines[0] + "\n" not in parser.lines:
-            last_instruction_user = parser.get_last_instruction("USER")
-            last_instruction_entrypoint = parser.get_last_instruction("ENTRYPOINT")
-            if last_instruction_user:
-                parser.add_lines_at(last_instruction_user, *self._dockerfile_lines)
-            elif last_instruction_entrypoint:
-                parser.add_lines_at(last_instruction_entrypoint, *self._dockerfile_lines)
-            else:
-                parser.add_lines(*self._dockerfile_lines)
-            return True
-        return False
+        manual_entrypoint = self._has_fixuid_manual_entrypoint_comment(parser.lines)
+        manual_install = self._has_fixuid_manual_install_comment(parser.lines)
+        manual = self._has_fixuid_manual_comment(parser.lines)
+
+        ret = False
+        if not manual:
+            if not manual_entrypoint:
+                cmd, entrypoint = FixuidDockerComposeAction._get_cmd_and_entrypoint(parser)
+                fixuid_entrypoint = FixuidDockerComposeAction._add_fixuid_entrypoint(entrypoint)
+                if fixuid_entrypoint:
+                    parser.entrypoint = fixuid_entrypoint
+                if cmd:
+                    parser.cmd = cmd
+                ret = True
+
+            if not manual_install and self._dockerfile_lines[0] + "\n" not in parser.lines:
+                last_instruction_user = parser.get_last_instruction("USER")
+                last_instruction_entrypoint = parser.get_last_instruction("ENTRYPOINT")
+                if last_instruction_user:
+                    parser.add_lines_at(last_instruction_user, *self._dockerfile_lines)
+                elif last_instruction_entrypoint:
+                    parser.add_lines_at(last_instruction_entrypoint, *self._dockerfile_lines)
+                else:
+                    parser.add_lines(*self._dockerfile_lines)
+                ret = True
+
+        return ret
 
     def _remove_fixuid_from_parser(self, parser: CustomDockerfileParser, service: BuildServiceDef):
         baseimage_config = FixuidDockerComposeAction._get_image_config(parser.baseimage)
