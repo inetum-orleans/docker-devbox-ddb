@@ -4,8 +4,15 @@ History
 <!--next-version-placeholder-->
 
 ## v1.4.2 (2020-12-21)
+### Feature
+* **fixuid:** Add Dockerfile comments to disable or customize fixuid automic configuration ([`e855efc`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/e855efcce49e0c66994e43f522a9f85e129df7f3))
+
 ### Fix
 * **file:** File scan now yield directories so you can use permission on directories ([`eb232d8`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/eb232d85549c76e1d753b90c09727d3804ba9443))
+* **file:** Fix recursive=False parameter in FileWalker ([`c81fd76`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/c81fd76874922bf12b18a89ee729930fd0e0a83e))
+
+### Documentation
+* **setuptools:** Update python versions in classifiers ([`4012cbf`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/4012cbf2ca2298496ff2438f82736c21ba17a776))
 
 ## v1.4.1 (2020-12-17)
 ### Fix
