@@ -104,3 +104,12 @@ been generated. The entrypoint is changed to run fixuid before the default entry
     
     As many other ddb features are available through [jsonnet feature](./jsonnet.md), you should really consider using 
     it. This will help you to build simpler, shorter and smarter `docker-compose` configuration.
+
+!!! info "Disable or customize fixuid automatic configuration"
+
+    You may need to disable fixuid automatic configuration. Use the following comments in your Dockerfile.jinja.
+
+    - `# fixuid-disable`: Disable both download of fixuid.tar.gz and whole auto-configuration. Use this to disable fixuid totally for this Dockerfile.
+    - `# fixuid-manual`: Only keep download of fixuid.tar.gz. Use this to configure fixuid totally manually in the Dockerfile.
+    - `# fixuid-manual-install`: Keep download of fixuid.tar.gz and auto-configuration of ENTRYPOINT. You still have to install fixuid manually in the Dockerfile.
+    - `# fixuid-manual-entrypoint`: Keep download of fixuid.tar.gz and installation of required files. You still have to invoke fixuid manually in the Entrypoint.

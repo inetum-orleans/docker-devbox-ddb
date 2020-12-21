@@ -84,7 +84,6 @@ class TestFixuidFeature:
             config = yaml.load(config_file, yaml.SafeLoader)
 
         events.docker.docker_compose_config(config)
-        events.file.found(os.path.join("docker", "fixuid.yml"))
 
         with open(os.path.join("docker", "Dockerfile.expected"), "r") as f:
             expected = f.read()
@@ -104,3 +103,87 @@ class TestFixuidFeature:
         assert content == expected
 
         assert not os.path.exists(os.path.join("docker", "fixuid.tar.gz"))
+
+    def test_no_fixuid(self, project_loader):
+        project_loader("no-fixuid")
+        register_default_caches()
+
+        features.register(FixuidFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
+
+        with open('docker-compose.yml', 'r') as config_file:
+            config = yaml.load(config_file, yaml.SafeLoader)
+
+        events.docker.docker_compose_config(config)
+
+        with open(os.path.join("docker", "Dockerfile.expected"), "r") as f:
+            expected = f.read()
+        with open(os.path.join("docker", "Dockerfile"), "r") as f:
+            content = f.read()
+        assert content == expected
+
+        assert not os.path.exists(os.path.join("docker", "fixuid.tar.gz"))
+
+    def test_fixuid_manual(self, project_loader):
+        project_loader("fixuid-manual")
+        register_default_caches()
+
+        features.register(FixuidFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
+
+        with open('docker-compose.yml', 'r') as config_file:
+            config = yaml.load(config_file, yaml.SafeLoader)
+
+        events.docker.docker_compose_config(config)
+
+        with open(os.path.join("docker", "Dockerfile.expected"), "r") as f:
+            expected = f.read()
+        with open(os.path.join("docker", "Dockerfile"), "r") as f:
+            content = f.read()
+        assert content == expected
+
+        assert os.path.exists(os.path.join("docker", "fixuid.tar.gz"))
+
+    def test_fixuid_manual_install(self, project_loader):
+        project_loader("fixuid-manual-install")
+        register_default_caches()
+
+        features.register(FixuidFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
+
+        with open('docker-compose.yml', 'r') as config_file:
+            config = yaml.load(config_file, yaml.SafeLoader)
+
+        events.docker.docker_compose_config(config)
+
+        with open(os.path.join("docker", "Dockerfile.expected"), "r") as f:
+            expected = f.read()
+        with open(os.path.join("docker", "Dockerfile"), "r") as f:
+            content = f.read()
+        assert content == expected
+
+        assert os.path.exists(os.path.join("docker", "fixuid.tar.gz"))
+
+    def test_fixuid_manual_entrypoint(self, project_loader):
+        project_loader("fixuid-manual-entrypoint")
+        register_default_caches()
+
+        features.register(FixuidFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
+
+        with open('docker-compose.yml', 'r') as config_file:
+            config = yaml.load(config_file, yaml.SafeLoader)
+
+        events.docker.docker_compose_config(config)
+
+        with open(os.path.join("docker", "Dockerfile.expected"), "r") as f:
+            expected = f.read()
+        with open(os.path.join("docker", "Dockerfile"), "r") as f:
+            content = f.read()
+        assert content == expected
+
+        assert os.path.exists(os.path.join("docker", "fixuid.tar.gz"))
