@@ -200,9 +200,11 @@ class FileWalker:
         _walk_generator = os.walk(*args, **kwargs)
         for root, dirs, files in os.walk(*args, **kwargs):
             for dirs_item in list(dirs):
-                dirpath = os.path.join(root, dirs_item)
+                dirpath = os.path.relpath(os.path.join(root, dirs_item))
                 if self._is_excluded(dirpath, *self.excludes):
                     dirs.remove(dirs_item)
+                else:
+                    yield dirpath
 
             for files_item in list(files):
                 filepath = os.path.relpath(os.path.join(root, files_item))

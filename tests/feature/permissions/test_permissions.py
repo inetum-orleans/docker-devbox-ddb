@@ -59,3 +59,5 @@ class TestPermissionsAction:
 
         assert os.access("script.sh", os.X_OK)
         assert os.access(os.path.join("subdirectory", "another-script.sh"), os.X_OK)
+        assert os.access(os.path.join("subdirectory"), os.W_OK)
+        assert not os.access(os.path.join("denied"), os.W_OK)
