@@ -3,6 +3,10 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.4.2 (2020-12-21)
+### Fix
+* **file:** File scan now yield directories so you can use permission on directories ([`eb232d8`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/eb232d85549c76e1d753b90c09727d3804ba9443))
+
 ## v1.4.1 (2020-12-17)
 ### Fix
 * **core:** Fix self-update command ([`843cf67`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/843cf6736dff9290ececc39334a23c2a2446b3c3))
