@@ -198,11 +198,6 @@ class FileWalker:
 
     def _walk(self, *args, recursive=True, **kwargs):
         _walk_generator = os.walk(*args, **kwargs)
-        if not recursive:
-            try:
-                _walk_generator = next(_walk_generator)
-            except StopIteration:
-                return
         for root, dirs, files in os.walk(*args, **kwargs):
             for dirs_item in list(dirs):
                 dirpath = os.path.join(root, dirs_item)
@@ -214,6 +209,9 @@ class FileWalker:
                 if self._is_included(filepath, *self.includes) and \
                         not self._is_excluded(filepath, *self.excludes):
                     yield filepath
+
+            if not recursive:
+                break
 
     @staticmethod
     def _braceexpand(includes, excludes):
