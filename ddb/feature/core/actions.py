@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
-import shutil
 import sys
+import shutil
 from datetime import date
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -135,6 +135,8 @@ def get_binary_path():
     Get the binary path
     :return:
     """
+    if config.cwd:
+        return os.path.join(config.cwd, sys.argv[0])
     return sys.argv[0]
 
 
@@ -448,18 +450,22 @@ class SelfUpdateAction(Action):
         with requests.get(url, stream=True) as response:
             response.raise_for_status()
 
-            with NamedTemporaryFile() as tmp:
+            tmp = NamedTemporaryFile(delete=False)
+            try:
                 if not progress_bar:
                     content_length = int(response.headers['content-length'])
-                    progress_bar = IncrementalBar('Downloading', max=content_length)
+                    progress_bar = IncrementalBar('Downloading', max=content_length, suffix='%(percent)d%%')
 
                 for chunk in response.iter_content(32 * 1024):
                     progress_bar.next(len(chunk))  # pylint:disable=not-callable
                     tmp.write(chunk)
                 tmp.flush()
+            finally:
+                tmp.close()
 
-                binary_path = get_binary_destination_path(binary_path)
-                shutil.copyfile(tmp.name, binary_path)
+            binary_path = get_binary_destination_path(binary_path)
+            shutil.copymode(binary_path, tmp.name)
+            os.rename(tmp.name, binary_path)
 
             progress_bar.finish()
 
