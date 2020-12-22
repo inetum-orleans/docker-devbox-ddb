@@ -5,7 +5,7 @@ from pathlib import PurePosixPath, Path
 from typing import Union, Iterable, List, Dict
 
 import yaml
-from compose.config.types import ServicePort
+from .lib.compose.config.types import ServicePort
 from ddb.feature import features
 from ddb.feature.traefik import TraefikExtraServicesAction
 from dotty_dict import Dotty

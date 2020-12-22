@@ -1,11 +1,11 @@
 python-semantic-release
 commitizen
 pre-commit
-githubrelease
 tox
 pylint
 pytest
 coverage
+docker-compose
 https://github.com/Toilal/pytest-docker-compose/archive/configuration-inside-tests.zip
 waiting
 pytest-mock
