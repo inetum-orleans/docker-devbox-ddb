@@ -3,6 +3,13 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.4.3 (2020-12-22)
+### Fix
+* **dependencies:** Remove docker-compose dependency ([#140](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/140)) ([`ac12c8a`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/ac12c8aec29965abf72d5747698ad97bde3cc850))
+* **core:** Fix self-update command error on file replace ([#138](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/138)) ([`97e4f81`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/97e4f81d799fb5617a82dce8b9d533d5b489cae1))
+* **changelog:** Fix changelog ([`9507778`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/9507778794186ebf7864f7ebaaad6e7e9ea3ce9d))
+* **fixuid:** Remove print scrap ([`dad030f`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/dad030f748b066021bc28d078e2ca939af1ca73e))
+
 ## v1.4.2 (2020-12-21)
 ### Feature
 * **fixuid:** Add Dockerfile comments to disable or customize fixuid automic configuration ([`e855efc`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/e855efcce49e0c66994e43f522a9f85e129df7f3))
