@@ -1,0 +1,111 @@
+name: build
+on:
+  push: ~
+  pull_request: ~
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ 3.6, 3.7, 3.8, 3.9 ]
+
+    steps:
+      - name: Setup docker
+        uses: docker-practice/actions-setup-docker@master
+        with:
+          docker_version: "19.03"
+          docker_channel: "stable"
+
+      - name: Setup python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Git User config
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "github-actions"
+
+      - name: Install YTT
+        run: |
+          mkdir -p $HOME/bin
+          curl -Lo $HOME/bin/ytt https://github.com/k14s/ytt/releases/download/v0.26.0/ytt-linux-amd64
+          echo "$HOME/bin" >> $GITHUB_PATH
+          chmod +x $HOME/bin/ytt
+
+      - name: Install Dependencies
+        run: |
+          pip freeze
+          pip install -r requirements-dev.txt
+          pip install coveralls
+          pip freeze
+
+      - run: pylint ddb
+        if: matrix.python-version != '3.9'
+
+      - run: coverage run --source=ddb -m pytest
+
+      - run: python setup.py build
+
+      - name: Coveralls
+        run: coveralls
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+
+  release:
+    if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' }}
+    needs: build
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ 3.8 ]
+
+    steps:
+      - name: Setup docker
+        uses: docker-practice/actions-setup-docker@master
+        with:
+          docker_version: "19.03"
+          docker_channel: "stable"
+
+      - name: Setup python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Git User config
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "github-actions"
+
+      - name: Install Dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Publish release
+        run: semantic-release -v DEBUG publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+
+      - name: Merge master to develop
+        # uses: robotology/gh-action-nightly-merge@v1.3.1  # Wait PR merge https://github.com/robotology/gh-action-nightly-merge/pull/5
+        uses: Toilal/gh-action-nightly-merge@master
+        with:
+          stable_branch: 'master'
+          development_branch: 'develop'
+          allow_ff: true
+          user_name: github-actions
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
