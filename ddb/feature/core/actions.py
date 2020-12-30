@@ -61,19 +61,20 @@ def print_version(github_repository, silent=False):
         print(get_current_version())
         return
 
-    version_title = 'ddb ' + get_current_version()
-    version_content = []
+    blocks = []
+    header_block = ['ddb ' + get_current_version()]
+    blocks.append(header_block)
 
     last_release = get_latest_release_version(github_repository)
 
     if last_release and get_current_version() < last_release:
-        version_content.append(_build_update_header(last_release))
-        version_content.append(_build_update_details(github_repository, last_release))
-    version_content.append([
+        blocks.append(_build_update_header(last_release))
+        blocks.append(_build_update_details(github_repository, last_release))
+    blocks.append([
         'Please report any bug or feature request at',
         'https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues'
     ])
-    print(get_table_display(version_title, version_content))
+    print(get_table_display(blocks))
 
 
 def check_for_update(github_repository: str, output=False, details=False):
@@ -88,13 +89,15 @@ def check_for_update(github_repository: str, output=False, details=False):
 
     if last_release and get_current_version() < last_release:
         if output:
-            header = _build_update_header(last_release)
+            blocks = [_build_update_header(last_release)]
             if details:
                 row = _build_update_details(github_repository, last_release)
-                print(get_table_display(header, [row]))
+                blocks.append([row])
+                print(get_table_display(blocks))
             else:
-                for row in header:
-                    print(row)
+                for block in blocks:
+                    for row in block:
+                        print(row)
         return last_release
     return None
 

@@ -363,7 +363,7 @@ class TestDockerDisplayInfoAction:
 
         config.args.type = None
 
-        assert '' == action._output_data('test', list(), [], [], [])
+        assert '' == action._output_data('test', dict(), [], [], [])
 
         test_vhosts = action._retrieve_vhosts_data(Dotty({'labels': {
             'traefik.http.routers.defaults-project.rule': 'Host(`web.domain.tld`)',
@@ -377,7 +377,7 @@ class TestDockerDisplayInfoAction:
                            '+-------------------------+',
                            '| http://test.tld/        |',
                            '| https://web.domain.tld/ |',
-                           '+-------------------------+'])) == action._output_data('test', list(), [],
+                           '+-------------------------+'])) == action._output_data('test', dict(), [],
                                                                                    [], test_vhosts)
 
         test_binaries = action._retrieve_binaries_data(Dotty({'labels': {
@@ -394,7 +394,7 @@ class TestDockerDisplayInfoAction:
                            '+-------------------------+',
                            '| http://test.tld/        |',
                            '| https://web.domain.tld/ |',
-                           '+-------------------------+'])) == action._output_data('test', list(), [],
+                           '+-------------------------+'])) == action._output_data('test', dict(), [],
                                                                                    test_binaries, test_vhosts)
 
         test_envs = action._retrieve_environment_data(Dotty({'environment': {'AZERTY': '123'}}))
@@ -428,7 +428,7 @@ class TestDockerDisplayInfoAction:
                                                                                    test_binaries, test_vhosts)
 
         config.args.type = 'nothing'
-        assert '' == action._output_data('test', list(), [], [], test_vhosts)
+        assert '' == action._output_data('test', dict(), [], [], test_vhosts)
 
         config.args.type = 'vhost'
         assert ('\n'.join(['+-------------------------+',
@@ -436,7 +436,7 @@ class TestDockerDisplayInfoAction:
                            '+-------------------------+',
                            '| http://test.tld/        |',
                            '| https://web.domain.tld/ |',
-                           '+-------------------------+'])) == action._output_data('test', list(), [],
+                           '+-------------------------+'])) == action._output_data('test', dict(), [],
                                                                                    [], test_vhosts)
 
     def test_execute_traefik_cert(self, capsys: CaptureFixture, project_loader):

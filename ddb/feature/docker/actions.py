@@ -539,15 +539,15 @@ class DockerDisplayInfoAction(Action):
         :return: a dict containing useful labels data
         """
 
-        header = '{}'.format(service_name)
-        content = []
+        header_block = ['{}'.format(service_name)]
+        blocks = [header_block]
 
         if (config.args.type is None or 'env' in config.args.type) and environments:
             tmp_content = []
             for key in sorted(environments.keys()):
                 tmp_content.append('{}: {}'.format(key, environments.get(key)))
 
-            content.append(tmp_content)
+            blocks.append(tmp_content)
 
         if (config.args.type is None or 'port' in config.args.type) and ports:
             tmp_content = []
@@ -555,22 +555,22 @@ class DockerDisplayInfoAction(Action):
                 tmp_content.append(port.legacy_repr() if
                                    hasattr(port, 'legacy_repr') else
                                    "%s:%s" % (port.published, port.target))
-            content.append(tmp_content)
+            blocks.append(tmp_content)
 
         if (config.args.type is None or 'bin' in config.args.type) and docker_binaries:
             tmp_content = []
             for binary in sorted(docker_binaries):
                 tmp_content.append(binary)
-            content.append(tmp_content)
+            blocks.append(tmp_content)
 
         if (config.args.type is None or 'vhost' in config.args.type) and vhosts:
             tmp_content = []
             for vhost in sorted(vhosts):
                 tmp_content.append(vhost)
-            content.append(tmp_content)
+            blocks.append(tmp_content)
 
-        if len(content) > 0:
-            return get_table_display(header, content, False)
+        if blocks != [header_block]:
+            return get_table_display(blocks, False)
         return ''
 
     @staticmethod
@@ -584,7 +584,8 @@ class DockerDisplayInfoAction(Action):
         else:
             domain = extra_service_data.get('rule')
 
-        content = [
+        blocks = [
+            [id_ + " (extra)"],
             [domain + ' --> ' + extra_service_data.get('url')]
         ]
-        return get_table_display(id_ + " (extra)", content, False)
+        return get_table_display(blocks, False)
