@@ -62,6 +62,12 @@ class ShellIntegration(ABC):
         Get the command to evaluate the script inside the current shell context.
         """
 
+    def before_environ_backup(self, environ: Dict[str, str]):
+        """
+        Alter environment variables before backup. This should be used to remove for saved environ variables that
+        should not be restored on deactivation.
+        """
+
     def header(self) -> Iterable[str]:  # pylint:disable=no-self-use
         """
         Returns header of script
@@ -99,6 +105,11 @@ class BashShellIntegration(ShellIntegration):
 
     def remove_environment_variable(self, key):
         yield "unset " + self._sanitize_key(key)
+
+    def before_environ_backup(self, environ):
+        for key in ('PWD',):
+            if key in environ:
+                del environ['PWD']
 
     def remove_all_binary_shims(self, shims_path: str):
         shims = []
