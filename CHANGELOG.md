@@ -3,6 +3,11 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.4.4 (2020-12-30)
+### Fix
+* **bash:** Exclude PWD environment variable from backup/restore ([#142](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/142)) ([`e8ee977`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/e8ee9771b5c63b893a07fb0e1690dac21cdafa6f))
+* **update:** Fix can only concatenate str (not "list") to str ([#143](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/143)) ([`0348407`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/0348407b0e457b8ea56320b30592b5367086bab5))
+
 ## v1.4.3 (2020-12-22)
 ### Fix
 * **dependencies:** Remove docker-compose dependency ([#140](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/140)) ([`ac12c8a`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/ac12c8aec29965abf72d5747698ad97bde3cc850))
