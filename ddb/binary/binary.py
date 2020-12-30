@@ -9,6 +9,7 @@ class Binary(RegistryObject, ABC):
     """
     Wraps a binary on the system.
     """
+    in_folder: str
 
     @abstractmethod
     def command(self, *args) -> Iterable[str]:

@@ -29,6 +29,10 @@ class BinaryMock(Binary):
     def name(self) -> str:
         return self._name
 
+    @property
+    def in_folder(self) -> None:
+        return None
+
     def is_same(self, binary) -> bool:
         return self.command() == binary.command()
 
@@ -80,7 +84,7 @@ class TestRunFeature:
 
         read = capsys.readouterr()
 
-        assert read.out == "some command\n"
+        assert "some command" in read.out
 
     def test_run_docker_binary(self, project_loader, capsys: CaptureFixture):
         project_loader("empty")
@@ -98,7 +102,7 @@ class TestRunFeature:
 
         read = capsys.readouterr()
 
-        assert read.out == "docker-compose run --rm --workdir=/app/. service\n"
+        assert "docker-compose run --rm --workdir=/app/. service" in read.out
 
     def test_run_docker_binary_workdir(self, project_loader, capsys: CaptureFixture):
         project_loader("empty")
@@ -116,7 +120,7 @@ class TestRunFeature:
 
         read = capsys.readouterr()
 
-        assert read.out == "docker-compose run --rm --workdir=/app/sub service\n"
+        assert "docker-compose run --rm --workdir=/app/sub service" in read.out
 
     def test_run_docker_binary_exe(self, project_loader, capsys: CaptureFixture):
         project_loader("exe")
@@ -139,6 +143,37 @@ class TestRunFeature:
 
         read = capsys.readouterr()
 
-        assert read.out == "docker-compose exec web echo\n"
+        assert "docker-compose exec web echo" in read.out
 
         assert DockerUtils.is_container_up('web')
+
+    def test_run_docker_binary_exe_in_folder(self, project_loader, capsys: CaptureFixture):
+        project_loader("exe")
+
+        features.register(CoreFeature())
+        features.register(RunFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
+
+        binaries.register(DockerBinary("echo",
+                                       docker_compose_service="web",
+                                       args="echo",
+                                       exe=True,
+                                       in_folder='project'))
+
+        config.cwd = config.data['core']['path']['project_home']
+
+        action = RunAction()
+
+        try:
+            action.run("echo")
+        except ValueError as e:
+            assert e.args[0] == ' binary named name "echo" is not available in your current working directory'
+
+        config.cwd = os.path.join(config.cwd, 'project')
+
+        action.run("echo")
+
+        read = capsys.readouterr()
+
+        assert 'docker-compose exec web echo' in read.out

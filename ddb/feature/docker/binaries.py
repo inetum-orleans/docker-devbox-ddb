@@ -11,7 +11,7 @@ from ddb.utils.process import effective_command
 from ddb.utils.docker import DockerUtils
 
 
-class DockerBinary(Binary):
+class DockerBinary(Binary):  # pylint:disable=too-many-instance-attributes
     """
     Binary to run docker compose command.
     """
@@ -23,7 +23,8 @@ class DockerBinary(Binary):
                  options: Optional[str] = None,
                  options_condition: Optional[str] = None,
                  args: Optional[str] = None,
-                 exe: bool = False):
+                 exe: bool = False,
+                 in_folder: Optional[str] = None):
         self._name = name
         self.docker_compose_service = docker_compose_service
         self.workdir = workdir
@@ -31,6 +32,7 @@ class DockerBinary(Binary):
         self.options_condition = options_condition
         self.args = args
         self.exe = exe
+        self.in_folder = in_folder
 
     @property
     def name(self) -> str:
@@ -82,6 +84,8 @@ class DockerBinary(Binary):
         if self.options != binary.options:
             return False
         if self.options_condition != binary.options_condition:
+            return False
+        if self.in_folder != binary.in_folder:
             return False
         return True
 

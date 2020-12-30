@@ -147,8 +147,8 @@ class TestDockerFeature:
         action.execute()
 
         assert len(list(binaries.all())) == 2
-        assert binaries.has("npm")
-        assert binaries.has("node")
+        assert binaries.has("node-npm")
+        assert binaries.has("node-node")
 
     def test_binary_options(self, project_loader):
         project_loader("binary-options")
@@ -161,11 +161,11 @@ class TestDockerFeature:
         action.execute()
 
         assert len(list(binaries.all())) == 3
-        assert binaries.has("npm-simple")
-        assert binaries.has("npm-conditions")
-        assert binaries.has("mysql")
+        assert binaries.has("node-npm-simple")
+        assert binaries.has("node-npm-conditions")
+        assert binaries.has("db-mysql")
 
-        npm_simple = binaries.get("npm-simple")
+        npm_simple = binaries.get("node-npm-simple")
         assert npm_simple.command() == (''.join(
             effective_command(
                 "docker-compose")) + " run --rm --workdir=/app/. --label traefik.enable=false node").split()
@@ -176,7 +176,7 @@ class TestDockerFeature:
             effective_command(
                 "docker-compose")) + ' run --rm --workdir=/app/. --label traefik.enable=false node').split()
 
-        npm_conditions = binaries.get("npm-conditions")
+        npm_conditions = binaries.get("node-npm-conditions")
         assert npm_conditions.command() == (''.join(
             effective_command(
                 "docker-compose")) + " run --rm --workdir=/app/. --label traefik.enable=false node").split()
@@ -186,7 +186,7 @@ class TestDockerFeature:
         assert npm_conditions.command("run serve") == (
                 ''.join(effective_command("docker-compose")) + ' run --rm --workdir=/app/. node').split()
 
-        mysql = binaries.get("mysql")
+        mysql = binaries.get("db-mysql")
         assert mysql.command() == (''.join(effective_command(
             "docker-compose")) + ' run --rm --workdir=/app/. db mysql -hdb -uproject-management-tool -pproject-management-tool').split()
 

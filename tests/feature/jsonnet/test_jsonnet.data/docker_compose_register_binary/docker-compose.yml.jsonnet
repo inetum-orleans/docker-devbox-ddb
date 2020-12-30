@@ -86,7 +86,7 @@ ddb.Compose({
 				"node-cache:/home/node/.cache:rw",
 				"node-npm-packages:/home/node/.npm-packages:rw"
 			],
-			labels +: ddb.BinaryLabels("npm", "/app")
+			labels +: ddb.BinaryLabels("npm", "/app", in_folder='project')
 		},
 		"php": ddb.Build("php")
 		       + ddb.User()

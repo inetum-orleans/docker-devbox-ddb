@@ -155,17 +155,18 @@ local BinaryOptions(name, options, condition = null, index = null) = {
     labels +: BinaryOptionsLabels(name, options, condition, index),
 };
 
-local BinaryLabels(name, workdir = null, args = null, options = null, options_condition = null, exe = null) = {
+local BinaryLabels(name, workdir = null, args = null, options = null, options_condition = null, exe = null, in_folder = null) = {
     ["ddb.emit.docker:binary[" + name + "](name)"]: name,
     [if workdir != null then "ddb.emit.docker:binary[" + name + "](workdir)"]: workdir,
     [if args != null then "ddb.emit.docker:binary[" + name + "](args)"]: args,
     [if options != null then "ddb.emit.docker:binary[" + name + "](options)"]: options,
     [if options_condition != null then "ddb.emit.docker:binary[" + name + "](options_condition)"]: options_condition,
-    [if exe != null then "ddb.emit.docker:binary[" + name + "](exe)"]: exe
+    [if exe != null then "ddb.emit.docker:binary[" + name + "](exe)"]: exe,
+    [if in_folder != null then "ddb.emit.docker:binary[" + name + "](in_folder)"]: in_folder
 };
 
-local Binary(name, workdir = null, args = null, options = null, options_condition = null, exe = null) = {
-    labels +: BinaryLabels(name, workdir, args, options, options_condition, exe),
+local Binary(name, workdir = null, args = null, options = null, options_condition = null, exe = null, in_folder = null) = {
+    labels +: BinaryLabels(name, workdir, args, options, options_condition, exe, in_folder),
 };
 
 local Networks(services, network_names=_docker_reverse_proxy_network_names) = {

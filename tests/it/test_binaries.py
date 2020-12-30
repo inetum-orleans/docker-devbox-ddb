@@ -64,4 +64,4 @@ class TestBinaries:
         assert exceptions
 
         assert isinstance(exceptions[0], ValueError)
-        assert str(exceptions[0]) == 'Binary name "psql" is not registered'
+        assert str(exceptions[0]) == ' binary named "psql" is not registered'

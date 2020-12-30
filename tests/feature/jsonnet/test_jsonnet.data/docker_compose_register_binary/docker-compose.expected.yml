@@ -103,6 +103,7 @@ services:
     labels:
       ddb.emit.docker:binary[npm](name): npm
       ddb.emit.docker:binary[npm](workdir): /app
+      ddb.emit.docker:binary[npm](in_folder): project
       traefik.enable: "true"
       traefik.http.routers.gli-biometrie-tls.rule: Host(`biometrie.test`)
       traefik.http.routers.gli-biometrie-tls.service: gli-biometrie

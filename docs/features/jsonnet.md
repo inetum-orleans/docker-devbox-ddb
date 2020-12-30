@@ -363,6 +363,9 @@ Binary allow the creation of alias for command execution inside the service.
         - type: string|null
     - `exe`: launch command with docker-compose `exec` instead of `run`.
         - type: boolean|null
+    - `in_folder`: make the binary only available in a specific folder. This grant the capability to have twice the same
+        command on different containers but working in a specific folder
+        - type: string|null
 
 !!! example 
     ```json 
@@ -394,6 +397,11 @@ it directly to your own labels block.
     - `options`: options to add to the docker-compose command.
         - type: string|null
     - `options_condition`: add a condition for the option to be added or not to the command.
+        - type: string|null
+    - `exe`: launch command with docker-compose `exec` instead of `run`.
+        - type: boolean|null
+    - `in_folder`: make the binary only available in a specific folder. This grant the capability to have twice the same
+        command on different containers but working in a specific folder
         - type: string|null
 
 !!! example 

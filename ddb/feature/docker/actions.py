@@ -235,32 +235,44 @@ class DockerComposeBinaryAction(InitializableAction):
         docker_binaries_cache.flush()
 
     def execute(self, name=None, workdir=None, options=None, options_condition=None, args=None, exe=False,
-                docker_compose_service=None):
+                docker_compose_service=None, in_folder: str = None):
         """
         Execute action
         """
+        registry_key: str = ''
         if name is None and docker_compose_service:
             name = docker_compose_service
+            registry_key = docker_compose_service
+        elif name and docker_compose_service is None:
+            registry_key = name
+        elif name and docker_compose_service:
+            registry_key = docker_compose_service + "-" + name
         if name is None:
             raise ValueError("name should be defined")
 
-        binary = DockerBinary(name, docker_compose_service=docker_compose_service, workdir=workdir, options=options,
-                              options_condition=options_condition, args=args, exe=exe)
+        binary = DockerBinary(name,
+                              docker_compose_service=docker_compose_service,
+                              workdir=workdir,
+                              options=options,
+                              options_condition=options_condition,
+                              args=args,
+                              exe=exe,
+                              in_folder=in_folder)
 
-        self.binaries[name] = binary
+        self.binaries[registry_key] = binary
 
-        if binaries.has(name):
-            existing_binary = binaries.get(name)
+        if binaries.has(registry_key):
+            existing_binary = binaries.get(registry_key)
             if existing_binary.is_same(binary):
-                context.log.notice("Binary exists: %s" % (name,))
+                context.log.notice("Binary exists: %s" % (registry_key,))
                 events.binary.found(binary=binary)
                 return
 
-            binaries.unregister(name)
+            binaries.unregister(registry_key)
 
-        binaries.register(binary)
+        binaries.register(binary, registry_key)
 
-        context.log.success("Binary registered: %s", name)
+        context.log.success("Binary registered: %s", registry_key)
         events.binary.registered(binary=binary)
 
 
