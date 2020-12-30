@@ -246,6 +246,7 @@ class ActivateAction(Action):
         config_environ.update(config.env_additions)
 
         to_encode_environ = dict(initial_environ)
+        self.shell.before_environ_backup(to_encode_environ)
         os.environ.update(config_environ)
         os.environ[_env_environ_backup] = encode_environ_backup(to_encode_environ)
         os.environ[config.env_prefix + '_PROJECT_HOME'] = config.paths.project_home
