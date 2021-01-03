@@ -24,6 +24,7 @@ local _docker_reverse_proxy_https = std.extVar("docker.reverse_proxy.https");
 local _docker_reverse_proxy_redirect_to_https = std.extVar("docker.reverse_proxy.redirect_to_https");
 local _docker_reverse_proxy_redirect_to_path_prefix = std.extVar("docker.reverse_proxy.redirect_to_path_prefix");
 local _docker_disabled_services = std.extVar("docker.disabled_services");
+local _docker_port_prefix = std.extVar("docker.port_prefix");
 local _core_project_name = std.extVar("core.project.name");
 local _core_os = std.extVar("core.os");
 local _core_env_current = std.extVar("core.env.current");
@@ -70,6 +71,17 @@ local Image(image=null) = Service() + {
 local image_uri(image_name, with_tag = true) =
     local image_uri = std.join('/', std.filter(function(s) s != null, [_docker_registry_name, _docker_registry_repository, image_name]));
     if (with_tag == true && _docker_build_image_tag != null) then image_uri + ':' + _docker_build_image_tag else image_uri;
+
+local Expose(container_port, host_port_suffix = null, protocol = null) =
+    local container_port_str = std.toString(container_port);
+    local host_port_suffix_str = if host_port_suffix == null then null else std.toString(host_port_suffix);
+    local effective_host_port_suffix = if host_port_suffix_str == null then std.substr(container_port_str, std.length(container_port_str) - 2, 2) else host_port_suffix_str;
+    local effective_protocol = if protocol == null then "" else "/" + protocol;
+    {
+        ports+: [
+            _docker_port_prefix + effective_host_port_suffix + ":" + container_port + effective_protocol
+        ]
+    };
 
 local Build(name, image=name, cache_from_image=_docker_cache_from_image, directory=_docker_directory) = Service() + {
     "build": {
@@ -293,6 +305,7 @@ local envIs(env) =
     XDebug: XDebug,
     Compose: Compose,
     Volumes: Volumes,
+    Expose: Expose,
     User: User,
     userNameToUid: userNameToUid,
     groupNameToGid: groupNameToGid,
@@ -301,5 +314,5 @@ local envIs(env) =
       is: envIs
     },
     path: path,
-    JoinObjectArray: JoinObjectArray
+    JoinObjectArray: JoinObjectArray,
 }

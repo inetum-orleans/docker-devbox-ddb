@@ -176,7 +176,43 @@ It concatenates the given name with the name of the project.
     will return
     ```yaml
     ddb-test
+
+
+### Expose
+This function generates an exposed port inside a service.
+
+It use `docker.docker_prefix` to generate a fixed mapped port in order to avoid port collisions between projects.
+
+!!! abstract "Parameters"
+    - `container_port`:
+    The port inside the container to expose
+        - type: string or number
+    
+    - `host_port_suffix`:
+    The end of the port inside the host, from `1 to 99`. If null, it use last 2 digits of `container_port` value.
+        - type: string or number
+      
+    - `protocol`:
+    The protocol to use. Can be null, `tcp` or `udp`.
+        - type: string
+
+
+!!! example
+    ```json
+    ddb.Expose(21) +
+    ddb.Expose(22, null, "udp") +
+    ddb.Expose(23, 99, "tcp")
     ```
+
+    will produce
+    ```yaml
+    ports:
+      - '14721:21'
+      - '14722:22/udp'
+      - '14799:23/tcp'
+    ```
+
+    `147` is `docker.port_prefix` configuration value.
 
 ### User
 This function generates the `user` configuration for a service.

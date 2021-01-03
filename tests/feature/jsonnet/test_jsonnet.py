@@ -418,7 +418,8 @@ class TestJsonnetAction:
         "_register_binary",
         "_register_binary_with_one_option",
         # "_register_binary_with_multiple_options", TODO handle (options)(c1)
-        "_shared_volumes"
+        "_shared_volumes",
+        "_expose"
     ])
     def test_docker_compose_variants(self, project_loader, variant):
         project_loader("docker_compose" + variant)
