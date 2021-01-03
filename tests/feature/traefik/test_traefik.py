@@ -51,12 +51,12 @@ class TestTraefikFeature:
         with open(os.path.join(config.paths.home, "certs", "dummy.tld.key")) as key_file:
             assert 'key' == key_file.read()
 
-        assert os.path.exists(os.path.join(config.paths.home, "traefik", "config", "dummy.tld.ssl.toml"))
+        assert os.path.exists(os.path.join(config.data['traefik']['config_directory'], "dummy.tld.ssl.toml"))
 
         uninstall_action = TraefikUninstalllCertsAction()
         uninstall_action.execute(domain="dummy.tld")
 
-        assert not os.path.exists(os.path.join(config.paths.home, "traefik", "config", "dummy.tld.ssl.toml"))
+        assert not os.path.exists(os.path.join(config.data['traefik']['config_directory'], "dummy.tld.ssl.toml"))
 
     def test_extra_services(self, project_loader):
         project_loader("extra-services")
@@ -97,10 +97,10 @@ class TestTraefikFeature:
         }
 
         for file in files:
-            generated = os.path.join(config.paths.home, "traefik", "config", files.get(file).get('generated'))
+            generated = os.path.join(config.data['traefik']['config_directory'], files.get(file).get('generated'))
             assert os.path.exists(generated)
             expected = Path(
-                os.path.join(config.paths.home, "traefik", "config", files.get(file).get('expected'))
+                os.path.join(config.data['traefik']['config_directory'], files.get(file).get('expected'))
             ).read_text()
             if files.get(file).get('replaces'):
                 for replace in files.get(file).get('replaces'):
@@ -119,29 +119,29 @@ class TestTraefikFeature:
         install_action.initialize()
         install_action.execute()
 
-        api_toml = os.path.join(config.paths.home, "traefik", "config",
+        api_toml = os.path.join(config.data['traefik']['config_directory'],
                                 "sub.project.test.extra-service.api.toml")
         assert os.path.exists(api_toml)
 
-        api_toml_expected = Path(os.path.join(config.paths.home, "traefik", "config",
+        api_toml_expected = Path(os.path.join(config.data['traefik']['config_directory'],
                                               "sub.project.test.extra-service.api.expected.toml"))
 
         assert api_toml_expected.read_text() == Path(api_toml).read_text()
 
-        web_toml = os.path.join(config.paths.home, "traefik", "config", "rule.project.test.extra-service.web.toml")
+        web_toml = os.path.join(config.data['traefik']['config_directory'], "rule.project.test.extra-service.web.toml")
         assert os.path.exists(web_toml)
 
-        web_toml_expected = Path(os.path.join(config.paths.home, "traefik", "config",
+        web_toml_expected = Path(os.path.join(config.data['traefik']['config_directory'],
                                               "rule.project.test.extra-service.web.expected.toml"))
 
         assert web_toml_expected.read_text().replace('{{ip}}', config.data.get('docker.debug.host')) == Path(
             web_toml).read_text()
 
-        secured_toml = os.path.join(config.paths.home, "traefik", "config",
+        secured_toml = os.path.join(config.data['traefik']['config_directory'],
                                     "secured.project.test.extra-service.redirect.toml")
         assert os.path.exists(secured_toml)
 
-        secured_toml_expected = Path(os.path.join(config.paths.home, "traefik", "config",
+        secured_toml_expected = Path(os.path.join(config.data['traefik']['config_directory'],
                                                   "secured.project.test.extra-service.redirect.expected.toml"))
 
         assert secured_toml_expected.read_text() == Path(secured_toml).read_text()
@@ -158,29 +158,29 @@ class TestTraefikFeature:
         install_action.initialize()
         install_action.execute()
 
-        api_toml = os.path.join(config.paths.home, "traefik", "config",
+        api_toml = os.path.join(config.data['traefik']['config_directory'],
                                 "sub.project.test.extra-service.api.toml")
         assert os.path.exists(api_toml)
 
-        api_toml_expected = Path(os.path.join(config.paths.home, "traefik", "config",
+        api_toml_expected = Path(os.path.join(config.data['traefik']['config_directory'],
                                               "sub.project.test.extra-service.api.expected.toml"))
 
         assert api_toml_expected.read_text() == Path(api_toml).read_text()
 
-        web_toml = os.path.join(config.paths.home, "traefik", "config", "rule.project.test.extra-service.web.toml")
+        web_toml = os.path.join(config.data['traefik']['config_directory'], "rule.project.test.extra-service.web.toml")
         assert os.path.exists(web_toml)
 
-        web_toml_expected = Path(os.path.join(config.paths.home, "traefik", "config",
+        web_toml_expected = Path(os.path.join(config.data['traefik']['config_directory'],
                                               "rule.project.test.extra-service.web.expected.toml"))
 
         assert web_toml_expected.read_text().replace('{{ip}}', config.data.get('docker.debug.host')) == Path(
             web_toml).read_text()
 
-        secured_toml = os.path.join(config.paths.home, "traefik", "config",
+        secured_toml = os.path.join(config.data['traefik']['config_directory'],
                                     "secured.project.test.extra-service.no-redirect.toml")
         assert os.path.exists(secured_toml)
 
-        secured_toml_expected = Path(os.path.join(config.paths.home, "traefik", "config",
+        secured_toml_expected = Path(os.path.join(config.data['traefik']['config_directory'],
                                                   "secured.project.test.extra-service.no-redirect.expected.toml"))
 
         assert secured_toml_expected.read_text() == Path(secured_toml).read_text()

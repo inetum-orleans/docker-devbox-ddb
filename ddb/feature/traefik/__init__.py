@@ -52,6 +52,10 @@ class TraefikFeature(Feature):
             if os.path.exists(config_directory):
                 feature_config['config_directory'] = config_directory
 
+            config_directory = os.path.join(config.paths.home, 'docker-toolbox', '.docker', 'traefik', 'hosts')
+            if os.path.exists(config_directory):
+                feature_config['config_directory'] = config_directory
+
         extra_services = feature_config.get('extra_services')
         if extra_services:
             for extra_service in extra_services.values():
