@@ -6,31 +6,13 @@ from _pytest.capture import CaptureFixture
 
 from ddb.__main__ import load_registered_features, register_actions_in_event_bus
 from ddb.binary import binaries, Binary
+from ddb.binary.binary import AbstractBinary, DefaultBinary
 from ddb.config import config
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.docker.binaries import DockerBinary
 from ddb.feature.run import RunFeature, RunAction
 from ddb.utils.docker import DockerUtils
-
-
-class BinaryMock(Binary):
-    def pre_execute(self):
-        return True
-
-    def __init__(self, name, *command):
-        self._name = name
-        self._command = command
-
-    def command(self, *args) -> Iterable[str]:
-        return self._command
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    def is_same(self, binary) -> bool:
-        return self.command() == binary.command()
 
 
 class TestRunFeature:
@@ -73,7 +55,7 @@ class TestRunFeature:
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        binaries.register(BinaryMock("test", "some", "command"))
+        binaries.register(DefaultBinary("test", ["some", "command"]))
 
         action = RunAction()
         action.run("test")

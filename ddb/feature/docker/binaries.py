@@ -5,13 +5,13 @@ from typing import Optional, Iterable
 
 from simpleeval import simple_eval
 
-from ddb.binary import Binary
+from ddb.binary.binary import AbstractBinary
 from ddb.config import config
-from ddb.utils.process import effective_command
 from ddb.utils.docker import DockerUtils
+from ddb.utils.process import effective_command
 
 
-class DockerBinary(Binary):
+class DockerBinary(AbstractBinary):
     """
     Binary to run docker compose command.
     """
@@ -24,17 +24,13 @@ class DockerBinary(Binary):
                  options_condition: Optional[str] = None,
                  args: Optional[str] = None,
                  exe: bool = False):
-        self._name = name
+        super().__init__(name)
         self.docker_compose_service = docker_compose_service
         self.workdir = workdir
         self.options = options
         self.options_condition = options_condition
         self.args = args
         self.exe = exe
-
-    @property
-    def name(self) -> str:
-        return self._name
 
     def command(self, *args) -> Iterable[str]:
         params = ["exec"] if hasattr(self, 'exe') and self.exe else ["run", "--rm"]
@@ -69,21 +65,39 @@ class DockerBinary(Binary):
             if options is not None:
                 params.extend(shlex.split(options))
 
-    def is_same(self, binary) -> bool:
+    def __eq__(self, other):  # pylint:disable=too-many-return-statements
         """
         Check if given binary is the same as the current one
         :param binary:
         :return: True or False depending on it's the same or not
         """
-        if not isinstance(binary, DockerBinary):
+        if not super().__eq__(other):
             return False
-        if self.command() != binary.command():
+        if not isinstance(other, DockerBinary):
             return False
-        if self.options != binary.options:
+        if self.docker_compose_service != other.docker_compose_service:
             return False
-        if self.options_condition != binary.options_condition:
+        if self.workdir != other.workdir:
             return False
+        if self.options != other.options:
+            return False
+        if self.options_condition != other.options_condition:
+            return False
+        if self.args != other.args:
+            return False
+        if self.exe != other.exe:
+            return False
+
         return True
+
+    def __hash__(self):
+        return hash((super().__hash__,
+                     self.docker_compose_service,
+                     self.workdir,
+                     self.options,
+                     self.options_condition,
+                     self.args,
+                     self.exe))
 
     def pre_execute(self):
         if not self.exe:
