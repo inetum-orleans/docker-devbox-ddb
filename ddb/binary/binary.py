@@ -24,32 +24,56 @@ class Binary(RegistryObject, ABC):
         """
 
     @abstractmethod
-    def is_same(self, binary) -> bool:
-        """
-        Check if given binary is the same as the current one
-        :param binary: Binary object
-        :return: True or False depending on it's the same or not
-        """
+    def __eq__(self, other) -> bool:
+        pass
+
+    @abstractmethod
+    def __hash__(self):
+        pass
 
 
-class DefaultBinary(Binary):
+class AbstractBinary(Binary, ABC):
     """
-    Default implementation for binary.
+    Abstract implementation for binary.
     """
 
-    def __init__(self, name: str, command: List[str]):
+    def __init__(self, name: str):
         self._name = name
-        self._command = command
 
     @property
     def name(self) -> str:
         return self._name
 
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, AbstractBinary):
+            return False
+        return self.name == other.name
+
+    def __hash__(self):
+        return hash((self.name,))
+
+
+class DefaultBinary(AbstractBinary):
+    """
+    Default implementation for binary.
+    """
+
+    def __init__(self, name: str, command: List[str]):
+        super().__init__(name)
+        self._command = command
+
     def command(self, *args) -> List[str]:
         return self._command
 
-    def is_same(self, binary) -> bool:
-        return self.command() == binary.command()
+    def __eq__(self, other) -> bool:
+        if not super().__eq__(other):
+            return False
+        if not isinstance(other, DefaultBinary):
+            return False
+        return self.command() == other.command()
+
+    def __hash__(self):
+        return hash((super().__hash__(), self.command()))
 
     def pre_execute(self):
         return True
