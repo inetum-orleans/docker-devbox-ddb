@@ -1,0 +1,13 @@
+networks: {}
+services:
+  s1:
+    image: alpine:3.6
+    init: true
+    restart: 'no'
+    ports:
+      - '14721:21'
+      - '14722:22/udp'
+      - '14799:23/tcp'
+      - '9912:9912'
+volumes: {}
+version: '3.7'
