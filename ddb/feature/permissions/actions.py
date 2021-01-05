@@ -33,7 +33,7 @@ class PermissionsAction(Action):
 
         def file_generated_processor(source: Optional[str], target: str):
             mode = file_found_processor(target)
-            if mode is None:
+            if mode is None and source is not None:
                 shutil.copymode(source, target)
 
             return mode
