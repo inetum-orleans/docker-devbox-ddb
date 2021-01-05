@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import shutil
 from typing import Optional
 
 from wcmatch.glob import globmatch, GLOBSTAR
@@ -31,7 +32,11 @@ class PermissionsAction(Action):
             return None
 
         def file_generated_processor(source: Optional[str], target: str):
-            return file_found_processor(target)
+            mode = file_found_processor(target)
+            if mode is None:
+                shutil.copymode(source, target)
+
+            return mode
 
         return (
             EventBinding(events.file.found, chmod, file_found_processor),
