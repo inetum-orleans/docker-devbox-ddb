@@ -8,6 +8,7 @@ from dotty_dict import Dotty
 from ddb.__main__ import load_registered_features, register_actions_in_event_bus
 from ddb.action import actions
 from ddb.binary import binaries
+from ddb.binary.binary import DefaultBinary
 from ddb.config import config
 from ddb.event import bus
 from ddb.feature import features
@@ -15,6 +16,7 @@ from ddb.feature.certs import CertsFeature
 from ddb.feature.core import CoreFeature
 from ddb.feature.docker import DockerDisplayInfoAction
 from ddb.feature.docker import DockerFeature, EmitDockerComposeConfigAction
+from ddb.feature.docker.binaries import DockerBinary
 from ddb.feature.traefik import TraefikFeature
 from ddb.utils.process import effective_command
 from tests.utilstest import setup_cfssl
@@ -165,7 +167,9 @@ class TestDockerFeature:
         assert binaries.has("npm-conditions")
         assert binaries.has("mysql")
 
-        npm_simple = binaries.get("npm-simple")
+        npm_simple_set = binaries.get("npm-simple")
+        assert len(npm_simple_set) == 1
+        npm_simple = list(npm_simple_set)[0]
         assert npm_simple.command() == (''.join(
             effective_command(
                 "docker-compose")) + " run --rm --workdir=/app/. --label traefik.enable=false node").split()
@@ -176,7 +180,9 @@ class TestDockerFeature:
             effective_command(
                 "docker-compose")) + ' run --rm --workdir=/app/. --label traefik.enable=false node').split()
 
-        npm_conditions = binaries.get("npm-conditions")
+        npm_conditions_set = binaries.get("npm-conditions")
+        assert len(npm_conditions_set) == 1
+        npm_conditions = list(npm_conditions_set)[0]
         assert npm_conditions.command() == (''.join(
             effective_command(
                 "docker-compose")) + " run --rm --workdir=/app/. --label traefik.enable=false node").split()
@@ -186,7 +192,9 @@ class TestDockerFeature:
         assert npm_conditions.command("run serve") == (
                 ''.join(effective_command("docker-compose")) + ' run --rm --workdir=/app/. node').split()
 
-        mysql = binaries.get("mysql")
+        mysql_set = binaries.get("mysql")
+        assert len(mysql_set) == 1
+        mysql = list(mysql_set)[0]
         assert mysql.command() == (''.join(effective_command(
             "docker-compose")) + ' run --rm --workdir=/app/. db mysql -hdb -uproject-management-tool -pproject-management-tool').split()
 
@@ -483,3 +491,41 @@ class TestDockerDisplayInfoAction:
                            '| https://sub.test --> http://192.168.99.1:8080 |',
                            '+-----------------------------------------------+',
                            '\n'])) == capture.out
+
+
+class TestDockerBinary:
+    def test_docker_binary_compare_ne(self):
+        binary1 = DockerBinary("npm", "node1")
+        binary2 = DockerBinary("npm", "node2")
+        binary3 = DockerBinary("npm", "node3")
+        binary4 = DockerBinary("npm", "node4")
+
+        assert binary1 != binary2 != binary3 != binary4
+        assert hash(binary1) != hash(binary2) != hash(binary3) != hash(binary4)
+
+    def test_docker_binary_compare_eq(self):
+        binary1 = DockerBinary("npm", "node")
+        binary2 = DockerBinary("npm", "node")
+
+        assert binary1 == binary2
+        assert hash(binary1) == hash(binary2)
+
+    def test_docker_binary_sort(self):
+        binary1 = DockerBinary("npm", "node1")
+        binary2 = DockerBinary("npm", "node2")
+        binary3 = DefaultBinary("npm", ["npm"])
+        binary4 = DockerBinary("npm", "node4")
+
+        bins = (binary1, binary2, binary3, binary4)
+        sorted_bins = tuple(sorted(bins))
+        expected = (binary1, binary2, binary4, binary3)
+
+        assert sorted_bins == expected
+
+        binary_with_condition = DockerBinary("npm", "node5", condition="some-condition")
+
+        bins = (binary1, binary2, binary_with_condition, binary3, binary4)
+        sorted_bins = tuple(sorted(bins))
+        expected = (binary_with_condition, binary1, binary2, binary4, binary3)
+
+        assert sorted_bins == expected

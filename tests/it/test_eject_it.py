@@ -1,6 +1,7 @@
 import os
 
 import yaml
+
 from ddb.__main__ import main
 from tests.utilstest import expect_gitignore, setup_cfssl
 

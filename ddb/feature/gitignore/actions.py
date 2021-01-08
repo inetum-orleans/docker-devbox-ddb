@@ -35,8 +35,7 @@ class UpdateGitignoreAction(InitializableAction):
 
     def destroy(self):
         if caches.has("gitignore"):
-            cache = caches.unregister("gitignore")
-            cache.close()
+            caches.unregister("gitignore", callback=lambda c: c.close())
 
     @staticmethod
     def find_gitignores(target: str):

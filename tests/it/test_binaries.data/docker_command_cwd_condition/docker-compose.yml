@@ -1,0 +1,16 @@
+version: "3.7"
+services:
+  node14:
+    image: node:14-alpine
+    labels:
+      ddb.emit.docker:binary[node](name): node
+  node12:
+    image: node:12-alpine
+    labels:
+      ddb.emit.docker:binary[node](name): node
+      ddb.emit.docker:binary[node](condition): "'/node12' in cwd"
+  node10:
+    image: node:10-alpine
+    labels:
+      ddb.emit.docker:binary[node](name): node
+      ddb.emit.docker:binary[node](condition): "'/node10' in cwd"

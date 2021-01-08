@@ -32,7 +32,6 @@ local _core_env_available = std.extVar("core.env.available");
 local _core_path_project_home = std.extVar("core.path.project_home");
 local _core_path_ddb_home = std.extVar("core.path.ddb_home");
 local _core_path_home = std.extVar("core.path.home");
-local _eject = std.extVar("_config.eject");
 
 # local sep = if _core_os == "nt" then std.char(92) else "/"; # Backslash can't be escaped properly, so use std.char
 
@@ -146,26 +145,31 @@ local Volumes(services) = {
         )
 };
 
+local NoBinaryOptionsLabels(name, options, options_condition = null, index = null) = {};
 local BinaryOptionsLabels(name, options, options_condition = null, index = null) = {
-    ["ddb.emit.docker:binary[" + name + "](options)" + (if index != null then "(c" + index + ")" else "")]: options,
+    ["ddb.emit.docker:binary[" + name + "](options)" + (if index != null then "(c" + index + ")" else "")]: options_condition,
     [if options_condition != null then "ddb.emit.docker:binary[" + name + "](options_condition)" + (if index != null then "(c" + index + ")" else "")]: options_condition
 };
 
-local BinaryOptions(name, options, condition = null, index = null) = {
-    labels +: BinaryOptionsLabels(name, options, condition, index),
+local NoBinaryOptions(name, options, options_condition = null, index = null) = {};
+local BinaryOptions(name, options, options_condition = null, index = null) = {
+    labels +: BinaryOptionsLabels(name, options, options_condition, index),
 };
 
-local BinaryLabels(name, workdir = null, args = null, options = null, options_condition = null, exe = null) = {
+local NoBinaryLabels(name, workdir = null, args = null, options = null, options_condition = null, exe = null, condition = null) = {};
+local BinaryLabels(name, workdir = null, args = null, options = null, options_condition = null, exe = null, condition = null) = {
     ["ddb.emit.docker:binary[" + name + "](name)"]: name,
     [if workdir != null then "ddb.emit.docker:binary[" + name + "](workdir)"]: workdir,
     [if args != null then "ddb.emit.docker:binary[" + name + "](args)"]: args,
     [if options != null then "ddb.emit.docker:binary[" + name + "](options)"]: options,
     [if options_condition != null then "ddb.emit.docker:binary[" + name + "](options_condition)"]: options_condition,
-    [if exe != null then "ddb.emit.docker:binary[" + name + "](exe)"]: exe
+    [if exe != null then "ddb.emit.docker:binary[" + name + "](exe)"]: exe,
+    [if condition != null then "ddb.emit.docker:binary[" + name + "](condition)"]: condition
 };
 
-local Binary(name, workdir = null, args = null, options = null, options_condition = null, exe = null) = {
-    labels +: BinaryLabels(name, workdir, args, options, options_condition, exe),
+local NoBinary(name, workdir = null, args = null, options = null, options_condition = null, exe = null, condition=null) = {};
+local Binary(name, workdir = null, args = null, options = null, options_condition = null, exe = null, condition=null) = {
+    labels +: BinaryLabels(name, workdir, args, options, options_condition, exe, condition),
 };
 
 local Networks(services, network_names=_docker_reverse_proxy_network_names) = {
@@ -190,6 +194,7 @@ local Compose(config={}, network_names=_docker_reverse_proxy_network_names, vers
         "volumes": Volumes(self.services)
     };
 
+local NoTraefikCertLabels(hostname, service_name, certresolver=null) = {};
 local TraefikCertLabels(hostname, service_name, certresolver=null) = {
     [if certresolver != null then "traefik.http.routers." + service_name + "-tls.tls.certresolver"]: certresolver,
     [if (certresolver == null && _docker_reverse_proxy_certresolver != null) then "traefik.http.routers." + service_name + "-tls.tls.certresolver"]: _docker_reverse_proxy_certresolver,
@@ -237,6 +242,7 @@ local TraefikRedirectToHttpsLabels(hostname, service_name, redirect_to_https=nul
       [if effective_redirect_to_https == true then "traefik.http.middlewares." + service_name + "-redirect-to-https.redirectscheme.scheme"]: "https",
     };
 
+local NoTraefikLabels(port, hostname, name=null, certresolver=null, router_rule=null, redirect_to_https=null, https=null, path_prefix=null, redirect_to_path_prefix=null) = {};
 local TraefikLabels(port, hostname, name=null, certresolver=null, router_rule=null, redirect_to_https=null, https=null, path_prefix=null, redirect_to_path_prefix=null) =
 local effective_https = if https != null then https else _docker_reverse_proxy_https;
 {
@@ -269,11 +275,12 @@ local VirtualHost = if _docker_reverse_proxy_type == "traefik" then TraefikVirtu
 
 // XDebug 3 configuration has changed.
 // Default TCP port has changed from 9000 to 9003, but we still configure it to 9000 to avoid confusion while configuring code editors.
+local NoXDebug(version=null, session=_core_project_name, mode="debug") = {};
 local XDebug(version=null, session=_core_project_name, mode="debug") =
 local xdebug2_config = ["remote_enable=" + if mode != "off" then "on" else "off", "remote_autostart=off", "idekey=" + session, "remote_host=" + _docker_debug_host];
 local xdebug3_config = ["client_host=" + _docker_debug_host, "client_port=9000"];
 {
-    [if !_docker_debug_disabled then "environment"]: {
+    environment: {
         [if version == null || version == 2 then "PHP_IDE_CONFIG"]: "serverName=" + session,
         [if version == null || version == 3 then "XDEBUG_MODE"]: mode,
         [if version == null || version == 3 then "XDEBUG_SESSION"]: session,
@@ -295,14 +302,14 @@ local envIs(env) =
     Image: Image,
     Build: Build,
     VirtualHost: if _docker_jsonnet_virtualhost_disabled then NoVirtualHost else VirtualHost,
-    TraefikLabels: if _docker_jsonnet_virtualhost_disabled then function(port, hostname, name=null, certresolver=null, router_rule=null, redirect_to_https=null){} else TraefikLabels,
-    TraefikCertLabels: if _docker_jsonnet_virtualhost_disabled then function(hostname, service_name, certresolver=null){} else TraefikCertLabels,
+    TraefikLabels: if _docker_jsonnet_virtualhost_disabled then NoTraefikLabels else TraefikLabels,
+    TraefikCertLabels: if _docker_jsonnet_virtualhost_disabled then NoTraefikCertLabels else TraefikCertLabels,
     ServiceName: ServiceName,
-    Binary: if _docker_jsonnet_binary_disabled then function(name, workdir = null, args = null, options = null, options_condition = null, exe = null){} else Binary,
-    BinaryLabels: if _docker_jsonnet_binary_disabled then function(name, workdir = null, args = null, options = null, options_condition = null, exe = null){} else BinaryLabels,
-    BinaryOptions: if _docker_jsonnet_binary_disabled then function(name, options, condition = null, index = null){} else BinaryOptions,
-    BinaryOptionsLabels: if _docker_jsonnet_binary_disabled then function(name, options, options_condition = null, index = null){} else BinaryOptionsLabels,
-    XDebug: XDebug,
+    Binary: if _docker_jsonnet_binary_disabled then NoBinary else Binary,
+    BinaryLabels: if _docker_jsonnet_binary_disabled then NoBinaryLabels else BinaryLabels,
+    BinaryOptions: if _docker_jsonnet_binary_disabled then NoBinaryOptions else BinaryOptions,
+    BinaryOptionsLabels: if _docker_jsonnet_binary_disabled then NoBinaryOptionsLabels else BinaryOptionsLabels,
+    XDebug: if _docker_debug_disabled then NoXDebug else XDebug,
     Compose: Compose,
     Volumes: Volumes,
     Expose: Expose,

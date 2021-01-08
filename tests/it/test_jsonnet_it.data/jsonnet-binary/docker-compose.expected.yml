@@ -1,0 +1,39 @@
+networks: {}
+services:
+  node10:
+    image: node:10
+    init: true
+    labels:
+      ddb.emit.docker:binary[node](name): node
+      ddb.emit.docker:binary[node](options): --version
+      ddb.emit.docker:binary[node](options_condition): 'True'
+      ddb.emit.docker:binary[node](workdir): /app
+      ddb.emit.docker:binary[npm](name): npm
+      ddb.emit.docker:binary[npm](options): --version
+      ddb.emit.docker:binary[npm](options_condition): 'False'
+      ddb.emit.docker:binary[npm](workdir): /app
+    restart: 'no'
+  node12:
+    image: node:12
+    init: true
+    labels:
+      ddb.emit.docker:binary[node](condition): "'12' in cwd"
+      ddb.emit.docker:binary[node](name): node
+      ddb.emit.docker:binary[node](workdir): /workdir
+      ddb.emit.docker:binary[npm](condition): "'12' in cwd"
+      ddb.emit.docker:binary[npm](name): npm
+      ddb.emit.docker:binary[npm](workdir): /workdir
+    restart: 'no'
+  node14:
+    image: node:14
+    init: true
+    labels:
+      ddb.emit.docker:binary[node](exe): true
+      ddb.emit.docker:binary[node](name): node
+      ddb.emit.docker:binary[node](workdir): /
+      ddb.emit.docker:binary[npm](exe): false
+      ddb.emit.docker:binary[npm](name): npm
+      ddb.emit.docker:binary[npm](workdir): /
+    restart: 'no'
+version: '3.7'
+volumes: {}

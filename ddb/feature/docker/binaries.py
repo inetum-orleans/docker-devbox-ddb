@@ -22,6 +22,7 @@ class DockerBinary(AbstractBinary):
                  workdir: Optional[str] = None,
                  options: Optional[str] = None,
                  options_condition: Optional[str] = None,
+                 condition: Optional[str] = None,
                  args: Optional[str] = None,
                  exe: bool = False):
         super().__init__(name)
@@ -29,8 +30,21 @@ class DockerBinary(AbstractBinary):
         self.workdir = workdir
         self.options = options
         self.options_condition = options_condition
+        self.condition = condition
         self.args = args
         self.exe = exe
+
+    @staticmethod
+    def simple_eval_options(*args):
+        """
+        Retrieve the simple_eval options
+        """
+        return dict(functions={},
+                    names={'args': ' '.join(args),
+                           'argv': args,
+                           'config': config,
+                           'cwd': config.cwd,
+                           'project_cwd': config.project_cwd})
 
     def command(self, *args) -> Iterable[str]:
         params = ["exec"] if hasattr(self, 'exe') and self.exe else ["run", "--rm"]
@@ -40,7 +54,7 @@ class DockerBinary(AbstractBinary):
             container_workdir = posixpath.join(self.workdir, relpath)
             params.append("--workdir=%s" % (container_workdir,))
 
-        self.add_options_to_params(params, self.options, self.options_condition, args)
+        self.add_options_to_params(params, self.options, self.options_condition, *args)
 
         params.append(self.docker_compose_service)
         if self.args:
@@ -49,7 +63,7 @@ class DockerBinary(AbstractBinary):
         command = effective_command("docker-compose", *params)
         return command
 
-    def add_options_to_params(self, params, options, condition, args=()):  # pylint: disable=no-self-use
+    def add_options_to_params(self, params, options, condition, *args):  # pylint: disable=no-self-use
         """
         Add options to params if condition is fulfilled
         :param params: the list of parameters
@@ -59,11 +73,36 @@ class DockerBinary(AbstractBinary):
         :return:
         """
         if condition is not None and options is not None:
-            if simple_eval(condition, functions={}, names={'args': ' '.join(args)}):
+            if simple_eval(condition, **self.simple_eval_options(*args)):
                 params.extend(shlex.split(options))
         else:
             if options is not None:
                 params.extend(shlex.split(options))
+
+    def before_run(self, *args):
+        if self.exe and not DockerUtils.is_container_up(self.docker_compose_service):
+            DockerUtils.service_up(self.docker_compose_service)
+
+    def should_run(self, *args) -> bool:
+        if self.condition:
+            return bool(simple_eval(self.condition, **self.simple_eval_options(*args)))
+        return super().should_run(*args)
+
+    def __lt__(self, other):
+        """
+        This is used to order binaries in run feature action.
+        """
+        if not isinstance(other, DockerBinary):
+            return True
+        return self.condition and not other.condition
+
+    def __gt__(self, other):
+        """
+        This is used to order binaries in run feature action.
+        """
+        if not isinstance(other, DockerBinary):
+            return False
+        return not self.condition and other.condition
 
     def __eq__(self, other):  # pylint:disable=too-many-return-statements
         """
@@ -91,19 +130,10 @@ class DockerBinary(AbstractBinary):
         return True
 
     def __hash__(self):
-        return hash((super().__hash__,
+        return hash((super().__hash__(),
                      self.docker_compose_service,
                      self.workdir,
                      self.options,
                      self.options_condition,
                      self.args,
                      self.exe))
-
-    def pre_execute(self):
-        if not self.exe:
-            return True
-
-        if not DockerUtils.is_container_up(self.docker_compose_service):
-            DockerUtils.service_up(self.docker_compose_service)
-
-        return True

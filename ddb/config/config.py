@@ -91,6 +91,16 @@ class Config:  # pylint:disable=too-many-instance-attributes
         self.env_additions.clear()
 
     @property
+    def project_cwd(self):
+        """
+        Retrieve the current working directory, relative to project_home.
+        :return:
+        """
+        if self.paths.project_home and self.cwd:
+            return os.path.relpath(self.cwd, self.paths.project_home)
+        return None
+
+    @property
     def eject(self):
         """
         Check if command line is running configure command with --eject flag.

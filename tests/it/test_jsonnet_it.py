@@ -42,3 +42,17 @@ class TestDockerJsonnet:
 
         with pytest.raises(RuntimeError):
             main(["configure"])
+
+    def test_binary(self, project_loader):
+        project_loader("jsonnet-binary")
+
+        main(["configure"])
+
+        assert os.path.exists('docker-compose.yml')
+        with open('docker-compose.yml', 'r') as f:
+            docker_compose = yaml.load(f, yaml.SafeLoader)
+
+        with open('docker-compose.expected.yml', 'r') as f:
+            docker_compose_expected = yaml.load(f, yaml.SafeLoader)
+
+        assert docker_compose == docker_compose_expected

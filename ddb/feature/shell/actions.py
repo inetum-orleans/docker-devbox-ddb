@@ -11,7 +11,7 @@ from dictdiffer import diff
 from .integrations import ShellIntegration
 from ...action import Action, actions
 from ...action.action import EventBinding
-from ...binary import Binary
+from ...binary import Binary, binaries
 from ...binary.binary import DefaultBinary
 from ...config import config
 from ...config.flatten import to_environ
@@ -80,6 +80,20 @@ def add_to_system_path(shell: ShellIntegration, paths: Iterable[str]) -> Iterabl
     yield from shell.set_environment_variable('PATH', system_path)
 
 
+def remove_from_system_path(shell: ShellIntegration, paths: Iterable[str]) -> Iterable[str]:
+    """
+    Remove given path to system PATH environment variable
+    """
+    system_path = os.environ.get('PATH', '')
+    for path in paths:
+        if config.data.get('shell.path.prepend'):
+            system_path = system_path.replace(path + os.pathsep, "")
+        else:
+            system_path = system_path.replace(os.pathsep + path, "")
+
+    yield from shell.set_environment_variable('PATH', system_path)
+
+
 class CreateBinaryShim(Action):
     """
     Create binary shim for each generated binary
@@ -112,16 +126,18 @@ class CreateBinaryShim(Action):
         Remove binary shim
         """
         directories = config.data.get('shell.path.directories')
-        removed = self.shell.remove_binary_shim(directories[0], binary)
-        if removed:
-            events.file.deleted(removed)
+        if not binaries.has(binary.name):
+            # Remove shim only if no binary are remaining for this name
+            removed = self.shell.remove_binary_shim(directories[0], binary.name)
+            if removed:
+                events.file.deleted(removed)
 
     def execute(self, binary: Binary):
         """
         Create binary shim
         """
         directories = config.data.get('shell.path.directories')
-        written, shim = self.shell.create_binary_shim(directories[0], binary)
+        written, shim = self.shell.create_binary_shim(directories[0], binary.name)
         if written:
             context.log.success("Shim created: %s", shim)
         else:
@@ -449,3 +465,79 @@ class CheckActivatedAction(Action):
             check_activated(True, True)
         except CheckActivatedException as exc:
             context.exceptions.append(exc)
+
+
+class CommandAction(Action):
+    """
+    Display a requested command for it to be evaluated by the shell
+    """
+
+    def __init__(self, shell: ShellIntegration):
+        super().__init__()
+        self.shell = shell
+
+    @property
+    def event_bindings(self):
+        return events.run.command
+
+    @property
+    def name(self) -> str:
+        return "shell:" + self.shell.name + ":command"
+
+    @property
+    def description(self) -> str:
+        return super().description + " for " + self.shell.description
+
+    @property
+    def disabled(self) -> bool:
+        return config.data.get('shell.shell') != self.shell.name
+
+    def execute(self, command: Iterable[str], system_path: bool = False):
+        """
+        Execute action
+        """
+        if not system_path:
+            print(self.shell.generate_cmdline(command))
+            return
+
+        tempdir = os.path.join(gettempdir(), "ddb", "run")
+        path_additions = None
+
+        os.makedirs(tempdir, exist_ok=True)
+        with NamedTemporaryFile(mode='w',
+                                dir=tempdir,
+                                prefix="",
+                                suffix="." + self.shell.name,
+                                delete=False,
+                                **self.shell.temporary_file_kwargs) as file:
+            script_filepath = file.name
+            if system_path:
+                path_directories = config.data.get('shell.path.directories')
+                if path_directories:
+                    path_additions = map(
+                        lambda path_addition: os.path.normpath(os.path.join(config.paths.project_home, path_addition)),
+                        path_directories)
+                    for instruction in remove_from_system_path(self.shell, path_additions):
+                        print(instruction, file=file)
+                    print(file=file)
+
+            print(self.shell.generate_cmdline(command), end="", file=file)
+
+            if path_additions:
+                or_generated = False
+                for instruction in add_to_system_path(self.shell, path_additions):
+                    if not or_generated:
+                        print(self.shell.generate_or_operator(True), file=file)
+                    else:
+                        print(self.shell.generate_and_operator(True), file=file)
+                    print(instruction, end="", file=file)
+
+            print(file=file)
+
+        for ins in self.shell.evaluate_script(script_filepath):
+            print(ins)
+
+        for previous_temporary_file in os.listdir(tempdir):
+            previous_temporary_filepath = os.path.join(tempdir, previous_temporary_file)
+            if previous_temporary_filepath != script_filepath:
+                os.remove(previous_temporary_filepath)

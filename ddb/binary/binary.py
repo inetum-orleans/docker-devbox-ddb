@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from abc import abstractmethod, ABC
-from typing import List, Iterable
+from typing import Iterable, Tuple
 
 from ddb.registry import RegistryObject
 
@@ -10,17 +10,35 @@ class Binary(RegistryObject, ABC):
     Wraps a binary on the system.
     """
 
+    @property
     @abstractmethod
-    def command(self, *args) -> Iterable[str]:
+    def name(self) -> str:
         """
-        Get the binary command
+        Name of the binary.
         """
 
     @abstractmethod
-    def pre_execute(self):
+    def command(self, *args) -> Iterable[str]:
         """
-        Add action to be executed before running the command
-        :return: True or False depending on it's the same or not
+        Get the binary command.
+        """
+
+    @abstractmethod
+    def should_run(self, *args) -> bool:
+        """
+        Check if this binary should run.
+        """
+
+    @abstractmethod
+    def priority(self) -> int:
+        """
+        Priority of this binary amoung binaries with the same name that should run.
+        """
+
+    @abstractmethod
+    def before_run(self, *args) -> None:
+        """
+        Add action to be executed before running the command.
         """
 
     @abstractmethod
@@ -44,6 +62,15 @@ class AbstractBinary(Binary, ABC):
     def name(self) -> str:
         return self._name
 
+    def before_run(self, *args) -> None:
+        return None
+
+    def should_run(self, *args) -> bool:
+        return True
+
+    def priority(self) -> int:
+        return 0
+
     def __eq__(self, other) -> bool:
         if not isinstance(other, AbstractBinary):
             return False
@@ -58,11 +85,11 @@ class DefaultBinary(AbstractBinary):
     Default implementation for binary.
     """
 
-    def __init__(self, name: str, command: List[str]):
+    def __init__(self, name: str, command: Iterable[str]):
         super().__init__(name)
-        self._command = command
+        self._command = tuple(command)
 
-    def command(self, *args) -> List[str]:
+    def command(self, *args) -> Tuple[str]:
         return self._command
 
     def __eq__(self, other) -> bool:
@@ -74,6 +101,3 @@ class DefaultBinary(AbstractBinary):
 
     def __hash__(self):
         return hash((super().__hash__(), self.command()))
-
-    def pre_execute(self):
-        return True

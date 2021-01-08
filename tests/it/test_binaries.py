@@ -1,9 +1,11 @@
 import os
 from shutil import copy
 
+import pytest
 from _pytest.capture import CaptureFixture
-from ddb.__main__ import main
-from ddb.config import Config
+
+from ddb.__main__ import main, reset
+from ddb.config import Config, config
 
 
 class TestBinaries:
@@ -65,3 +67,28 @@ class TestBinaries:
 
         assert isinstance(exceptions[0], ValueError)
         assert str(exceptions[0]) == 'Binary name "psql" is not registered'
+
+    @pytest.mark.parametrize(
+        'relative_cwd,expected',
+        [('node10', 'node10'), ('node12', 'node12'), (None, 'node14')]
+    )
+    def test_docker_binaries_with_condition(self, relative_cwd, expected, project_loader, capsys: CaptureFixture):
+        project_loader("docker_command_cwd_condition")
+
+        cwd = os.getcwd()
+        if relative_cwd:
+            cwd = os.path.join(cwd, relative_cwd)
+            os.chdir(cwd)
+            assert os.getcwd() == cwd
+
+        try:
+            main(["--clear-cache", "configure"], reset_disabled=True)
+            assert config.cwd == cwd
+        finally:
+            reset()
+
+        exceptions = main(["run", "node", "--version"])
+        assert not exceptions
+
+        outerr = capsys.readouterr()
+        assert expected in outerr.out

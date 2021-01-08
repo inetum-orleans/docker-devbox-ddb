@@ -31,3 +31,4 @@ paramiko
 wcmatch
 marshmallow-union
 progress
+ordered-set

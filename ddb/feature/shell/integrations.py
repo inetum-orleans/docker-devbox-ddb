@@ -1,9 +1,11 @@
 import os
 import shlex
+import subprocess
 from abc import ABC, abstractmethod
 from typing import Tuple, Iterable, Dict, Any, Optional
 
 from slugify import slugify
+
 from ddb.binary import Binary
 from ddb.utils.file import force_remove, write_if_different, chmod
 
@@ -36,14 +38,14 @@ class ShellIntegration(ABC):
         """
 
     @abstractmethod
-    def remove_binary_shim(self, shims_path: str, binary: Binary) -> Optional[str]:
+    def remove_binary_shim(self, shims_path: str, name: str) -> Optional[str]:
         """
         Delete a binary shim for this shell.
         @return removed filepath
         """
 
     @abstractmethod
-    def create_binary_shim(self, shims_path: str, binary: Binary) -> Tuple[bool, str]:
+    def create_binary_shim(self, shims_path: str, name: str) -> Tuple[bool, str]:
         """
         Add a binary shim for this shell.
         :return created filepath
@@ -60,6 +62,24 @@ class ShellIntegration(ABC):
     def evaluate_script(self, script_filepath) -> Iterable[str]:
         """
         Get the command to evaluate the script inside the current shell context.
+        """
+
+    @abstractmethod
+    def generate_and_operator(self, new_line: bool = False) -> str:
+        """
+        Build the shell command to run the given command inside the current shell context.
+        """
+
+    @abstractmethod
+    def generate_or_operator(self, new_line: bool = False) -> str:
+        """
+        Build the shell command to run the given command inside the current shell context.
+        """
+
+    @abstractmethod
+    def generate_cmdline(self, command: Iterable[str], system_path=True) -> str:
+        """
+        Build the shell command to run the given command inside the current shell context.
         """
 
     def before_environ_backup(self, environ: Dict[str, str]):
@@ -123,15 +143,15 @@ class BashShellIntegration(ShellIntegration):
         for shim in shims:
             force_remove(shim)
 
-    def remove_binary_shim(self, shims_path: str, binary: Binary) -> Optional[str]:
-        shim = os.path.join(shims_path, binary.name)
+    def remove_binary_shim(self, shims_path: str, name: str) -> Optional[str]:
+        shim = os.path.join(shims_path, name)
         if not os.path.isfile(shim):
             return None
         force_remove(shim)
         return shim
 
-    def create_binary_shim(self, shims_path: str, binary: Binary):
-        return self._write_shim(shims_path, binary.name, 'binary', "$(ddb run %s \"$@\")" % binary.name)
+    def create_binary_shim(self, shims_path: str, name: str):
+        return self._write_shim(shims_path, name, 'binary', "$(ddb run %s \"$@\")" % name)
 
     def create_alias_binary_shim(self, shims_path: str, binary: Binary) -> Tuple[bool, str]:
         return self._write_shim(shims_path, binary.name, 'alias', binary.command())
@@ -158,6 +178,15 @@ class BashShellIntegration(ShellIntegration):
 
     def evaluate_script(self, script_filepath) -> Iterable[str]:
         yield ". %s" % (script_filepath,)
+
+    def generate_and_operator(self, new_line: bool = False) -> str:
+        return " &&" + ("\\" if new_line else " ")
+
+    def generate_or_operator(self, new_line: bool = False) -> str:
+        return " ||" + ("\\" if new_line else " ")
+
+    def generate_cmdline(self, command: Iterable[str], system_path=True) -> str:
+        return subprocess.list2cmdline(command)
 
 
 class CmdShellIntegration(ShellIntegration):
@@ -191,22 +220,22 @@ class CmdShellIntegration(ShellIntegration):
         for shim in shims:
             force_remove(shim)
 
-    def remove_binary_shim(self, shims_path: str, binary: Binary) -> Optional[str]:
-        shim = os.path.join(shims_path, binary.name + '.bat')
+    def remove_binary_shim(self, shims_path: str, name: str) -> Optional[str]:
+        shim = os.path.join(shims_path, name + '.bat')
         if not os.path.isfile(shim):
             return None
         force_remove(shim)
         return shim
 
-    def create_binary_shim(self, shims_path: str, binary: Binary):
+    def create_binary_shim(self, shims_path: str, name: str):
         commands = [
-            "set command=(ddb run {} \"%*\")".format(binary.name),
+            "set command=(ddb run {} \"%*\")".format(name),
             "%command%>cmd.txt",
             "set /p execution=<cmd.txt",
             "del cmd.txt",
             "%execution% \"%*\""
         ]
-        return self._write_shim(shims_path, binary.name, 'binary', commands)
+        return self._write_shim(shims_path, name, 'binary', commands)
 
     def create_alias_binary_shim(self, shims_path: str, binary: Binary):
         return self._write_shim(shims_path, binary.name, 'alias', binary.command())
@@ -232,3 +261,12 @@ class CmdShellIntegration(ShellIntegration):
 
     def header(self) -> Iterable[str]:
         return ["@echo off", "set NL=^", ""]
+
+    def generate_and_operator(self, new_line: bool = False) -> str:
+        return " &&" + ("\\" if new_line else " ")
+
+    def generate_or_operator(self, new_line: bool = False) -> str:
+        return " ||" + ("\\" if new_line else " ")
+
+    def generate_cmdline(self, command: Iterable[str], system_path=True) -> str:
+        return subprocess.list2cmdline(command)
