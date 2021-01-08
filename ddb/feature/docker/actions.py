@@ -2,19 +2,19 @@
 import os
 import re
 from pathlib import PurePosixPath, Path
-from typing import Union, Iterable, List, Dict
+from typing import Union, Iterable, List, Dict, Set
 
 import yaml
-from .lib.compose.config.types import ServicePort
-from ddb.feature import features
-from ddb.feature.traefik import TraefikExtraServicesAction
 from dotty_dict import Dotty
 from simpleeval import simple_eval
 
+from ddb.feature import features
+from ddb.feature.traefik import TraefikExtraServicesAction
 from .binaries import DockerBinary
+from .lib.compose.config.types import ServicePort
 from ...action import Action
 from ...action.action import EventBinding, InitializableAction
-from ...binary import binaries
+from ...binary import binaries, Binary
 from ...cache import caches, register_project_cache
 from ...config import config
 from ...context import context
@@ -187,7 +187,7 @@ class DockerComposeBinaryAction(InitializableAction):
 
     def __init__(self):
         super().__init__()
-        self.binaries = dict()
+        self.binaries = set()  # type: Set[Binary]
 
     @property
     def event_bindings(self):
@@ -204,38 +204,41 @@ class DockerComposeBinaryAction(InitializableAction):
 
     def destroy(self):
         if caches.has("docker.binaries"):
-            cache = caches.unregister("docker.binaries")
-            cache.close()
+            caches.unregister("docker.binaries", callback=lambda c: c.close())
 
     def before_events(self, docker_compose_config):
         """
         Reset current binaries dict.
         """
-        self.binaries = dict()
+        self.binaries = set()
 
     def after_events(self, docker_compose_config):
         """
-        Cache binaries and remove binaries from cache that are not found in current config.
+        Cache binaries and emit unregistered events for those removed from the previous run.
         """
         docker_binaries_cache = caches.get("docker.binaries")
+        cached_binaries = docker_binaries_cache.get("cached_binaries")  # type: Set[Binary]
+        if cached_binaries is None:
+            cached_binaries = set()
 
-        for name, binary in self.binaries.items():
-            docker_binaries_cache.set(name, binary)
+        to_remove_binaries = set()
+        for cached_binary in cached_binaries:
+            if cached_binary not in self.binaries:
+                if binaries.unregister(cached_binary.name, cached_binary):
+                    events.binary.unregistered(binary=cached_binary)
+                    to_remove_binaries.add(cached_binary)
 
-        binaries_to_remove = set()
-        for name in docker_binaries_cache.keys():
-            if name not in self.binaries.keys():
-                unregistered_binary = binaries.unregister(name)
-                events.binary.unregistered(binary=unregistered_binary)
-                binaries_to_remove.add(name)
+        for to_remove in to_remove_binaries:
+            cached_binaries.remove(to_remove)
 
-        for binary_to_remove in binaries_to_remove:
-            docker_binaries_cache.pop(binary_to_remove)
+        for binary in self.binaries:
+            cached_binaries.add(binary)
 
+        docker_binaries_cache.set("cached_binaries", cached_binaries)
         docker_binaries_cache.flush()
 
-    def execute(self, name=None, workdir=None, options=None, options_condition=None, args=None, exe=False,
-                docker_compose_service=None):
+    def execute(self, name=None, workdir=None, options=None, options_condition=None, condition=None, args=None,
+                exe=False, docker_compose_service=None):
         """
         Execute action
         """
@@ -245,21 +248,16 @@ class DockerComposeBinaryAction(InitializableAction):
             raise ValueError("name should be defined")
 
         binary = DockerBinary(name, docker_compose_service=docker_compose_service, workdir=workdir, options=options,
-                              options_condition=options_condition, args=args, exe=exe)
+                              options_condition=options_condition, condition=condition, args=args, exe=exe)
 
-        self.binaries[name] = binary
+        self.binaries.add(binary)
 
-        if binaries.has(name):
-            existing_binary = binaries.get(name)
-            if existing_binary == binary:
-                context.log.notice("Binary exists: %s" % (name,))
-                events.binary.found(binary=binary)
-                return
-
-            binaries.unregister(name)
+        if binaries.has(name, binary):
+            context.log.notice("Binary exists: %s" % (name,))
+            events.binary.found(binary=binary)
+            return
 
         binaries.register(binary)
-
         context.log.success("Binary registered: %s", name)
         events.binary.registered(binary=binary)
 

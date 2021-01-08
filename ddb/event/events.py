@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, Iterable
 
 from ddb.binary import Binary as BinaryType
 from . import event
@@ -124,6 +124,14 @@ class Run:
         :param name:
         """
 
+    @event("run:command")
+    def command(self, command: Iterable[str], system_path: bool = False):
+        """
+        When a command request should be handled.
+        :param command:
+        :param system_path:
+        """
+
 
 class Docker:
     """
@@ -152,17 +160,10 @@ class Docker:
         """
 
     @event("docker:binary")
-    def binary(self, name=None, workdir=None, options=None, options_condition=None, args=None,
+    def binary(self, name=None, workdir=None, options=None, options_condition=None, condition=None, args=None,
                docker_compose_service=None):
         """
         Ask a binary to be generated from docker compose service
-        :param name:
-        :param workdir:
-        :param options:
-        :param options_condition:
-        :param args:
-        :param docker_compose_service:
-        :return:
         """
 
 

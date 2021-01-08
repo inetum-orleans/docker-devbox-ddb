@@ -366,6 +366,8 @@ Binary allow the creation of alias for command execution inside the service.
         - type: string|null
     - `exe`: launch command with docker-compose `exec` instead of `run`.
         - type: boolean|null
+    - `condition`: add a condition for the command to be enabled or not.
+        - type: string|null
 
 !!! example 
     ```json 

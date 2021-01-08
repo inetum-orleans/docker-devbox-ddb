@@ -344,6 +344,7 @@ def main(args: Optional[Sequence[str]] = None,
     global _watch_started_event, _watch_stop_event  # pylint:disable=global-statement
     _watch_started_event = threading.Event()
     _watch_stop_event = threading.Event()
+    initial_cwd = os.getcwd()
     try:
         load_plugins()
         bootstrap_register_features()
@@ -397,6 +398,7 @@ def main(args: Optional[Sequence[str]] = None,
     except ExpectedError as exception:
         return [exception]
     finally:
+        os.chdir(initial_cwd)
         if not reset_disabled:
             reset()
 

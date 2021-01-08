@@ -1,0 +1,28 @@
+version: '3.7'
+services:
+  node:
+    image: node:10
+    init: true
+    labels:
+      ddb.emit.docker:binary[npm](name): npm-simple
+      ddb.emit.docker:binary[npm](workdir): /app
+    restart: 'no'
+    user: 1000:1000
+    volumes:
+      - .:/app
+      - node-cache:/home/node/.cache
+  node2:
+    image: node:12
+    init: true
+    labels:
+      ddb.emit.docker:binary[mysql](name): mysql
+      ddb.emit.docker:binary[mysql](args): mysql -hdb -uproject-management-tool -pproject-management-tool
+      ddb.emit.docker:binary[mysql](workdir): /app
+    restart: 'no'
+    user: 1000:1000
+    volumes:
+      - .:/app
+      - db-data:/var/lib/mysql
+volumes:
+  node-cache:
+  db-data:

@@ -57,5 +57,4 @@ class RemovalCacheSupport:  # pylint:disable=too-many-instance-attributes
         """
         Unregister and close the underlying cache.
         """
-        cache = caches.unregister("traefik.extra-services")
-        cache.close()
+        caches.unregister("traefik.extra-services", callback=lambda c: c.close())

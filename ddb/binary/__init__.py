@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 from .binary import Binary
-from ..registry import Registry
+from ..registry import RegistryOrderedSet
 
-binaries = Registry(Binary, "Binary")  # type: Registry[Binary]
+binaries = RegistryOrderedSet(Binary, "Binary")  # type: RegistryOrderedSet[Binary]
