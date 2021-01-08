@@ -267,7 +267,10 @@ It will use the following `ddb` configuration to generate appropriate `environme
     - `version`: The XDebug version to configure. If set to null, both XDebug 2 and 3 configurations will be set.
         - type: number (2 or 3) or null
         - default: null
-
+    - `session`: The XDebug idekey to configure. By default project-name, but you can set explicitly this value to set env vars PHP_IDE_CONFIG and XDEBUG_CONFIG.
+        - type: string
+        - default: project-name
+        
 !!! example 
     ```json 
     ddb.Xdebug()
