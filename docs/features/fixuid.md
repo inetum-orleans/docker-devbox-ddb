@@ -8,33 +8,32 @@ Those permission issues are related to the way docker works and cannot really be
 To help developer fixing permission issues, [fixuid](https://github.com/boxboat/fixuid) is auto-configured by ddb when
 a `fixuid.yml` file is available in docker build context.
 
-Feature Configuration
----
+!!! summary "Feature configuration (prefixed with `fixuid.`)"
+    === "Simple"
+        | Property | Type | Description |
+        | :---------: | :----: | :----------- |
+        | `disabled` | boolean<br>`false` | Should this feature be disabled ? |
+        
+    === "Internal"
+        | Property | Type | Description |
+        | :---------: | :----: | :----------- |
+        | `url` | string<br>`https://github.com/boxboat/fixuid/releases/download/v0.5/fixuid-0.5-linux-amd64.tar.gz` | URL to download the fixuid distribution binary. |
 
-- `disabled`: Definition of the status of the feature. If set to True, all git automations will be disabled.
-    - type: boolean
-    - default: False
-              
-- `url`: The URL to download the fixuid binaries.
-    - type: string
-    - default: https://github.com/boxboat/fixuid/releases/download/v0.4/fixuid-0.4-linux-amd64.tar.gz
-    
-!!! example "Configuration"
+!!! quote "Defaults"
     ```yaml
     fixuid:
-        disabled: false
-        url: https://github.com/boxboat/fixuid/releases/download/v0.4/fixuid-0.4-linux-amd64.tar.gz
-    ``` 
-    
+      disabled: false
+    ```
+
 Automatic configuration
 ---
 
 In order to benefit from this feature, few steps are require. 
 
 First, you need to create the `fixuid.yml` configuration file next to `Dockerfile.jinja`. For this feature
-to work properly, you must use a template feature for your Dockerfile (like Jinja). 
+to work properly, you must use a template feature for your Dockerfile, like [Jinja](./jinja.md). 
 
-In this `fixuid.yml` configuration file, you have to define three settings : 
+In this `fixuid.yml` configuration file, you have to define three settings: 
 
 - `user`: the user inside the container which is allowed to run command and access files.
 - `group`: the group inside the container which is allowed to run command and access files.
@@ -91,9 +90,12 @@ been generated. The entrypoint is changed to run fixuid before the default entry
     With this configuration, you should be able to generate a dump from the container as your own user instead of root.
 
 !!! question "Why should I use `.jinja` extension for my `Dockerfile` ?"
-    Using this feature updates `Dockerfile` to add the instructions needed for fixuid. That's why you should 
-    use a template source instead. The `Dockerfile` is then a generated file that will be automatically ignored by
-    git, thanks to [gitignore feature](./gitignore.md).
+    You should always use `.jinja` when declaring a Dockerfile to benefits of `fixuid` feature.    
+
+    Using `fixuid` feature updates `Dockerfile` to add the instructions needed for fixuid. That's why you should 
+    use a template source instead, for this to be generated again on each `ddb` configure command. 
+
+    The `Dockerfile` will be automatically ignored by git thanks to [gitignore](./gitignore.md) feature.
 
 !!! warning "If you are not using `jsonnet` for `docker-compose.yml`"    
     In `docker-compose.yml`, you will need to add the configuration `user` to the service using this 

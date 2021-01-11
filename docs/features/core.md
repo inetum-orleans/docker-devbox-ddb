@@ -1,55 +1,45 @@
 Core
 ===
 
-In order to work properly, the core of **ddb** needs some configuration too.
+Core feature contains some key configuration like domain name and current active environement. Those configuration 
+settings may impact many other features indirectly.
 
-It also handle the two following basic commands : `ddb features` and `ddb config.
-If you want more information on those, please check [command](../commands.md) page.
+It also handle the two following basic commands : `ddb features` and `ddb config`. Check [command](../commands.md) page for details about those commands.
 
-Feature configuration
----
 
-- `disabled`: Definition of the status of the feature. If set to True, the core feature will not be triggered. We highly recommend not to disable it.
-    - type: boolean
-    - default: False
-- `domain.ext`: The extension to use for the domain generation.
-    - type: string
-    - default: 'test'
-- `domain.sub`: The domain to use for the domain generation.
-    - type: string
-    - default: <the name of the project>
-- `env.available`: The list of environments available.
-    - type: Array<string>
-    - default: ['prod', 'stage', 'ci', 'dev']
-- `env.current`: The list of environments available.
-    - type: Array<string>
-    - default: Last value of `env.available`: `dev`
-- `os`: The current operating system
-    - type: string
-    - default: 'posix' for linux based environment
-- `path.ddb_home`: The path where ddb is installed
-    - type: string
-    - default: $HOME/.docker-devbox/ddb (for linux based environment)
-- `path.home`: The parent folder of ddb installation
-    - type: string
-    - default: $HOME/.docker-devbox (for linux based environment)
-- `path.project_home`: The project folder
-    - type: string
-    - default: $HOME/projects/docker-devbox (for linux based environment)
-- `process`: TODO EXPLAIN
-    - type: string
-    - default: {}
-- `project.name`: The name of the project
-    - type: string
-    - default: <the name of the project directory>
-- `required_version`: The minimal required ddb version for the project to work properly. If the required version is higher than the currently running one, ddb will stop working until it's updated.
-  - type: string
-  - default: null
-- `github_repository`: Github repository used to check new release of ddb. Should not be changed.
-  - type: string
-  - default: 'gfi-centre-ouest/docker-devbox-ddb'
+!!! summary "Feature configuration (prefixed with `core.`)"
+    === "Simple"
+        | Property | Type | Description |
+        | :---------: | :----: | :----------- |
+        | `disabled` | boolean<br>`false` | Should this feature be disabled ? |
+        | `domain.sub` | string<br>`${project.name}` | The domain to use for the domain generation. This is the constant part of the domain, that should not vary between environment. |
+        | `domain.ext` | string<br>`test` | The extension to use for the domain. This is the last part, of your domain name, that may vary between environment. |
+        | `env.current` | string<br>`${env.available}[-1]` | Current active environment. Default value is `dev`, or the last value of `env.available`. |
+        | `project.name` | string<br>`<Directory name of ${path.project_home}>` | The project name. This is used by many templates and to generate other default values like `domain.sub`.
+    === "Advanced"
+        | Property | Type | Description |
+        | :---------: | :----: | :----------- |
+        | `env.available` | string[]<br>`['prod', 'stage', 'ci', 'dev']` | List of available environments. You should any new custom environment to support here before trying to set `env.current` to this custom environment.|
+        | `required_version` | string | Minimal required `ddb` version for the project to work properly. If `required_version` is greater than the currently running one, ddb will refuse to run until it's updated. |
+        | `path.ddb_home` | string<br>`${env:HOME}/.docker-devbox/ddb` | The path where ddb is installed. |
+        | `path.home` | string<br>`${env:HOME}/.docker-devbox` | The path where docker devbox is installed. |
+        | `path.project_home` | string | The project directory. |
+        | `process` | **Process**[] | List of process configurations. A process configuration allow to add custom arguments before and after a command executed internally (like `git`). |
+    === "Internal"
+        | Property | Type | Description |
+        | :---------: | :----: | :----------- |
+        | `os` | string<br>`posix` | The current operating system. |
+        | `github_repository` | string<br>`gfi-centre-ouest/docker-devbox-ddb` | List of process configurations. A process configuration allow to add flags before and after a command normaly runned by ddb (like `git`). |
 
-!!! example "Configuration"
+!!! summary "Process configuration (used in `core.process`)"
+
+    | Property | Type | Description |
+    | :---------: | :----: | :----------- |
+    | `bin` | string<span style="color:red">*</span> | The process path to override. |
+    | `prepend` | string\|string[]<br> | Arguments to prepend to default arguments. |
+    | `append` | string\|string[] | Arguments to append to default arguments. |
+
+!!! quote "Defaults"
     ```yaml
     core:
       disabled: false
@@ -72,4 +62,5 @@ Feature configuration
       process: {}
       project:
         name: docker-devbox
+      github_repository:
     ```

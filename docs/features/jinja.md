@@ -1,31 +1,24 @@
 Jinja
 ===
 
-[Jinja](https://jinja.palletsprojects.com/) is another template library included in `ddb`. It is used to generate files
-using ddb configuration and any condition you might need.
+[Jinja](https://jinja.palletsprojects.com/) is template library included in `ddb`. It is used to generate files
+using ddb configuration.
 
+!!! summary "Feature configuration (prefixed with `jinja.`)"
+    === "Simple"
+        | Property | Type | Description |
+        | :---------: | :----: | :----------- |
+        | `disabled` | boolean<br>`false` | Should this feature be disabled ? |
+        | `suffixes` | string[]<br>`['.jinja']` | A list of filename suffix to include. |
+        | `extensions` | string[]<br>`['.*', '']` | A list of glob of supported extension. |
+        | `excludes` | string[]<br>`[]` | A list of glob of filepath to exclude. |
 
-Feature Configuration
----
-
-- `disabled`: Definition of the status of the feature. If set to True, all gitignore automations will be disabled.
-    - type: boolean
-    - default: False
-- `excludes`: A list of file or filename template to exclude from the this feature processing
-    - type: array of string
-    - default: []
-- `extensions`: TODO
-    - type: array of string
-    - default: ['.*', '']
-- `includes`: The list of filename template which will be handled by the feature. If not defined in your project, it will
-    be generated using `suffixed` and `extensions` configuration values.
-    - type: array of string
-    - default: ['*.jinja{.*,}']
-- `suffixed`: TODO
-    - type: array of string
-    - default: ['.jinja']
+    === "Advanced"
+        | Property | Type | Description |
+        | :---------: | :----: | :----------- |
+        | `includes` | string[]<br>`['*.jinja{.*,}']` | A list of glob of filepath to include. It is automatically generated from `suffixes` and `extensions`. |
  
-!!! example "Configuration"
+!!! quote "Defaults"
     ```yaml
     jinja:
       disabled: false
@@ -52,35 +45,34 @@ In those templates, you can retrieve ddb configuration values simply using the f
     Well, as you might already know, you can execute `ddb config` in order to check the configuration used in ddb.
     
     But if you append `--variables` to this command, you will have the variable name to include in your template !
+
+!!! example "dotenv `.env` configuration file generation"
+    You want to generate a `.env` file based on your current ddb configuration.
     
-An example : symfony `.env` generation 
---- 
-Let us say that you are working on a symfony project, and you want to generate the `.env` file based on your current
-ddb configuration.
+    You can create a `.env.jinja` and replace the parts you need to fill with those variables:
 
-Well, you need to create a `.env.jinja` for instance, and replace the parts you need to fill with those variable 
-as follows :
-```dotenv
-APP_ENV=dev
-APP_SECRET=4271e37e11180de028f11a132b453fb6
-CORS_ALLOW_ORIGIN=^https?://{{core.domain.sub}}\.{{core.domain.ext}}$
-DATABASE_URL=mysql://ddb:ddb@db:3306/ddb
-MAILER_URL=smtp://mail
-```
+    ```bash
+    APP_ENV=dev
+    APP_SECRET=4271e37e11180de028f11a132b453fb6
+    CORS_ALLOW_ORIGIN=^https?://{{core.domain.sub}}\.{{core.domain.ext}}$
+    DATABASE_URL=mysql://ddb:ddb@db:3306/ddb
+    MAILER_URL=smtp://mail
+    ```
+    
+    As you can see, we have configured `CORS_ALLOW_ORIGIN` using ddb configuration variables.
 
-As you can see, we have replaced the full domain of the `CORS_ALLOW_ORIGIN` variable with ddb configurations variables.
+    Now, we can run `ddb configure`. After the file have been processed, `.env` file is generated next to `.env.jinja` 
+    template file.
+    
+    With `core.domain.sub` set to `ddb` and `core.domain.ext` set to 'test', you will get the following content :
 
-Now, we simply execute `ddb configure`. After the file have been processed by the feature, the final `.env` file will
-be on your drive, right next to his jinja counterpart. 
-
-With `core.domain.sub` equals to 'ddb' and `core.domain.ext` set to 'ext', you will get the following content :
-```dotenv
-APP_ENV=dev
-APP_SECRET=4271e37e11180de028f11a132b453fb6
-CORS_ALLOW_ORIGIN=^https?://ddb\.test$
-DATABASE_URL=mysql://ddb:ddb@db:3306/ddb
-MAILER_URL=smtp://mail
-```
-
-This way, you will not need to manually update your project configuration manually, but you will simply need to execute
-the `ddb configure` command !
+    ```bash
+    APP_ENV=dev
+    APP_SECRET=4271e37e11180de028f11a132b453fb6
+    CORS_ALLOW_ORIGIN=^https?://ddb\.test$
+    DATABASE_URL=mysql://ddb:ddb@db:3306/ddb
+    MAILER_URL=smtp://mail
+    ```
+    
+    This way, you don't need to manually update `.env` file manually and can keep the whole project configuration 
+    centralized.
