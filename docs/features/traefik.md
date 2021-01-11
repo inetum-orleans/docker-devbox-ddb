@@ -8,86 +8,95 @@ The feature does not install traefik or handle the configuration of your host to
 but it handles the generation of traefik configuration file for your project if there is certificates for HTTPS 
 access.
 
-Feature configuration
----
+!!! summary "Feature configuration (prefixed with `traefik.`)"
+    === "Simple"
+        | Property | Type | Description |
+        | :---------: | :----: | :----------- |
+        | `disabled` | boolean<br>`false` | Should this feature be disabled ? |
+        | `extra_services` | dict[string, **ExtraService**]<br>`[]` | A dict of ExtraService configuration. |
 
-- `disabled`: Definition of the status of the feature. If set to True, traefik feature will not be triggered.
-    - type: boolean
-    - default: `False`
-- `certs_directory`: The directory in which all certs are stored
-    - type: string
-    - default: `$HOME/.docker-devbox/certs` (for Linux based systems)
-- `config_directory`: The traefik configuration directory
-    - type: string
-    - default: `$HOME/.docker-devbox/traefik/config` (for Linux based systems)
-- `mapped_certs_directory`: The directory in which certificates are generated (public and private key)
-    - type: string
-    - default: `/cert`
-- `ssl_config_template`: The Jinja template for the traefik configuration file registering CFSSL SSL certificates. 
-    This template can be a template string, or a link to a file containing the template, prefixed with `http(s)//` for 
-    web files, or `file://` for local ones. 
-    In case of local template, you can define it relative to your project path, or absolute.
-    - type: string
-    - default: A jinja template
-- `extra-services`: A dict of {id: ExtraService} configuration
-    - type: list of Spec configuration
-    - default: `{}`
-- `extra_services_config_template`: The Jinja template for extra-services configuration file. 
-    This template can be a template string, or a link to a file containing the template, prefixed with `http(s)//` for 
-    web files, or `file://` for local ones. 
-    In case of local template, you can define it relative to your project path, or absolute.
-    - type: string
-    - default: A jinja template
+    === "Advanced"
+        | Property | Type | Description |
+        | :---------: | :----: | :----------- |
+        | `certs_directory` | string<br>`${core.path.home}/certs` | Custom certificates location. |
+        | `mapped_certs_directory` | string<br>`${core.path.home}/certs` | Traefik container custom certificates location. |
+        | `config_directory` | string<br>`${core.path.home}/traefik/config` | Traefik configuration directory. |
+        | `ssl_config_template` | string<br>`<Jinja template>` | The Jinja template for the traefik configuration file registering CFSSL SSL certificates. This template can be a template string, or a link to a file containing the template, prefixed with `http(s)://` for web files, or `file://` for local ones. |
+        | `extra_services_config_template` | string<br>`<Jinja template>` | The Jinja template for extra-services configuration file. This template can be a template string, or a link to a file containing the template, prefixed with `http(s)://` for web files, or `file://` for local ones. |
 
-!!! example "Configuration"
+!!! summary "ExtraService configuration (used in `traefik.extra_services`)"
+    === "Simple"
+        | Property | Type | Description |
+        | :---------: | :----: | :----------- |
+        | `domain` | string<span style="color:red">*</span> | Domain to use for SSL certificate generation. |
+        | `url` | string<span style="color:red">*</span> | URL to access the service to proxy from traefik container. |
+        | `https` | boolean | Use http and/or https to expose the service. If `None`, it is exposed with both http and https. |
+        | `redirect_to_https` | boolean<br>`${docker.reverse_proxy.redirect_to_https}` | If `https` is `None` and `redirect_to_https` is `True`, requesting the http url of the service will reply with a temporary redirect to https. |
+
+    === "Advanced"
+        | Property | Type | Description |
+        | :---------: | :----: | :----------- |
+        | `path_prefix` | string | The traefik prefix path. You should customize it only if you have to support sub folder on the domain. |
+        | `redirect_to_path_prefix` | boolean | The traefik prefix path. You should customize it only if you have to support sub folder on the domain. |
+        | `rule` | string<br>``Host(`{{_local.domain}}`)`` | Custom certificates location. |
+
+!!! quote "Defaults"
     ```yaml
     traefik:
-      certs_directory: /home/vagrant/.docker-devbox/certs
-      config_directory: /home/vagrant/.docker-devbox/traefik/config
-      disabled: false
+      certs_directory: /home/toilal/.docker-devbox/certs
       mapped_certs_directory: /certs
-      ssl_config_template: "# This configuration file has been automatically generated\
-        \ by ddb\n[[tls.certificates]]\n  certFile = \"%s\"\n  keyFile = \"%s\"\n"
+      config_directory: /home/toilal/.docker-devbox/traefik/config
+      disabled: false
       extra_services: {}
       extra_services_config_template: "# This configuration file has been automatically\
-        \ generated by ddb\n[http.routers]\n  [http.routers.extra-service-{{_local.id}}]\n\
-        \    rule = \"{{_local.rule}}\"\n    entrypoints = [{% if _local.https is true\
-        \ %}\"https\"{% elif _local.https is false %}\"http\"{% else %}\"http\", \"https\"\
-        {% endif %}]\n    service = \"extra-service-{{_local.id}}\"\n{%- if _local.certresolver\
-        \ is defined %}\n [http.routers.extra-service-{{_local.service}}.tls]\n    certResolver\
-        \ = \"{{_local.certresolver}}\"\n{%- endif %}\n\n[http.services]\n  [http.services.extra-service-{{_local.id}}.loadBalancer]\n\
-        \    [[http.services.extra-service-{{_local.id}}.loadBalancer.servers]]\n    \
-        \  url = \"{{_local.url}}\"\n"
+        \ generated by ddb\n[http.routers]\n{%- if _local.https is none or _local.https\
+        \ is sameas false %}\n  [http.routers.extra-service-{{_local.id}}]\n    rule =\
+        \ \"{{_local.rule}}\"{% if not _local.redirect_to_https and _local.path_prefix\
+        \ %} && \"PathPrefix(`{{_local.path_prefix}}{regex:$$|/.*}`)\"{% endif %}\n  \
+        \  entrypoints = [\"http\"]\n    service = \"extra-service-{{_local.id}}\"\n{%-\
+        \ if _local.redirect_to_https %}\n    middlewares = [\"extra-service-{{_local.id}}-redirect-to-https\"\
+        ]\n{%- elif _local.path_prefix %}\n    middlewares = [\"extra-service-{{_local.id}}-stripprefix\"\
+        ]\n{%- endif %}\n{%- endif %}\n{%- if _local.https is none or _local.https is\
+        \ sameas true %}\n  [http.routers.extra-service-{{_local.id}}-tls]\n    rule =\
+        \ \"{{_local.rule}}{% if _local.path_prefix %} && PathPrefix(`{{_local.path_prefix}}{regex:$$|/.*}`){%\
+        \ endif %}\"\n    entrypoints = [\"https\"]\n    tls = true\n    service = \"\
+        extra-service-{{_local.id}}\"\n{%- if _local.path_prefix %}\n    middlewares =\
+        \ [\"extra-service-{{_local.id}}-stripprefix\"]\n{%- endif %}\n{%- if _local.certresolver\
+        \ is defined %}\n    [http.routers.extra-service-{{_local.service}}-tls.tls]\n\
+        \      certResolver = \"{{_local.certresolver}}\"\n{%- endif %}\n{%- endif %}\n\
+        {%- if _local.redirect_to_path_prefix %}\n{%- if _local.https is none and not\
+        \ _local.redirect_to_https or _local.https is sameas false %}\n  [http.routers.extra-service-{{_local.id}}-redirect-to-path-prefix]\n\
+        \    rule = \"{{_local.rule}}\"\n    entrypoints = [\"http\"]\n    service = \"\
+        extra-service-{{_local.id}}\"\n    middlewares = [\"extra-service-{{_local.id}}-redirect-to-path-prefix\"\
+        ]\n{%- endif %}\n{%- if _local.https is none or _local.https is sameas true %}\n\
+        \  [http.routers.extra-service-{{_local.id}}-redirect-to-path-prefix-tls]\n  \
+        \  rule = \"{{_local.rule}}\"\n    entrypoints = [\"https\"]\n    tls = true\n\
+        \    service = \"extra-service-{{_local.id}}\"\n    middlewares = [\"extra-service-{{_local.id}}-redirect-to-path-prefix\"\
+        ]\n{%- if _local.certresolver is defined %}\n    [http.routers.extra-service-{{_local.service}}-tls.tls]\n\
+        \      certResolver = \"{{_local.certresolver}}\"\n{%- endif %}\n{%- endif %}\n\
+        {%- endif %}\n\n{%- if _local.redirect_to_https or _local.path_prefix  %}\n\n\
+        [http.middlewares]\n{%- if _local.redirect_to_https %}\n  [http.middlewares.extra-service-{{_local.id}}-redirect-to-https.redirectScheme]\n\
+        \    scheme = \"https\"\n{%- endif %}\n{%- if _local.path_prefix %}\n  [http.middlewares.extra-service-{{_local.id}}-stripprefix.stripPrefix]\n\
+        \    prefixes = \"{{_local.path_prefix}}\"\n{%- endif %}\n{%- if _local.redirect_to_path_prefix\
+        \ %}\n  [http.middlewares.extra-service-{{_local.id}}-redirect-to-path-prefix.redirectregex]\n\
+        \    regex = \"^.*$\"\n    replacement = \"{{_local.path_prefix}}\"\n{%- endif\
+        \ %}\n{%- endif %}\n\n[http.services]\n  [http.services.extra-service-{{_local.id}}]\n\
+        \    [http.services.extra-service-{{_local.id}}.loadBalancer]\n      [[http.services.extra-service-{{_local.id}}.loadBalancer.servers]]\n\
+        \        url = \"{{_local.url}}\"\n\n"
+      ssl_config_template: "# This configuration file has been automatically generated\
+        \ by ddb\n[[tls.certificates]]\n  certFile = \"{{_local.certFile}}\"\n  keyFile\
+        \ = \"{{_local.keyFile}}\"\n\n"
     ```
-    
-ExtraService configuration
----
-If you need to register an external service into your docker network, you should define an external_service entry.
 
-It can be used when a service should better run on the developer host instead of inside a docker container.
-  
-- `url`: URL to access the service to proxy from traefik container
-    - type: string
-- `domain`: Domain to use for SSL certificate generation
-    - type: string
-    - default: `None`
-- `https`: Use http and/or https to expose the service. If `None`, it is exposed with both http and https
-    - type: string
-    - default: `None`
-- `redirect_to_https`: If `https` is `None` and `redirect_to_https` is `True`, requesting the http url of the service 
-    will redirect to https.
-    - type: string
-    - default: `None` (Use the value of `docker.reverse_proxy.redirect_to_https`)
-- `rule`: The traefik router rule. You should customize it only if you have to support many domains on the same service
-    - type: string
-    - default: ``Host(`{{_local.domain}}`)``
-- `path_prefix`: The traefik prefix path. You should customize it only if you have to support sub folder on on a domain
-    - type: string
-    - default: `None`
-- `redirect_to_path_prefix`: Redirect to defined `path_prefix` when accessing VirtualHost root path.
-    - type: boolean|null
-    - default: `None`
-    
+Include a service running outside of docker compose
+---
+If you need to register an external service into your docker network, you should define an `external_service` entry.
+
+It can be used when a service is running outside the docker network, like on another Machine or on the developer host.
+
+Declared extra services make them join the docker network so it behaves like a docker compose service and brings all 
+traefik reverse-proxy features (SSL support, domain name, ...).
+
 Jinja templating is available for `url`, `domain` and `rule` fields, with the usual configuration as data context, 
 and additional `_local` dict containing the extra_service entry configuration.
 
@@ -99,37 +108,36 @@ and additional `_local` dict containing the extra_service entry configuration.
     
     ```yaml
     traefik:
-      extra_services: 
+      extra_services:
         api:
           domain: api.{{core.domain.sub}}.{{core.domain.ext}}
           url: http://{{docker.debug.host}}:8080
     ```
     
     It will expose the server component throw the traefik docker network, with the domain name and HTTPS support.
-        
-Certificates Installation Feature
+
+Custom certificates feature
 ---
 
 If your project have certificates for SSL access, Traefik needs a bit a configuration in order to use them.
 
-This is done on `ddb configure` command. For instance, if your have defined a certresolver with `null` value in your 
-docker-compose.yml.jsonnet (check feature [jsonnet](./jsonnet.md) for more details), 
-it will create a label `ddb.emit.certs:generate: <the vhost>`. 
-It will then be processed by the [certs](./certs.md) feature and will generate a SSL certificate.
+This is done on `ddb configure` command. For instance, if your have set `docker.reverse-proxy.certresolver` with `null` 
+value in your `docker-compose.yml.jsonnet` (check feature [jsonnet](./jsonnet.md) for more details), 
+it will create a label `ddb.emit.certs:generate: <domain>`.
 
-Then, the `certs:available` event will be triggered, which is handled by the traefik feature.
+This label emit a `certs:generate` for given `domain`, and it is processed by [certs](./certs.md) feature to generate a 
+custom SSL certificate.
 
-When triggered, it will generate the right configuration file in order to tell Traefik that there is a certificate 
-defined for the given domain.
-    
-Certificates Uninstallation Feature
----
+Then, `certs:available` event is triggered and handled by traefik feature to install this certificate in the 
+traefik configuration for given `domain`.
 
 For some reason, you might want to remove HTTPS on your project and move back to HTTP. 
 
-This is done on `ddb configure` command. 
-If you have previously defined a certresolver to null, it will be detected that you removed it. 
-The `certs:removed` event will be triggered, which is handled by the traefik feature.
+This is done on `ddb configure` command.
+If you define `docker.reverse-proxy.certresolver` value to 'letsencrypt', or set `traefik.https` to `False`, it is 
+detected that you removed it. 
 
-When triggered, it will remove the configuration file and both public and private key in order to tell Traefik 
-that there is no more certificate defined for the given domain.
+The `certs:remove` event is then triggered and handled by [certs](./certs.md) feature to remove it.
+
+Then, `certs:removed` event is triggered and handler by traefik feature to uninstall this certificate from traefik 
+configuration, so there's no more certificate defined for the given domain.

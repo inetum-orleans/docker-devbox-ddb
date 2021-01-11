@@ -3,16 +3,18 @@ Git
 
 The Git feature provides automation relatives to the git configuration of the project.
 
-Feature Configuration
----
 
-- `disabled`: Definition of the status of the feature. If set to True, all git automations will be disabled.
-    - type: boolean
-    - default: False
-              
-- `fix_files_permissions`: Fix filesystem permissions from git index metadata 
-    - type: boolean
-    - default: true
+!!! summary "Feature configuration (prefixed with `git.`)"
+    | Property | Type | Description |
+    | :---------: | :----: | :----------- |
+    | `disabled` | boolean<br>`false` | Should this feature be disabled ? |
+    | `fix_files_permissions` | boolean<br>`true` | Should file permissions be fixed from git index (executable flags) ? |
+ 
+!!! quote "Defaults"
+    ```yaml
+    git:
+      disabled: false
+    ```
 
 !!! example "Configuration"
     ```yaml
@@ -23,16 +25,16 @@ Feature Configuration
 Fix files permissions
 ---
 
-When you clone or update a repository, it may contains executable files such as php binaries. By default, they does not 
-have the execution flag on Linux/Unix environments. 
+When you clone or update a repository, it may contain executable files. If you are working on windows and using some 
+synchronisation too to synchronize those files, executable flags may be lost.
 
-With Git, you can store the execution flag into the repository. To do so, you can execute the following command : 
+With Git, you can store the executable flag into the repository. To do so, you can execute the following command : 
 
 ```
-git update-index --chmod=<+|->x <your_file>
+git update-index --chmod=+x <your_file>
 ```
 
 But this will not update the flag on the system automatically.
 
-So, if `git.fix_files_permissions` is set to true in ddb configuration, those files having an entry for the execution 
-flag in Git will be updated accordingly when you execute the `ddb configure` command. 
+Unless `git.fix_files_permissions` is set to `false` in ddb configuration, files marked as executable in git repository
+have their permissions fixed on `ddb configure` command. 

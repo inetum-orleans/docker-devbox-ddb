@@ -1,34 +1,19 @@
 Version
 ===
 
-The version feature is a pretty simple one. 
-It extracts information about the version of your project from git metadata.
+Version feature extracts information about the version of your project from local git repository.
 
-Feature configuration
----
+!!! summary "Feature configuration (prefixed with `version.`)"
+    | Property | Type | Description |
+    | :---------: | :----: | :----------- |
+    | `disabled` | boolean<br>`false` | Should this feature be disabled ? |
+    | `branch` | string<br>`<current git branch>` | The current branch of the project. |
+    | `hash` | string<br>`<current git hash>` | The hash of the current commit. |
+    | `short_hash` | string<br>`<current git short hash>` | The short version of the hash of the current commit. |
+    | `tag` | string<br>`<current git tag>` | The current git tag. |
+    | `version` | string<br>`<current project version>` | The current project version. |
 
-As all those values are extract from the git repository metadata, you can override it but it is not recommended.
-
-- `disabled`: Definition of the status of the feature. If set to True, version feature will not be triggered.
-    - type: boolean
-    - default: False
-- `branch`: The current branch of the project
-    - type: string
-    - default: <the current git branch>
-- `hash`: The hash of the current commit
-    - type: string
-    - default: <the current commit hash>
-- `short_hash`: The short version of the hash of the current commit
-    - type: string
-    - default: <the current commit hash short version>
-- `tag`: The current git tag
-    - type: string
-    - default: <the current git tag>
-- `version`: The current version
-    - type: string
-    - default: <the current version of the repository>
-    
-!!! example "Configuration"
+!!! quote "Defaults"
     ```yaml
     version:
       branch: master

@@ -5,42 +5,31 @@ The shell feature manages OS/Shell specific behaviors (Windows, Linux/Unix).
 
 For instance, generated binary shims are bash executables on Linux, but .bat files on Windows.
 
-Feature Configuration
----
 
-- `disabled`: Definition of the status of the feature. If set to True, all SmartCD automations will be disabled.
-    - type: boolean
-    - default: False
-- `aliases`: Allow the creation of aliases.
-    - type: dict[str, str]
-    - default: {}
-- `global_aliases`: For aliases matching those names, aliases will be declared globally instead of inside project only.
-    - type: array
-    - default: {}
-- `envignore`: 
-    When activating ddb for a project via `$(ddb activate)`, environment variables are saved before being updated.
-    This list is those who will not be saved and updated by the command.
-    - type: array
-    - default: ["PYENV_*", "_", "PS1", "PS2", "PS3", "PS4"]
-- `path.directories`: 
-    This list of directories provided is which will be added to the `PATH` environment variable when activating ddb.
-    The first one of the list will be the one used as root folder for binaries and aliases shims generation.
-    - type: array
-    - default: [".bin", "bin"]
-- `path.prepend`: This setting define the way `path.directories` are added to the `PATH` environment variable.
-    If set to true, it will be added at the beginning.
-    - type: boolean
-    - default: True
-- `shell`: This setting only define what will be the type of shell to work with. Currently, only bash and windows cmd 
-    are supported.
-    - type: string
-    - default: Detect the current shell type used
-    
-!!! example "Configuration"
+!!! summary "Feature configuration (prefixed with `symlinks.`)"
+    === "Simple"
+        | Property | Type | Description |
+        | :---------: | :----: | :----------- |
+        | `disabled` | boolean<br>`false` | Should this feature be disabled ? |
+        | `aliases` | dict[string, string] | Allow the creation of aliases. |
+        | `global_aliases` | string[] | Aliases matching those names are available globally instead of inside project only. |
+
+    === "Advanced"
+        | Property | Type | Description |
+        | :---------: | :----: | :----------- |
+        | `envignore` | string[]<br>`["PYENV_*", "_", "PS1", "PS2", "PS3", "PS4", "PWD"]` | When activating ddb for a project via `$(ddb activate)`, environment variables are saved before being updated. This list is those who will not be saved and updated by the command. |
+        | `path.directories` | string[]<br>`[".bin", "bin"]` | List of directories to add to `PATH` environment variable when running `$(ddb activate)`. The first one from this list is also used as root folder for binaries and aliases shims generation. |
+        | `path.prepend` | bollean<br>`true` | Should paths declared in `path.directories` be placed at the begging of `PATH` environment variable. If set to `false`, it will be added to the end. |
+
+    === "Internal"
+        | Property | Type | Description |
+        | :---------: | :----: | :----------- |
+        | `shell` | string<br>`bash` (linux)<br>`bash` (macos)<br>`cmd` (windows) | Type of shell to work with. Currently, only `bash` and `cmd` (windows) are supported. |
+
+
+!!! quote "Defaults"
     ```yaml
     shell:
-      aliases:
-        dc: docker-compose
       disabled: false
       envignore:
       - PYENV_*
@@ -49,6 +38,26 @@ Feature Configuration
       - PS2
       - PS3
       - PS4
+      path:
+        directories:
+        - .bin
+        - bin
+        prepend: true
+      shell: bash
+    ```
+    
+!!! quote "Defaults"
+    ```yaml
+    shell:
+      disabled: false
+      envignore:
+      - PYENV_*
+      - _
+      - PS1
+      - PS2
+      - PS3
+      - PS4
+      - PWD
       path:
         directories:
         - .bin

@@ -1,30 +1,28 @@
 File
 ===
 
-As **ddb** work on file, there is a dedicated feature which is soul purpose is to walk through files from the project
-directory and trigger the right event.
+As **ddb** work on files, there is a dedicated feature which soul purpose is to walk through files from the project
+directory and trigger events when files are found or removed.
 
-Feature Configuration
----
+!!! summary "Feature configuration (prefixed with `jinja.`)"
+    | Property | Type | Description |
+    | :---------: | :----: | :----------- |
+    | `disabled` | boolean<br>`false` | Should this feature be disabled ? |
+    | `extensions` | string[] | A list of glob of supported extension. |
+    | `includes` | string[] | A list of glob of filepath to include. |
+    | `excludes` | string[]<br>`['**/.git', '**/node_modules', '**/vendor', '**/target', '**/dist']` | A list of glob of filepath to exclude. |
 
-- `disabled`: Definition of the status of the feature. If set to True, all git automations will be disabled.
-    - type: boolean
-    - default: False
-              
-- `excludes`: The list of directories or files to exclude from processing
-    - type: array of string
-    - default: `['**/_*', '**/.git', '**/node_modules', '**/vendor']`
-    
-!!! example "Configuration"
+!!! quote "Defaults"
     ```yaml
     file:
       disabled: false
       excludes:
-      - '**/_*'
       - '**/.git'
       - '**/node_modules'
       - '**/vendor'
-    ``` 
+      - '**/target'
+      - '**/dist'
+    ```
     
 File walk and event triggering
 ---
