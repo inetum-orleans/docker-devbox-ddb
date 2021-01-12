@@ -38,7 +38,7 @@ class ShellSchema(FeatureSchema):
     shell = fields.String(required=True)
     path = fields.Nested(PathSchema, required=True, default=PathSchema())
     envignore = fields.List(fields.String(), required=False, default=[
-        "PYENV_*", "_", "PS1", "PS2", "PS3", "PS4"
+        "PYENV_*", "_", "PS1", "PS2", "PS3", "PS4", "PWD"
     ])
     aliases = fields.Dict(required=False, default={})
     global_aliases = fields.List(fields.String(), required=False, default=[])
