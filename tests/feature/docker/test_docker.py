@@ -235,6 +235,7 @@ class TestDockerFeature:
         assert os.path.isdir('child')
         assert os.path.isdir(os.path.join('new_directory', 'some', 'child'))
 
+    @pytest.mark.docker
     def test_traefik_cert(self, project_loader, module_scoped_container_getter):
         project_loader("traefik-cert")
 

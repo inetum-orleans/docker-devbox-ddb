@@ -1,4 +1,5 @@
 import os
+import pytest
 
 from ddb.__main__ import main, reset
 from ddb.config import config, Config
@@ -6,6 +7,7 @@ from tests.utilstest import setup_cfssl
 
 
 class TestTraefik:
+    @pytest.mark.docker
     def test_traefik_extra_services_with_remove(self, project_loader, module_scoped_container_getter):
         project_loader("extra-services")
 
@@ -35,6 +37,7 @@ class TestTraefik:
         assert not os.path.exists(key)
         assert not os.path.exists(web_toml)
 
+    @pytest.mark.docker
     def test_traefik_extra_services_without_remove(self, project_loader, module_scoped_container_getter):
         project_loader("extra-services")
 

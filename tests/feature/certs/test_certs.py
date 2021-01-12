@@ -1,4 +1,5 @@
 import os
+import pytest
 
 from ddb.__main__ import load_registered_features
 from ddb.feature import features
@@ -9,6 +10,7 @@ from tests.utilstest import setup_cfssl
 
 
 class TestCertsFeature:
+    @pytest.mark.docker
     def test_empty_project_without_core(self, project_loader, module_scoped_container_getter):
         project_loader("empty")
 
@@ -28,6 +30,7 @@ class TestCertsFeature:
         assert not os.path.exists(os.path.join(".certs", "testing.test.crt"))
         assert not os.path.exists(os.path.join(".certs", "testing.test.key"))
 
+    @pytest.mark.docker
     def test_empty_project_with_core(self, project_loader, module_scoped_container_getter):
         project_loader("empty")
 
@@ -54,6 +57,7 @@ class TestCertsFeature:
         assert not os.path.exists(os.path.join(".certs", "testing.test.crt"))
         assert not os.path.exists(os.path.join(".certs", "testing.test.key"))
 
+    @pytest.mark.docker
     def test_existing_does_nothing(self, project_loader, module_scoped_container_getter):
         project_loader("existing")
 

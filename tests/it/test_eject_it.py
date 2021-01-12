@@ -1,12 +1,14 @@
 import os
 
 import yaml
+import pytest
 
 from ddb.__main__ import main
 from tests.utilstest import expect_gitignore, setup_cfssl
 
 
 class TestEject:
+    @pytest.mark.docker
     def test_eject1(self, project_loader, module_scoped_container_getter):
         project_loader("eject1")
 
@@ -44,6 +46,7 @@ class TestEject:
 
         assert data == expected_data
 
+    @pytest.mark.docker
     def test_eject2(self, project_loader, module_scoped_container_getter):
         project_loader("eject2")
 
@@ -81,6 +84,7 @@ class TestEject:
 
         assert data == expected_data
 
+    @pytest.mark.docker
     def test_eject2_with_jsonnet_disabled(self, project_loader, module_scoped_container_getter):
         project_loader("eject2")
 

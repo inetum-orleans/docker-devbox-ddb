@@ -308,6 +308,7 @@ class TestWatchCerts:
         True,
         False
     ])
+    @pytest.mark.docker
     def test_watch_certificates_when_virtualhost_is_added(self, watch, project_loader, module_scoped_container_getter):
         project_loader("watch-certs")
 
