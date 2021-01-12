@@ -23,7 +23,7 @@ from ddb.cache import caches, global_cache_name, requests_cache_name, \
 from ddb.cache import register_project_cache
 from ddb.command import commands
 from ddb.command.command import execute_command, Command
-from ddb.config import config
+from ddb.config import config, migrations
 from ddb.context import context
 from ddb.event import bus, events
 from ddb.feature import features, Feature
@@ -139,6 +139,8 @@ def load_registered_features(preload=True):
 
         for feature in all_features:
             feature.configure()
+
+    migrations.compat(config.data)
 
     enabled_features = [f for f in all_features if not f.disabled]  # type: Iterable[Feature]
 

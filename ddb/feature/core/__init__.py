@@ -70,6 +70,8 @@ class CoreFeature(Feature):
         def configure_parser(parser: ArgumentParser):
             parser.add_argument("--eject", action="store_true",
                                 help="Eject the project using the current configuration")
+            parser.add_argument("--autofix", action="store_true",
+                                help="Autofix supported deprecated warnings by modifying template sources.")
 
         def config_parser(parser: ArgumentParser):
             parser.add_argument("--variables", action="store_true",

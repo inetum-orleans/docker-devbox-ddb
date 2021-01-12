@@ -1,0 +1,8 @@
+version: '3.7'
+services:
+  enabled1:
+    image: 'enabled1'
+    init: True
+    restart: 'no'
+volumes: {}
+networks: {}

@@ -40,6 +40,26 @@ class TestJsonnetAction:
         action.initialize()
         action.execute()
 
+    @pytest.mark.skipif("os.name == 'nt'")
+    def test_named_user_group(self, project_loader):
+       project_loader("empty")
+
+       features.register(JsonnetFeature())
+       load_registered_features()
+
+       assert config.data.get('jsonnet.docker.user.name_to_uid')
+       assert config.data.get('jsonnet.docker.user.group_to_gid')
+
+    @pytest.mark.skipif("os.name != 'nt'")
+    def test_named_user_group_windows(self, project_loader):
+       project_loader("empty")
+
+       features.register(JsonnetFeature())
+       load_registered_features()
+
+       assert config.data.get('jsonnet.docker.user.name_to_uid') == {}
+       assert config.data.get('jsonnet.docker.user.group_to_gid') == {}
+
     def test_example1(self, project_loader):
         project_loader("example1")
 
@@ -390,8 +410,8 @@ class TestJsonnetAction:
 
         assert rendered == expected
 
-    def test_docker_compose_disabled_services(self, project_loader):
-        project_loader("docker_compose_disabled_services")
+    def test_docker_compose_excluded_services(self, project_loader):
+        project_loader("docker_compose_excluded_services")
 
         features.register(CoreFeature())
         features.register(FileFeature())
@@ -413,6 +433,30 @@ class TestJsonnetAction:
             expected = yaml.load(expected_data, yaml.SafeLoader)
 
         assert rendered == expected
+
+    def test_docker_compose_included_services(self, project_loader):
+            project_loader("docker_compose_included_services")
+
+            features.register(CoreFeature())
+            features.register(FileFeature())
+            features.register(DockerFeature())
+            features.register(JsonnetFeature())
+            load_registered_features()
+            register_actions_in_event_bus(True)
+
+            action = FileWalkAction()
+            action.initialize()
+            action.execute()
+
+            assert os.path.exists('docker-compose.yml')
+            with open('docker-compose.yml', 'r') as f:
+                rendered = yaml.load(f.read(), yaml.SafeLoader)
+
+            with open('docker-compose.expected.yml', 'r') as f:
+                expected_data = f.read()
+                expected = yaml.load(expected_data, yaml.SafeLoader)
+
+            assert rendered == expected
 
     @pytest.mark.parametrize("variant", [
         "_register_binary",

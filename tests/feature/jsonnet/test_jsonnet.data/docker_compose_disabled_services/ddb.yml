@@ -1,2 +1,0 @@
-docker:
-  disabled_services: ['disabled1', 'disabled2']

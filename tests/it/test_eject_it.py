@@ -102,8 +102,8 @@ class TestEject:
         assert os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
         assert expect_gitignore(".gitignore", "/.docker/db/Dockerfile")
 
-        os.environ['DDB_OVERRIDE_DOCKER_JSONNET_VIRTUALHOST_DISABLED'] = "1"
-        os.environ['DDB_OVERRIDE_DOCKER_JSONNET_BINARY_DISABLED'] = "True"
+        os.environ['DDB_OVERRIDE_JSONNET_DOCKER_VIRTUALHOST_DISABLED'] = "1"
+        os.environ['DDB_OVERRIDE_JSONNET_DOCKER_BINARY_DISABLED'] = "True"
         main(["configure", "--eject"])
 
         assert os.path.exists("docker-compose.yml")

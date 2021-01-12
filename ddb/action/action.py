@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 import os
 from abc import abstractmethod, ABC
-from typing import Callable, Iterable, Union, Tuple
+from typing import Callable, Iterable, Union, Tuple, Optional
 
 from ddb.cache import register_project_cache, caches
 from ddb.config import config
 from ddb.context import context
 from ddb.event import events
 from ddb.registry import RegistryObject
-from ddb.utils.file import write_if_different, TemplateFinder, force_remove
+from ddb.utils.file import write_if_different, TemplateFinder, force_remove, copy_if_different
 
 
 class EventBinding:
@@ -167,7 +167,7 @@ class AbstractTemplateAction(InitializableAction, ABC):  # pylint:disable=abstra
             caches.get(self._cache_key).pop(target)
             events.file.deleted(target)
 
-    def execute(self, template: str, target: str):
+    def execute(self, template: str, target: str, migrate_retries_count=0, original_template=None):
         """
         Render a template
         """
@@ -175,19 +175,39 @@ class AbstractTemplateAction(InitializableAction, ABC):  # pylint:disable=abstra
             # Never write a file that match ddb configuration file
             return
 
-        for rendered, destination in self._render_template(template, target):
-            written = False
-            if not isinstance(rendered, bool):
-                is_bynary = isinstance(rendered, (bytes, bytearray))
-                written = write_if_different(destination, rendered,
-                                             'rb' if is_bynary else 'r',
-                                             'wb' if is_bynary else 'w',
-                                             log_source=template)
-                caches.get(self._cache_key).set(target, rendered)
-            context.mark_as_processed(template, destination)
+        if original_template is None:
+            original_template = template
 
-            if written or rendered is True or config.eject:
-                events.file.generated(source=template, target=destination)
+        try:
+            for rendered, destination in self._render_template(template, target):
+                if original_template != template and 'autofix' in config.args and config.args.autofix:
+                    context.logger.info("[autofix]: %s", original_template)
+                    copy_if_different(template, original_template, log=True)
+                written = False
+                if not isinstance(rendered, bool):
+                    is_bynary = isinstance(rendered, (bytes, bytearray))
+                    written = write_if_different(destination, rendered,
+                                                 'rb' if is_bynary else 'r',
+                                                 'wb' if is_bynary else 'w',
+                                                 log_source=original_template)
+                    caches.get(self._cache_key).set(target, rendered)
+                context.mark_as_processed(template, destination)
+
+                if written or rendered is True or config.eject:
+                    events.file.generated(source=original_template, target=destination)
+        except Exception as render_error:  # pylint:disable=broad-except
+            if migrate_retries_count > 50:
+                raise render_error
+            try:
+                template = self._autofix_render_error(template, target, original_template, render_error)
+            except Exception as migrate_error:
+                context.log.warning("Automatic template migration has failed for \"%s\": %s", template, migrate_error)
+                raise render_error from migrate_error
+            if not template:
+                raise render_error
+
+            migrate_retries_count += 1
+            self.execute(template, target, migrate_retries_count, original_template)
 
     def _target_is_modified(self, template: str, target: str) -> bool:
         rendered = caches.get(self._cache_key).get(target)
@@ -213,3 +233,14 @@ class AbstractTemplateAction(InitializableAction, ABC):  # pylint:disable=abstra
         """
         Perform template rendering to a string.
         """
+
+    def _autofix_render_error(self,  # pylint:disable=no-self-use
+                              template: str,
+                              target: str,
+                              original_template: str,
+                              render_error: Exception) -> Optional[str]:
+        """
+        Try to automatically migrate this template in a temporary file when an error occurs.
+        :return a temporary filepath to render again, if template has been fixed.
+        """
+        return None

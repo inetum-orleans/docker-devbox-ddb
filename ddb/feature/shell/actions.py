@@ -2,7 +2,6 @@
 import base64
 import json
 import os
-from tempfile import NamedTemporaryFile, gettempdir
 from typing import Iterable
 
 import zgitignore
@@ -17,6 +16,7 @@ from ...config import config
 from ...config.flatten import to_environ
 from ...context import context
 from ...event import events
+from ...utils.file import SingleTemporaryFile
 
 _env_environ_backup = config.env_prefix + "_SHELL_ENVIRON_BACKUP"
 
@@ -267,15 +267,11 @@ class ActivateAction(Action):
         os.environ[_env_environ_backup] = encode_environ_backup(to_encode_environ)
         os.environ[config.env_prefix + '_PROJECT_HOME'] = config.paths.project_home
 
-        tempdir = os.path.join(gettempdir(), "ddb", "activate")
-        os.makedirs(tempdir, exist_ok=True)
-
-        with NamedTemporaryFile(mode='w',
-                                dir=tempdir,
-                                prefix="",
-                                suffix="." + self.shell.name,
-                                delete=False,
-                                **self.shell.temporary_file_kwargs) as file:
+        with SingleTemporaryFile("ddb", "activate",
+                                 mode='w',
+                                 prefix="",
+                                 suffix="." + self.shell.name,
+                                 **self.shell.temporary_file_kwargs) as file:
             script_filepath = file.name
             file.writelines('\n'.join(self.shell.header()))
             file.write('\n')
@@ -300,11 +296,6 @@ class ActivateAction(Action):
 
         for ins in self.shell.evaluate_script(script_filepath):
             print(ins)
-
-        for previous_temporary_file in os.listdir(tempdir):
-            previous_temporary_filepath = os.path.join(tempdir, previous_temporary_file)
-            if previous_temporary_filepath != script_filepath:
-                os.remove(previous_temporary_filepath)
 
 
 class DeactivateAction(Action):
@@ -344,15 +335,11 @@ class DeactivateAction(Action):
         if os.environ.get(_env_environ_backup):
             environ_backup = decode_environ_backup(os.environ[_env_environ_backup])
 
-            tempdir = os.path.join(gettempdir(), "ddb", "deactivate")
-            os.makedirs(tempdir, exist_ok=True)
-
-            with NamedTemporaryFile(mode='w',
-                                    dir=tempdir,
-                                    prefix="",
-                                    suffix="." + self.shell.name,
-                                    delete=False,
-                                    **self.shell.temporary_file_kwargs) as file:
+            with SingleTemporaryFile("ddb", "deactivate",
+                                     mode='w',
+                                     prefix="",
+                                     suffix="." + self.shell.name,
+                                     **self.shell.temporary_file_kwargs) as file:
                 script_filepath = file.name
                 file.writelines('\n'.join(self.shell.header()))
                 file.write('\n')
@@ -369,11 +356,6 @@ class DeactivateAction(Action):
 
             for ins in self.shell.evaluate_script(script_filepath):
                 print(ins)
-
-            for previous_temporary_file in os.listdir(tempdir):
-                previous_temporary_filepath = os.path.join(tempdir, previous_temporary_file)
-                if previous_temporary_filepath != script_filepath:
-                    os.remove(previous_temporary_filepath)
 
 
 class CheckActivatedException(Exception):
@@ -500,16 +482,13 @@ class CommandAction(Action):
             print(self.shell.generate_cmdline(command))
             return
 
-        tempdir = os.path.join(gettempdir(), "ddb", "run")
         path_additions = None
 
-        os.makedirs(tempdir, exist_ok=True)
-        with NamedTemporaryFile(mode='w',
-                                dir=tempdir,
-                                prefix="",
-                                suffix="." + self.shell.name,
-                                delete=False,
-                                **self.shell.temporary_file_kwargs) as file:
+        with SingleTemporaryFile("ddb", "run",
+                                 mode='w',
+                                 prefix="",
+                                 suffix="." + self.shell.name,
+                                 **self.shell.temporary_file_kwargs) as file:
             script_filepath = file.name
             if system_path:
                 path_directories = config.data.get('shell.path.directories')
@@ -536,8 +515,3 @@ class CommandAction(Action):
 
         for ins in self.shell.evaluate_script(script_filepath):
             print(ins)
-
-        for previous_temporary_file in os.listdir(tempdir):
-            previous_temporary_filepath = os.path.join(tempdir, previous_temporary_file)
-            if previous_temporary_filepath != script_filepath:
-                os.remove(previous_temporary_filepath)

@@ -6,6 +6,7 @@ from ddb.config import config
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.docker import DockerFeature
+from ddb.feature.jsonnet import JsonnetFeature
 from ddb.feature.traefik import TraefikFeature
 from ddb.feature.traefik.actions import TraefikInstalllCertsAction, TraefikUninstalllCertsAction, \
     TraefikExtraServicesAction
@@ -63,6 +64,7 @@ class TestTraefikFeature:
         features.register(CoreFeature())
         features.register(TraefikFeature())
         features.register(DockerFeature())
+        features.register(JsonnetFeature())
         load_registered_features()
 
         install_action = TraefikExtraServicesAction()
@@ -112,6 +114,7 @@ class TestTraefikFeature:
         features.register(CoreFeature())
         features.register(TraefikFeature())
         features.register(DockerFeature())
+        features.register(JsonnetFeature())
         load_registered_features()
 
         install_action = TraefikExtraServicesAction()
@@ -151,6 +154,7 @@ class TestTraefikFeature:
         features.register(CoreFeature())
         features.register(TraefikFeature())
         features.register(DockerFeature())
+        features.register(JsonnetFeature())
         load_registered_features()
 
         install_action = TraefikExtraServicesAction()

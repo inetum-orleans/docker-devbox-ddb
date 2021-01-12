@@ -25,6 +25,7 @@ from .traefik import TraefikFeature
 from .version import VersionFeature
 from .ytt import YttFeature
 from ..config import config
+from ..config import migrations
 
 _default_available_features = [CertsFeature(),
                                CopyFeature(),
@@ -164,3 +165,4 @@ def load_bootstrap_config():
     """
     bootstrap_features_configuration()
     config.load(config.data)
+    migrations.migrate(config.data)
