@@ -18,8 +18,8 @@ class TestEject:
         assert os.path.exists("docker-compose.yml.jsonnet")
         assert expect_gitignore(".gitignore", "/docker-compose.yml")
 
-        assert os.path.exists(os.path.join(".bin", "psql"))
-        assert expect_gitignore(".gitignore", "/.bin/psql")
+        assert os.path.exists(os.path.join(".bin", "psql" + (".bat" if os.name == "nt" else "")))
+        assert expect_gitignore(".gitignore", "/.bin/psql" + (".bat" if os.name == "nt" else ""))
 
         assert os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
         assert expect_gitignore(".gitignore", "/.docker/db/Dockerfile")
@@ -30,8 +30,8 @@ class TestEject:
         assert not os.path.exists("docker-compose.yml.jsonnet")
         assert not expect_gitignore(".gitignore", "/docker-compose.yml")
 
-        assert os.path.exists(os.path.join(".bin", "psql"))
-        assert expect_gitignore(".gitignore", "/.bin/psql")
+        assert os.path.exists(os.path.join(".bin", "psql" + (".bat" if os.name == "nt" else "")))
+        assert expect_gitignore(".gitignore", "/.bin/psql" + (".bat" if os.name == "nt" else ""))
 
         assert not os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
         assert not expect_gitignore(".gitignore", "/.docker/db/Dockerfile")
@@ -55,8 +55,8 @@ class TestEject:
         assert os.path.exists("docker-compose.yml.jsonnet")
         assert expect_gitignore(".gitignore", "/docker-compose.yml")
 
-        assert os.path.exists(os.path.join(".bin", "psql"))
-        assert expect_gitignore(".gitignore", "/.bin/psql")
+        assert os.path.exists(os.path.join(".bin", "psql" + (".bat" if os.name == "nt" else "")))
+        assert expect_gitignore(".gitignore", "/.bin/psql" + (".bat" if os.name == "nt" else ""))
 
         assert os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
         assert expect_gitignore(".gitignore", "/.docker/db/Dockerfile")
@@ -67,8 +67,8 @@ class TestEject:
         assert not os.path.exists("docker-compose.yml.jsonnet")
         assert not expect_gitignore(".gitignore", "/docker-compose.yml")
 
-        assert os.path.exists(os.path.join(".bin", "psql"))
-        assert expect_gitignore(".gitignore", "/.bin/psql")
+        assert os.path.exists(os.path.join(".bin", "psql" + (".bat" if os.name == "nt" else "")))
+        assert expect_gitignore(".gitignore", "/.bin/psql" + (".bat" if os.name == "nt" else ""))
 
         assert not os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
         assert not expect_gitignore(".gitignore", "/.docker/db/Dockerfile")
@@ -92,8 +92,8 @@ class TestEject:
         assert os.path.exists("docker-compose.yml.jsonnet")
         assert expect_gitignore(".gitignore", "/docker-compose.yml")
 
-        assert os.path.exists(os.path.join(".bin", "psql"))
-        assert expect_gitignore(".gitignore", "/.bin/psql")
+        assert os.path.exists(os.path.join(".bin", "psql" + (".bat" if os.name == "nt" else "")))
+        assert expect_gitignore(".gitignore", "/.bin/psql" + (".bat" if os.name == "nt" else ""))
 
         assert os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
         assert expect_gitignore(".gitignore", "/.docker/db/Dockerfile")
@@ -106,8 +106,8 @@ class TestEject:
         assert not os.path.exists("docker-compose.yml.jsonnet")
         assert not expect_gitignore(".gitignore", "/docker-compose.yml")
 
-        assert not os.path.exists(os.path.join(".bin", "psql"))
-        assert not expect_gitignore(".gitignore", "/.bin/psql")
+        assert not os.path.exists(os.path.join(".bin", "psql" + (".bat" if os.name == "nt" else "")))
+        assert not expect_gitignore(".gitignore", "/.bin/psql" + (".bat" if os.name == "nt" else ""))
 
         assert not os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
         assert not expect_gitignore(".gitignore", "/.docker/db/Dockerfile")

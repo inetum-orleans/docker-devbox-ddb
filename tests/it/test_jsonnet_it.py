@@ -23,6 +23,7 @@ class TestJsonnet:
 
 
 class TestDockerJsonnet:
+    @pytest.mark.skipif("os.name == 'nt'")
     def test_named_user_group(self, project_loader):
         project_loader("named-user-group")
 

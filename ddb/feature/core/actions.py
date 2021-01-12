@@ -468,6 +468,7 @@ class SelfUpdateAction(Action):
 
             binary_path = get_binary_destination_path(binary_path)
             shutil.copymode(binary_path, tmp.name)
+            force_remove(binary_path)  # This is required on windows
             os.rename(tmp.name, binary_path)
 
             progress_bar.finish()

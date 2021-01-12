@@ -8,6 +8,8 @@ from ddb.__main__ import main, reset
 from ddb.config import Config, config
 
 
+docker_compose_bin = "docker-compose" if os.name != "nt" else "docker-compose.exe"
+
 class TestBinaries:
     def test_docker_binaries(self, project_loader, capsys: CaptureFixture):
         project_loader("docker1")
@@ -19,7 +21,7 @@ class TestBinaries:
         assert not exceptions
 
         output = capsys.readouterr()
-        assert output.out.strip() == "docker-compose run --rm --workdir=/workdir/. db psql"
+        assert output.out.strip() == docker_compose_bin + " run --rm --workdir=/workdir/. db psql"
 
     def test_docker_binaries_exe(self, project_loader, capsys: CaptureFixture):
         project_loader("docker1_exe")
@@ -31,7 +33,7 @@ class TestBinaries:
         assert not exceptions
 
         output = capsys.readouterr()
-        assert output.out.strip() == "docker-compose exec --workdir=/workdir/. db psql"
+        assert output.out.strip() == docker_compose_bin + " exec --workdir=/workdir/. db psql"
 
     def test_docker_binaries_with_clear_cache(self, project_loader, capsys: CaptureFixture):
         project_loader("docker1")

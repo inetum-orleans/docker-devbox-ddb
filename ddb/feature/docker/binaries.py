@@ -5,6 +5,8 @@ from typing import Optional, Iterable
 
 from simpleeval import simple_eval
 
+from pathlib import Path
+
 from ddb.binary.binary import AbstractBinary
 from ddb.config import config
 from ddb.utils.docker import DockerUtils
@@ -43,8 +45,8 @@ class DockerBinary(AbstractBinary):
                     names={'args': ' '.join(args),
                            'argv': args,
                            'config': config,
-                           'cwd': config.cwd,
-                           'project_cwd': config.project_cwd})
+                           'cwd': str(Path(config.cwd).as_posix()) if config.cwd else None,
+                           'project_cwd': str(Path(config.project_cwd).as_posix()) if config.project_cwd else None})
 
     def command(self, *args) -> Iterable[str]:
         params = ["exec"] if hasattr(self, 'exe') and self.exe else ["run", "--rm"]

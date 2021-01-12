@@ -1,6 +1,8 @@
 import os
 import shutil
 
+import pytest
+
 from _pytest.capture import CaptureFixture
 from compose.config.types import ServicePort
 from dotty_dict import Dotty
@@ -288,6 +290,7 @@ class TestDockerFeature:
         assert os.path.exists(os.path.join(config.paths.home, "certs", "web-changed.domain.tld.crt"))
         assert os.path.exists(os.path.join(config.paths.home, "traefik", "config", "web-changed.domain.tld.ssl.toml"))
 
+    @pytest.mark.skipif("os.name == 'nt'")
     def test_named_user_group(self, project_loader):
         project_loader("empty")
 
@@ -296,6 +299,16 @@ class TestDockerFeature:
 
         assert config.data.get('docker.user.name_to_uid')
         assert config.data.get('docker.user.group_to_gid')
+
+    @pytest.mark.skipif("os.name != 'nt'")
+    def test_named_user_group_windows(self, project_loader):
+        project_loader("empty")
+
+        features.register(DockerFeature())
+        load_registered_features()
+
+        assert config.data.get('docker.user.name_to_uid') == {}
+        assert config.data.get('docker.user.group_to_gid') == {}
 
 
 class TestDockerDisplayInfoAction:

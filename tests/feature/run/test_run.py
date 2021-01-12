@@ -14,6 +14,8 @@ from ddb.feature.run import RunFeature, RunAction
 from ddb.feature.shell import ShellFeature
 from ddb.utils.docker import DockerUtils
 
+docker_compose_bin = "docker-compose" if os.name != "nt" else "docker-compose.exe"
+
 
 class TestRunFeature:
     def test_empty_project_without_core(self, project_loader):
@@ -88,7 +90,7 @@ class TestRunFeature:
 
         read = capsys.readouterr()
 
-        assert read.out == "docker-compose run --rm --workdir=/app/. service\n"
+        assert read.out == docker_compose_bin + " run --rm --workdir=/app/. service\n"
 
     def test_run_docker_binary_workdir(self, project_loader, capsys: CaptureFixture):
         project_loader("empty")
@@ -107,7 +109,7 @@ class TestRunFeature:
 
         read = capsys.readouterr()
 
-        assert read.out == "docker-compose run --rm --workdir=/app/sub service\n"
+        assert read.out == docker_compose_bin + " run --rm --workdir=/app/sub service\n"
 
     def test_run_docker_binary_exe(self, project_loader, capsys: CaptureFixture):
         project_loader("exe")
@@ -131,7 +133,7 @@ class TestRunFeature:
 
         read = capsys.readouterr()
 
-        assert read.out == "docker-compose exec web echo\n"
+        assert read.out == docker_compose_bin + " exec web echo\n"
 
         assert DockerUtils.is_container_up('web')
 
