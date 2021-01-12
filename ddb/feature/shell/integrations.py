@@ -126,11 +126,6 @@ class BashShellIntegration(ShellIntegration):
     def remove_environment_variable(self, key):
         yield "unset " + self._sanitize_key(key)
 
-    def before_environ_backup(self, environ):
-        for key in ('PWD',):
-            if key in environ:
-                del environ['PWD']
-
     def remove_all_binary_shims(self, shims_path: str):
         shims = []
 
