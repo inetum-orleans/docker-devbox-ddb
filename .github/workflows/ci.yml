@@ -35,9 +35,13 @@ jobs:
       - name: Install YTT
         run: |
           mkdir -p $HOME/bin
-          curl -Lo $HOME/bin/ytt https://github.com/k14s/ytt/releases/download/v0.26.0/ytt-linux-amd64
+          curl -Lo $HOME/bin/ytt https://github.com/vmware-tanzu/carvel-ytt/releases/download/v0.31.0/ytt-linux-amd64
           echo "$HOME/bin" >> $GITHUB_PATH
           chmod +x $HOME/bin/ytt
+
+      - name: Check YTT version
+        run: |
+          ytt --version
 
       - name: Install Dependencies
         run: |
@@ -46,17 +50,118 @@ jobs:
           pip install coveralls
           pip freeze
 
-      - run: pylint ddb
+      - name: Pylint
+        run: pylint ddb
         if: matrix.python-version != '3.9'
 
-      - run: coverage run --source=ddb -m pytest
+      - name: Pytest (Coverage)
+        run: coverage run --source=ddb -m pytest
 
-      - run: python setup.py build
+      - name: Build
+        run: python setup.py build
 
       - name: Coveralls
         run: coveralls
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+
+  build-windows:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: 'windows-latest'
+
+    steps:
+      - name: Setup python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Git User config
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "github-actions"
+
+      - name: Install YTT (Windows)
+        run: |
+          mkdir -p $HOME\bin
+          curl -Lo $HOME\bin\ytt.exe https://github.com/vmware-tanzu/carvel-ytt/releases/download/v0.31.0/ytt-windows-amd64.exe
+          echo "$HOME\bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+
+      - name: Check YTT version
+        run: |
+          ytt --version
+
+      - name: Install Dependencies
+        run: |
+          pip freeze
+          pip install wheel
+          pip install whl/jsonnet-0.15.0-cp37-cp37m-win_amd64.whl
+          pip install -r requirements-dev.txt
+          pip freeze
+
+      - name: Pylint
+        run: python -m pylint ddb
+
+      - name: Pytest
+        run: python -m pytest
+
+      - name: Pytest (not docker)
+        run: python -m pytest -m "not docker"
+
+      - name: Build
+        run: python setup.py build
+
+  build-macos:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: 'macos-latest'
+
+    steps:
+      - name: Setup docker
+        uses: docker-practice/actions-setup-docker@master
+        with:
+          docker_version: "19.03"
+          docker_channel: "stable"
+
+      - name: Setup python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Git User config
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "github-actions"
+
+      - name: Install YTT
+        run: |
+          mkdir -p $HOME/bin
+          curl -Lo $HOME/bin/ytt https://github.com/vmware-tanzu/carvel-ytt/releases/download/v0.31.0/ytt-darwin-amd64
+          echo "$HOME/bin" >> $GITHUB_PATH
+          chmod +x $HOME/bin/ytt
+
+      - name: Check YTT version
+        run: |
+          ytt --version
+
+      - name: Install Dependencies
+        run: |
+          pip freeze
+          pip install -r requirements-dev.txt
+          pip freeze
+
+      - name: Pylint
+        run: pylint ddb
+
+      - name: Pytest
+        run: pytest
+
+      - name: Build
+        run: python setup.py build
 
   commitlint:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
