@@ -1,0 +1,4 @@
+jsonnet:
+  docker:
+    compose:
+      included_services: ['enabled1']

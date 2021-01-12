@@ -4,11 +4,13 @@ import os
 import re
 import shutil
 from pathlib import Path
+from tempfile import gettempdir, NamedTemporaryFile
 from typing import List, Union, Optional, Tuple
 
 import chmod_monkey
 import requests
 from braceexpand import braceexpand
+
 from ddb.config import config
 from ddb.context import context
 
@@ -96,7 +98,7 @@ def copy_if_different(source, target, read_mode='r', write_mode='w', log=False, 
             chmod(target, '+r', logging=False)
 
 
-def force_remove(file: str):
+def force_remove(file: str, silent=False):
     """
     Remove a file, trying to unset readonly flag if a PermissionError occurs.
     """
@@ -107,7 +109,8 @@ def force_remove(file: str):
         chmod(file, '+w', logging=False)
         os.remove(file)
     except FileNotFoundError:
-        context.log.warning("%s can't be removed because it's already absent", file)
+        if not silent:
+            context.log.warning("%s can't be removed because it's already absent", file)
 
 
 def chmod(file: str, mode: str, logging=True):
@@ -351,3 +354,41 @@ class TemplateFinder(FileWalker):
                 return template_candidate[:len(basename) - len(suffix)] + ext, suffix
 
         return None, None
+
+
+def get_single_temporary_file_directory(*args):
+    """
+    Get directory for SingleTemporaryFile *args.
+    """
+    return os.path.join(gettempdir(), *args)
+
+
+class SingleTemporaryFile:
+    """
+    A NamedTemporaryFile wrapper that is created in tmp subdirectory joined with *args strings, using options from
+     **kwargs. It will keep only the last temporary file is subdirectory by cleaning up the directory on each call.
+    """
+
+    def __init__(self, *args, **kwargs):
+        self.tempdir = get_single_temporary_file_directory(*args)
+        os.makedirs(self.tempdir, exist_ok=True)
+
+        if "dir" in kwargs:
+            kwargs.pop("dir")
+        if "delete" in kwargs:
+            kwargs.pop("delete")
+
+        self.named_temporary_file = NamedTemporaryFile(dir=self.tempdir, delete=False, **kwargs)
+
+    def __enter__(self):
+        return self.named_temporary_file.__enter__()
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        tmp_filepath = self.named_temporary_file.name
+        try:
+            return self.named_temporary_file.__exit__(exc_type, exc_value, exc_traceback)
+        finally:
+            for previous_temporary_file in os.listdir(self.tempdir):
+                previous_temporary_filepath = os.path.join(self.tempdir, previous_temporary_file)
+                if previous_temporary_filepath != tmp_filepath:
+                    os.remove(previous_temporary_filepath)

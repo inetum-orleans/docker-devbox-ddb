@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 import os
+import re
 import tempfile
-from typing import Union, Iterable, Tuple
+from typing import Union, Iterable, Tuple, Optional
 
 import yaml
 
 from ddb.action.action import AbstractTemplateAction
-from ddb.config import config
-from ddb.utils.file import TemplateFinder
+from ddb.config import config, migrations
+from ddb.config.migrations import AbstractPropertyMigration
+from ddb.utils.file import TemplateFinder, SingleTemporaryFile
 from ddb.utils.process import run
 
 
@@ -82,3 +84,47 @@ class YttAction(AbstractTemplateAction):
             yield rendered, target
         finally:
             os.unlink(yaml_config_file.name)
+
+    def _autofix_render_error(self,
+                              template: str,
+                              target: str,
+                              original_template: str,
+                              render_error: Exception) -> Optional[str]:
+        if not hasattr(render_error, "stderr"):
+            return None
+        error_message = str(render_error.stderr, encoding="utf-8")
+
+        property_migration_set = set()
+
+        error_match = re.search(r"struct has no (\..*) field or method", error_message)
+        if error_match:
+            property_contains = f"{error_match.group(1)}"
+
+            for property_migration in migrations.history:
+                if isinstance(property_migration, AbstractPropertyMigration) \
+                        and not property_migration.requires_value_migration \
+                        and property_contains in property_migration.old_config_key:
+                    property_migration_set.add(property_migration)
+
+        if property_migration_set:
+            with open(template, "r", encoding="utf-8") as template_file:
+                initial_template_data = template_file.read()
+                template_data = initial_template_data
+
+            for property_migration in property_migration_set:
+                if property_migration and not property_migration.requires_value_migration:
+                    property_migration.warn(template)
+
+                    template_data = template_data.replace(property_migration.old_config_key,
+                                                          property_migration.new_config_key)
+
+            if initial_template_data != template_data:
+                with SingleTemporaryFile("ddb", "migration", "ytt",
+                                         mode="w",
+                                         prefix="",
+                                         suffix=".ytt",
+                                         encoding="utf-8") as tmp_file:
+                    tmp_file.write(template_data)
+                    return tmp_file.name
+
+        return None

@@ -112,8 +112,8 @@ Configure the project by scanning project files and performing actions supported
     jsonnet virtualhosts and binaries from generated docker-compose.yml.
 
     ```bash
-    DDB_OVERRIDE_DOCKER_JSONNET_VIRTUALHOST_DISABLED=1 \
-    DDB_OVERRIDE_DOCKER_JSONNET_BINARY_DISABLED=1 \
+    DDB_OVERRIDE_JSONNET_DOCKER_VIRTUALHOST_DISABLED=1 \
+    DDB_OVERRIDE_JSONNET_DOCKER_BINARY_DISABLED=1 \
     ddb configure --eject
     ```
 

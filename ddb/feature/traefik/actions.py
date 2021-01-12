@@ -3,10 +3,10 @@ import os
 import re
 from typing import Dict
 
-from ddb.config import config
-from ddb.feature.traefik.schema import ExtraServiceSchema
 from jinja2 import Template
 
+from ddb.config import config
+from ddb.feature.traefik.schema import ExtraServiceSchema
 from ...action import Action, InitializableAction
 from ...cache.removal import RemovalCacheSupport
 from ...context import context

@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 import json
 import os
-from typing import Tuple, Union, Iterable
+import re
+from typing import Tuple, Union, Iterable, Optional
 
 import yaml
 from _jsonnet import evaluate_file  # pylint: disable=no-name-in-module
 
 from ddb.action.action import AbstractTemplateAction
-from ddb.config import config
+from ddb.config import config, migrations
 from ddb.config.flatten import flatten
 from ddb.feature import features
-from ddb.utils.file import TemplateFinder
+from ddb.utils.file import TemplateFinder, SingleTemporaryFile
 
 
 class JsonnetAction(AbstractTemplateAction):
@@ -31,7 +32,6 @@ class JsonnetAction(AbstractTemplateAction):
         """
         Render jsonnet template
         """
-        # TODO: Add support for jsonnet CLI if _jsonnet native module is not available.
         evaluated = self._evaluate_jsonnet(template)
 
         multiple_file_output, multiple_file_dir = JsonnetAction._parse_multiple_header(template, target)
@@ -48,6 +48,39 @@ class JsonnetAction(AbstractTemplateAction):
             if ext.lower() in ['.yaml', '.yml']:
                 evaluated = yaml.dump(json.loads(evaluated), Dumper=yaml.SafeDumper)
             yield evaluated, target
+
+    def _autofix_render_error(self,
+                              template: str,
+                              target: str,
+                              original_template: str,
+                              render_error: Exception) -> Optional[str]:
+        property_name_match = re.match('RUNTIME ERROR: undefined external variable: (.*)\n', str(render_error))
+        if property_name_match:
+            property_name = property_name_match.group(1)
+
+            property_migration = migrations.get_migration_from_old_config_key(property_name)
+
+            if property_migration and not property_migration.requires_value_migration:
+                property_migration.warn(template)
+
+                with open(template, "r", encoding="utf-8") as template_file:
+                    initial_template_data = template_file.read()
+                    template_data = initial_template_data
+                    template_data = template_data.replace('("' + property_migration.old_config_key + '")',
+                                                          '("' + property_migration.new_config_key + '")')
+                    template_data = template_data.replace("('" + property_migration.old_config_key + "')",
+                                                          "('" + property_migration.new_config_key + "')")
+
+                if initial_template_data != template_data:
+                    with SingleTemporaryFile("ddb", "migration", "jsonnet",
+                                             mode="w",
+                                             prefix="",
+                                             suffix=".jsonnet",
+                                             encoding="utf-8") as tmp_file:
+                        tmp_file.write(template_data)
+                        return tmp_file.name
+
+        return None
 
     @staticmethod
     def _evaluate_jsonnet(template_path):

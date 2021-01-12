@@ -14,12 +14,7 @@ jsonnet standard library function.
 std.extVar("<name of the configuration variable>")
 ```
 
-Run `ddb configure` to evaluate the template and generate target file.
-
-Feature Configuration
----
-
-A few configurations are available for this feature : 
+Run `ddb configure` to evaluate templates and generate target files.
 
 !!! summary "Feature configuration (prefixed with `jsonnet.`)"
     === "Simple"
@@ -29,25 +24,123 @@ A few configurations are available for this feature :
         | `suffixes` | string[]<br>`['.jsonnet']` | A list of filename suffix to include. |
         | `extensions` | string[]<br>`['.*', '']` | A list of glob of supported extension. |
         | `excludes` | string[]<br>`[]` | A list of glob of filepath to exclude. |
+        | `docker` | *Docker* | Docker related configuration.
 
     === "Advanced"
         | Property | Type | Description |
         | :---------: | :----: | :----------- |
         | `includes` | string[]<br>`['*.jsonnet{.*,}']` | A list of glob of filepath to include. It is automatically generated from `suffixes` and `extensions`. |
 
+!!! summary "Docker configuration (prefixed with `jsonnet.docker.`)"
+    === "Simple"
+        | Property | Type | Description |
+        | :---------: | :----: | :----------- |
+        | `compose` | *Compose* | docker-compose defaults. |
+        | `networks` | *Networks*  | `ddb.Networks()` defaults. |
+        | `build` | *Build* | `ddb.Build()` defaults. |
+        | `service` | *Service* | `ddb.Service()` defaults. |
+        | `expose` | *Expose* | `ddb.Expose()` defaults. |
+        | `registry` | *Registry* | Image registry settings. |
+        | `user` | *User* | `ddb.User()` defaults. |
+        | `binary` | *Binary* | `ddb.Binary()` defaults. |
+        | `virtualhost` | *VirtualHost* | `ddb.VirtualHost()` defaults. |
+        | `xdebug` | *XDebug* | `ddb.XDebug()` defaults. |
 
-!!! quote "Defaults"
-    ```yaml
-    jsonnet:
-      disabled: false
-      extensions:
-      - .*
-      - ''
-      includes:
-      - '*.jsonnet{.*,}'
-      suffixes:
-      - .jsonnet
-    ```
+    === "Advanced"
+        | Property | Type | Description |
+        | :---------: | :----: | :----------- |
+        | `path_mapping` | Dict[str, str] | Path mappings to apply on declared volume sources. |
+
+
+!!! summary "Docker Networks configuration (prefixed with `jsonnet.docker.networks`)"
+    === "Simple"
+        | Property | Type | Description |
+        | :---------: | :----: | :----------- |
+        | `names` | Dict[str, str] | Additional external networks |
+
+!!! summary "Docker Build configuration (prefixed with `jsonnet.docker.build.`)"
+    === "Simple"
+        | Property | Type | Description |
+        | :---------: | :----: | :----------- |
+        | `cache_from_image` | boolean<br>`False` | Add cache_from_image to configuration. |
+        | `context.base_directory` | string<br>`.docker` | Base directory for build context. |
+        | `context.use_project_home` | boolean<br>`False` | Use project home directory as build context. |
+        | `image_tag_from` | boolean|string<br>`False` | Define if an image tag should be generated. If set to a string, it should match a configuration key to use as tag source, like `version.tag`, `version.branch`, `version.version`. |
+
+    === "Advanced"
+        | Property | Type | Description |
+        | :---------: | :----: | :----------- |
+        | `image_tag` | string | Image tag value. |
+
+!!! summary "Docker Service configuration (prefixed with `jsonnet.docker.service.`)"
+    === "Simple"
+        | Property | Type | Description |
+        | :---------: | :----: | :----------- |
+        | `restart` | string<br>`unless-stopped`<br>`no` | The restart policy to use for all services. Can be `no`, `always`, `on-failure` or `unless-stopped`. Default value is `unless-stopped`, unless `core.env.current` is set to `dev` then it's set to `no`. |
+
+    === "Advanced"
+        | Property | Type | Description |
+        | :---------: | :----: | :----------- |
+        | `init` | string | |
+
+!!! summary "Docker Expose configuration (prefixed with `jsonnet.docker.expose.`)"
+    | Property | Type | Description |
+    | :---------: | :----: | :----------- |
+    | `disabled` | boolean<br>`False` | Should `ddb.Expose()` perform nothing ? |
+    | `port_prefix` | integer<br>`<based on core.project.name>` | Port prefix. |
+
+
+!!! summary "Docker Registry configuration (prefixed with `jsonnet.docker.registry.`)"
+    | Property | Type | Description |
+    | :---------: | :----: | :----------- |
+    | `name` | string | Registry name. |
+    | `repository` | string | Registry repository. |
+
+
+!!! summary "Docker User configuration (prefixed with `jsonnet.docker.user.`)"
+    === "Simple"
+        | Property | Type | Description |
+        | :---------: | :----: | :----------- |
+        | `uid` | string | The user UID to use inside a container. |
+        | `gid` | string | The user GID to use inside a container. |
+        | `name` | string | The host username that will get converted to UID. |
+        | `group` | string | The host groupname that will get converted to GID. |
+
+    === "Internal"
+        | `name_to_uid` | Dict[str, integer] | Mapping of user names to uid. |
+        | `group_to_gid` | Dict[str, integer] | Mapping of group names to gid. |
+
+
+!!! summary "Docker Binary configuration (prefixed with `jsonnet.docker.binary.`)"
+    | Property | Type | Description |
+    | :---------: | :----: | :----------- |
+    | `disabled` | boolean<br>`False` | Should binary generation be disabled ? |
+
+
+!!! summary "Docker VirtualHost configuration (prefixed with `jsonnet.docker.virtualhost.`)"
+    === "Simple"
+        | Property | Type | Description |
+        | :---------: | :----: | :----------- |
+        | `https` | string | Should services be available as HTTPS ? If unset, it is available as both HTTP and HTTPS. |
+        | `redirect_to_https` | string | Should services redirect to HTTPS when requested on HTTP ? |
+        | `redirect_to_path_prefix` | string | Should services redirect to path_prefix when requested on root path ? |
+        | `certresolver` | string | certresolver to use. `letsencrypt` is supported when using traefik reverse proxy. |
+
+    === "Internal"
+        | `type` | string<br>`traefik` (when available) | Type of reverse proxy to use. |
+        | `network_id` | string<br>`reverse-proxy` | Network id used. |
+
+
+!!! summary "Docker XDebug configuration (prefixed with `jsonnet.docker.xdebug.`)"
+    === "Simple"
+        | Property | Type | Description |
+        | :---------: | :----: | :----------- |
+        | `disabled` | boolean<br>`false` | Should debug features be generated in `docker-compose.yml` by [jsonnet](./jsonnet.md) feature ? |
+        | `host` | string<br>`${jsonnet}` | The host to connect back for debug features. |
+        | `version` | string | XDebug version to configure (`2` or `3`). If unset, both XDebug 2 and 3 configurations will generated in a merged object. |
+        | `session` | string<br>`${core.project.name}` | XDebug session (v3) and/or idekey/serverName (v2) to configure. You can set this value explicitly to set env vars `XDEBUG_SESSION` (v3) and/or `PHP_IDE_CONFIG`/`XDEBUG_CONFIG` (v2). |
+        | `mode` | string<br>`debug` | XDebug mode (v3 only). |
+
 
 Docker-compose jsonnet library
 ---
@@ -62,13 +155,14 @@ local ddb = import 'ddb.docker.libjsonnet';
 
 ### ddb.Compose()
 
-This function defines the minimal docker-compose configuration. 
+This function defines the main entrypoint to generate a docker-compose configuration. 
 
 !!! abstract "Parameters"
     | Property | Type | Description |
     | :---------: | :----: | :----------- |
-    | `network_names` | string\|object<br>`${docker.reverse_proxy.network_names}` | Network names to add |
-    | `version` | string<br>`${docker.compose.file_version}` | docker-compose.yml file version.  |
+    | `config` | object | Docker compose configuration |
+    | `networks_names` | dict[str, str]<br>`${jsonnet.docker.networks.names}` | Network id to name mapping |
+    | `version` | string<br>`${jsonnet.docker.compose.version}` | docker-compose.yml file version.  |
 
 !!! example 
     ```json
@@ -85,26 +179,65 @@ This function defines the minimal docker-compose configuration.
         name: reverse-proxy
     ```
 
+!!! example 
+    ```json
+    ddb.Compose({
+        services: {
+            db: {
+                image: "postgres"
+            }
+        }
+    })
+    ```
+
+    with a configuration with produce
+
+    ```yaml
+    version: '3.7'
+    networks:
+      reverse-proxy:
+        external: true
+        name: reverse-proxy
+    services:
+      db:
+        image: "postgres"
+    ```
+
 ### ddb.Build()
 
 This function generates a service configuration from a `Dockerfile` available in `.docker/<service>` directory.
 
-It will also add the `init` to true and `restart` configurations for the service.
-
-The `restart` configuration will be set with the `docker.restart_policy` ddb configuration.
-
-If a docker registry is configured inside docker feature, `image` configuration will also be generated from the service 
-name.
+If a docker registry is configured inside docker feature, `image` configuration will also be generated from the 
+service name.
 
 !!! abstract "Parameters"
     | Property | Type | Description |
     | :---------: | :----: | :----------- |
-    | `name` | string | Generate a build configuration based on given name. see `docker.build.context` configuration for [docker](./docker.md). |
-    | `image` | string<br>`<name>` | The name of the image. If `docker.registry` settings are defined, it will generate the full image name.  |
-    | `cache_from_image` | boolean<br>`${docker.cache_from_image}` | If set to true and docker registry is defined, it will generate the `build.cache_from` configuration uri.  |
-    | `directory` | boolean<br>`${docker.directory}/<name>` | Build context directory |
+    | `name` | string | Generate a build configuration based on given name. |
+    | `image` | string<br>`<name>` | The name of the image. If `registry_name` and/or `registry_name` settings are defined, it will generate the full image name.  |
+    | `cache_from_image` | boolean<br>`${jsonnet.docker.build.cache_from_image}` | If set to true and docker registry is defined, it will generate the `build.cache_from` configuration uri.  |
+    | `context_base_directory` | boolean<br>`${jsonnet.docker.build.context.base_directory}` | Build context base directory. |
+    | `context_use_project_home` | boolean<br>`${jsonnet.docker.build.context.use_project_home}` | Use project home directory as context. |
+    | `restart` | string<br>`${jsonnet.docker.service.restart}` | Service restart policy. |
+    | `init` | boolean<br>`${jsonnet.docker.service.init}` | Service init. |
+    | `registry_name` | string<br>`${jsonnet.docker.registry.name}` | Name of the docker image registry. |
+    | `registry_repository` | string<br>`${jsonnet.docker.registry.repository}` | Repository in the docker image registry. |
+    | `image_tag` | boolean|string<br>`${jsonnet.docker.build.image_tag}` | If false, tag is not set. If `true`, tag is set according to `jsonnet.docker.build.image_tag_from` value. If `string` value, use the exact given string as tag. |
+
 
 !!! example "Example with a registry defined"
+    if ddb.yml contains the following
+
+    ```
+    jsonnet:
+      docker:
+        registry:
+          name: docker.io
+          repository: project
+        build:
+          image_tag_from: True
+    ```
+
     ```json
     ddb.Build("db")
     ```
@@ -123,12 +256,14 @@ This function generates a service configuration based on an external image.
 
 It will also add the `init` to true and `restart` configurations for the service.
 
-The `restart` configuration will be set with the `docker.restart_policy` ddb configuration.
+The `restart` configuration will be set with the `jsonnet.docker.service.restart` ddb configuration.
 
 !!! abstract "Parameters"
     | Property | Type | Description |
     | :---------: | :----: | :----------- |
-    | `image` | string<br>`<name>` | The name of the image to use  |
+    | `image` | string<span style="color: red">*</span> | The name of the image to use.  |
+    | `restart` | string<br>`${jsonnet.docker.service.restart}` | Service restart policy. |
+    | `init` | boolean<br>`${jsonnet.docker.service.init}` | Service init. |
 
 
 !!! example 
@@ -140,20 +275,22 @@ The `restart` configuration will be set with the `docker.restart_policy` ddb con
 
     ```yaml
     image: nginx:latest
+    restart: no
+    init: true
     ```
 
 ### ddb.Expose()
 This function generates an exposed port inside a service.
 
-It use `docker.docker_prefix` to generate a fixed mapped port in order to avoid port collisions between projects.
+It use `jsonnet.docker.expose.port_prefix` to generate a fixed mapped port in order to avoid port collisions between projects.
 
 !!! abstract "Parameters"
     | Property | Type | Description |
     | :---------: | :----: | :----------- |
-    | `container_port` | string|integer<span style="color:red">*</span> | Container port number to expose. |
+    | `container_port` | string\|integer<span style="color:red">*</span> | Container port number to expose. |
     | `host_port_suffix` | string | End of the mapped port on host. from `1 to 99`. If `null`, use last 2 digits of `container_port` value. |
     | `protocol` | string | The protocol to use. Can be `null`, `tcp` or `udp`.  |
-
+    | `port_prefix` | string\|integer<br>`${jsonnet.docker.expose.port_prefix}` | Port prefix. |
 
 !!! example
     ```json
@@ -171,18 +308,18 @@ It use `docker.docker_prefix` to generate a fixed mapped port in order to avoid 
       - '14799:23/tcp'
     ```
 
-    `147` is `docker.port_prefix` configuration value.
+    `147` is `jsonnet.docker.expose.port_prefix` configuration value.
 
 ### ddb.User()
-This function generates the `user` configuration for a service.
+This function generates the `user` configuration for a Service.
 
-In ddb, it is mainly use for `fixuid` automatic integration
+In ddb, it is mainly use for [fixuid](./fixuid.md) automatic integration
 
 !!! abstract "Parameters"
     | Property | Type | Description |
     | :---------: | :----: | :----------- |
-    | `uid` | string<br>`${docker.user.uid}`<br>`${~docker.user.name}` | UID of user running the container. |
-    | `gid` | string<br>`${docker.user.gid}`<br>`${~docker.user.group}` | GID of user runninig the container. |
+    | `uid` | string<br>`${jsonnet.docker.user.uid}`<br>`${~jsonnet.docker.user.name}` | UID of user running the container. |
+    | `gid` | string<br>`${jsonnet.docker.user.gid}`<br>`${~jsonnet.docker.user.group}` | GID of user running the container. |
 
 
 !!! example 
@@ -206,6 +343,7 @@ In ddb, it is mainly use for `fixuid` automatic integration
     ```yaml
     user: 1000:998
     ```
+
     when `getent group docker` returns `docker:x:998:` on the host.
     
     It can be used when you need the container to access the docker socket through a volume mount.
@@ -214,7 +352,7 @@ In ddb, it is mainly use for `fixuid` automatic integration
 ### ddb.VirtualHost()
 This function generates service configuration used for reverse-proxy auto-configuration.
 
-The output generated depends on the `docker.reverse_proxy.type` ddb configuration. Currently, only traefik is supported.
+The output generated depends on the `jsonnet.docker.virtualhost.type` ddb configuration. Currently, only traefik is supported.
 If this configuration is anything else, there will be no output.
 
 !!! abstract "Parameters"
@@ -223,13 +361,13 @@ If this configuration is anything else, there will be no output.
     | `port` | string<span style="color: red">*</span> | HTTP port inside the container. |
     | `hostname` | string<span style="color: red">*</span> | Hostname that will be exposed. |
     | `name` | string | Unique name for this VirtualHost. |
-    | `network_id` | string<br>`${docker.reverse_proxy.network_id}` | The reverse-proxy network id. |
-    | `certresolver` | string<br>`${docker.reverse_proxy.redirect_to_https}` | certresolver to use inside reverse proxy (traefik). `letsencrypt` is supported when using `traefik` feature. |
+    | `network_id` | string<br>`${jsonnet.docker.virtualhost.network_id}` | The reverse-proxy network id. |
+    | `certresolver` | string<br>`${jsonnet.docker.virtualhost.certresolver}` | certresolver to use inside reverse proxy (traefik). `letsencrypt` is supported when using `traefik` feature. |
     | `router_rule` | string |  |
-    | `https` | string<br>`${docker.reverse_proxy.https}` | Should service be available as HTTPS ? If unset, it is available as both HTTP and HTTPS. |
-    | `redirect_to_https` | string<br>`${docker.reverse_proxy.redirect_to_https}` | Should service redirect to HTTPS when requested on HTTP ? |
-    | `path_prefix` | string |  |
-    | `redirect_to_path_prefix` | string |  |
+    | `https` | string<br>`${jsonnet.docker.virtualhost.https}` | Should service be available as HTTPS ? If unset, it is available as both HTTP and HTTPS. |
+    | `redirect_to_https` | string<br>`${jsonnet.docker.virtualhost.redirect_to_https}` | Should service redirect to HTTPS when requested on HTTP ? |
+    | `path_prefix` | string | Path prefix of this virtualhost |
+    | `redirect_to_path_prefix` | boolean | Redirect to configured path prefix |
 
 !!! example "Example with traefik as reverse proxy"
     ```json 
@@ -298,22 +436,23 @@ Binary allow the creation of alias for command execution inside the service.
 ### ddb.XDebug() (PHP)
 This function generates `environment` configuration used for XDebug (PHP Debugger).
 
-If `docker.debug.disabled` is set to `false`, the function returns an empty object.
+If `jsonnet.docker.xdebug.disabled` is set to `true`, the function returns an empty object.
 
 It will use the following `ddb` configuration to generate appropriate `environment`:
 
 * `core.project.name`: 
     * XDebug 2: set `serverName` and `idekey`
     * XDebug 3: set `XDEBUG_SESSION`
-* `docker.debug.host`: 
+* `jsonnet.docker.xdebug.host`: 
     * XDebug 2: set `remote_host`
     * XDebug 3: set `client_host`
 
 !!! abstract "Parameters"
     | Property | Type | Description |
     | :---------: | :----: | :----------- |
-    | `version` | string|integer | XDebug version to configure (`2` or `3`). If unset, both XDebug 2 and 3 configurations will generated in a merged object. |
-    | `session` | string<br>`${core.project.name}` | XDebug session (v3) and/or idekey/serverName (v2) to configure. You can set this value explicitly to set env vars `XDEBUG_SESSION` (v3) and/or `PHP_IDE_CONFIG`/`XDEBUG_CONFIG` (v2). |
+    | `version` | string<br>`${jsonnet.docker.xdebug.version}` | XDebug version to configure (`2` or `3`). If unset, both XDebug 2 and 3 configurations will generated in a merged object. |
+    | `session` | string<br>`${jsonnet.docker.xdebug.session}` | XDebug session (v3) and/or idekey/serverName (v2) to configure. You can set this value explicitly to set env vars `XDEBUG_SESSION` (v3) and/or `PHP_IDE_CONFIG`/`XDEBUG_CONFIG` (v2). |
+    | `mode` | string<br>`${jsonnet.docker.xdebug.mode}` | XDebug mode (v3 only). |
         
 !!! example 
     ```json
@@ -545,7 +684,7 @@ Those functions are for advanced configuration and should not be used in most co
         
     ### ddb.path.mapPath()
     
-    Get the mapped value of a given filepath according to mappings configured in `docker.path_mapping`.
+    Get the mapped value of a given filepath according to mappings configured in `jsonnet.docker.path_mapping`.
 
     !!! abstract "Parameters"
         | Property | Type | Description |

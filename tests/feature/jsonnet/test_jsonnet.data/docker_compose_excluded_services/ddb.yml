@@ -1,0 +1,4 @@
+jsonnet:
+  docker:
+    compose:
+      excluded_services: ['disabled1', 'disabled2']
