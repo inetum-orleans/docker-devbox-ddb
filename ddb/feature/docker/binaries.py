@@ -65,7 +65,7 @@ class DockerBinary(AbstractBinary):
         command = effective_command("docker-compose", *params)
         return command
 
-    def add_options_to_params(self, params, options, condition, *args):  # pylint: disable=no-self-use
+    def add_options_to_params(self, params, options, condition, *args):
         """
         Add options to params if condition is fulfilled
         :param params: the list of parameters
