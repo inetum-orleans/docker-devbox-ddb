@@ -11,7 +11,6 @@ from ddb.binary.binary import AbstractBinary
 from ddb.config import config
 from ddb.utils.docker import DockerUtils
 from ddb.utils.process import effective_command
-from ...context import context
 
 
 class DockerBinary(AbstractBinary):
@@ -75,7 +74,6 @@ class DockerBinary(AbstractBinary):
         :param args: the list of args of binary call
         :return:
         """
-        context.logger.info(condition)
         if condition is not None and options is not None:
             if simple_eval(condition, **self.simple_eval_options(*args)):
                 params.extend(shlex.split(options))
