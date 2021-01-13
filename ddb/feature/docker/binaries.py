@@ -11,6 +11,7 @@ from ddb.binary.binary import AbstractBinary
 from ddb.config import config
 from ddb.utils.docker import DockerUtils
 from ddb.utils.process import effective_command
+from ...context import context
 
 
 class DockerBinary(AbstractBinary):
@@ -65,7 +66,7 @@ class DockerBinary(AbstractBinary):
         command = effective_command("docker-compose", *params)
         return command
 
-    def add_options_to_params(self, params, options, condition, *args):  # pylint: disable=no-self-use
+    def add_options_to_params(self, params, options, condition, *args):
         """
         Add options to params if condition is fulfilled
         :param params: the list of parameters
@@ -74,6 +75,7 @@ class DockerBinary(AbstractBinary):
         :param args: the list of args of binary call
         :return:
         """
+        context.logger.info(condition)
         if condition is not None and options is not None:
             if simple_eval(condition, **self.simple_eval_options(*args)):
                 params.extend(shlex.split(options))
