@@ -11,8 +11,8 @@ def _get_path_default():
     _path_default = []
 
     if config.paths.project_home:
-        _path_default.append(os.path.join(config.paths.project_home, ".bin"))
-        _path_default.append(os.path.join(config.paths.project_home, "bin"))
+        _path_default.append(".bin")
+        _path_default.append("bin")
 
     if config.paths.home:
         _path_default.append(os.path.join(config.paths.home, ".bin"))
