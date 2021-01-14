@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser
-from typing import Iterable, Union, Optional
+from typing import Iterable, Union, Optional, Callable, Any
 
 from ..context import context
 from ..phase import phases, Phase
@@ -45,8 +45,9 @@ class DefaultCommand(DefaultRegistryObject, Command):
     """
 
     def __init__(self, name: str, description: str = None, parent: Optional[Union[Command, str]] = None,
-                 allow_unknown_args=False):
+                 allow_unknown_args=False, before_execute: Optional[Callable[[], Any]] = None):
         super().__init__(name, description)
+        self.before_execute = before_execute
         self._parent = parent
         self._allow_unknown_args = allow_unknown_args
 
@@ -76,6 +77,9 @@ class DefaultCommand(DefaultRegistryObject, Command):
         """
         Execute the command.
         """
+        if self.before_execute:
+            self.before_execute()
+
         if self.parent:
             self.parent.execute()
 
@@ -87,8 +91,8 @@ class LifecycleCommand(DefaultCommand):
     """
 
     def __init__(self, name: str, description: Union[str, None], *lifecycle: Union[str, Phase],
-                 parent: Optional[Union[Command, str]] = None):
-        super().__init__(name, description, parent)
+                 parent: Optional[Union[Command, str]] = None, before_execute: Optional[Callable[[], Any]] = None):
+        super().__init__(name, description, parent, before_execute=before_execute)
         self._lifecycle = list(map(lambda phase: phases.get(phase) if not isinstance(phase, Phase) else phase,
                                    lifecycle))  # type: Iterable[Phase]
         for phase in self._lifecycle:
@@ -110,6 +114,7 @@ class LifecycleWithoutHelpCommand(LifecycleCommand):
     """
     A LifecycleCommand that doesn't add --help option to it's parser.
     """
+
     def add_parser(self, subparsers):
         """
         Add command parser into given subparsers.

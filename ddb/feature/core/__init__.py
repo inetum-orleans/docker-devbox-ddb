@@ -11,9 +11,11 @@ from .schema import CoreFeatureSchema
 from ..feature import Feature, FeatureConfigurationAutoConfigureError
 from ..schema import FeatureSchema
 from ...action import Action
+from ...action.runner import ExpectedError, FailFastError
 from ...command import LifecycleCommand, Command
 from ...config import config
 from ...config.config import ConfigPaths
+from ...context import context
 from ...phase import Phase, DefaultPhase
 
 
@@ -21,6 +23,20 @@ class ConfigureSecondPassException(Exception):
     """
     Exception that should be raised when an additional configuration file is to be loaded.
     """
+
+
+class NoProjectConfigurationError(FailFastError, ExpectedError):
+    """
+    Error that should be raised when a project configuration file is required for the command.
+    """
+
+    def __init__(self):
+        super().__init__("No project configuration file found. "
+                         "Please create a ddb.yml file in your project directory. "
+                         "It can be empty.")
+
+    def log_error(self):
+        context.log.error(str(self))
 
 
 class CoreFeature(Feature):
@@ -77,13 +93,20 @@ class CoreFeature(Feature):
 
     @property
     def commands(self) -> Iterable[Command]:
+        def requires_project_config():
+            if not config.project_configuration_file:
+                error = NoProjectConfigurationError()
+                error.log_error()
+                raise error
+
         return (
             LifecycleCommand("init", "Initialize the environment",
                              "init"),
 
             LifecycleCommand("configure", "Configure the environment",
                              "configure",
-                             parent="init"),
+                             parent="init",
+                             before_execute=requires_project_config),
 
             LifecycleCommand("features", "List enabled features",
                              "features"),
