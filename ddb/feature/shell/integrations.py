@@ -118,7 +118,7 @@ class BashShellIntegration(ShellIntegration):
 
     @staticmethod
     def _sanitize_key(key):
-        return slugify(key, regex_pattern=r'[^-a-zA-Z0-9_]+').upper()
+        return slugify(key, regex_pattern=r'[^-a-zA-Z0-9_]+', separator="_").upper()
 
     def set_environment_variable(self, key, value):
         yield "export " + self._sanitize_key(key) + "=" + shlex.quote(value)
@@ -194,7 +194,7 @@ class CmdShellIntegration(ShellIntegration):
 
     @staticmethod
     def _sanitize_key(key):
-        return slugify(key, regex_pattern=r'[^-a-zA-Z0-9_]+').upper()
+        return slugify(key, regex_pattern=r'[^-a-zA-Z0-9_]+', separator="_").upper()
 
     def set_environment_variable(self, key, value):
         # TODO: Maybe use subprocess.list2cmdline for Windows ?
