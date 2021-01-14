@@ -18,11 +18,12 @@ def configuration_file(path: str, filenames: Iterable[str], extensions: Iterable
     """
     Find configuration file for given path and possible filename/extensions
     """
-    for basename in filenames:
-        for ext in extensions:
-            file = os.path.join(path, basename + '.' + ext)
-            if exists(file):
-                return file
+    if path:
+        for basename in filenames:
+            for ext in extensions:
+                file = os.path.join(path, basename + '.' + ext)
+                if exists(file):
+                    return file
     return None
 
 
@@ -89,6 +90,13 @@ class Config:  # pylint:disable=too-many-instance-attributes
         """
         self.data.clear()
         self.env_additions.clear()
+
+    @property
+    def project_configuration_file(self):
+        """
+        Retrieve the project configuration file.
+        """
+        return configuration_file(self.paths.project_home, self.filenames, self.extensions)
 
     @property
     def project_cwd(self):

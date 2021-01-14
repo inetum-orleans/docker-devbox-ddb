@@ -25,7 +25,9 @@ class TestTraefik:
         assert os.path.exists(key)
         assert os.path.exists(web_toml)
 
-        os.remove("ddb.yml")
+        with open("ddb.yml", "w"):
+            pass
+
         Config.defaults = {'defaults': {'fail_fast': True}}
 
         setup_cfssl(module_scoped_container_getter)
