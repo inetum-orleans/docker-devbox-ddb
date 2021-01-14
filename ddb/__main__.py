@@ -336,8 +336,9 @@ def register_actions_in_event_bus(fail_fast=False):
                 _register_action_in_event_bus(action, event_binding, fail_fast)
 
 
-def main(args: Optional[Sequence[str]] = None,
-         reset_disabled=False, before_handle_command_line=None):
+def main(args: Optional[Sequence[str]] = None,  # pylint:disable=too-many-statements
+         reset_disabled=False,
+         before_handle_command_line=None):
     """
     Load all features and handle command line
     """
@@ -397,6 +398,13 @@ def main(args: Optional[Sequence[str]] = None,
         return context.exceptions
     except ExpectedError as exception:
         return [exception]
+    except Exception as exception:  # pylint:disable=broad-except
+        try:
+            clear_caches()
+        except Exception as clear_cache_exception:  # pylint:disable=broad-except
+            logging.getLogger('ddb').exception("An error has occured while clearing caches",
+                                               exc_info=clear_cache_exception)
+        raise exception
     finally:
         os.chdir(initial_cwd)
         if not reset_disabled:
