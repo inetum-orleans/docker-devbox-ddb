@@ -12,6 +12,7 @@ from ..feature import Feature, FeatureConfigurationAutoConfigureError
 from ..schema import FeatureSchema
 from ...action import Action
 from ...command import LifecycleCommand, Command
+from ...config import config
 from ...phase import Phase, DefaultPhase
 
 
@@ -86,3 +87,13 @@ class ShellFeature(Feature):
                 feature_config['shell'] = 'zsh'
             else:
                 raise FeatureConfigurationAutoConfigureError(self, 'shell')
+
+        directories = feature_config.get('path.directories')
+        absolute_directories = []
+        for directory in directories:
+            if os.path.isabs(directory):
+                absolute_directories.append(directory)
+            else:
+                absolute_directory = os.path.join(config.paths.project_home, directory)
+                absolute_directories.append(absolute_directory)
+        feature_config['path.directories'] = absolute_directories
