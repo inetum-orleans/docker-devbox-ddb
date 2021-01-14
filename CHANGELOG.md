@@ -3,6 +3,28 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.5.0 (2021-01-14)
+### Feature
+* **configure:** Ensure project configuration file is available before configure ([#170](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/170)) ([`bd1c814`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/bd1c814a2e2c847685bfe49134dd886dbcb51eda))
+* **file:** Add `target/` and `dist/` directories to default excludes ([`9b7b467`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/9b7b46770513c4121c52301bb7c80bd2f0463e6a))
+* **binaries:** Allow many binaries to be registered for the same name ([#141](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/141)) ([`b3d8cd8`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/b3d8cd823cb3a90beec013e4943f7e007182aad5))
+* **permission:** Copy permission from template file to target ([#147](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/147)) ([`8595c9f`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/8595c9f5ae4999244dcdf8f6896398e764399c9f))
+* **devbox:** Prepare next release of docker-devbox with retro-compatibility ([`fdfbc24`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/fdfbc245abc94facbf21e2e92d8a20c05ed6058f))
+* **jsonnet:** Add Expose function in ddb.docker.libjsonnet ([`dffcab1`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/dffcab1566e3f055a61872ea0d4097c6f9c571e4))
+
+### Fix
+* **shell:** Fix drive case for default Windows `docker.path_mapping` ([#159](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/159)) ([`a3e2c09`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/a3e2c09472d73ee6507623dd048958f11015addb))
+* **shell:** Use `_` instead of `-` to sanitize environment variable name ([#160](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/160)) ([`f9e11a8`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/f9e11a8515c653246753d55183e9adf50cd542a8))
+* **shell:** Add support for relative paths in shell.path.directory ([#168](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/168)) ([`6f4f938`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/6f4f938a0b814084bb2922f9a683427f9020a801))
+* **main:** Clear cache when an unexpected error occurs ([#169](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/169)) ([`8c0940a`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/8c0940a4cd2436bd78870635fe871b600ba9bb5d))
+* **binary options:** Fix an issue introduced by #141 and force lf ([`76c7bf2`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/76c7bf2640c04274b72981d60605bc9352eb764f))
+* **shell:** Move PWD environment exclude to configuration ([`848ec99`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/848ec99b90386aab09784d5f1870260173ac3ed3))
+* **traefik:** Check domain is not empty when rule is empty ([`33bd166`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/33bd1667169ccb7a4ef9217a42b7865ab0601a0c))
+
+### Documentation
+* **style:** Enhance docs style for all configuration properties and examples ([`9c396d5`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/9c396d50ddcc14a95f613636f7d0464d601edc0d))
+* **jsonnet:** Add session parameter to XDebug documentation ([`5febad8`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/5febad815c1812016b8fa3117c08e2d32dfb735c))
+
 ## v1.4.4 (2020-12-30)
 ### Fix
 * **bash:** Exclude PWD environment variable from backup/restore ([#142](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/142)) ([`e8ee977`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/e8ee9771b5c63b893a07fb0e1690dac21cdafa6f))
