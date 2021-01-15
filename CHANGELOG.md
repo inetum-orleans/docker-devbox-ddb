@@ -3,6 +3,10 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.5.1 (2021-01-15)
+### Fix
+* **binary options:** Fix an issue introduced by #141 ([`f404353`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/f4043538e01b7761828212196b2d15128f6b1fba))
+
 ## v1.5.0 (2021-01-14)
 ### Feature
 * **configure:** Ensure project configuration file is available before configure ([#170](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/170)) ([`bd1c814`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/bd1c814a2e2c847685bfe49134dd886dbcb51eda))
