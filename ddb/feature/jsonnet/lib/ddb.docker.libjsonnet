@@ -147,7 +147,7 @@ local Volumes(services) = {
 
 local NoBinaryOptionsLabels(name, options, options_condition = null, index = null) = {};
 local BinaryOptionsLabels(name, options, options_condition = null, index = null) = {
-    ["ddb.emit.docker:binary[" + name + "](options)" + (if index != null then "(c" + index + ")" else "")]: options_condition,
+    ["ddb.emit.docker:binary[" + name + "](options)" + (if index != null then "(c" + index + ")" else "")]: options,
     [if options_condition != null then "ddb.emit.docker:binary[" + name + "](options_condition)" + (if index != null then "(c" + index + ")" else "")]: options_condition
 };
 
