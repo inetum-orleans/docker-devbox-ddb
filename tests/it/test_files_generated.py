@@ -18,7 +18,7 @@ class TestFilesGenerated:
         assert not os.path.exists("test.dev.yml.jinja")
         with open("test.dev.yml.jsonnet", "r") as dockerfile:
             data = dockerfile.read()
-            assert data == '{["e" + "n" + "v"]: "dev"}'
+            assert data == '{["e" + "n" + "v"]: "dev"}\n'
 
         assert os.path.exists("test.dev.yml")
         with open("test.dev.yml", "r") as dockerfile:

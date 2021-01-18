@@ -12,3 +12,4 @@ class JinjaSchema(FeatureSchema):
     extensions = fields.List(fields.String(), default=[".*", ""])
     includes = fields.List(fields.String())  # default is build automatically from suffixes value
     excludes = fields.List(fields.String())
+    options = fields.Dict(fields.String(required=True), fields.Field(required=True), allow_none=True, default=None)
