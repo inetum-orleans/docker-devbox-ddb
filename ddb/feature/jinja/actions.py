@@ -50,10 +50,17 @@ class JinjaAction(AbstractTemplateAction):
         self._rootpath = self.template_finder.rootpath
         self._migrationpath = get_single_temporary_file_directory("ddb", "migration", "jinja")
 
-        self.env = Environment(
-            loader=FileSystemLoader([self._rootpath, self._migrationpath]),
-            undefined=StrictUndefined
-        )
+        effective_options = {
+            "loader": FileSystemLoader([self._rootpath, self._migrationpath]),
+            "undefined": StrictUndefined,
+            "keep_trailing_newline": True
+        }
+
+        options = config.data.get('jinja.options')
+        if options:
+            effective_options.update(options)
+
+        self.env = Environment(**effective_options)
 
         self.env.filters.update(custom_filters)
         self.env.tests.update(custom_tests)

@@ -1,6 +1,7 @@
 import os
 
 from ddb.__main__ import load_registered_features, register_actions_in_event_bus
+from ddb.config import config
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.file import FileFeature, FileWalkAction
@@ -135,3 +136,65 @@ class TestJinjaAction:
             foo = f.read()
 
         assert foo == 'env: dev'
+
+    def test_project_keep_trailing_lines_false(self, project_loader):
+        project_loader("trailing-newline")
+
+        features.register(CoreFeature())
+        features.register(FileFeature())
+        features.register(JinjaFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
+
+        config.data['jinja.options'] = {"keep_trailing_newline": False}
+
+        action = FileWalkAction()
+        action.initialize()
+        action.execute()
+
+        assert os.path.exists('foo.yml')
+        with open('foo.yml', 'r') as f:
+            foo = f.read()
+
+        assert foo == 'test: trailing'
+
+    def test_project_keep_trailing_lines_default(self, project_loader):
+        project_loader("trailing-newline")
+
+        features.register(CoreFeature())
+        features.register(FileFeature())
+        features.register(JinjaFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
+
+        action = FileWalkAction()
+        action.initialize()
+        action.execute()
+
+        assert os.path.exists('foo.yml')
+        with open('foo.yml', 'r') as f:
+            foo = f.read()
+
+        assert foo == 'test: trailing\n'
+
+    def test_project_keep_trailing_lines_true(self, project_loader):
+        project_loader("trailing-newline")
+
+        features.register(CoreFeature())
+        features.register(FileFeature())
+        features.register(JinjaFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
+
+        config.data['jinja.options'] = {"keep_trailing_newline": True}
+
+        action = FileWalkAction()
+        action.initialize()
+        action.execute()
+
+        assert os.path.exists('foo.yml')
+        with open('foo.yml', 'r') as f:
+            foo = f.read()
+
+        assert foo == 'test: trailing\n'
+

@@ -12,6 +12,7 @@ using ddb configuration.
         | `suffixes` | string[]<br>`['.jinja']` | A list of filename suffix to include. |
         | `extensions` | string[]<br>`['.*', '']` | A list of glob of supported extension. |
         | `excludes` | string[]<br>`[]` | A list of glob of filepath to exclude. |
+        | `options` | dict[string, object] | Additional options to pass to [Jinja Environment](https://jinja.palletsprojects.com/en/2.11.x/api/#jinja2.Environment). |
 
     === "Advanced"
         | Property | Type | Description |
