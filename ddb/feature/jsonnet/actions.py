@@ -61,7 +61,7 @@ class JsonnetAction(AbstractTemplateAction):
             property_migration = migrations.get_migration_from_old_config_key(property_name)
 
             if property_migration and not property_migration.requires_value_migration:
-                property_migration.warn(template)
+                property_migration.warn(original_template)
 
                 with open(template, "r", encoding="utf-8") as template_file:
                     initial_template_data = template_file.read()
@@ -84,8 +84,10 @@ class JsonnetAction(AbstractTemplateAction):
 
     @staticmethod
     def _evaluate_jsonnet(template_path):
-        vars_config = flatten(config.data, stop_for_features=features.all())
-        codes_config = flatten(config.data, keep_primitive_list=True, stop_for_features=features.all())
+        data = config.data.copy()
+
+        vars_config = flatten(data, stop_for_features=features.all())
+        codes_config = flatten(data, keep_primitive_list=True, stop_for_features=features.all())
         codes_config['_config.eject'] = config.eject
         codes_config['_config.args'] = vars(config.args)
         codes_config['_config.unknown_args'] = config.unknown_args
