@@ -3,6 +3,17 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.6.0 (2021-01-19)
+### Feature
+* **jinja:** Add configuration options to jinja Environment ([#181](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/181)) ([`092d9d0`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/092d9d09caf4f13b0c8295a47e8148a2bc38c3af))
+* **scope:** Refactor configuration schemas with autofix (#164 #179) ([`10b7a72`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/10b7a72e018c925970002e5497468eef43cba50b))
+
+### Fix
+* **config:** Fix deprecations warnings and backward compatibility ([`6ab20c2`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/6ab20c2590bab03865930330b5812c6376348f84))
+
+### Documentation
+* **usage:** Update usage output in docs ([`4ebb752`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/4ebb75207768efe6323a00acfd50dc25833d60af))
+
 ## v1.5.1 (2021-01-15)
 ### Fix
 * **binary options:** Fix an issue introduced by #141 ([`f404353`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/f4043538e01b7761828212196b2d15128f6b1fba))
