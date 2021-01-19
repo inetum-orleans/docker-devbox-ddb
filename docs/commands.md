@@ -6,34 +6,35 @@ If you run **ddb** with no argument, the usage is displayed.
 !!! info "ddb usage"
 ```
 usage: ddb [-h] [-v] [-vv] [-s] [-x] [-c] [-w] [-ff] [--version]
-{init,configure,features,config,info,run,self-update,activate,deactivate,check-activated} ...
+           {init,configure,features,config,info,self-update,run,activate,deactivate,check-activated}
+           ...
 
-    positional arguments:
-    {init,configure,features,config,info,run,self-update,activate,deactivate,check-activated}
-    Available commands
+positional arguments:
+  {init,configure,features,config,info,self-update,run,activate,deactivate,check-activated}
+                        Available commands
     init                Initialize the environment
     configure           Configure the environment
     features            List enabled features
     config              Display effective configuration
     info                Display useful information
-    run                 Display command to run project binary
     self-update         Update ddb to latest version
+    run                 Display command to run project binary
     activate            Write a shell script to be executed to activate
-    environment
+                        environment
     deactivate          Write a shell script to be executed to deactivate
-    environment
+                        environment
     check-activated     Check if project is activated in current shell
-    
-    optional arguments:
-    -h, --help            show this help message and exit
-    -v, --verbose         Enable more logs
-    -vv, --very-verbose   Enable even more logs
-    -s, --silent          Disable all logs
-    -x, --exceptions      Display exceptions on errors
-    -c, --clear-cache     Clear all used caches
-    -w, --watch           Enable watch mode (hot reload of generated files)
-    -ff, --fail-fast      Stop on first error
-    --version             Display the ddb version and check for new ones.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -v, --verbose         Enable more logs
+  -vv, --very-verbose   Enable even more logs
+  -s, --silent          Disable all logs
+  -x, --exceptions      Display exceptions on errors
+  -c, --clear-cache     Clear all used caches
+  -w, --watch           Enable watch mode (hot reload of generated files)
+  -ff, --fail-fast      Stop on first error
+  --version             Display the ddb version and check for new ones.
 
 ```
 
