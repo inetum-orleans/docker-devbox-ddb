@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, Set
 
 from dotty_dict import Dotty
 
+from ddb.config.merger import config_merger
 from ddb.context import context
 
 silent = False
@@ -41,9 +42,16 @@ class AbstractMigration(AbstractDeprecation):
         """
 
     @abstractmethod
-    def compat(self, config: Dotty):
+    def get_new_value(self, config: Dotty):
         """
-        Apply changes on configuration to ensure backward compatibility of projects.
+        Get property new value, regardless it's defined the new way or the old way.
+        :param config: loaded configuration
+        """
+
+    @abstractmethod
+    def get_old_value(self, config: Dotty):
+        """
+        Get property old value, regardless it's defined the new way or the old way.
         :param config: loaded configuration
         """
 
@@ -108,8 +116,7 @@ class PropertyMigration(AbstractPropertyMigration):
         return self.transformer != self._default_transformer
 
     def verify(self, config: Dotty):
-        if self.old_config_key in config and \
-                config.get(self.new_config_key) != self.transformer(config.get(self.old_config_key), config):
+        if self.old_config_key in config:
             self.warn()
             return False
         return True
@@ -129,38 +136,77 @@ class PropertyMigration(AbstractPropertyMigration):
                 context.log.warning(message)
 
     def migrate(self, config: Dotty):
-        if self.old_config_key in config:
-            transformed_value = self.transformer(config.get(self.old_config_key), config)
-            if config.get(self.new_config_key) != transformed_value:
-                config[self.new_config_key] = transformed_value
+        old_value = config.pop(self.old_config_key)
+        if old_value is not None:
+            transformed_value = self.transformer(old_value, config)
+            config[self.new_config_key] = transformed_value
 
-    def compat(self, config: Dotty):
+    def get_new_value(self, config: Dotty):
         if self.new_config_key in config:
-            transformed_value = self.rollback_transformer(config.get(self.new_config_key), config)
-            if config.get(self.old_config_key) != transformed_value:
-                config[self.old_config_key] = transformed_value
+            return config.get(self.new_config_key)
+        if self.old_config_key in config:
+            return self.transformer(config.get(self.old_config_key), config)
+        return None
+
+    def get_old_value(self, config: Dotty):
+        if self.new_config_key in config:
+            return self.rollback_transformer(config.get(self.new_config_key), config)
+        if self.old_config_key in config:
+            return config.get(self.old_config_key)
+        return None
 
 
-class WarnDeprecatedDotty(Dotty):
+class MigrationsDotty(Dotty):
     """
-    Dotty that display deprecation warnings when accessing deprecated keys.
+    Dotty that supports migrations when requesting deprecated keys and displays deprecation warnings.
     """
 
-    def __init__(self, dictionary=None):
+    def __init__(self, dictionary=None, namespace=""):
         if dictionary is None:
             dictionary = {}
+        self.namespace = namespace
         super().__init__(dictionary)
 
+    def _build_deprecation_dict(self, item):
+        migrations = get_migrations_from_old_config_key_startswith(item + ".")
+        deprecation_dict = Dotty({})
+
+        for migration in migrations:
+            deprecation_dict[migration.old_config_key[len(item + "."):]] = migration.get_new_value(self)
+
+        return dict(deprecation_dict)
+
+    def raw(self):
+        """
+        Build a new default Dotty instance using same data.
+        :return:
+        """
+        return Dotty(self._data)
+
     def __getitem__(self, item):
-        if not silent:
-            if isinstance(item, str):
-                property_migration = get_migration_from_old_config_key(item)
-                if property_migration:
+        if isinstance(item, str):
+            property_migration = get_migration_from_old_config_key(item)
+            if property_migration:
+                if not silent:
                     property_migration.warn()
-        return super().__getitem__(item)
+                return property_migration.get_old_value(Dotty(self._data))
+        try:
+            value = super().__getitem__(item)
+        except KeyError as key_error:
+            deprecation_dict = self._build_deprecation_dict(item)
+            if deprecation_dict:
+                return deprecation_dict
+            raise key_error
+
+        if isinstance(value, dict):
+            deprecation_dict = self._build_deprecation_dict(item)
+            if deprecation_dict:
+                value = config_merger.merge(deprecation_dict, value)
+
+        return value
 
 
-history = (
+_default_history = (
     PropertyMigration("docker.build_image_tag_from_version",
                       "jsonnet.docker.build.image_tag_from", since="v1.6.0"),
     PropertyMigration("docker.build_image_tag_from",
@@ -246,25 +292,67 @@ history = (
                       config.get('jsonnet.docker.virtualhost.type') if not disabled else 'none'),
 )
 
-_history_from_old_config_key_dist = {migration.old_config_key: migration for migration in history
-                                     if isinstance(migration, AbstractPropertyMigration) and migration.old_config_key}
+_history = None
+_history_from_old_config_key_dict = None
+_history_from_new_config_key_dict = None
 
-_history_from_new_config_key_dist = {migration.new_config_key: migration for migration in history
-                                     if isinstance(migration, AbstractPropertyMigration) and migration.new_config_key}
+
+def get_history():
+    """
+    Get migrations history.
+    :return:
+    """
+    global _history  # pylint:disable=global-statement
+    return _history
+
+
+def set_history(history=_default_history):
+    """
+    Set migrations history.
+    """
+    global _history, _history_from_old_config_key_dict, _history_from_new_config_key_dict  # pylint:disable=global-statement
+    _history = history
+
+    _history_from_old_config_key_dict = {
+        migration.old_config_key: migration for migration in history
+        if isinstance(migration, AbstractPropertyMigration) and migration.old_config_key
+    }
+
+    _history_from_new_config_key_dict = {
+        migration.new_config_key: migration for migration in history
+        if isinstance(migration, AbstractPropertyMigration) and migration.new_config_key
+    }
+    _warns.clear()
+
+
+set_history()
 
 
 def get_migration_from_old_config_key(old_config_key: str) -> Optional[AbstractPropertyMigration]:
     """
     Get a migration from old config key.
     """
-    return _history_from_old_config_key_dist.get(old_config_key)
+    return _history_from_old_config_key_dict.get(old_config_key)
 
 
 def get_migration_from_new_config_key(new_config_key: str) -> Optional[AbstractPropertyMigration]:
     """
     Get a migration from new config key.
     """
-    return _history_from_new_config_key_dist.get(new_config_key)
+    return _history_from_new_config_key_dict.get(new_config_key)
+
+
+def get_migrations_from_old_config_key_startswith(old_config_key_start: str) -> Set[AbstractPropertyMigration]:
+    """
+    Get all migrations where old_config_key starts with given value
+    """
+    ret = set()
+    for migration in get_history():
+        if isinstance(migration, AbstractPropertyMigration) and \
+                migration.old_config_key and \
+                migration.old_config_key.startswith(old_config_key_start):
+            ret.add(migration)
+    return ret
 
 
 def migrate(config: Dotty):
@@ -275,23 +363,8 @@ def migrate(config: Dotty):
     old_silent = silent
     try:
         silent = True
-        for migration in history:
+        for migration in get_history():
             if not migration.verify(config):
                 migration.migrate(config)
-            migration.compat(config)
-    finally:
-        silent = old_silent
-
-
-def compat(config: Dotty):
-    """
-    Compat all defined migrations in given config data.
-    """
-    global silent  # pylint:disable=global-statement
-    old_silent = silent
-    try:
-        silent = True
-        for migration in history:
-            migration.compat(config)
     finally:
         silent = old_silent

@@ -75,8 +75,7 @@ local Image(image=null, restart=_docker_service_restart, init=_docker_service_in
 
 local image_uri(image_name, image_tag=_docker_build_image_tag, registry_name=_docker_registry_name, registry_repository=_docker_registry_repository) =
     local image_uri = std.join('/', std.filter(function(s) s != null, [registry_name, registry_repository, image_name]));
-    local effective_image_tag = if image_tag == true then _docker_build_image_tag else (if image_tag == false then null else image_tag);
-    if effective_image_tag != null then image_uri + ':' + effective_image_tag else image_uri;
+    if image_tag != null then image_uri + ':' + image_tag else image_uri;
 
 local NoExpose(container_port, host_port_suffix = null, protocol = null, port_prefix=null) = {};
 local Expose(container_port, host_port_suffix = null, protocol = null, port_prefix=_docker_expose_port_prefix) =
@@ -140,10 +139,10 @@ local volume_source(v) =
 local apply_docker_compose_excluded_services(compose, excluded_services=_docker_compose_excluded_services) =
     if (std.objectHas(compose, 'services') && excluded_services != null && std.length(excluded_services) > 0) then
       local services = {
-          [key]: compose.services[key] for key in std.objectFields(compose.services) if std.count(excluded_services, key) == 0
+          [key]: compose.services[key] for key in std.objectFields(compose.services) if std.count(excluded_services, key) <= 0
       };
 
-      compose { services: services }
+      compose + { services: services }
     else
       compose;
 
@@ -153,7 +152,7 @@ local apply_docker_compose_included_services(compose, included_services=_docker_
           [key]: compose.services[key] for key in std.objectFields(compose.services) if std.count(included_services, key) > 0
       };
 
-      compose { services: services }
+      compose + { services: services }
     else
       compose;
 

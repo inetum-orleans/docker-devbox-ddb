@@ -9,7 +9,7 @@ from typing import Union, Iterable, Dict
 import yaml
 
 from ddb.config.merger import config_merger
-from ddb.config.migrations import WarnDeprecatedDotty
+from ddb.config.migrations import MigrationsDotty
 
 ConfigPaths = namedtuple('ConfigPaths', ['ddb_home', 'home', 'project_home'])
 
@@ -70,7 +70,7 @@ class Config:  # pylint:disable=too-many-instance-attributes
         self.filenames = filenames
         self.extensions = extensions
         self.env_additions = {}
-        self.data = WarnDeprecatedDotty()
+        self.data = MigrationsDotty()
         self.loaded_data = {}
         self.paths = paths if paths else get_default_config_paths(env_prefix, filenames, extensions)
         self.cwd = cwd
@@ -175,7 +175,7 @@ class Config:  # pylint:disable=too-many-instance-attributes
         """
         Load configuration data from readen files.
         """
-        self.data = WarnDeprecatedDotty(config_merger.merge(dict(self.data), data))
+        self.data = MigrationsDotty(config_merger.merge(dict(self.data.raw()), data))
 
     def load(self, defaults=None, files=None):
         """

@@ -47,7 +47,7 @@ class YttAction(AbstractTemplateAction):
         return new
 
     def _render_template(self, template: str, target: str) -> Iterable[Tuple[Union[str, bytes, bool], str]]:
-        yaml_config = yaml.dump(YttAction._escape_config(config.data.to_dict()))
+        yaml_config = yaml.dump(YttAction._escape_config(config.data.copy()))
 
         includes = TemplateFinder.build_default_includes_from_suffixes(
             config.data["ytt.depends_suffixes"],
@@ -100,7 +100,7 @@ class YttAction(AbstractTemplateAction):
         if error_match:
             property_contains = f"{error_match.group(1)}"
 
-            for property_migration in migrations.history:
+            for property_migration in migrations.get_history():
                 if isinstance(property_migration, AbstractPropertyMigration) \
                         and not property_migration.requires_value_migration \
                         and property_contains in property_migration.old_config_key:
@@ -113,7 +113,7 @@ class YttAction(AbstractTemplateAction):
 
             for property_migration in property_migration_set:
                 if property_migration and not property_migration.requires_value_migration:
-                    property_migration.warn(template)
+                    property_migration.warn(original_template)
 
                     template_data = template_data.replace(property_migration.old_config_key,
                                                           property_migration.new_config_key)

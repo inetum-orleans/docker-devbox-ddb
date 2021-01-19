@@ -117,6 +117,16 @@ Configure the project by scanning project files and performing actions supported
     ddb configure --eject
     ```
 
+!!! tip "Deprecated configuration properties and --autofix"
+
+    As `ddb` evolves during time, some settings and features may become deprecated.
+
+    When your project use some deprecated configuration property, a warning is displayed like this one.
+
+    If you are referencing some deprecated configuration keys inside template files, like jsonnet, jinja or ytt, you
+    can run `ddb configure --autofix` to automatically migrate your template sources. Keep in mind that running this 
+    command will make your project future-proof, but can break things for users running older `ddb` versions.
+
 - **ddb info**
 
 Displays compacted information about docker containers such as environment variables, virtual host, exposed ports and 

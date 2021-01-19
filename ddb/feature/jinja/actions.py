@@ -65,11 +65,11 @@ class JinjaAction(AbstractTemplateAction):
         self.env.filters.update(custom_filters)
         self.env.tests.update(custom_tests)
 
-        self.context = dict(config.data)
+        self.context = config.data.copy()
         self.context['_config'] = dict()
-        self.context['_config']['eject'] = config.eject
-        self.context['_config']['args'] = vars(config.args)
-        self.context['_config']['unknown_args'] = config.unknown_args
+        self.context['_config.eject'] = config.eject
+        self.context['_config.args'] = vars(config.args)
+        self.context['_config.unknown_args'] = config.unknown_args
 
     def _render_template(self, template: str, target: str) -> Iterable[Tuple[Union[str, bytes, bool], str]]:
         if template.startswith(self._migrationpath):
@@ -101,7 +101,7 @@ class JinjaAction(AbstractTemplateAction):
             if dict_object_match:
                 property_contains = f".{dict_object_match.group(1)}"
 
-                for property_migration in migrations.history:
+                for property_migration in migrations.get_history():
                     if isinstance(property_migration, AbstractPropertyMigration) \
                             and not property_migration.requires_value_migration \
                             and property_contains in property_migration.old_config_key:
@@ -114,7 +114,7 @@ class JinjaAction(AbstractTemplateAction):
 
             for property_migration in property_migration_set:
                 if property_migration and not property_migration.requires_value_migration:
-                    property_migration.warn(template)
+                    property_migration.warn(original_template)
 
                     template_data = template_data.replace(property_migration.old_config_key,
                                                           property_migration.new_config_key)

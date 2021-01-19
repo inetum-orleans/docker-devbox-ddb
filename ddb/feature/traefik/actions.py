@@ -9,6 +9,7 @@ from ddb.config import config
 from ddb.feature.traefik.schema import ExtraServiceSchema
 from ...action import Action, InitializableAction
 from ...cache.removal import RemovalCacheSupport
+from ...config.migrations import MigrationsDotty
 from ...context import context
 from ...event import events
 from ...utils.file import write_if_different, copy_if_different, force_remove, FileUtils
@@ -187,7 +188,7 @@ class TraefikExtraServicesAction(InitializableAction):
 
     @staticmethod
     def _prepare_extra_service_data(extra_service, id_):
-        data = dict(config.data)
+        data = MigrationsDotty(dict(config.data))
         extra_service_data = dict(extra_service)
         extra_service_data['id'] = id_
         data['_local'] = extra_service_data
