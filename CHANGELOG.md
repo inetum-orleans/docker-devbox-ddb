@@ -3,6 +3,10 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.6.1 (2021-01-20)
+### Fix
+* **migration:** Add boolean value support fr docker.reverse_proxy.type migration ([#184](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/184)) ([`682f23f`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/682f23fb2d796d3651986faa1eec2c5c329434a6))
+
 ## v1.6.0 (2021-01-19)
 ### Feature
 * **jinja:** Add configuration options to jinja Environment ([#181](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/181)) ([`092d9d0`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/092d9d09caf4f13b0c8295a47e8148a2bc38c3af))
