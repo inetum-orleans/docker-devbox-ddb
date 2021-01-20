@@ -287,7 +287,7 @@ _default_history = (
     PropertyMigration("docker.reverse_proxy.type",
                       "jsonnet.docker.virtualhost.disabled", since="v1.6.0",
                       transformer=lambda type, config:
-                      type == 'none',
+                      type == 'none' or (type is not None and not type),
                       rollback_transformer=lambda disabled, config:
                       config.get('jsonnet.docker.virtualhost.type') if not disabled else 'none'),
 )
