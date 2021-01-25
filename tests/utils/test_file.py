@@ -37,7 +37,7 @@ class TestFileUtils:
         features.register(CoreFeature())
         load_registered_features()
 
-        url = 'https://raw.githubusercontent.com/gfi-centre-ouest/docker-devbox-ddb/b4f11276a37a4e4b1142f6b54b3d0763ccf5639e/ddb/__init__.py'
+        url = 'https://raw.githubusercontent.com/inetum-orleans/docker-devbox-ddb/b4f11276a37a4e4b1142f6b54b3d0763ccf5639e/ddb/__init__.py'
         path = 'test_file_content.txt'
 
         expected_file_content = '\n'.join([

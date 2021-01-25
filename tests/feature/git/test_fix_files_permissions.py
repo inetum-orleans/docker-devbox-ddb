@@ -56,7 +56,7 @@ class TestGitFixFilesPermissionsAction:
         path_submodule = os.path.join(path_main, 'submodule')
 
         submodule = Repo.init(path_submodule)
-        submodule.create_remote('origin', 'https://github.com/gfi-centre-ouest/docker-devbox-ddb')
+        submodule.create_remote('origin', 'https://github.com/inetum-orleans/docker-devbox-ddb')
         submodule.git.add('.')
         submodule.git.update_index('.gitignore', chmod='+x')
         submodule.git.commit('-m "Initial commit"')

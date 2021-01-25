@@ -25,7 +25,7 @@ class TestCore:
         assert outerr.err == ""
         assert outerr.out == ('ddb is running from a package mode than doesn\'t support self-update.\n'
                               'You can download binary package supporting it from github: '
-                              'https://github.com/gfi-centre-ouest/docker-devbox-ddb/releases\n')
+                              'https://github.com/inetum-orleans/docker-devbox-ddb/releases\n')
 
     def test_self_update_up_to_date(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
         mocker.patch('ddb.feature.core.actions.get_binary_path', lambda *args, **kwargs: self.bin)
@@ -102,12 +102,12 @@ class TestCore:
 
         outerr = capsys.readouterr()
         assert outerr.err == ""
-        assert outerr.out == '''+--------------------------------------------------------------+
-|                          ddb 1.3.0                           |
-+--------------------------------------------------------------+
-|         Please report any bug or feature request at          |
-| https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues |
-+--------------------------------------------------------------+\n'''
+        assert outerr.out == '''+------------------------------------------------------------+
+|                         ddb 1.3.0                          |
++------------------------------------------------------------+
+|        Please report any bug or feature request at         |
+| https://github.com/inetum-orleans/docker-devbox-ddb/issues |
++------------------------------------------------------------+\n'''
 
     def test_version_outdated_binary(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
         mocker.patch('ddb.feature.core.actions.get_binary_path', lambda *args, **kwargs: self.bin)
@@ -121,19 +121,19 @@ class TestCore:
 
         outerr = capsys.readouterr()
         assert outerr.err == ""
-        assert outerr.out == '''+---------------------------------------------------------------------------------------+
-|                                       ddb 1.3.0                                       |
-+---------------------------------------------------------------------------------------+
-|                           A new version is available: 1.3.1                           |
-+---------------------------------------------------------------------------------------+
-|                       run "ddb self-update" command to update.                        |
-|                   For more information, check the following links:                    |
-|       https://github.com/gfi-centre-ouest/docker-devbox-ddb/releases/tag/1.3.1        |
-| https://github.com/gfi-centre-ouest/docker-devbox-ddb/releases/tag/1.3.1/CHANGELOG.md |
-+---------------------------------------------------------------------------------------+
-|                      Please report any bug or feature request at                      |
-|             https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues              |
-+---------------------------------------------------------------------------------------+\n'''
+        assert outerr.out == '''+-------------------------------------------------------------------------------------+
+|                                      ddb 1.3.0                                      |
++-------------------------------------------------------------------------------------+
+|                          A new version is available: 1.3.1                          |
++-------------------------------------------------------------------------------------+
+|                      run "ddb self-update" command to update.                       |
+|                  For more information, check the following links:                   |
+|       https://github.com/inetum-orleans/docker-devbox-ddb/releases/tag/1.3.1        |
+| https://github.com/inetum-orleans/docker-devbox-ddb/releases/tag/1.3.1/CHANGELOG.md |
++-------------------------------------------------------------------------------------+
+|                     Please report any bug or feature request at                     |
+|             https://github.com/inetum-orleans/docker-devbox-ddb/issues              |
++-------------------------------------------------------------------------------------+\n'''
 
     def test_required_version_eq(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
         mocker.patch('ddb.feature.core.actions.get_current_version', lambda *args, **kwargs: '1.3.0')

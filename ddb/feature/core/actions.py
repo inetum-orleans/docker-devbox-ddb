@@ -72,7 +72,7 @@ def print_version(github_repository, silent=False):
         blocks.append(_build_update_details(github_repository, last_release))
     blocks.append([
         'Please report any bug or feature request at',
-        'https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues'
+        'https://github.com/inetum-orleans/docker-devbox-ddb/issues'
     ])
     print(get_table_display(blocks))
 

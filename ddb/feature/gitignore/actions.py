@@ -11,7 +11,7 @@ from ddb.context import context
 from ddb.event import events
 from ddb.utils.file import force_remove
 
-repository = "gfi-centre-ouest/docker-devbox"
+repository = "inetum-orleans/docker-devbox"
 
 
 class UpdateGitignoreAction(InitializableAction):

@@ -8,7 +8,7 @@ from ..config import config
 
 import dbm
 
-# Easy fix for https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/49
+# Easy fix for https://github.com/inetum-orleans/docker-devbox-ddb/issues/49
 # pylint:disable=protected-access
 _dbm_names = dbm._names = ['dbm.gnu', 'dbm.ndbm', 'dbm.dumb']
 if 'dbm.dumb' in _dbm_names:
