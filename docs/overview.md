@@ -17,16 +17,16 @@ Even if **ddb** can be used as a standalone tool, it has been designed with **[d
 [docker-compose](https://docs.docker.com/compose/) in mind**. 
 
 Many features requires some containers to run in background. Those containers have been **configured and packaged in 
-[docker-devbox](https://github.com/gfi-centre-ouest/docker-devbox)**, so you should really **consider to install** it.
+[docker-devbox](https://github.com/inetum-orleans/docker-devbox)**, so you should really **consider to install** it.
 
-[docker-devbox](https://github.com/gfi-centre-ouest/docker-devbox) brings the following containers:
+[docker-devbox](https://github.com/inetum-orleans/docker-devbox) brings the following containers:
 
   - [traefik](https://containo.us/traefik/), to automatically **proxy services** provided by docker-compose using project
 domain name virtualhost on **HTTP/80** and **HTTPS/443**, and **generate SSL certificates with Letsencrypt** (for public domain names).
   - [cfssl](https://github.com/cloudflare/cfssl), the Cloudflare's PKI and TLS toolkit, to **generate certificates for internal domains**.
   - [portainer](https://www.portainer.io/) to **manage containers** from a web browser.
 
-Please read [docker-devbox README](https://github.com/gfi-centre-ouest/docker-devbox/blob/master/README.md) to perform 
+Please read [docker-devbox README](https://github.com/inetum-orleans/docker-devbox/blob/master/README.md) to perform 
 the installation properly.
 
 !!! info "Eat your own dog food"

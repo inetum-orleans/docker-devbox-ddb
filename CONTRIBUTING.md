@@ -36,7 +36,7 @@ docker run --rm -it -p 8000:8000 --user $(id -u):$(id -g) -v ${PWD}/..:/docs -v 
 ## Semantic release and conventional commits
 
 ddb [Changelog](./CHANGELOG.md)
-and [released version number](https://github.com/gfi-centre-ouest/docker-devbox-ddb/releases) are automatically
+and [released version number](https://github.com/inetum-orleans/docker-devbox-ddb/releases) are automatically
 generated from your commit messages using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 Any pull request containing invalid commit messages will be rejected.

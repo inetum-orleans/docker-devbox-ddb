@@ -1,12 +1,12 @@
 site_name: ddb (for Docker Devbox)
 
-site_url: https://gfi-centre-ouest.github.io/docker-devbox-ddb
+site_url: https://inetum-orleans.github.io/docker-devbox-ddb
 site_description: Erase environment differences, make developers happy !
-site_author: Rémi Alvergnat <remi.alvergnat@gfi.world>, Pierre Lejeune <pierre.lejeune@gfi.world>
-copyright: GFI Informatique
+site_author: Rémi Alvergnat <remi.alvergnat@inetum.world>, Pierre Lejeune <pierre.lejeune@inetum.world>
+copyright: Inetum
 
-repo_url: https://github.com/gfi-centre-ouest/docker-devbox-ddb
-edit_uri: https://github.com/gfi-centre-ouest/docker-devbox-ddb/blob/develop/docs
+repo_url: https://github.com/inetum-orleans/docker-devbox-ddb
+edit_uri: https://github.com/inetum-orleans/docker-devbox-ddb/blob/develop/docs
 
 theme:
   language: 'en'

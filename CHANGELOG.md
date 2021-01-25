@@ -5,104 +5,104 @@ History
 
 ## v1.6.1 (2021-01-20)
 ### Fix
-* **migration:** Add boolean value support fr docker.reverse_proxy.type migration ([#184](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/184)) ([`682f23f`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/682f23fb2d796d3651986faa1eec2c5c329434a6))
+* **migration:** Add boolean value support fr docker.reverse_proxy.type migration ([#184](https://github.com/inetum-orleans/docker-devbox-ddb/issues/184)) ([`682f23f`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/682f23fb2d796d3651986faa1eec2c5c329434a6))
 
 ## v1.6.0 (2021-01-19)
 ### Feature
-* **jinja:** Add configuration options to jinja Environment ([#181](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/181)) ([`092d9d0`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/092d9d09caf4f13b0c8295a47e8148a2bc38c3af))
-* **scope:** Refactor configuration schemas with autofix (#164 #179) ([`10b7a72`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/10b7a72e018c925970002e5497468eef43cba50b))
+* **jinja:** Add configuration options to jinja Environment ([#181](https://github.com/inetum-orleans/docker-devbox-ddb/issues/181)) ([`092d9d0`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/092d9d09caf4f13b0c8295a47e8148a2bc38c3af))
+* **scope:** Refactor configuration schemas with autofix (#164 #179) ([`10b7a72`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/10b7a72e018c925970002e5497468eef43cba50b))
 
 ### Fix
-* **config:** Fix deprecations warnings and backward compatibility ([`6ab20c2`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/6ab20c2590bab03865930330b5812c6376348f84))
+* **config:** Fix deprecations warnings and backward compatibility ([`6ab20c2`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/6ab20c2590bab03865930330b5812c6376348f84))
 
 ### Documentation
-* **usage:** Update usage output in docs ([`4ebb752`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/4ebb75207768efe6323a00acfd50dc25833d60af))
+* **usage:** Update usage output in docs ([`4ebb752`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/4ebb75207768efe6323a00acfd50dc25833d60af))
 
 ## v1.5.1 (2021-01-15)
 ### Fix
-* **binary options:** Fix an issue introduced by #141 ([`f404353`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/f4043538e01b7761828212196b2d15128f6b1fba))
+* **binary options:** Fix an issue introduced by #141 ([`f404353`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/f4043538e01b7761828212196b2d15128f6b1fba))
 
 ## v1.5.0 (2021-01-14)
 ### Feature
-* **configure:** Ensure project configuration file is available before configure ([#170](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/170)) ([`bd1c814`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/bd1c814a2e2c847685bfe49134dd886dbcb51eda))
-* **file:** Add `target/` and `dist/` directories to default excludes ([`9b7b467`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/9b7b46770513c4121c52301bb7c80bd2f0463e6a))
-* **binaries:** Allow many binaries to be registered for the same name ([#141](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/141)) ([`b3d8cd8`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/b3d8cd823cb3a90beec013e4943f7e007182aad5))
-* **permission:** Copy permission from template file to target ([#147](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/147)) ([`8595c9f`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/8595c9f5ae4999244dcdf8f6896398e764399c9f))
-* **devbox:** Prepare next release of docker-devbox with retro-compatibility ([`fdfbc24`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/fdfbc245abc94facbf21e2e92d8a20c05ed6058f))
-* **jsonnet:** Add Expose function in ddb.docker.libjsonnet ([`dffcab1`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/dffcab1566e3f055a61872ea0d4097c6f9c571e4))
+* **configure:** Ensure project configuration file is available before configure ([#170](https://github.com/inetum-orleans/docker-devbox-ddb/issues/170)) ([`bd1c814`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/bd1c814a2e2c847685bfe49134dd886dbcb51eda))
+* **file:** Add `target/` and `dist/` directories to default excludes ([`9b7b467`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/9b7b46770513c4121c52301bb7c80bd2f0463e6a))
+* **binaries:** Allow many binaries to be registered for the same name ([#141](https://github.com/inetum-orleans/docker-devbox-ddb/issues/141)) ([`b3d8cd8`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/b3d8cd823cb3a90beec013e4943f7e007182aad5))
+* **permission:** Copy permission from template file to target ([#147](https://github.com/inetum-orleans/docker-devbox-ddb/issues/147)) ([`8595c9f`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/8595c9f5ae4999244dcdf8f6896398e764399c9f))
+* **devbox:** Prepare next release of docker-devbox with retro-compatibility ([`fdfbc24`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/fdfbc245abc94facbf21e2e92d8a20c05ed6058f))
+* **jsonnet:** Add Expose function in ddb.docker.libjsonnet ([`dffcab1`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/dffcab1566e3f055a61872ea0d4097c6f9c571e4))
 
 ### Fix
-* **shell:** Fix drive case for default Windows `docker.path_mapping` ([#159](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/159)) ([`a3e2c09`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/a3e2c09472d73ee6507623dd048958f11015addb))
-* **shell:** Use `_` instead of `-` to sanitize environment variable name ([#160](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/160)) ([`f9e11a8`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/f9e11a8515c653246753d55183e9adf50cd542a8))
-* **shell:** Add support for relative paths in shell.path.directory ([#168](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/168)) ([`6f4f938`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/6f4f938a0b814084bb2922f9a683427f9020a801))
-* **main:** Clear cache when an unexpected error occurs ([#169](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/169)) ([`8c0940a`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/8c0940a4cd2436bd78870635fe871b600ba9bb5d))
-* **binary options:** Fix an issue introduced by #141 and force lf ([`76c7bf2`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/76c7bf2640c04274b72981d60605bc9352eb764f))
-* **shell:** Move PWD environment exclude to configuration ([`848ec99`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/848ec99b90386aab09784d5f1870260173ac3ed3))
-* **traefik:** Check domain is not empty when rule is empty ([`33bd166`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/33bd1667169ccb7a4ef9217a42b7865ab0601a0c))
+* **shell:** Fix drive case for default Windows `docker.path_mapping` ([#159](https://github.com/inetum-orleans/docker-devbox-ddb/issues/159)) ([`a3e2c09`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/a3e2c09472d73ee6507623dd048958f11015addb))
+* **shell:** Use `_` instead of `-` to sanitize environment variable name ([#160](https://github.com/inetum-orleans/docker-devbox-ddb/issues/160)) ([`f9e11a8`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/f9e11a8515c653246753d55183e9adf50cd542a8))
+* **shell:** Add support for relative paths in shell.path.directory ([#168](https://github.com/inetum-orleans/docker-devbox-ddb/issues/168)) ([`6f4f938`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/6f4f938a0b814084bb2922f9a683427f9020a801))
+* **main:** Clear cache when an unexpected error occurs ([#169](https://github.com/inetum-orleans/docker-devbox-ddb/issues/169)) ([`8c0940a`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/8c0940a4cd2436bd78870635fe871b600ba9bb5d))
+* **binary options:** Fix an issue introduced by #141 and force lf ([`76c7bf2`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/76c7bf2640c04274b72981d60605bc9352eb764f))
+* **shell:** Move PWD environment exclude to configuration ([`848ec99`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/848ec99b90386aab09784d5f1870260173ac3ed3))
+* **traefik:** Check domain is not empty when rule is empty ([`33bd166`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/33bd1667169ccb7a4ef9217a42b7865ab0601a0c))
 
 ### Documentation
-* **style:** Enhance docs style for all configuration properties and examples ([`9c396d5`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/9c396d50ddcc14a95f613636f7d0464d601edc0d))
-* **jsonnet:** Add session parameter to XDebug documentation ([`5febad8`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/5febad815c1812016b8fa3117c08e2d32dfb735c))
+* **style:** Enhance docs style for all configuration properties and examples ([`9c396d5`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/9c396d50ddcc14a95f613636f7d0464d601edc0d))
+* **jsonnet:** Add session parameter to XDebug documentation ([`5febad8`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/5febad815c1812016b8fa3117c08e2d32dfb735c))
 
 ## v1.4.4 (2020-12-30)
 ### Fix
-* **bash:** Exclude PWD environment variable from backup/restore ([#142](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/142)) ([`e8ee977`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/e8ee9771b5c63b893a07fb0e1690dac21cdafa6f))
-* **update:** Fix can only concatenate str (not "list") to str ([#143](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/143)) ([`0348407`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/0348407b0e457b8ea56320b30592b5367086bab5))
+* **bash:** Exclude PWD environment variable from backup/restore ([#142](https://github.com/inetum-orleans/docker-devbox-ddb/issues/142)) ([`e8ee977`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/e8ee9771b5c63b893a07fb0e1690dac21cdafa6f))
+* **update:** Fix can only concatenate str (not "list") to str ([#143](https://github.com/inetum-orleans/docker-devbox-ddb/issues/143)) ([`0348407`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/0348407b0e457b8ea56320b30592b5367086bab5))
 
 ## v1.4.3 (2020-12-22)
 ### Fix
-* **dependencies:** Remove docker-compose dependency ([#140](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/140)) ([`ac12c8a`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/ac12c8aec29965abf72d5747698ad97bde3cc850))
-* **core:** Fix self-update command error on file replace ([#138](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/138)) ([`97e4f81`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/97e4f81d799fb5617a82dce8b9d533d5b489cae1))
-* **changelog:** Fix changelog ([`9507778`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/9507778794186ebf7864f7ebaaad6e7e9ea3ce9d))
-* **fixuid:** Remove print scrap ([`dad030f`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/dad030f748b066021bc28d078e2ca939af1ca73e))
+* **dependencies:** Remove docker-compose dependency ([#140](https://github.com/inetum-orleans/docker-devbox-ddb/issues/140)) ([`ac12c8a`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/ac12c8aec29965abf72d5747698ad97bde3cc850))
+* **core:** Fix self-update command error on file replace ([#138](https://github.com/inetum-orleans/docker-devbox-ddb/issues/138)) ([`97e4f81`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/97e4f81d799fb5617a82dce8b9d533d5b489cae1))
+* **changelog:** Fix changelog ([`9507778`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/9507778794186ebf7864f7ebaaad6e7e9ea3ce9d))
+* **fixuid:** Remove print scrap ([`dad030f`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/dad030f748b066021bc28d078e2ca939af1ca73e))
 
 ## v1.4.2 (2020-12-21)
 ### Feature
-* **fixuid:** Add Dockerfile comments to disable or customize fixuid automic configuration ([`e855efc`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/e855efcce49e0c66994e43f522a9f85e129df7f3))
+* **fixuid:** Add Dockerfile comments to disable or customize fixuid automic configuration ([`e855efc`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/e855efcce49e0c66994e43f522a9f85e129df7f3))
 
 ### Fix
-* **file:** File scan now yield directories so you can use permission on directories ([`eb232d8`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/eb232d85549c76e1d753b90c09727d3804ba9443))
-* **file:** Fix recursive=False parameter in FileWalker ([`c81fd76`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/c81fd76874922bf12b18a89ee729930fd0e0a83e))
+* **file:** File scan now yield directories so you can use permission on directories ([`eb232d8`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/eb232d85549c76e1d753b90c09727d3804ba9443))
+* **file:** Fix recursive=False parameter in FileWalker ([`c81fd76`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/c81fd76874922bf12b18a89ee729930fd0e0a83e))
 
 ### Documentation
-* **setuptools:** Update python versions in classifiers ([`4012cbf`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/4012cbf2ca2298496ff2438f82736c21ba17a776))
+* **setuptools:** Update python versions in classifiers ([`4012cbf`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/4012cbf2ca2298496ff2438f82736c21ba17a776))
 
 ## v1.4.1 (2020-12-17)
 ### Fix
-* **core:** Fix self-update command ([`843cf67`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/843cf6736dff9290ececc39334a23c2a2446b3c3))
+* **core:** Fix self-update command ([`843cf67`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/843cf6736dff9290ececc39334a23c2a2446b3c3))
 
 ## v1.4.0 (2020-12-17)
 ### Feature
-* **core:** Add `core.required_version` parameter to enforce project ddb version requirement ([#75](https://github.com/gfi-centre-ouest/docker-devbox-ddb/pull/75)) ([`bbf32e6`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/bbf32e61353121332870e3670d84d647fa7df812))
-* **main:** Add main:start event ([`8764d01`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/8764d013a7642beb900e7d2333c974c87b0d11d8))
-* **self-update:** Add self-update command to update binary from github ([#131](https://github.com/gfi-centre-ouest/docker-devbox-ddb/pull/131)) ([`0171f37`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/0171f37fcd1dfd6c1f93d8bec2aa4f9608542bec))
-* Add Python 3.9 support and drop Python 3.5 support ([`83e97e9`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/83e97e94d053d3338b1307f7e491c12e5c6683c3))
+* **core:** Add `core.required_version` parameter to enforce project ddb version requirement ([#75](https://github.com/inetum-orleans/docker-devbox-ddb/pull/75)) ([`bbf32e6`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/bbf32e61353121332870e3670d84d647fa7df812))
+* **main:** Add main:start event ([`8764d01`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/8764d013a7642beb900e7d2333c974c87b0d11d8))
+* **self-update:** Add self-update command to update binary from github ([#131](https://github.com/inetum-orleans/docker-devbox-ddb/pull/131)) ([`0171f37`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/0171f37fcd1dfd6c1f93d8bec2aa4f9608542bec))
+* Add Python 3.9 support and drop Python 3.5 support ([`83e97e9`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/83e97e94d053d3338b1307f7e491c12e5c6683c3))
 
 ### Documentation
-* **self-update:** Add docs for the new self-update command ([`86b5ef8`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/86b5ef8467af0e45b6b176c42553f9cc77c99a99))
-* **contributing:** We are now using github actions and semantic release ([`b4f1127`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/b4f11276a37a4e4b1142f6b54b3d0763ccf5639e))
+* **self-update:** Add docs for the new self-update command ([`86b5ef8`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/86b5ef8467af0e45b6b176c42553f9cc77c99a99))
+* **contributing:** We are now using github actions and semantic release ([`b4f1127`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/b4f11276a37a4e4b1142f6b54b3d0763ccf5639e))
 
 ## v1.3.1 (2020-12-16)
 ### Fix
-* **version:** Version check now removes "v" first character from tag ([#129](https://github.com/gfi-centre-ouest/docker-devbox-ddb/pull/129)) ([`71a3567`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/71a3567e58e3a0a93b279c83668275a1c64a72f5))
+* **version:** Version check now removes "v" first character from tag ([#129](https://github.com/inetum-orleans/docker-devbox-ddb/pull/129)) ([`71a3567`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/71a3567e58e3a0a93b279c83668275a1c64a72f5))
 
 ## v1.3.0 (2020-12-16)
 ### Feature
-* **docker:** Add https option to reverse-proxy features (libjsonnet and configuration) ([`c2c1fad`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/c2c1fad347a338d38b3f9cd4e16bf4d634d72741))
-* **docker:** Add support for named user and group ([`62ab647`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/62ab647872360b06c0b644513021d890e5173291))
-* **configuration:** Add insert/insert_if_missing merge strategies. ([`00d62b9`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/00d62b9fdfd9d150f9574f04419fc620d644ff25))
-* **configuration:** Add core.configuration.extra to include additional configuration files ([`b7d30de`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/b7d30de2ba9ec73b8e36dc96143adb8f10185730))
-* **xdebug:** Add more parameters to XDebug jsonnet function ([`cf5dc74`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/cf5dc742399061034fa17d86c2f3b69b380adee1))
-* **JSonnet:** Add support for XDebug 3 ([`6bc337c`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/6bc337c98d27925f40e55386f41748ba749d54cf))
+* **docker:** Add https option to reverse-proxy features (libjsonnet and configuration) ([`c2c1fad`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/c2c1fad347a338d38b3f9cd4e16bf4d634d72741))
+* **docker:** Add support for named user and group ([`62ab647`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/62ab647872360b06c0b644513021d890e5173291))
+* **configuration:** Add insert/insert_if_missing merge strategies. ([`00d62b9`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/00d62b9fdfd9d150f9574f04419fc620d644ff25))
+* **configuration:** Add core.configuration.extra to include additional configuration files ([`b7d30de`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/b7d30de2ba9ec73b8e36dc96143adb8f10185730))
+* **xdebug:** Add more parameters to XDebug jsonnet function ([`cf5dc74`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/cf5dc742399061034fa17d86c2f3b69b380adee1))
+* **JSonnet:** Add support for XDebug 3 ([`6bc337c`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/6bc337c98d27925f40e55386f41748ba749d54cf))
 
 ### Fix
-* **docker:** Add tests and fix issues with named user and group ([`b88470c`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/b88470c43d381b6093b609d7064042fac8af78db))
-* **shell:** Slufigy environment variable names ([`0513038`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/0513038b3bab499d2bf681e2e012c3fb867bd629))
-* **copy:** Correction du NoneType error ([`4b798bd`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/4b798bd733c9dbf770961cb3127452611d2a6850))
-* **docs:** Fix typo for excludes configuration properties ([`d0cda14`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/d0cda1490d2e82b2bd5330d46f507b1f75a6c814))
+* **docker:** Add tests and fix issues with named user and group ([`b88470c`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/b88470c43d381b6093b609d7064042fac8af78db))
+* **shell:** Slufigy environment variable names ([`0513038`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/0513038b3bab499d2bf681e2e012c3fb867bd629))
+* **copy:** Correction du NoneType error ([`4b798bd`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/4b798bd733c9dbf770961cb3127452611d2a6850))
+* **docs:** Fix typo for excludes configuration properties ([`d0cda14`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/d0cda1490d2e82b2bd5330d46f507b1f75a6c814))
 
 ### Documentation
-* **changelog:** Reformat changelog ([`7440081`](https://github.com/gfi-centre-ouest/docker-devbox-ddb/commit/744008161fc4f22035e0436427b4e8475dc9f69f))
+* **changelog:** Reformat changelog ([`7440081`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/744008161fc4f22035e0436427b4e8475dc9f69f))
 
 ## v1.2.3 (2020-11-13)
 
@@ -248,11 +248,11 @@ from ~/.docker-devbox nor ~/.docker-devbox/ddb directories as it's based on `fil
 - Docker: Set `docker.restart_policy` default value to `unless-stopped` if `core.env.current` is different of `dev`
 - Jsonnet: Add optional `router_rule` parameter to `ddb.VirtualHost` function in order to override the default `Host(hostname)`.
 For traefik, available values in the [official documentation](https://docs.traefik.io/v2.0/routing/routers/#rule)
-- Templates: Keep the file that match template target name when it has been modified since latest rendering ([#39](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/39))
+- Templates: Keep the file that match template target name when it has been modified since latest rendering ([#39](https://github.com/inetum-orleans/docker-devbox-ddb/issues/39))
 
 ## 1.0.0-beta4 (2020-06-25)
 
-- Remove existing file or directory when generating a new file ([#31](https://github.com/gfi-centre-ouest/docker-devbox-ddb/issues/31))
+- Remove existing file or directory when generating a new file ([#31](https://github.com/inetum-orleans/docker-devbox-ddb/issues/31))
 - Docker: Fix missing `COMPOSE_PROJECT_NAME` and `COMPOSE_NETWORK_NAME` environment variables on ddb activate
 - Jsonnet: Fix a bug when multiple Virtualhost are defined on the same docker-compose service
 

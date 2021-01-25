@@ -29,7 +29,7 @@ It also handle the two following basic commands : `ddb features` and `ddb config
         | Property | Type | Description |
         | :---------: | :----: | :----------- |
         | `os` | string<br>`posix` | The current operating system. |
-        | `github_repository` | string<br>`gfi-centre-ouest/docker-devbox-ddb` | List of process configurations. A process configuration allow to add flags before and after a command normaly runned by ddb (like `git`). |
+        | `github_repository` | string<br>`inetum-orleans/docker-devbox-ddb` | List of process configurations. A process configuration allow to add flags before and after a command normaly runned by ddb (like `git`). |
 
 !!! summary "Process configuration (used in `core.process`)"
 
@@ -53,7 +53,7 @@ It also handle the two following basic commands : `ddb features` and `ddb config
         - ci
         - dev
         current: dev
-      github_repository: gfi-centre-ouest/docker-devbox-ddb
+      github_repository: inetum-orleans/docker-devbox-ddb
       os: posix
       path:
         ddb_home: /home/devbox/.docker-devbox/ddb

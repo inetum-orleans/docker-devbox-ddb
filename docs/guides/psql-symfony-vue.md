@@ -3,7 +3,7 @@ Guide
 
 ***PostgreSQL, Symfony, VueJS***
 
-This guide sources are [available on github](https://github.com/gfi-centre-ouest/ddb-guide-psql-symfony-vue).
+This guide sources are [available on github](https://github.com/inetum-orleans/ddb-guide-psql-symfony-vue).
 
 Create empty project directory
 ---

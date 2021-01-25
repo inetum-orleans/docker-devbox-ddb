@@ -19,7 +19,7 @@ SmartCD automation on Linux/Unix
 
 Instead of manually launching the command `$(ddb run activate)` when you are entering a project folder and 
 `$(ddb run deactivate)` when leaving it, you can install [cxreg/smartcd](https://github.com/cxreg/smartcd)
-or [gfi-centre-ouest/smartcd](https://github.com/gfi-centre-ouest/smartcd) to automate this process.
+or [inetum-orleans/smartcd](https://github.com/inetum-orleans/smartcd) to automate this process.
 
 As developers, we are lazy. So, we have automated generation of `.bash_enter` and `.bash_leave` files.
 With this feature, you can cd from one project to another without thinking about updating environment 
