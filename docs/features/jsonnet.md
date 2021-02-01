@@ -492,6 +492,10 @@ This can be used to add environment condition to a service activation, a specifi
     - `ddb.env.is("prod")` => false
     - `ddb.env.is("dev")` => true
 
+### ddb.env.current / ddb.env.available
+
+Shortcuts for `std.extVar("core.env.current")` and `std.extVar("core.env.available")`.
+
 ## Advanced functions
 
 Those functions are for advanced configuration and should not be used in most common cases.

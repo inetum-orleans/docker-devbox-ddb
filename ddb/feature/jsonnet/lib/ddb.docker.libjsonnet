@@ -343,7 +343,9 @@ local envIs(env) =
     groupNameToGid: groupNameToGid,
     env: {
       index: envIndex,
-      is: envIs
+      is: envIs,
+      current: _core_env_current,
+      available: _core_env_available
     },
     path: path,
     JoinObjectArray: JoinObjectArray,
