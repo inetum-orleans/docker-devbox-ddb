@@ -1,3 +1,0 @@
-cookiecutter:
-  templates:
-    - template: 'git+https://github.com/vuejs/vue.git'

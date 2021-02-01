@@ -1,7 +1,6 @@
 import os
 
 from ddb.__main__ import load_registered_features
-from ddb.context import context
 from ddb.feature import features
 from ddb.feature.cookiecutter import CookiecutterFeature
 from ddb.feature.cookiecutter.actions import CookiecutterAction
