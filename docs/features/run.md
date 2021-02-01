@@ -3,7 +3,7 @@ Run
 
 As **ddb** is a way to simplify the way to work with docker, this feature is a very useful one. 
 
-If you are working with the [jsonnet](./jsonnet.md) feature and the [Binary](./jsonnet.md#binary) function in your 
+If you are working with the [jsonnet](./jsonnet.md) feature and the [Binary](./jsonnet.md#ddbbinary) function in your 
 `docker-compose.yml.jsonnet`, `run` feature allow you to run commands in your docker container just as if it 
 was a native system command.
 

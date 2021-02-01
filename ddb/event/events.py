@@ -184,6 +184,12 @@ class Phase:
         Configure phase
         """
 
+    @event("phase:download")
+    def download(self):
+        """
+        Download phase
+        """
+
     @event("phase:features")
     def features(self):
         """

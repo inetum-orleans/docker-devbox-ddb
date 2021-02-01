@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from typing import ClassVar, Iterable
 
+from dotty_dict import Dotty
+
 from ddb.action import Action
 from ddb.feature import Feature
 from .actions import CookiecutterAction
@@ -29,3 +31,13 @@ class CookiecutterFeature(Feature):
         return (
             CookiecutterAction(),
         )
+
+    def _configure_defaults(self, feature_config: Dotty):
+        if 'templates' in feature_config:
+            feature_config['templates'] = [self._sanitize_template(t) for t in feature_config['templates']]
+
+    @staticmethod
+    def _sanitize_template(template):
+        if template.get('output_dir'):
+            template['extra_context'] = {'directory': '.'}
+        return template

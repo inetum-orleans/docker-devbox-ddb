@@ -6,6 +6,7 @@ from toposort import toposort_flatten
 
 from . import features
 from .certs import CertsFeature
+from .cookiecutter import CookiecutterFeature
 from .copy import CopyFeature
 from .core import CoreFeature
 from .docker import DockerFeature
@@ -29,6 +30,7 @@ from ..config import migrations
 
 _default_available_features = [CertsFeature(),
                                CopyFeature(),
+                               CookiecutterFeature(),
                                CoreFeature(),
                                DockerFeature(),
                                FileFeature(),

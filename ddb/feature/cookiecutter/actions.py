@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
+import os
+from typing import Union
 
 from cookiecutter.config import DEFAULT_CONFIG
 from cookiecutter.main import cookiecutter
 
 from ddb.action import Action
 from ddb.config import config
+from ddb.context import context
 from ddb.event import events
 
 
@@ -19,7 +22,7 @@ class CookiecutterAction(Action):
 
     @property
     def event_bindings(self):
-        return events.phase.init
+        return events.phase.download
 
     def execute(self):
         """
@@ -43,7 +46,6 @@ class CookiecutterAction(Action):
             templates = cookiecutter_config.get('templates')
             if templates:
                 for template in templates:
-                    # TODO: Generate in a temporary dir to emit file:generated events.
                     self._generate_template(template)
         finally:
             for parameter in config_parameters:
@@ -56,4 +58,6 @@ class CookiecutterAction(Action):
 
         kwargs = {k: v for k, v in template.items() if v is not None}
 
-        return cookiecutter(**kwargs)
+        ret = cookiecutter(**kwargs)
+
+        context.log.success(f"{template['template']} -> {os.path.relpath(ret, '.')}")
