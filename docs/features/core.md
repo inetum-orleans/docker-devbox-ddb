@@ -14,6 +14,7 @@ It also handle the two following basic commands : `ddb features` and `ddb config
         | `disabled` | boolean<br>`false` | Should this feature be disabled ? |
         | `domain.sub` | string<br>`${project.name}` | The domain to use for the domain generation. This is the constant part of the domain, that should not vary between environment. |
         | `domain.ext` | string<br>`test` | The extension to use for the domain. This is the last part, of your domain name, that may vary between environment. |
+        | `domain.value`<br>*(read only)* | string<br>`${project.name}.${domain.ext}` | The whole domain name. |
         | `env.current` | string<br>`${env.available}[-1]` | Current active environment. Default value is `dev`, or the last value of `env.available`. |
         | `project.name` | string<br>`<Directory name of ${path.project_home}>` | The project name. This is used by many templates and to generate other default values like `domain.sub`.
     === "Advanced"

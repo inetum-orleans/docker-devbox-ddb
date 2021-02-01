@@ -8,7 +8,7 @@ from dotty_dict import Dotty
 from .actions import FeaturesAction, ConfigAction, ReloadConfigAction, EjectAction, SelfUpdateAction, \
     CheckForUpdateAction, VersionAction, CheckRequiredVersion
 from .schema import CoreFeatureSchema
-from ..feature import Feature, FeatureConfigurationAutoConfigureError
+from ..feature import Feature, FeatureConfigurationAutoConfigureError, FeatureConfigurationReadOnlyError
 from ..schema import FeatureSchema
 from ...action import Action
 from ...action.runner import ExpectedError, FailFastError
@@ -174,6 +174,10 @@ class CoreFeature(Feature):
 
         if not feature_config.get('domain.sub'):
             feature_config['domain.sub'] = feature_config['project.name'].replace("_", "-").replace(" ", "-")
+
+        if feature_config.get('domain.value'):
+            raise FeatureConfigurationReadOnlyError(self, 'domain.value')
+        feature_config['domain.value'] = '.'.join((feature_config['domain.sub'], feature_config['domain.ext']))
 
         if not feature_config.get('env.current') and feature_config.get('env.available'):
             feature_config['env.current'] = feature_config['env.available'][-1]

@@ -149,6 +149,19 @@ class FeatureConfigurationAutoConfigureError(FeatureConfigurationError):
                          "Please configure " + feature.name + "." + setting_name + " manually.")
 
 
+class FeatureConfigurationReadOnlyError(FeatureConfigurationError):
+    """
+    Feature configuration error raised when a read-only property is defined in configuration files user.
+    """
+
+    def __init__(self, feature: Feature, setting_name: str = None):
+        super().__init__(feature,
+                         setting_name + ": " + "auto-configuration has failed" +
+                         feature.name + "." + setting_name + " is a read-only property computed from other properties "
+                                                             "and should not be defined in configuration files.")
+
+
+
 class FeatureConfigurationValidationError(FeatureConfigurationError):
     """
     Feature configuration error raised on validation error.

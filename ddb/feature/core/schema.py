@@ -29,6 +29,7 @@ class DomainSchema(Schema):
     """
     sub = fields.String(required=True, default=None)  # default is set in feature _configure_defaults
     ext = fields.String(required=True, default="test")
+    value = fields.String(required=True, default=None)  # default is set in feature _configure_defaults
 
 
 class ProjectSchema(Schema):
