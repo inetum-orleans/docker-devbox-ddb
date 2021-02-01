@@ -489,12 +489,32 @@ This can be used to add environment condition to a service activation, a specifi
         current: dev
     ```
 
-    - `ddb.env.is("prod")` => false
-    - `ddb.env.is("dev")` => true
+    - `ddb.env.is("prod")` => `false`
+    - `ddb.env.is("dev")` => `true`
 
 ### ddb.env.current / ddb.env.available
 
 Shortcuts for `std.extVar("core.env.current")` and `std.extVar("core.env.available")`.
+
+### ddb.projectName / ddb.domain
+
+Shortcuts for `std.extVar("core.project.name")`, `std.extVar("core.domain.value")`
+
+### ddb.subDomain()
+
+Builds a subdomain string from default domain.
+
+!!! example
+    With the following configuration :  
+    ```yml 
+    core:
+      domain:
+        sub: domain
+        ext: tld
+    ```
+
+    - `ddb.subDomain("mailcatcher")` => `mailcatcher.domain.tld`
+    - `ddb.subDomain("mailcatcher", "inetum.world")` => `mailcatcher.inetum.world`
 
 ## Advanced functions
 
@@ -641,10 +661,9 @@ Those functions are for advanced configuration and should not be used in most co
         - `ddb.env.index("ci")` will return 2
 
     
-    ### ddb.JoinObjectArray()
+    ### ddb.mergeAll()
     
-    This function allows the generation of an array of object programmatically and then merge them which is not possible 
-    otherwise natively with jsonnet. 
+    This function merge an array of objects.
 
     !!! abstract "Parameters"
         | Property | Type | Description |
@@ -658,7 +677,7 @@ Those functions are for advanced configuration and should not be used in most co
         
         {
             "web": ddb.Build("web")
-                + ddb.JoinObjectArray([ddb.VirtualHost("80", std.join('.', [site, "domain.tld"]), site) for site in sites])
+                + ddb.mergeAll([ddb.VirtualHost("80", std.join('.', [site, "domain.tld"]), site) for site in sites])
                 + {
                     "volumes": [
                         ddb.path.project + "/.docker/web/nginx.conf:/etc/nginx/conf.d/default.conf:rw",
@@ -694,4 +713,13 @@ Those functions are for advanced configuration and should not be used in most co
         | Property | Type | Description |
         | :---------: | :----: | :----------- |
         | `path` | string | Source path. |
+
+    ### ddb.File
     
+    Wrap a string matching a Filesystem path into a File object containing `name` and `parent`. `name` match the filename of 
+    this path, and `parent` is another File object matching the parent path.
+    
+    !!! example
+        - `ddb.File(".docker/postgres/djp.libsonnet")` => `{name: 'djp.libjsonnet', parent: {name: postgres, parent: {name: .docker}}}`
+    
+        

@@ -39,19 +39,6 @@ local _core_path_project_home = std.extVar("core.path.project_home");
 local _core_path_ddb_home = std.extVar("core.path.ddb_home");
 local _core_path_home = std.extVar("core.path.home");
 
-# local sep = if _core_os == "nt" then std.char(92) else "/"; # Backslash can't be escaped properly, so use std.char
-
-/**
- * Join objects from an array
- */
-local JoinObjectArray(object_array) =
-    local join(array, index, result) =
-        if index >= std.length(array) then
-            result
-        else
-            join(array, index + 1, result + array[index]);
-    join(object_array, 0, {});
-
 local mapPath(path) =
   local key = std.filter(function(mapping_field) std.startsWith(path, mapping_field), std.objectFields(_docker_path_mapping));
   if std.length(key) > 0 then _docker_path_mapping[key[0]] + std.substr(path, std.length(_docker_path_mapping[key[0]]), std.length(path)) else path;
@@ -203,13 +190,13 @@ local Networks(services, networks_names=_docker_networks_names) = {
             "external": true,
             "name": if std.objectHas(networks_names, key) then networks_names[key] else key
         } for key in
-        std.uniq(
+        std.uniq(std.sort(
             std.filter(function (n) n != "default",
                 std.flatMap(function (f) if std.objectHas(services[f], "networks") then services[f].networks else [],
                     std.objectFields(services)
                 )
             )
-        )
+        ))
 };
 
 local Compose(config={}, networks_names=_docker_networks_names, version=_docker_compose_version) =
@@ -292,7 +279,7 @@ local TraefikVirtualHost(port, hostname, name=null, network_id=_docker_virtualho
     ]
   };
 
-  vh + {networks: std.uniq(vh.networks)};
+  vh + {networks: std.uniq(std.sort(vh.networks))};
 
 local NoVirtualHost(port, hostname, name=null, network_id=_docker_virtualhost_network_id, certresolver=null, router_rule=null, redirect_to_https=null, https=null, path_prefix=null, redirect_to_path_prefix=null) = {};
 
@@ -323,6 +310,56 @@ local envIndex(env=_core_env_current) =
 local envIs(env) =
     env == _core_env_current;
 
+local File(thisFile) =
+	local splitFile = if std.isArray(thisFile) then thisFile else std.split(thisFile, "/");
+
+	local name = splitFile[std.length(splitFile) - 1];
+	if std.length(splitFile) >= 2 then
+		local parent = std.slice(splitFile, 0, std.length(splitFile) - 1, 1);
+		{
+		  name: name,
+		  parent: File(parent)
+		}
+	else
+		{name: name};
+
+local with(package, params={}, append=null, name=null, when=true) =
+	if when then
+		local effectiveName = if name == null then package.defaultName else name;
+		local config = package.factory(effectiveName, params);
+
+		if append != null && std.isFunction(append) then
+			config + append(config, effectiveName)
+		else if append != null then
+			config + {services+: {[effectiveName]+: append}}
+		else
+			config
+	else
+		{}
+	;
+
+local merge(left, right) =
+	local mergeFieldValue(left, right, field) =
+    	if !std.objectHas(right, field) then
+    		left[field]
+    	else
+    		if std.isArray(left[field]) then
+    			std.uniq(std.sort((left[field] + right[field])))
+    		else if std.isObject(left[field]) then
+    			left[field] + right[field]
+    		else
+    			right[field]
+    	;
+
+	local merged = {[field]: mergeFieldValue(left, right, field) for field in std.objectFields(left)};
+	merged;
+
+local mergeAll(object_array) =
+    std.foldr(merge, object_array, {});
+
+local JoinObjectArray(object_array) =
+	std.trace("JoinObjectArray(object_array) is deprecated and should be replaced with \"ddb.mergeAll(object_array)\".", mergeAll(object_array));
+
 {
     Image: Image,
     Build: Build,
@@ -347,6 +384,16 @@ local envIs(env) =
       current: _core_env_current,
       available: _core_env_available
     },
+	projectName: std.extVar("core.project.name"),
+	domain: std.extVar("core.domain.value"),
+	subDomain: function(subdomain, domain=std.extVar("core.domain.value")) std.join('.', [subdomain, domain]),
     path: path,
     JoinObjectArray: JoinObjectArray,
+    with: with,
+    params: {
+     	value: function(params, key, default=null) if std.objectHas(params, key) then params[key] else default,
+        array: function(params, key, default=[]) if std.objectHas(params, key) then if std.isArray(params[key]) then params[key] else [params[key]] else default,
+    },
+    File: File,
+    mergeAll: mergeAll
 }
