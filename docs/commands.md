@@ -6,14 +6,15 @@ If you run **ddb** with no argument, the usage is displayed.
 !!! info "ddb usage"
 ```
 usage: ddb [-h] [-v] [-vv] [-s] [-x] [-c] [-w] [-ff] [--version]
-           {init,configure,features,config,info,self-update,run,activate,deactivate,check-activated}
+           {init,configure,download,features,config,info,self-update,run,activate,deactivate,check-activated}
            ...
 
 positional arguments:
-  {init,configure,features,config,info,self-update,run,activate,deactivate,check-activated}
+  {init,configure,download,features,config,info,self-update,run,activate,deactivate,check-activated}
                         Available commands
     init                Initialize the environment
     configure           Configure the environment
+    download            Download files from remote sources
     features            List enabled features
     config              Display effective configuration
     info                Display useful information
@@ -70,20 +71,20 @@ Those are placed **after the command name**.
 Available commands
 ---
 
-- **ddb init**
+### ddb download
 
-TODO
+Download files from remote sources like Cookiecutter templates.
 
-- **ddb self-update**
+### ddb self-update
 
 If ddb is installed with the standalone binary and a new version is available on github, it will automatically download 
 it and update the current binary.
 
-- **ddb features**
+### ddb features
 
 This action allows you to check the list of enabled features with a short explanation of what they do. 
 
-- **ddb config**
+### ddb config
 
 Display the effective configuration after merge of all configuration files from possible locations.
 
@@ -98,7 +99,7 @@ Read more: [Configuration](configuration.md)
     You can use `--variables` option to display the whole configuration as a flat and dotted notation, as it can be 
     tedious to retrieve the full variable name from the default `yaml` output. 
 
-- **ddb configure**
+### ddb configure
 
 Configure the project by scanning project files and performing actions supported by all features.
 
@@ -128,7 +129,7 @@ Configure the project by scanning project files and performing actions supported
     can run `ddb configure --autofix` to automatically migrate your template sources. Keep in mind that running this 
     command will make your project future-proof, but can break things for users running older `ddb` versions.
 
-- **ddb info**
+### ddb info
 
 Displays compacted information about docker containers such as environment variables, virtual host, exposed ports and 
 binaries in a more readable way.
@@ -167,26 +168,26 @@ binaries in a more readable way.
     +-----------------------------------------------+
     ```
 
-- **ddb activate**
+### ddb activate
 
 Display a script for the configured shell that must be evaluated to active the project environment inside the current
 shell session.
 
 Read more: [Shell feature](features/shell.md)
 
-- **ddb deactivate**
+### ddb deactivate
 
 Display a script for the configured shell that must be evaluated to deactivate the project environment inside the
 current shell session.
 
 Read more: [Shell feature](features/shell.md)
 
-- **ddb check-activated**
+### ddb check-activated
 
 Check if project is activated in current shell.
 
 Read more: [Shell feature](features/shell.md)
 
-- **ddb run**
+### ddb run
 
 Display the command line to evaluate in the configured shell to run the registered binary.

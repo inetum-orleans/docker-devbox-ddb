@@ -87,6 +87,7 @@ class CoreFeature(Feature):
         return (
             DefaultPhase("init", "Initialize project", run_once=True),
             DefaultPhase("configure", "Configure the environment", configure_parser),
+            DefaultPhase("download", "Download files from remote sources"),
             DefaultPhase("features", "Display enabled features"),
             DefaultPhase("config", "Display effective configuration", config_parser),
             DefaultPhase("info", "Display useful information", info_parser),
@@ -109,6 +110,9 @@ class CoreFeature(Feature):
                              "configure",
                              parent="init",
                              before_execute=requires_project_config),
+
+            LifecycleCommand("download", "Download files from remote sources",
+                             "download"),
 
             LifecycleCommand("features", "List enabled features",
                              "features"),

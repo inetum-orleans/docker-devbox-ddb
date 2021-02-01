@@ -31,6 +31,7 @@ nav:
       - PostgreSQL, Symfony, VueJS:  guides/psql-symfony-vue.md
   - Features:
       - certs: features/certs.md
+      - cookiecutter: features/cookiecutter.md
       - copy: features/copy.md
       - core: features/core.md
       - docker: features/docker.md
