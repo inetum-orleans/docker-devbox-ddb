@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import patch
 from typing import Union
 
 from cookiecutter.config import DEFAULT_CONFIG
@@ -59,5 +60,18 @@ class CookiecutterAction(Action):
         kwargs = {k: v for k, v in template.items() if v is not None}
 
         ret = cookiecutter(**kwargs)
+        output_dir = os.path.relpath(ret, '.')
 
-        context.log.success(f"{template['template']} -> {os.path.relpath(ret, '.')}")
+        context.log.success(f"{template['template']} -> {output_dir}")
+
+        for patch_file in os.listdir(output_dir):
+            if patch_file.endswith('.patch'):
+                patch_file = os.path.join(output_dir, patch_file)
+                if os.path.isfile(patch_file):
+                    context.log.notice("Applying patch %s in %s", patch_file, output_dir)
+                    try:
+                        pset = patch.fromfile(patch_file)
+                        pset.apply(root=output_dir)
+                        context.log.success("Patch %s applied in %s", patch_file, output_dir)
+                    except Exception as exc:  # pylint:disable=broad-except
+                        context.log.error("Patch %s has failed to be applied in %s: %s", patch_file, output_dir, exc)

@@ -38,3 +38,11 @@ This can be used to retrieve [djp packages](./jsonnet.md#djp-packages-ddb-jsonne
         | `overwrite_if_exists` | boolean<br>`true` |  |
         | `config_file` | string |  |
         | `default_config` | dict[str, Any] |  |
+
+!!! tip "Generate `.patch` files to track your changes"
+    
+    If you need to apply some modification on downloaded content, you should generate `.patch` files (unified diff) 
+    of the output directory of the template.
+
+    Any `.patch` file available in the output directory will be automatically applied when invoking `ddb download` 
+    command later, so you changes are kept while downloading a new version of the template.
