@@ -244,7 +244,7 @@ class TestJinjaAutofix:
 
         assert source == fixed
 
-    def test_autofix_linejumps(self, project_loader):
+    def test_autofix_eol(self, project_loader):
         project_loader("autofix_eol")
 
         history = (
@@ -272,3 +272,42 @@ class TestJinjaAutofix:
             expected = f.read()
 
         assert rendered == expected
+
+    def test_autofix_eol2(self, project_loader):
+        project_loader("autofix_eol2")
+
+        config.args.autofix = True
+
+        history = (
+            PropertyMigration("docker.compose.network_name",
+                              "jsonnet.docker.compose.network_name", since="v1.6.0"),
+            PropertyMigration("docker.port_prefix",
+                              "jsonnet.docker.expose.port_prefix", since="v1.6.0"),
+        )
+
+        migrations.set_history(history)
+
+        features.register(FileFeature())
+        features.register(JinjaFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
+
+        action = FileWalkAction()
+        action.initialize()
+        action.execute()
+
+        with open('msmtprc', 'r') as f:
+            rendered = f.read()
+
+        with open('msmtprc.expected', 'r') as f:
+            expected = f.read()
+
+        assert rendered == expected
+
+        with open('msmtprc.jinja', 'r') as f:
+            template = f.read()
+
+        with open('msmtprc.autofix', 'r') as f:
+            autofix = f.read()
+
+        assert autofix == template

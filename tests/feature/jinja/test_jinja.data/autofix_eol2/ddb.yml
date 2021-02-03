@@ -1,0 +1,7 @@
+core:
+  domain:
+    sub: domain
+    ext: tld
+docker:
+  compose:
+    network_name: 'network_default'

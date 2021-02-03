@@ -92,11 +92,11 @@ class JinjaAction(AbstractTemplateAction):
         property_migration_set = self._find_property_migration_set(render_error)
 
         if property_migration_set:
-            initial_template_data, altered_template_data = self._apply_migration_set(template,
-                                                                                     original_template,
-                                                                                     property_migration_set)
+            altered_template_data = self._apply_migration_set(template,
+                                                              original_template,
+                                                              property_migration_set)
 
-            if initial_template_data != altered_template_data:
+            if altered_template_data:
                 with SingleTemporaryFile("ddb", "migration", "jinja",
                                          mode="w",
                                          prefix="",
@@ -135,50 +135,56 @@ class JinjaAction(AbstractTemplateAction):
                              original_template: str,
                              property_migration_set: Iterable[AbstractPropertyMigration]):
         with open(template, "r", encoding="utf-8") as template_file:
-            initial_template_data = template_file.read()
-            template_data = initial_template_data
-
+            altered = False
             altered_template_data = ""
             variable_content = ""
-            in_variable = 0
+            in_variable = False
+            previous_lex_lineno = None
+            previous_lex_value = None
 
-            previous_lineno = None
-            for lineno, typ, value in self.env.lex(self.env.preprocess(template_data)):
-                while value.startswith('\n'):
-                    value = value[1:]
-                    lineno += 1
-                if previous_lineno != lineno:
-                    if previous_lineno is not None and not altered_template_data.endswith('\n'):
-                        altered_template_data = altered_template_data + '\n'
-                    previous_lineno = lineno
+            for lex_lineno, lex_type, lex_value in self.env.lex(self.env.preprocess(template_file.read())):
+                lex_value = self._fix_lex_value(lex_value, lex_lineno, previous_lex_value, previous_lex_lineno)
 
-                if typ in ('variable_begin', 'block_begin'):
-                    in_variable += 1
+                if lex_type in ('variable_end', 'block_end'):
+                    altered_variable_content = JinjaAction._replace_variable_content(variable_content,
+                                                                                     property_migration_set,
+                                                                                     original_template)
+                    if altered_variable_content != variable_content:
+                        altered = True
+
+                    altered_template_data = altered_template_data + altered_variable_content
+                    variable_content = ""
+                    in_variable = False
+
+                if in_variable:
+                    variable_content = variable_content + lex_value
+                else:
+                    altered_template_data = altered_template_data + lex_value
+
+                if lex_type in ('variable_begin', 'block_begin'):
+                    in_variable = True
                     variable_content = ""
 
-                elif typ in ('variable_end', 'block_end'):
-                    in_variable -= 1
+                previous_lex_lineno = lex_lineno
+                previous_lex_value = lex_value
 
-                    if in_variable == 0:
-                        variable_content = JinjaAction._replace_variable_content(original_template,
-                                                                                 variable_content,
-                                                                                 property_migration_set)
-
-                        altered_template_data = altered_template_data + variable_content
-
-                if in_variable == 0:
-                    altered_template_data = altered_template_data + value
-                else:
-                    variable_content = variable_content + value
-        return initial_template_data, altered_template_data
+        altered_template_data = altered_template_data + variable_content
+        return altered_template_data if altered else None
 
     @staticmethod
-    def _replace_variable_content(original_template, variable_content, property_migration_set):
+    def _replace_variable_content(variable_content, property_migration_set, original_template):
         for property_migration in property_migration_set:
             if property_migration and not property_migration.requires_value_migration:
-                new_variable_content = variable_content\
+                new_variable_content = variable_content \
                     .replace(property_migration.old_config_key, property_migration.new_config_key)
                 if new_variable_content != variable_content:
                     variable_content = new_variable_content
                     property_migration.warn(original_template)
         return variable_content
+
+    @staticmethod
+    def _fix_lex_value(lex_value, lex_lineno, previous_lex_value, previous_lex_lineno):
+        if previous_lex_lineno is not None and lex_lineno > previous_lex_lineno:
+            previous_eol_count = previous_lex_value.count('\n')
+            lex_value = (lex_lineno - previous_lex_lineno - previous_eol_count) * '\n' + lex_value
+        return lex_value

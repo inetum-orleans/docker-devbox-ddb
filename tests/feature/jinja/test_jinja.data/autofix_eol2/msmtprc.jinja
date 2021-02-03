@@ -1,0 +1,5 @@
+account        mail
+host           mail.{{docker.compose.network_name}}
+port           25
+from           postmaster@{{core.domain.sub}}.{{core.domain.ext}}
+account default : mail
