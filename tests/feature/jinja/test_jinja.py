@@ -6,7 +6,7 @@ from ddb.config.migrations import PropertyMigration
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.file import FileFeature, FileWalkAction
-from ddb.feature.jinja import JinjaFeature, JinjaAction
+from ddb.feature.jinja import JinjaFeature
 
 
 class TestJinjaAction:
@@ -207,6 +207,8 @@ class TestJinjaAutofix:
     def test_autofix_variables_only(self, project_loader):
         project_loader("autofix_variables_only")
 
+        config.args.autofix = True
+
         history = (
             PropertyMigration("old_property",
                               "new_property", since="v1.1.0"),
@@ -227,9 +229,46 @@ class TestJinjaAutofix:
 
         assert os.path.exists('config.properties')
         with open('config.properties', 'r') as f:
-            config = f.read()
+            rendered = f.read()
 
-        with open(os.path.join('expected', 'config.properties'), 'r') as f:
-            expected_config = f.read()
+        with open('config.expected.properties', 'r') as f:
+            expected = f.read()
 
-        assert config == expected_config
+        assert rendered == expected
+
+        with open('config.properties.jinja', 'r') as f:
+            source = f.read()
+
+        with open('config.properties.autofix', 'r') as f:
+            fixed = f.read()
+
+        assert source == fixed
+
+    def test_autofix_linejumps(self, project_loader):
+        project_loader("autofix_eol")
+
+        history = (
+            PropertyMigration("docker.compose.network_name",
+                              "jsonnet.docker.compose.network_name", since="v1.6.0"),
+            PropertyMigration("docker.port_prefix",
+                              "jsonnet.docker.expose.port_prefix", since="v1.6.0"),
+        )
+
+        migrations.set_history(history)
+
+        features.register(FileFeature())
+        features.register(JinjaFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
+
+        action = FileWalkAction()
+        action.initialize()
+        action.execute()
+
+        with open('docker-compose.properties', 'r') as f:
+            rendered = f.read()
+
+        with open('docker-compose.expected.properties', 'r') as f:
+            expected = f.read()
+
+        assert rendered == expected

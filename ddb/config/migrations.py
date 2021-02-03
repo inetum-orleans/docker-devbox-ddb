@@ -46,6 +46,7 @@ class AbstractMigration(AbstractDeprecation):
         """
         Get property new value, regardless it's defined the new way or the old way.
         :param config: loaded configuration
+        :raise KeyError: If no value is found in config.
         """
 
     @abstractmethod
@@ -53,6 +54,7 @@ class AbstractMigration(AbstractDeprecation):
         """
         Get property old value, regardless it's defined the new way or the old way.
         :param config: loaded configuration
+        :raise KeyError: If no value is found in config.
         """
 
 
@@ -146,14 +148,14 @@ class PropertyMigration(AbstractPropertyMigration):
             return config.get(self.new_config_key)
         if self.old_config_key in config:
             return self.transformer(config.get(self.old_config_key), config)
-        return None
+        raise KeyError
 
     def get_old_value(self, config: Dotty):
         if self.new_config_key in config:
             return self.rollback_transformer(config.get(self.new_config_key), config)
         if self.old_config_key in config:
             return config.get(self.old_config_key)
-        return None
+        raise KeyError
 
 
 class MigrationsDotty(Dotty):
@@ -172,7 +174,10 @@ class MigrationsDotty(Dotty):
         deprecation_dict = Dotty({})
 
         for migration in migrations:
-            deprecation_dict[migration.old_config_key[len(item + "."):]] = migration.get_new_value(self)
+            try:
+                deprecation_dict[migration.old_config_key[len(item + "."):]] = migration.get_new_value(self)
+            except KeyError:
+                pass
 
         return dict(deprecation_dict)
 
@@ -189,7 +194,10 @@ class MigrationsDotty(Dotty):
             if property_migration:
                 if not silent:
                     property_migration.warn()
-                return property_migration.get_old_value(Dotty(self._data))
+                try:
+                    return property_migration.get_old_value(Dotty(self._data))
+                except KeyError:
+                    pass
         try:
             value = super().__getitem__(item)
         except KeyError as key_error:

@@ -1,0 +1,6 @@
+person2:
+  name: data.values.old_property
+  welcome: Hello foobar!
+person3:
+  name: data.values.some.deep.old.property
+  welcome: Hello yolo!

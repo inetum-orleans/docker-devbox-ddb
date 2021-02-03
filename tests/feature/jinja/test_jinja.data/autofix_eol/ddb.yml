@@ -1,0 +1,4 @@
+docker:
+  compose:
+    network_name: 'network_default'
+  port_prefix: 554

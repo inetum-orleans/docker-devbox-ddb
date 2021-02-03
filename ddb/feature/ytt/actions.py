@@ -28,26 +28,27 @@ class YttAction(AbstractTemplateAction):
                               config.data.get("ytt.suffixes"))
 
     @staticmethod
-    def _escape_config(input_config: dict):
+    def _escape_config(input_config: dict, with_config: bool = True):
         new = {}
         keywords = config.data["ytt.keywords"]
         keywords_escape_format = config.data["ytt.keywords_escape_format"]
         for key, value in input_config.items():
             if isinstance(value, dict):
-                value = YttAction._escape_config(value)
+                value = YttAction._escape_config(value, False)
             if key in keywords:
                 escaped_k = keywords_escape_format % (key,)
                 if escaped_k not in value.keys():
                     new[escaped_k] = value
             new[key] = value
-        new['_config'] = dict()
-        new['_config']['eject'] = config.eject
-        new['_config']['args'] = vars(config.args)
-        new['_config']['unknown_args'] = config.unknown_args
+        if with_config:
+            new['_config'] = dict()
+            new['_config']['eject'] = config.eject
+            new['_config']['args'] = dict(vars(config.args))
+            new['_config']['unknown_args'] = list(config.unknown_args)
         return new
 
     def _render_template(self, template: str, target: str) -> Iterable[Tuple[Union[str, bytes, bool], str]]:
-        yaml_config = yaml.dump(YttAction._escape_config(config.data.copy()))
+        yaml_config = yaml.safe_dump(YttAction._escape_config(config.data.raw()))
 
         includes = TemplateFinder.build_default_includes_from_suffixes(
             config.data["ytt.depends_suffixes"],
@@ -96,7 +97,7 @@ class YttAction(AbstractTemplateAction):
 
         property_migration_set = set()
 
-        error_match = re.search(r"struct has no (\..*) field or method", error_message)
+        error_match = re.search(r"struct has no \.(.*?)\s+field or method", error_message)
         if error_match:
             property_contains = f"{error_match.group(1)}"
 
@@ -115,14 +116,17 @@ class YttAction(AbstractTemplateAction):
                 if property_migration and not property_migration.requires_value_migration:
                     property_migration.warn(original_template)
 
-                    template_data = template_data.replace(property_migration.old_config_key,
-                                                          property_migration.new_config_key)
+                    template_data = re.sub(r"(#@.*\s+)" +
+                                           re.escape("data.values." + property_migration.old_config_key) +
+                                           r"(.*?\s*.*?)",
+                                           r"\1" + "data.values." + property_migration.new_config_key + r"\2",
+                                           template_data)
 
             if initial_template_data != template_data:
                 with SingleTemporaryFile("ddb", "migration", "ytt",
                                          mode="w",
                                          prefix="",
-                                         suffix=".ytt",
+                                         suffix="." + os.path.basename(original_template),
                                          encoding="utf-8") as tmp_file:
                     tmp_file.write(template_data)
                     return tmp_file.name

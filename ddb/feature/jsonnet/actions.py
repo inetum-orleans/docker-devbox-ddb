@@ -66,16 +66,16 @@ class JsonnetAction(AbstractTemplateAction):
                 with open(template, "r", encoding="utf-8") as template_file:
                     initial_template_data = template_file.read()
                     template_data = initial_template_data
-                    template_data = template_data.replace('("' + property_migration.old_config_key + '")',
-                                                          '("' + property_migration.new_config_key + '")')
-                    template_data = template_data.replace("('" + property_migration.old_config_key + "')",
-                                                          "('" + property_migration.new_config_key + "')")
+                    template_data = template_data.replace('std.extVar("' + property_migration.old_config_key + '")',
+                                                          'std.extVar("' + property_migration.new_config_key + '")')
+                    template_data = template_data.replace("std.extVar('" + property_migration.old_config_key + "')",
+                                                          "std.extVar('" + property_migration.new_config_key + "')")
 
                 if initial_template_data != template_data:
                     with SingleTemporaryFile("ddb", "migration", "jsonnet",
                                              mode="w",
                                              prefix="",
-                                             suffix=".jsonnet",
+                                             suffix="." + os.path.basename(original_template),
                                              encoding="utf-8") as tmp_file:
                         tmp_file.write(template_data)
                         return tmp_file.name

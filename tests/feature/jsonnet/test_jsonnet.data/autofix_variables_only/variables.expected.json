@@ -1,0 +1,16 @@
+{
+   "person1": {
+      "name": "Alice",
+      "welcome": "Hello Alice!"
+   },
+   "person2": {
+      "name": "foobar",
+      "str": "old_property",
+      "welcome": "Hello foobar!"
+   },
+   "person3": {
+      "name": "yolo",
+      "str": "some.deep.old.property",
+      "welcome": "Hello yolo!"
+   }
+}

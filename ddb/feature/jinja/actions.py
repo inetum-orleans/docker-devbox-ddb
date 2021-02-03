@@ -100,7 +100,7 @@ class JinjaAction(AbstractTemplateAction):
                 with SingleTemporaryFile("ddb", "migration", "jinja",
                                          mode="w",
                                          prefix="",
-                                         suffix=".jinja",
+                                         suffix="." + os.path.basename(original_template),
                                          encoding="utf-8") as tmp_file:
                     tmp_file.write(altered_template_data)
                     return tmp_file.name
@@ -142,7 +142,16 @@ class JinjaAction(AbstractTemplateAction):
             variable_content = ""
             in_variable = 0
 
-            for _, typ, value in self.env.lex(self.env.preprocess(template_data)):
+            previous_lineno = None
+            for lineno, typ, value in self.env.lex(self.env.preprocess(template_data)):
+                while value.startswith('\n'):
+                    value = value[1:]
+                    lineno += 1
+                if previous_lineno != lineno:
+                    if previous_lineno is not None and not altered_template_data.endswith('\n'):
+                        altered_template_data = altered_template_data + '\n'
+                    previous_lineno = lineno
+
                 if typ in ('variable_begin', 'block_begin'):
                     in_variable += 1
                     variable_content = ""

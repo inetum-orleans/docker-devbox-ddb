@@ -1,0 +1,8 @@
+#@ load("@ytt:data", "data")
+
+person2:
+  name: data.values.old_property
+  welcome: #@ "Hello " + data.values.new_property + "!"
+person3:
+  name: data.values.some.deep.old.property
+  welcome: #@ "Hello " + data.values.some.another.new.property + "!"

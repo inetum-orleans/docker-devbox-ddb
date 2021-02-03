@@ -6,7 +6,8 @@ import pytest
 import yaml
 
 from ddb.__main__ import load_registered_features, register_actions_in_event_bus
-from ddb.config import config
+from ddb.config import config, migrations
+from ddb.config.migrations import PropertyMigration
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.docker import DockerFeature
@@ -539,3 +540,50 @@ class TestJsonnetAction:
             expected = yaml.load(expected_data, yaml.SafeLoader)
 
         assert rendered == expected
+
+
+class TestJsonnetAutofix:
+    def teardown_method(self, test_method):
+        migrations.set_history()
+
+    def test_autofix_variables_only(self, project_loader):
+        project_loader("autofix_variables_only")
+
+        config.args.autofix = True
+
+        history = (
+            PropertyMigration("old_property",
+                              "new_property", since="v1.1.0"),
+            PropertyMigration("some.deep.old.property",
+                              "some.another.new.property", since="v1.1.0"),
+        )
+
+        migrations.set_history(history)
+
+        features.register(CoreFeature())
+        features.register(FileFeature())
+        features.register(DockerFeature())
+        features.register(JsonnetFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
+
+        action = FileWalkAction()
+        action.initialize()
+        action.execute()
+
+        assert os.path.exists('variables.json')
+        with open('variables.json', 'r') as f:
+            rendered = f.read()
+
+        with open('variables.expected.json', 'r') as f:
+            expected = f.read()
+
+        assert expected == rendered
+
+        with open('variables.json.jsonnet', 'r') as f:
+            source = f.read()
+
+        with open('variables.json.autofix', 'r') as f:
+            fixed = f.read()
+
+        assert source == fixed
