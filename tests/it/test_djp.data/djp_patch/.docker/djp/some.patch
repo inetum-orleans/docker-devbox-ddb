@@ -1,0 +1,17 @@
+Index: djp.libjsonnet
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/djp.libjsonnet b/djp.libjsonnet
+--- a/djp.libjsonnet	(date 1612350774227)
++++ b/djp.libjsonnet	(date 1612350774227)
+@@ -2,6 +2,8 @@
+
+ local defaultName = ddb.File(std.thisFile).parent.name;
+
++// Edited
++
+ // Docker compose configuration factory for this package.
+ local factory(name, params={}) =
+     // Sanitize and set params default values in o using ddb.params.value and ddb.params.array.

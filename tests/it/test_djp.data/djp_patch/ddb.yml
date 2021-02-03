@@ -1,0 +1,3 @@
+cookiecutter:
+  templates:
+    - template: 'template.zip'
