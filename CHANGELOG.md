@@ -3,6 +3,23 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.7.0 (2021-02-03)
+### Feature
+* **cookiecutter:** Add .patch files support in cookiecutter feature ([`3b20434`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/3b204348709348f45636c31cc5e0a78a636b3e09))
+* **djp:** Add djp packages support through cookiecutter feature ([`15938ec`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/15938ecd7e723c7bf7e41318db073cc35255bee8))
+* **jsonnet:** Enhance `ddb.docker.libjsonnet` to support future djp packages ([`a48c5a9`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/a48c5a9040627379b82da8556125c2eff52aec7a))
+* **core:** Add `core.domain.value` read only property ([`ab4001e`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/ab4001e84b40a6b80fa3f2697043bae9ac97c505))
+* **jsonnet:** Add `ddb.env.current` and `ddb.env.available` ([`edaef0a`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/edaef0a5ef3c1d329c8bbeae0617f55bed61f262))
+
+### Fix
+* **autofix:** Make `--autofix` less intrusive and fix variables only ([`70389db`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/70389dbb1da802502d0adb84657acf4eb64cf2d0))
+* **jinja:** Autofix now fix templates in code blocks only ([`8575f79`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/8575f7911d3a4413936a73199000fccf7306340a))
+* **inetum:** We are Inetum, mais Orléans quand même :) ([`f2e85ea`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/f2e85eab75c68c24610f102f83de5cf9a7856c85))
+* **inetum:** We are Inetum, mais Orléans quand même :) ([`5281071`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/5281071f280164fe7c3eb6782da44557c46f4104))
+
+### Documentation
+* **index:** Update badges ([`39cd66b`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/39cd66becebdfd88dbcfe43ed23d631fb76a902b))
+
 ## v1.6.1 (2021-01-20)
 ### Fix
 * **migration:** Add boolean value support fr docker.reverse_proxy.type migration ([#184](https://github.com/inetum-orleans/docker-devbox-ddb/issues/184)) ([`682f23f`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/682f23fb2d796d3651986faa1eec2c5c329434a6))
