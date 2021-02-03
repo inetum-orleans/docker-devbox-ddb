@@ -3,6 +3,10 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.7.2 (2021-02-03)
+### Fix
+* **jinja:** Fix extra EOL issue when deprecated property are used ([`13c2d0e`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/13c2d0e92efad9ccd6ceb845b92c7f422c29b734))
+
 ## v1.7.1 (2021-02-03)
 ### Fix
 * **gitignore:** Sort gitignore entries to avoid conflicts ([`071fedd`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/071fedde1d89538d3d22765259b7d8f2ade8c117))
