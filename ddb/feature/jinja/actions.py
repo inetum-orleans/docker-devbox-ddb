@@ -2,7 +2,7 @@
 import os
 import re
 from pathlib import Path
-from typing import Union, Iterable, Tuple, Optional
+from typing import Union, Iterable, Tuple, Optional, Set
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
@@ -89,7 +89,28 @@ class JinjaAction(AbstractTemplateAction):
                               target: str,
                               original_template: str,
                               render_error: Exception) -> Optional[str]:
+        property_migration_set = self._find_property_migration_set(render_error)
+
+        if property_migration_set:
+            initial_template_data, altered_template_data = self._apply_migration_set(template,
+                                                                                     original_template,
+                                                                                     property_migration_set)
+
+            if initial_template_data != altered_template_data:
+                with SingleTemporaryFile("ddb", "migration", "jinja",
+                                         mode="w",
+                                         prefix="",
+                                         suffix=".jinja",
+                                         encoding="utf-8") as tmp_file:
+                    tmp_file.write(altered_template_data)
+                    return tmp_file.name
+
+        return None
+
+    @staticmethod
+    def _find_property_migration_set(render_error: Exception) -> Set[AbstractPropertyMigration]:
         property_migration_set = set()
+
         undefined_match = re.match("'(.*)' is undefined", str(render_error))
         if undefined_match:
             property_name = undefined_match.group(1)
@@ -107,25 +128,48 @@ class JinjaAction(AbstractTemplateAction):
                             and property_contains in property_migration.old_config_key:
                         property_migration_set.add(property_migration)
 
-        if property_migration_set:
-            with open(template, "r", encoding="utf-8") as template_file:
-                initial_template_data = template_file.read()
-                template_data = initial_template_data
+        return property_migration_set
 
-            for property_migration in property_migration_set:
-                if property_migration and not property_migration.requires_value_migration:
+    def _apply_migration_set(self,
+                             template: str,
+                             original_template: str,
+                             property_migration_set: Iterable[AbstractPropertyMigration]):
+        with open(template, "r", encoding="utf-8") as template_file:
+            initial_template_data = template_file.read()
+            template_data = initial_template_data
+
+            altered_template_data = ""
+            variable_content = ""
+            in_variable = 0
+
+            for _, typ, value in self.env.lex(self.env.preprocess(template_data)):
+                if typ in ('variable_begin', 'block_begin'):
+                    in_variable += 1
+                    variable_content = ""
+
+                elif typ in ('variable_end', 'block_end'):
+                    in_variable -= 1
+
+                    if in_variable == 0:
+                        variable_content = JinjaAction._replace_variable_content(original_template,
+                                                                                 variable_content,
+                                                                                 property_migration_set)
+
+                        altered_template_data = altered_template_data + variable_content
+
+                if in_variable == 0:
+                    altered_template_data = altered_template_data + value
+                else:
+                    variable_content = variable_content + value
+        return initial_template_data, altered_template_data
+
+    @staticmethod
+    def _replace_variable_content(original_template, variable_content, property_migration_set):
+        for property_migration in property_migration_set:
+            if property_migration and not property_migration.requires_value_migration:
+                new_variable_content = variable_content\
+                    .replace(property_migration.old_config_key, property_migration.new_config_key)
+                if new_variable_content != variable_content:
+                    variable_content = new_variable_content
                     property_migration.warn(original_template)
-
-                    template_data = template_data.replace(property_migration.old_config_key,
-                                                          property_migration.new_config_key)
-
-            if initial_template_data != template_data:
-                with SingleTemporaryFile("ddb", "migration", "jinja",
-                                         mode="w",
-                                         prefix="",
-                                         suffix=".jinja",
-                                         encoding="utf-8") as tmp_file:
-                    tmp_file.write(template_data)
-                    return tmp_file.name
-
-        return None
+        return variable_content

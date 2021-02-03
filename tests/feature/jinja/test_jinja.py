@@ -1,7 +1,8 @@
 import os
 
 from ddb.__main__ import load_registered_features, register_actions_in_event_bus
-from ddb.config import config
+from ddb.config import config, migrations
+from ddb.config.migrations import PropertyMigration
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.file import FileFeature, FileWalkAction
@@ -198,3 +199,37 @@ class TestJinjaAction:
 
         assert foo == 'test: trailing\n'
 
+
+class TestJinjaAutofix:
+    def teardown_method(self, test_method):
+        migrations.set_history()
+
+    def test_autofix_variables_only(self, project_loader):
+        project_loader("autofix_variables_only")
+
+        history = (
+            PropertyMigration("old_property",
+                              "new_property", since="v1.1.0"),
+            PropertyMigration("some.deep.old.property",
+                              "some.another.new.property", since="v1.1.0"),
+        )
+
+        migrations.set_history(history)
+
+        features.register(FileFeature())
+        features.register(JinjaFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
+
+        action = FileWalkAction()
+        action.initialize()
+        action.execute()
+
+        assert os.path.exists('config.properties')
+        with open('config.properties', 'r') as f:
+            config = f.read()
+
+        with open(os.path.join('expected', 'config.properties'), 'r') as f:
+            expected_config = f.read()
+
+        assert config == expected_config

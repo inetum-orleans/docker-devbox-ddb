@@ -1,0 +1,6 @@
+new_property: "foobar"
+some:
+  another:
+    new:
+      property: "yolo"
+cond: true
