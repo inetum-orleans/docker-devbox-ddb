@@ -3,6 +3,10 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.7.1 (2021-02-03)
+### Fix
+* **gitignore:** Sort gitignore entries to avoid conflicts ([`071fedd`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/071fedde1d89538d3d22765259b7d8f2ade8c117))
+
 ## v1.7.0 (2021-02-03)
 ### Feature
 * **cookiecutter:** Add .patch files support in cookiecutter feature ([`3b20434`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/3b204348709348f45636c31cc5e0a78a636b3e09))
