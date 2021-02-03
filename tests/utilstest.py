@@ -74,10 +74,10 @@ def expect_gitignore(gitignore: str, *expected_lines: str):
         with open(gitignore, 'r') as file:
             inside_block = False
             for gitignore_line in file.read().splitlines():
-                if gitignore_line == UpdateGitignoreAction.get_block_limit(True):
+                if UpdateGitignoreAction._is_block_limit(gitignore_line, True):
                     inside_block = True
                     continue
-                if gitignore_line == UpdateGitignoreAction.get_block_limit(False):
+                if UpdateGitignoreAction._is_block_limit(gitignore_line, False):
                     inside_block = False
                     continue
                 if inside_block:

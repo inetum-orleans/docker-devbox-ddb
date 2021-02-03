@@ -69,7 +69,7 @@ class TestUpdateGitIgnoreAction:
 
         assert gitignore == expected_gitignore
 
-    def test_remove_comment_block(self, project_loader):
+    def test_remove_empty_block(self, project_loader):
         project_loader("already_ignored")
 
         assert os.path.exists('.gitignore')
