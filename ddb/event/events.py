@@ -161,7 +161,7 @@ class Docker:
 
     @event("docker:binary")
     def binary(self, name=None, workdir=None, options=None, options_condition=None, condition=None, args=None,
-               docker_compose_service=None):
+               exe=False, entrypoint=None, global_=None, docker_compose_service=None):
         """
         Ask a binary to be generated from docker compose service
         """

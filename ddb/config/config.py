@@ -43,6 +43,8 @@ def get_default_config_paths(env_prefix, filenames, extensions) -> ConfigPaths:
             project_home_candidate = project_home_candidate_parent
         project_home = project_home_candidate
 
+    project_home = os.path.abspath(project_home)
+
     home = os.environ.get(env_prefix + '_HOME', os.path.join(str(Path.home()), '.docker-devbox'))
     ddb_home = os.environ.get(env_prefix + '_DDB_HOME', os.path.join(home, 'ddb'))
 

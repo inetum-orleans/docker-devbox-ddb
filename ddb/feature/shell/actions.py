@@ -21,6 +21,34 @@ from ...utils.file import SingleTemporaryFile
 _env_environ_backup = config.env_prefix + "_SHELL_ENVIRON_BACKUP"
 
 
+def get_shims_path(global_: bool = False):
+    """
+    Get local or global shims path.
+    :param global_:
+    :return:
+    """
+    directories = config.data.get('shell.path.directories')
+
+    if global_:
+        shim_directory_prefix = config.paths.home
+        forbidden_shim_directory_prefix = config.paths.project_home
+    else:
+        shim_directory_prefix = config.paths.project_home
+        forbidden_shim_directory_prefix = None
+
+    shim_directory = None
+    for directory in directories:
+        if not os.path.isabs(directory):
+            directory = os.path.join(config.paths.project_home, directory)
+        if directory.startswith(shim_directory_prefix) and \
+                (not forbidden_shim_directory_prefix or
+                 not directory.startswith(forbidden_shim_directory_prefix)):
+            shim_directory = directory
+            break
+
+    return shim_directory
+
+
 def encode_environ_backup(environ_backup: dict) -> str:
     """
     Encode environ backup into a safe string.
@@ -136,8 +164,8 @@ class CreateBinaryShim(Action):
         """
         Create binary shim
         """
-        directories = config.data.get('shell.path.directories')
-        written, shim = self.shell.create_binary_shim(directories[0], binary.name)
+        shims_path = get_shims_path(binary.global_)
+        written, shim = self.shell.create_binary_shim(shims_path, binary.name, binary.global_)
         if written:
             context.log.success("Shim created: %s", shim)
         else:
@@ -176,29 +204,12 @@ class CreateAliasShim(Action):
         """
         Create binary shim
         """
-        directories = config.data.get('shell.path.directories')
         aliases = config.data.get('shell.aliases')
         global_aliases = frozenset(config.data.get('shell.global_aliases'))
         for alias in aliases:
             global_alias = alias in global_aliases
 
-            if global_alias:
-                shim_directory_prefix = config.paths.home
-                forbidden_shim_directory_prefix = config.paths.project_home
-            else:
-                shim_directory_prefix = config.paths.project_home
-                forbidden_shim_directory_prefix = None
-
-            shim_directory = None
-            for directory in directories:
-                if not os.path.isabs(directory):
-                    directory = os.path.join(config.paths.project_home, directory)
-                if directory.startswith(shim_directory_prefix) and \
-                        (not forbidden_shim_directory_prefix or
-                         not directory.startswith(forbidden_shim_directory_prefix)):
-                    shim_directory = directory
-                    break
-
+            shim_directory = get_shims_path(global_alias)
             if not shim_directory:
                 continue
 

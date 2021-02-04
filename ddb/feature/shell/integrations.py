@@ -7,6 +7,7 @@ from typing import Tuple, Iterable, Dict, Any, Optional
 from slugify import slugify
 
 from ddb.binary import Binary
+from ddb.config import config
 from ddb.utils.file import force_remove, write_if_different, chmod
 
 
@@ -32,12 +33,6 @@ class ShellIntegration(ABC):
         """
 
     @abstractmethod
-    def remove_all_binary_shims(self, shims_path: str):
-        """
-        Remove all executable files matching binary shims.
-        """
-
-    @abstractmethod
     def remove_binary_shim(self, shims_path: str, name: str) -> Optional[str]:
         """
         Delete a binary shim for this shell.
@@ -45,7 +40,7 @@ class ShellIntegration(ABC):
         """
 
     @abstractmethod
-    def create_binary_shim(self, shims_path: str, name: str) -> Tuple[bool, str]:
+    def create_binary_shim(self, shims_path: str, name: str, global_: bool) -> Tuple[bool, str]:
         """
         Add a binary shim for this shell.
         :return created filepath
@@ -126,18 +121,6 @@ class BashShellIntegration(ShellIntegration):
     def remove_environment_variable(self, key):
         yield "unset " + self._sanitize_key(key)
 
-    def remove_all_binary_shims(self, shims_path: str):
-        shims = []
-
-        for shim in os.listdir(shims_path):
-            with open(shim, "a", encoding="utf-8", newline="\n") as shim_file:
-                lines = shim_file.readlines()
-                if len(lines) > 2 and lines[1] == "# ddb:shim":
-                    shims.append(shim)
-
-        for shim in shims:
-            force_remove(shim)
-
     def remove_binary_shim(self, shims_path: str, name: str) -> Optional[str]:
         shim = os.path.join(shims_path, name)
         if not os.path.isfile(shim):
@@ -145,8 +128,15 @@ class BashShellIntegration(ShellIntegration):
         force_remove(shim)
         return shim
 
-    def create_binary_shim(self, shims_path: str, name: str):
-        return self._write_shim(shims_path, name, 'binary', "$(ddb run %s \"$@\")" % name)
+    def create_binary_shim(self, shims_path: str, name: str, global_: bool):
+        command = f"$(ddb run {name} \"$@\")"
+        if global_:
+            environment_variable = next(
+                self.set_environment_variable(config.env_prefix + "_PROJECT_HOME", config.paths.project_home)
+            )
+            command = f"{environment_variable}\n{command}"
+
+        return self._write_shim(shims_path, name, 'binary', command)
 
     def create_alias_binary_shim(self, shims_path: str, binary: Binary) -> Tuple[bool, str]:
         return self._write_shim(shims_path, binary.name, 'alias', binary.command())
@@ -203,18 +193,6 @@ class CmdShellIntegration(ShellIntegration):
     def remove_environment_variable(self, key):
         yield "set " + self._sanitize_key(key) + "="
 
-    def remove_all_binary_shims(self, shims_path: str):
-        shims = []
-
-        for shim in os.listdir(shims_path):
-            with open(shim, "a", encoding="utf-8", newline="\n") as shim_file:
-                lines = shim_file.readlines()
-                if len(lines) > 2 and lines[1] == "REM ddb:shim":
-                    shims.append(shim)
-
-        for shim in shims:
-            force_remove(shim)
-
     def remove_binary_shim(self, shims_path: str, name: str) -> Optional[str]:
         shim = os.path.join(shims_path, name + '.bat')
         if not os.path.isfile(shim):
@@ -222,14 +200,22 @@ class CmdShellIntegration(ShellIntegration):
         force_remove(shim)
         return shim
 
-    def create_binary_shim(self, shims_path: str, name: str):
-        commands = [
-            "set command=(ddb run {} \"%*\")".format(name),
+    def create_binary_shim(self, shims_path: str, name: str, global_: bool):
+        commands = []
+        if global_:
+            environment_variable = next(
+                self.set_environment_variable(config.env_prefix + "_PROJECT_HOME", config.paths.project_home)
+            )
+            commands.append(environment_variable)
+
+        commands.extend([
+            f"set command=(ddb run {name} \"%*\")",
             "%command%>cmd.txt",
             "set /p execution=<cmd.txt",
             "del cmd.txt",
             "%execution% \"%*\""
-        ]
+        ])
+
         return self._write_shim(shims_path, name, 'binary', commands)
 
     def create_alias_binary_shim(self, shims_path: str, binary: Binary):

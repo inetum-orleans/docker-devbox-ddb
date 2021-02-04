@@ -46,12 +46,6 @@ Run `ddb configure` to evaluate templates and generate target files.
         | `virtualhost` | *VirtualHost* | `ddb.VirtualHost()` defaults. |
         | `xdebug` | *XDebug* | `ddb.XDebug()` defaults. |
 
-    === "Advanced"
-        | Property | Type | Description |
-        | :---------: | :----: | :----------- |
-        | `path_mapping` | Dict[str, str] | Path mappings to apply on declared volume sources. |
-
-
 !!! summary "Docker Networks configuration (prefixed with `jsonnet.docker.networks`)"
     === "Simple"
         | Property | Type | Description |
@@ -468,7 +462,9 @@ Binary allow the creation of alias for command execution inside the service.
     | `args` | string<br>`<name>` | Command to execute inside the container. |
     | `options` | string | Options to add to the command. |
     | `options_condition` | string | Add a condition to be evaluated to make `options` optional. If condition is defined and evaluated, `options` are not added to the command. |
-    | `exe` | boolean<br>`false` | launch command with docker-compose `exec` instead of `run` |
+    | `exe` | boolean<br>`false` | Launch command with docker-compose `exec` instead of `run`. |
+    | `entrypoint` | string | Override entrypoint for this binary. |
+    | `global` | boolean<br>`false` | Creates a global binary shim in `~/.docker-devbox/.bin` directory so it can be runned everywhere. |
     | `condition` | string |  Add a condition for the command to be enabled. If condition is defined and evaluated to false, command won't be used by [run](./run.md) feature. |
 
 !!! example 
@@ -773,7 +769,7 @@ Those functions are for advanced configuration and should not be used in most co
         
     ### ddb.path.mapPath()
     
-    Get the mapped value of a given filepath according to mappings configured in `jsonnet.docker.path_mapping`.
+    Get the mapped value of a given filepath according to mappings configured in `docker.path_mapping`.
 
     !!! abstract "Parameters"
         | Property | Type | Description |

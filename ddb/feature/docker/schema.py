@@ -22,3 +22,4 @@ class DockerSchema(FeatureSchema):
     ip = fields.String(required=True, default=None)  # default is set in feature _configure_defaults
     interface = fields.String(required=True, default="docker0")
     user = fields.Nested(UserSchema(), default=UserSchema())
+    path_mapping = fields.Dict(required=False)  # default is set in feature _configure_defaults

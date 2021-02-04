@@ -19,6 +19,7 @@ from ddb.feature.core import CoreFeature
 from ddb.feature.docker import DockerDisplayInfoAction
 from ddb.feature.docker import DockerFeature, EmitDockerComposeConfigAction
 from ddb.feature.docker.binaries import DockerBinary
+from ddb.feature.docker.utils import get_mapped_path
 from ddb.feature.traefik import TraefikFeature
 from ddb.utils.process import effective_command
 from tests.utilstest import setup_cfssl
@@ -522,3 +523,13 @@ class TestDockerBinary:
         expected = (binary_with_condition, binary1, binary2, binary4, binary3)
 
         assert sorted_bins == expected
+
+    def test_docker_utils_get_mapped_path(self):
+        assert get_mapped_path('/home/toilal/projects/test') == '/home/toilal/projects/test'
+
+        config.data['docker.path_mapping'] = {
+            '/home/toilal/projects': '/projects',
+            '/home/toilal': '/home'
+        }
+
+        assert get_mapped_path('/home/toilal/projects/test') == '/projects/test'

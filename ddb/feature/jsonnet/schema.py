@@ -122,7 +122,6 @@ class DockerSchema(Schema):
     binary = fields.Nested(BinarySchema(), default=BinarySchema())
     virtualhost = fields.Nested(VirtualhostSchema(), default=VirtualhostSchema())
     xdebug = fields.Nested(XDebugSchema(), default=XDebugSchema())
-    path_mapping = fields.Dict(required=False)  # default is set in feature _configure_defaults
 
 
 class JsonnetSchema(FeatureSchema):

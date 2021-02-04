@@ -111,6 +111,32 @@ class TestRunFeature:
 
         assert read.out == docker_compose_bin + " run --rm --workdir=/app/sub service\n"
 
+    def test_run_docker_binary_workdir_outside(self, project_loader, capsys: CaptureFixture):
+        project_loader("outside")
+        config.cwd = os.path.join(config.paths.project_home, "../outside")
+
+        features.register(CoreFeature())
+        features.register(RunFeature())
+        features.register(ShellFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
+
+        binaries.register(DockerBinary("bin", "service", "/app"))
+
+        action = RunAction()
+        action.run("bin")
+
+        read = capsys.readouterr()
+
+        cwd = config.cwd if config.cwd else os.getcwd()
+        real_cwd = os.path.realpath(cwd)
+
+        assert read.out == docker_compose_bin + " -f ../project/docker-compose.yml " \
+                                                "run --rm "\
+                                                f"--volume={real_cwd}:/app " \
+                                                "--workdir=/app " \
+                                                "service\n"
+
     def test_run_docker_binary_exe(self, project_loader, capsys: CaptureFixture):
         project_loader("exe")
 

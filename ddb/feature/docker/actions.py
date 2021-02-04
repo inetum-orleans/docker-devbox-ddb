@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import re
+import keyword
 from pathlib import PurePosixPath, Path
 from typing import Union, Iterable, List, Dict, Set
 
@@ -137,6 +138,9 @@ class EmitDockerComposeConfigAction(Action):
             event_id = match.group(2)
             property_name = match.group(3)
 
+            if property_name and property_name in keyword.kwlist:
+                property_name = property_name + '_'
+
             args, kwargs = self._parse_value(value,
                                              {"service": service, "config": docker_compose_config},
                                              property_name)
@@ -238,7 +242,7 @@ class DockerComposeBinaryAction(InitializableAction):
         docker_binaries_cache.flush()
 
     def execute(self, name=None, workdir=None, options=None, options_condition=None, condition=None, args=None,
-                exe=False, docker_compose_service=None):
+                exe=False, entrypoint=None, global_=None, docker_compose_service=None):
         """
         Execute action
         """
@@ -248,7 +252,8 @@ class DockerComposeBinaryAction(InitializableAction):
             raise ValueError("name should be defined")
 
         binary = DockerBinary(name, docker_compose_service=docker_compose_service, workdir=workdir, options=options,
-                              options_condition=options_condition, condition=condition, args=args, exe=exe)
+                              options_condition=options_condition, condition=condition, args=args, exe=exe,
+                              entrypoint=entrypoint, global_=global_)
 
         self.binaries.add(binary)
 

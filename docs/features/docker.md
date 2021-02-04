@@ -14,6 +14,8 @@ using jsonnet docker specific library brings many Docker related features to `dd
     | `user.gid` | string | The user GID to use inside a container when [jsonnet](./jsonnet.md) `User()` function is used. |
     | `user.name` | string | The host username that will get converted to UID to use inside a container when [jsonnet](./jsonnet.md) `User()` function is used. |
     | `user.group` | string | The host groupname that will get converted to GID to use inside a container when [jsonnet](./jsonnet.md) `User()` function is used. |
+    | `path_mapping` | Dict[str, str] | Path mappings to apply on declared volume sources. |
+
 
 !!! quote "Defaults"
     ```yaml
