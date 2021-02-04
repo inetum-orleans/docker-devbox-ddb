@@ -3,6 +3,10 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.7.3 (2021-02-04)
+### Fix
+* Add missing extensions in binary bundle ([#187](https://github.com/inetum-orleans/docker-devbox-ddb/issues/187)) ([`63febce`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/63febce6c474e958cc56eeddad254af36adb1b30))
+
 ## v1.7.2 (2021-02-03)
 ### Fix
 * **jinja:** Fix extra EOL issue when deprecated property are used ([`13c2d0e`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/13c2d0e92efad9ccd6ceb845b92c7f422c29b734))
