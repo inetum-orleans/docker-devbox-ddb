@@ -277,8 +277,6 @@ _default_history = (
     PropertyMigration("docker.compose.file_version",
                       "jsonnet.docker.compose.version", since="v1.6.0"),
 
-    PropertyMigration("docker.path_mapping",
-                      "jsonnet.docker.path_mapping", since="v1.6.0"),
     PropertyMigration("docker.disabled_services",
                       "jsonnet.docker.compose.excluded_services", since="v1.6.0"),
 

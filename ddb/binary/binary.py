@@ -41,6 +41,13 @@ class Binary(RegistryObject, ABC):
         Add action to be executed before running the command.
         """
 
+    @property
+    @abstractmethod
+    def global_(self) -> bool:
+        """
+        Check if binary should be registered globally.
+        """
+
     @abstractmethod
     def __eq__(self, other) -> bool:
         pass
@@ -70,6 +77,10 @@ class AbstractBinary(Binary, ABC):
 
     def priority(self) -> int:
         return 0
+
+    @property
+    def global_(self) -> bool:
+        return False
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, AbstractBinary):

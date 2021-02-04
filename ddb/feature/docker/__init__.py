@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import pathlib
 import re
 from typing import Iterable, ClassVar
 
@@ -12,6 +13,7 @@ from .schema import DockerSchema
 from ..feature import Feature, FeatureConfigurationAutoConfigureError
 from ..schema import FeatureSchema
 from ...action import Action
+from ...config import config
 
 
 class DockerFeature(Feature):
@@ -44,6 +46,7 @@ class DockerFeature(Feature):
         self._configure_defaults_ip(feature_config)
         self._configure_defaults_user_from_name_and_group(feature_config)
         self._configure_defaults_user(feature_config)
+        self._configure_defaults_path_mapping(feature_config)
 
     def _configure_defaults_ip(self, feature_config):
         ip_address = feature_config.get('ip')
@@ -128,3 +131,24 @@ class DockerFeature(Feature):
             except AttributeError:
                 gid = 1000
             feature_config['user.gid'] = gid
+
+    @staticmethod
+    def _configure_defaults_path_mapping(feature_config):
+        """
+        On windows, this generates a default path mapping matching docker-compose behavior when
+        COMPOSE_CONVERT_WINDOWS_PATHS=1 is enabled.
+
+        Drive letter should be lowercased to have the same behavior
+
+        https://github.com/docker/compose/blob/f1059d75edf76e8856469108997c15bb46a41777/compose/config/types.py#L123-L132
+        """
+        path_mapping = feature_config.get('path_mapping')
+        if path_mapping is None:
+            path_mapping = {}
+            if config.data.get('core.os') == 'nt':
+                raw = config.data.get('core.path.project_home')
+                mapped = re.sub(r"^([a-zA-Z]):", r"/\1", raw)
+                mapped = pathlib.Path(mapped).as_posix()
+                mapped = re.sub(r"(\/)(.)(\/.*)", lambda x: x.group(1) + x.group(2).lower() + x.group(3), mapped)
+                path_mapping[raw] = mapped
+            feature_config['path_mapping'] = path_mapping

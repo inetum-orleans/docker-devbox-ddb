@@ -32,22 +32,30 @@ class ShelveCache(Cache):
             path = os.path.join(tempfile.gettempdir(), "ddb", "cache")
         os.makedirs(path, exist_ok=True)
 
-        filename = os.path.join(path, self._namespace)
-        if config.clear_cache and os.path.exists(filename):
-            os.remove(filename)
+        self.basename = os.path.join(path, self._namespace)
+        if config.clear_cache:
+            self._delete_files(self.basename)
         try:
-            self._shelf = shelve.open(filename)
+            self._shelf = shelve.open(self.basename)
         except Exception as open_error:  # pylint:disable=broad-except
-            if os.path.exists(filename):
+            if self._delete_files(self.basename):
                 try:
-                    os.remove(filename)
-                    self._shelf = shelve.open(filename)
+                    self._shelf = shelve.open(self.basename)
                 except Exception as fallback_error:  # pylint:disable=broad-except
                     raise open_error from fallback_error
             else:
                 raise open_error
         if config.clear_cache:
             self._shelf.clear()
+
+    @staticmethod
+    def _delete_files(basename):
+        deleted = False
+        for filename in (basename, f"{basename}.dat", f"{basename}.dir"):
+            if os.path.exists(filename):
+                os.remove(filename)
+                deleted = True
+        return deleted
 
     def close(self):
         self._shelf.close()
@@ -56,7 +64,12 @@ class ShelveCache(Cache):
         self._shelf.sync()
 
     def get(self, key: str, default=None):
-        return self._shelf.get(key, default)
+        try:
+            return self._shelf.get(key, default)
+        except AttributeError:
+            # This can occur when class definition hash change.
+            self._delete_files(self.basename)
+            raise
 
     def keys(self):
         return self._shelf.keys()
@@ -65,10 +78,20 @@ class ShelveCache(Cache):
         self._shelf[key] = data
 
     def pop(self, key: str):
-        return self._shelf.pop(key)
+        try:
+            return self._shelf.pop(key)
+        except AttributeError:
+            # This can occur when class definition hash change.
+            self._delete_files(self.basename)
+            raise
 
     def clear(self):
-        self._shelf.clear()
+        try:
+            self._shelf.clear()
+        except AttributeError:
+            # This can occur when class definition hash change.
+            self._delete_files(self.basename)
+            raise
 
     def __contains__(self, key):
         return self._shelf.__contains__(key)
