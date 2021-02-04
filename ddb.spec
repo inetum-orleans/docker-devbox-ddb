@@ -6,8 +6,14 @@ block_cipher = None
 a = Analysis(['ddb/__main__.py'],
              pathex=[],
              binaries=[],
-             datas=[('ddb/feature/jsonnet/lib/*', 'ddb/feature/jsonnet/lib')],
-             hiddenimports=['pkg_resources.py2_warn'],  # https://github.com/pypa/setuptools/issues/1963
+             datas=[
+                 ('ddb/feature/jsonnet/lib/*', 'ddb/feature/jsonnet/lib')
+             ],
+             hiddenimports=[
+                 'pkg_resources.py2_warn',  # https://github.com/pypa/setuptools/issues/1963
+                 'cookiecutter.extensions',  # https://github.com/cookiecutter/cookiecutter/blob/b155476851448f1858884bf73c177c997319f5a6/cookiecutter/environment.py#L25-L30
+                 'jinja2_time'
+             ],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],
