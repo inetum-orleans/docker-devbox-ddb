@@ -56,11 +56,12 @@ class UpdateGitignoreAction(InitializableAction):
         block_lines, before_lines, after_lines = UpdateGitignoreAction._read_and_split_gitignore_file(gitignore)
 
         # Add of the relative_target to the block and sort the whole block.
-        block_lines.append(relative_target)
+        if relative_target not in block_lines:
+            block_lines.append(relative_target)
 
-        UpdateGitignoreAction._sanitize_block(block_lines, before_lines, after_lines)
-        UpdateGitignoreAction._write_gitignore_content(gitignore, before_lines + block_lines + after_lines)
-        context.log.success("%s added to %s", relative_target, gitignore)
+            UpdateGitignoreAction._sanitize_block(block_lines, before_lines, after_lines)
+            UpdateGitignoreAction._write_gitignore_content(gitignore, before_lines + block_lines + after_lines)
+            context.log.success("%s added to %s", relative_target, gitignore)
 
     @staticmethod
     def enforced():
@@ -96,12 +97,13 @@ class UpdateGitignoreAction(InitializableAction):
             return
 
         # Removal of the target_file to the block and sort the whole block.
-        block_lines.remove(target_file)
+        if target_file in block_lines:
+            block_lines.remove(target_file)
 
-        UpdateGitignoreAction._sanitize_block(block_lines, before_lines, after_lines)
-        UpdateGitignoreAction._write_gitignore_content(gitignore, before_lines + block_lines + after_lines)
+            UpdateGitignoreAction._sanitize_block(block_lines, before_lines, after_lines)
+            UpdateGitignoreAction._write_gitignore_content(gitignore, before_lines + block_lines + after_lines)
 
-        context.log.warning("%s removed from %s", file, gitignore)
+            context.log.warning("%s removed from %s", file, gitignore)
 
     @staticmethod
     def _get_relative_path(target: str, gitignore: str, first_slash: bool = True):
