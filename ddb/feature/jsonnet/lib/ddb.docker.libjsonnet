@@ -110,7 +110,7 @@ local groupNameToGid(group) =
     _docker_user_group_to_gid[group];
 
 local volume_is_named(v) =
-    !std.setMember("/", v) && !std.setMember(std.char(92), v) && v != ".";
+    !std.setMember("/", v) && !std.setMember("$", v) && !std.setMember(std.char(92), v) && v != ".";
 
 local volume_source(v) =
     if std.type(v) == 'object' then
