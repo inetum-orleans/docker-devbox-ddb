@@ -1,0 +1,66 @@
+networks: {}
+services:
+  db_a:
+    image: postgres
+    init: true
+    ports:
+    - 2933:5433
+    restart: 'no'
+  db_b:
+    image: postgres
+    init: true
+    ports:
+    - 2932:5432
+    restart: 'no'
+  db_c:
+    image: postgres
+    init: true
+    ports:
+    - 2934:5432
+    restart: 'no'
+  db_d:
+    image: postgres
+    init: true
+    ports:
+    - 2931:5431
+    restart: 'no'
+  db_e:
+    image: postgres
+    init: true
+    ports:
+    - 2938:5438
+    restart: 'no'
+  db_f:
+    image: postgres
+    init: true
+    ports:
+    - 2935:5433
+    restart: 'no'
+  db_g:
+    image: postgres
+    init: true
+    ports:
+    - 2932:5432/udp
+    restart: 'no'
+  db_h:
+    image: postgres
+    init: true
+    ports:
+    - 2933:5432/udp
+    restart: 'no'
+  db_i:
+    image: postgres
+    init: true
+    ports:
+    - published: '2939'
+      target: '5438'
+    restart: 'no'
+  db_j:
+    image: postgres
+    init: true
+    ports:
+    - published: '2940'
+      target: '5438'
+    restart: 'no'
+version: '3.7'
+volumes: {}

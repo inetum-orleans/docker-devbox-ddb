@@ -57,3 +57,17 @@ class TestDockerJsonnet:
             docker_compose_expected = yaml.load(f, yaml.SafeLoader)
 
         assert docker_compose == docker_compose_expected
+
+    def test_resolve_ports_conflicts(self, project_loader):
+        project_loader("jsonnet-resolve-ports-conflicts")
+
+        main(["configure"])
+
+        assert os.path.exists('docker-compose.yml')
+        with open('docker-compose.yml', 'r') as f:
+            docker_compose = yaml.safe_load(f)
+
+        with open('docker-compose.expected.yml', 'r') as f:
+            docker_compose_expected = yaml.safe_load(f)
+
+        assert docker_compose == docker_compose_expected

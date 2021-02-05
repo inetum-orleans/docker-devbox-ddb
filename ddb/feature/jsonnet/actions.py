@@ -2,6 +2,7 @@
 import json
 import os
 import re
+from importlib import import_module
 from typing import Tuple, Union, Iterable, Optional
 
 import yaml
@@ -46,8 +47,33 @@ class JsonnetAction(AbstractTemplateAction):
         else:
             ext = os.path.splitext(target)[-1]
             if ext.lower() in ['.yaml', '.yml']:
-                evaluated = yaml.safe_dump(json.loads(evaluated))
+                data = json.loads(evaluated)
+                self._do_postprocess(data)
+                evaluated = yaml.safe_dump(data)
+            else:
+                if '__post_processors__' in evaluated:
+                    data = json.loads(evaluated)
+                    if self._do_postprocess(data):
+                        evaluated = json.dumps(data)
+
             yield evaluated, target
+
+    @staticmethod
+    def _do_postprocess(data):
+        """
+        Post process jsonnet output with python functions.
+        """
+        if isinstance(data, dict) and '__post_processors__' in data.keys():
+            for post_processor_str in data.pop('__post_processors__'):
+                if '__value__' in data:
+                    data = data.pop('__value__')
+                module_name, func_name = post_processor_str.rsplit('.', 1)
+                if module_name == 'ddb.feature.jsonnet.docker':
+                    mod = import_module(module_name)
+                    post_processor = getattr(mod, func_name)
+                    post_processor(data)
+                    return True
+        return False
 
     def _autofix_render_error(self,
                               template: str,
