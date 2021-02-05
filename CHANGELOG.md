@@ -3,6 +3,10 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.9.0 (2021-02-05)
+### Feature
+* **jsonnet:** Add port conflict solver as jsonnet postprocessor ([`0c7bd16`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/0c7bd165dabaf4b9d1338f1fd436b4fada0bc1c6))
+
 ## v1.8.1 (2021-02-05)
 ### Fix
 * **jsonnet:** Add configurable default value for Binary global flag ([`ed444eb`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/ed444eb166c6b008f8aabd3a7bb5928de639cdf7))
