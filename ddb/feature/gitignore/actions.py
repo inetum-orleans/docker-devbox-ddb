@@ -41,7 +41,10 @@ class UpdateGitignoreAction(InitializableAction):
         """
         Execute action
         """
-        ignored, _, _, _, _, _ = UpdateGitignoreAction._check_file_ignore(target)
+        if not UpdateGitignoreAction._check_file_in_project(target):
+            return
+
+        ignored, _, _, _, _, _ = UpdateGitignoreAction._check_file_ignored(target)
         if ignored:
             return
 
@@ -92,7 +95,7 @@ class UpdateGitignoreAction(InitializableAction):
         :return:
         """
         ignored, target_file, gitignore, block_lines, before_lines, after_lines = \
-            UpdateGitignoreAction._check_file_ignore(file)
+            UpdateGitignoreAction._check_file_ignored(file)
         if not ignored:
             return
 
@@ -104,6 +107,12 @@ class UpdateGitignoreAction(InitializableAction):
             UpdateGitignoreAction._write_gitignore_content(gitignore, before_lines + block_lines + after_lines)
 
             context.log.warning("%s removed from %s", file, gitignore)
+
+    @staticmethod
+    def _check_file_in_project(target):
+        target_path = os.path.realpath(target)
+        cwd = os.path.realpath(".")
+        return target_path.startswith(cwd)
 
     @staticmethod
     def _get_relative_path(target: str, gitignore: str, first_slash: bool = True):
@@ -127,9 +136,9 @@ class UpdateGitignoreAction(InitializableAction):
                 yield gitignore
 
     @staticmethod
-    def _check_file_ignore(file: str, gitignores=None):
+    def _check_file_ignored(file: str, gitignores=None):
         """
-        Check if a file is ignore, going throw all provided gitignore files
+        Check if a file is ignored, going throw all provided gitignore files
         :param file:
         :param gitignores:
         :return:

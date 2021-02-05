@@ -50,6 +50,18 @@ class TestUpdateGitIgnoreAction:
 
         assert not os.path.exists('.gitignore')
 
+    def test_empty_skip_outside_additions(self, project_loader):
+        project_loader("empty")
+
+        features.register(CoreFeature())
+        features.register(GitignoreFeature())
+        load_registered_features()
+
+        action = UpdateGitignoreAction()
+        action.execute(target="../outside/to-ignore.yml")
+
+        assert not os.path.exists('.gitignore')
+
     def test_already_ignored(self, project_loader):
         project_loader("already_ignored")
 
