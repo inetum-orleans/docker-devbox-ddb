@@ -1,0 +1,40 @@
+networks: {}
+services:
+  db1:
+    image: postgres
+    init: true
+    ports:
+    - 2933:5433
+    restart: 'no'
+  db2:
+    image: postgres
+    init: true
+    ports:
+    - 2932:5432
+    restart: 'no'
+  db3:
+    image: postgres
+    init: true
+    ports:
+    - 2934:5432
+    restart: 'no'
+  db4:
+    image: postgres
+    init: true
+    ports:
+    - 2931:5431
+    restart: 'no'
+  db5:
+    image: postgres
+    init: true
+    ports:
+    - 2938:5438
+    restart: 'no'
+  db6:
+    image: postgres
+    init: true
+    ports:
+    - 2935:5433
+    restart: 'no'
+version: '3.7'
+volumes: {}
