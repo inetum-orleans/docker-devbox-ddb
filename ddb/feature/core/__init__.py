@@ -76,6 +76,10 @@ class CoreFeature(Feature):
         def config_parser(parser: ArgumentParser):
             parser.add_argument("--variables", action="store_true",
                                 help="Output as a flat list of variables available in template engines")
+            parser.add_argument("--full", action="store_true",
+                                help="Output full configuration")
+            parser.add_argument("--files", action="store_true",
+                                help="Group by loaded configuration file")
 
         def info_parser(parser: ArgumentParser):
             parser.add_argument("--type", action="append",

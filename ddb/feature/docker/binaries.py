@@ -67,9 +67,7 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
         else:
             # cwd is outside of project home.
             project_relpath = os.path.relpath(config.paths.project_home, config.cwd if config.cwd else os.getcwd())
-            params = ["-f", os.path.join(project_relpath, "docker-compose.yml")]
-            params.append("run")
-            params.append("--rm")
+            params = ["-f", os.path.join(project_relpath, "docker-compose.yml"), "run", "--rm"]
             if self.workdir:
                 mapped_cwd = get_mapped_path(real_cwd)
                 params.append(f"--volume={mapped_cwd}:{self.workdir}")

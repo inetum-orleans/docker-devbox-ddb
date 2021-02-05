@@ -2,6 +2,7 @@
 import os
 from argparse import Namespace
 from collections import namedtuple
+from copy import deepcopy
 from os.path import exists
 from pathlib import Path
 from typing import Union, Iterable, Dict
@@ -73,7 +74,6 @@ class Config:  # pylint:disable=too-many-instance-attributes
         self.extensions = extensions
         self.env_additions = {}
         self.data = MigrationsDotty()
-        self.loaded_data = {}
         self.paths = paths if paths else get_default_config_paths(env_prefix, filenames, extensions)
         self.cwd = cwd
         self.args = args if args else Namespace()
@@ -158,26 +158,30 @@ class Config:  # pylint:disable=too-many-instance-attributes
         if files is None:
             files = self.files
 
+        found_files = {}
+
         for file in files:
             if exists(file):
                 with open(file, 'rb') as stream:
-                    file_data = yaml.load(stream, Loader=yaml.FullLoader)
+                    file_data = yaml.safe_load(stream)
+                    found_files[file] = self.apply_environ_overrides(deepcopy(file_data))
                     if file_data:
                         loaded_data = config_merger.merge(loaded_data, file_data)
 
-        if self.env_key in loaded_data:
-            env = loaded_data.pop(self.env_key)
-            if env:
-                for (name, value) in env.items():
-                    os.environ[name] = value
-
-        return self.apply_environ_overrides(loaded_data)
+        return self.apply_environ_overrides(loaded_data), found_files
 
     def load_from_data(self, data: Dict):
         """
         Load configuration data from readen files.
         """
-        self.data = MigrationsDotty(config_merger.merge(dict(self.data.raw()), data))
+        merged_data = config_merger.merge(dict(self.data.raw()), data)
+        self.data = MigrationsDotty(merged_data)
+
+        if self.env_key in self.data:
+            env = self.data.pop(self.env_key)
+            if env:
+                for (name, value) in env.items():
+                    os.environ[name] = value
 
     def load(self, defaults=None, files=None):
         """
@@ -187,7 +191,8 @@ class Config:  # pylint:disable=too-many-instance-attributes
         if defaults:
             # Config.defaults should have the priority over given defaults.
             defaults_to_apply = config_merger.merge(defaults, defaults_to_apply)
-        self.load_from_data(self.read(defaults_to_apply, files))
+        read_data, _ = self.read(defaults_to_apply, files)
+        self.load_from_data(read_data)
 
     def apply_environ_overrides(self, data, prefix=None):
         """

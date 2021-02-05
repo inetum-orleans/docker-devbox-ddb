@@ -80,28 +80,57 @@ Download files from remote sources like Cookiecutter templates.
 If ddb is installed with the standalone binary and a new version is available on github, it will automatically download 
 it and update the current binary.
 
+```
+optional arguments:
+  -h, --help  show this help message and exit
+  --force     Force update
+```
+
 ### ddb features
 
 This action allows you to check the list of enabled features with a short explanation of what they do. 
+
+```
+optional arguments:
+  -h, --help  show this help message and exit
+```
 
 ### ddb config
 
 Display the effective configuration after merge of all configuration files from possible locations.
 
+```
+optional arguments:
+  -h, --help   show this help message and exit
+  --variables  Output as a flat list of variables available in template
+               engines
+  --full       Output full configuration
+  --files      Group by loaded configuration file
+```
+
 Read more: [Configuration](configuration.md)
     
-!!! tip "Use --variables to check what is available in template engines"
+!!! tip "Use `--variables` and `--full` options to check what is available in template engines"
     
     ddb effective configuration is used as context inside all template engine processing (Jinja, jsonnet, ytt, ...)
     
     When working with templates, you might want to include some configuration values into the template.
     
-    You can use `--variables` option to display the whole configuration as a flat and dotted notation, as it can be 
+    You can use `--variables` and `--full` option to display the whole configuration as a flat and dotted notation, as it can be 
     tedious to retrieve the full variable name from the default `yaml` output. 
 
 ### ddb configure
 
 Configure the project by scanning project files and performing actions supported by all features.
+
+```
+optional arguments:
+  -h, --help  show this help message and exit
+  --eject     Eject the project using the current configuration
+  --autofix   Autofix supported deprecated warnings by modifying template
+              sources.
+
+```
 
 !!! tip "Use --eject to convert the project to a static version"
 
@@ -133,6 +162,13 @@ Configure the project by scanning project files and performing actions supported
 
 Displays compacted information about docker containers such as environment variables, virtual host, exposed ports and 
 binaries in a more readable way.
+
+```
+optional arguments:
+  -h, --help   show this help message and exit
+  --type TYPE  Filter for a type of information between: bin, env, port and
+               vhost
+```
 
 ```bash 
 +-----------------------------------------------+
