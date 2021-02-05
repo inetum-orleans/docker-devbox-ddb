@@ -3,6 +3,16 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.8.0 (2021-02-05)
+### Feature
+* **config:** Enhance config command output and add options ([#189](https://github.com/inetum-orleans/docker-devbox-ddb/issues/189)) ([`02dbcb5`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/02dbcb51808b5891efd3a39468ccf3f2dfcfdbe2))
+* **binary:** Add global and entrypoint options to binaries ([#185](https://github.com/inetum-orleans/docker-devbox-ddb/issues/185)) ([`61f973c`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/61f973ca721c470936b14a35363c3541c15b1c03))
+
+### Fix
+* **file:** Add .idea directory to default excludes ([`24d3df7`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/24d3df7500c9222afe8a23038e83182ade424caf))
+* **jsonnet:** Add support for volume starting with an environment variable ([`e4f2bcb`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/e4f2bcb726f826cd60e9a24957ab389e8eff560a))
+* **gitignore:** Check if file is gitignore before trying to remove it ([#190](https://github.com/inetum-orleans/docker-devbox-ddb/issues/190)) ([`4cbcdec`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/4cbcdec05a92b5b0bc6d1ef2902c5114b29c3291))
+
 ## v1.7.3 (2021-02-04)
 ### Fix
 * Add missing extensions in binary bundle ([#187](https://github.com/inetum-orleans/docker-devbox-ddb/issues/187)) ([`63febce`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/63febce6c474e958cc56eeddad254af36adb1b30))
