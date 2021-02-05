@@ -109,6 +109,7 @@ Run `ddb configure` to evaluate templates and generate target files.
     | Property | Type | Description |
     | :---------: | :----: | :----------- |
     | `disabled` | boolean<br>`False` | Should binary generation be disabled ? |
+    | `global` | boolean | Should binaries be generated as global by default ? |
 
 
 !!! summary "Docker VirtualHost configuration (prefixed with `jsonnet.docker.virtualhost.`)"

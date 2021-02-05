@@ -20,6 +20,7 @@ local _docker_networks_names = std.extVar("jsonnet.docker.networks.names");
 local _docker_service_init = std.extVar("jsonnet.docker.service.init");
 local _docker_virtualhost_disabled = std.extVar("jsonnet.docker.virtualhost.disabled");
 local _docker_binary_disabled = std.extVar("jsonnet.docker.binary.disabled");
+local _docker_binary_global = std.extVar("jsonnet.docker.binary.global");
 local _docker_virtualhost_type = std.extVar("jsonnet.docker.virtualhost.type");
 local _docker_virtualhost_disabled = std.extVar("jsonnet.docker.virtualhost.disabled");
 local _docker_virtualhost_network_id = std.extVar("jsonnet.docker.virtualhost.network_id");
@@ -170,17 +171,20 @@ local BinaryOptions(name, options, options_condition = null, index = null) = {
 };
 
 local NoBinaryLabels(name, workdir = null, args = null, options = null, options_condition = null, exe = null, entrypoint = null, global = null, condition = null) = {};
-local BinaryLabels(name, workdir = null, args = null, options = null, options_condition = null, exe = null, entrypoint = null, global = null, condition = null) = {
-    ["ddb.emit.docker:binary[" + name + "](name)"]: name,
-    [if workdir != null then "ddb.emit.docker:binary[" + name + "](workdir)"]: workdir,
-    [if args != null then "ddb.emit.docker:binary[" + name + "](args)"]: args,
-    [if options != null then "ddb.emit.docker:binary[" + name + "](options)"]: options,
-    [if options_condition != null then "ddb.emit.docker:binary[" + name + "](options_condition)"]: options_condition,
-    [if exe != null then "ddb.emit.docker:binary[" + name + "](exe)"]: exe,
-    [if entrypoint != null then "ddb.emit.docker:binary[" + name + "](entrypoint)"]: entrypoint,
-    [if global != null then "ddb.emit.docker:binary[" + name + "](global)"]: global,
-    [if condition != null then "ddb.emit.docker:binary[" + name + "](condition)"]: condition
-};
+local BinaryLabels(name, workdir = null, args = null, options = null, options_condition = null, exe = null, entrypoint = null, global = null, condition = null) =
+    local effective_global = if global == null then _docker_binary_global else global;
+
+	{
+		["ddb.emit.docker:binary[" + name + "](name)"]: name,
+		[if workdir != null then "ddb.emit.docker:binary[" + name + "](workdir)"]: workdir,
+		[if args != null then "ddb.emit.docker:binary[" + name + "](args)"]: args,
+		[if options != null then "ddb.emit.docker:binary[" + name + "](options)"]: options,
+		[if options_condition != null then "ddb.emit.docker:binary[" + name + "](options_condition)"]: options_condition,
+		[if exe != null then "ddb.emit.docker:binary[" + name + "](exe)"]: exe,
+		[if entrypoint != null then "ddb.emit.docker:binary[" + name + "](entrypoint)"]: entrypoint,
+		[if effective_global != null then "ddb.emit.docker:binary[" + name + "](global)"]: effective_global,
+		[if condition != null then "ddb.emit.docker:binary[" + name + "](condition)"]: condition
+	};
 
 local NoBinary(name, workdir = null, args = null, options = null, options_condition = null, exe = null, entrypoint=null, global=null, condition=null) = {};
 local Binary(name, workdir = null, args = null, options = null, options_condition = null, exe = null, entrypoint=null, global=null, condition=null) = {

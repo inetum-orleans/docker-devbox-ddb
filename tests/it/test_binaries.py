@@ -68,6 +68,21 @@ class TestBinaries:
         output = capsys.readouterr()
         assert output.out.strip() == docker_compose_bin + " run --rm --workdir=/workdir/. db psql"
 
+    def test_docker_binaries_global_default(self, project_loader, capsys: CaptureFixture):
+        project_loader("docker_global_default")
+
+        exceptions = main(["configure"])
+        assert not exceptions
+
+        exceptions = main(["run", "psql"])
+        assert not exceptions
+
+        assert not os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql'))
+        assert os.path.exists(os.path.join(os.getcwd(), '..', 'home', '.bin', 'psql'))
+
+        output = capsys.readouterr()
+        assert output.out.strip() == docker_compose_bin + " run --rm --workdir=/workdir/. db psql"
+
     def test_docker_binaries_with_clear_cache(self, project_loader, capsys: CaptureFixture):
         project_loader("docker")
 

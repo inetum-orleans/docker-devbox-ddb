@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from marshmallow import fields, Schema
 from marshmallow_union import Union
 
@@ -37,6 +38,7 @@ class BinarySchema(DisableableSchema):
     """
     Binary schema
     """
+    global_ = fields.Boolean(data_key='global', attribute='global', required=False, allow_none=True, default=None)
 
 
 class VirtualhostSchema(DisableableSchema):  # Replacement for docker.reverse-proxy schema
