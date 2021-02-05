@@ -10,7 +10,7 @@ directory and trigger events when files are found or removed.
     | `disabled` | boolean<br>`false` | Should this feature be disabled ? |
     | `extensions` | string[] | A list of glob of supported extension. |
     | `includes` | string[] | A list of glob of filepath to include. |
-    | `excludes` | string[]<br>`['**/.git', '**/node_modules', '**/vendor', '**/target', '**/dist']` | A list of glob of filepath to exclude. |
+    | `excludes` | string[]<br>`['**/.git', '**/.idea', '**/node_modules', '**/vendor', '**/target', '**/dist']` | A list of glob of filepath to exclude. |
 
 !!! quote "Defaults"
     ```yaml

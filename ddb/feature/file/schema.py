@@ -13,6 +13,7 @@ class FileSchema(FeatureSchema):
     includes = fields.List(fields.String())
     excludes = fields.List(fields.String(), default=["**/_*",
                                                      "**/.git",
+                                                     "**/.idea",
                                                      "**/node_modules",
                                                      "**/vendor",
                                                      "**/target",
