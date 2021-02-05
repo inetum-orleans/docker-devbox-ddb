@@ -46,7 +46,7 @@ class JsonnetAction(AbstractTemplateAction):
         else:
             ext = os.path.splitext(target)[-1]
             if ext.lower() in ['.yaml', '.yml']:
-                evaluated = yaml.dump(json.loads(evaluated), Dumper=yaml.SafeDumper)
+                evaluated = yaml.safe_dump(json.loads(evaluated))
             yield evaluated, target
 
     def _autofix_render_error(self,

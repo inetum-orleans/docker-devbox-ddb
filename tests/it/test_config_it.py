@@ -1,5 +1,9 @@
 import os
 
+import yaml
+from _pytest.capture import CaptureFixture
+from dotty_dict import Dotty
+
 from ddb.__main__ import main, reset
 from ddb.config import config
 
@@ -29,6 +33,49 @@ class TestConfig:
         assert config.data.get('docker.registry.repository') == "alm-atout"
 
         reset()
+
+    def test_config_output_extra_filenames(self, project_loader, capsys: CaptureFixture):
+        project_loader("extra-filenames")
+
+        main(["config"])
+
+        configuration = Dotty(yaml.safe_load(capsys.readouterr().out))
+
+        assert configuration['app.value'] == 'local'
+        assert configuration['some'] is True
+        assert configuration['another'] is True
+        assert configuration['core.configuration.extra'] == ['some.custom.yml', 'another.config.file']
+
+        reset()
+
+    def test_config_output_extra_filenames_files_option(self, project_loader, capsys: CaptureFixture):
+        project_loader("extra-filenames")
+
+        main(["config", "--files"])
+
+        reset()
+
+        output = capsys.readouterr().out
+
+        parts = [part.lstrip() for part in output.split('---') if part.strip()]
+        assert len(parts) == 4
+
+        configurations = {}
+
+        for part in parts:
+            filename, config = part.split('\n', 1)
+            assert filename.startswith('# ')
+            filename = filename[2:]
+            filename = os.path.relpath(filename, os.getcwd())
+            configurations[filename] = Dotty(yaml.safe_load(config))
+
+        assert ('ddb.yml', 'some.custom.yml', 'another.config.file.yaml', 'ddb.local.yml') == \
+               tuple(configurations.keys())
+
+        assert configurations['ddb.yml']['app.value'] == 'default'
+        assert configurations['some.custom.yml']['app.value'] == 'custom'
+        assert configurations['another.config.file.yaml']['app.value'] == 'config'
+        assert configurations['ddb.local.yml']['app.value'] == 'local'
 
     def test_config_local_falsy(self, project_loader):
         project_loader("local-falsy")

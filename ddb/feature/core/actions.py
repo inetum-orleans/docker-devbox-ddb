@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
-import sys
 import shutil
+import sys
 from datetime import date
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -10,6 +10,7 @@ from urllib.error import HTTPError
 
 import requests
 import yaml
+from dotty_dict import Dotty
 from progress.bar import IncrementalBar
 
 from ddb import __version__
@@ -198,12 +199,62 @@ class ConfigAction(Action):
         """
         Execute action
         """
+        configuration, configuration_files = ConfigAction._get_configuration_files(config.args.full, config.args.files)
+
         if config.args.variables:
-            flat = flatten(config.data, keep_primitive_list=True)
-            for key in sorted(flat.keys()):
-                print("%s: %s" % (key, flat[key]))
+            if config.args.files and configuration_files:
+                for index, (file, configuration_file) in enumerate(configuration_files.items()):
+                    if index > 0:
+                        print()
+                    print(f"# {file}")
+                    flat = flatten(Dotty(configuration_file), keep_primitive_list=True)
+                    for key in sorted(flat.keys()):
+                        print(f"{key}: {flat[key]}")
+            else:
+                flat = flatten(Dotty(configuration), keep_primitive_list=True)
+                for key in sorted(flat.keys()):
+                    print(f"{key}: {flat[key]}")
         else:
-            print(yaml.dump(dict(config.data)))
+            if config.args.files and configuration_files:
+                for file, configuration_file in configuration_files.items():
+                    print(f"--- # {file}")
+                    print(yaml.safe_dump(configuration_file))
+            else:
+                print(yaml.safe_dump(configuration))
+
+    @staticmethod
+    def _prune_default_configuration(default_configuration, flat_file_configuration):
+        for file_key in flat_file_configuration.values():
+            if file_key in default_configuration:
+                default_configuration.pop(file_key, None)
+                parent_k = file_key
+                while '.' in parent_k:
+                    (parent_k, _) = parent_k.rsplit('.', 1)
+                    parent_value = default_configuration.get(parent_k)
+                    if parent_value is None or not parent_value:
+                        default_configuration.pop(parent_k, None)
+                    else:
+                        break
+
+    @staticmethod
+    def _get_configuration_files(full, files):
+        if full and not files:
+            configuration = dict(config.data.copy())
+            configuration_files = None
+            return configuration, configuration_files
+
+        configuration, configuration_files = config.read()
+        if full:
+            default_configuration = config.data.copy()
+
+            for file_configuration in configuration_files.values():
+                flat_file_configuration = flatten(file_configuration)
+                ConfigAction._prune_default_configuration(default_configuration, flat_file_configuration)
+
+            tmp = {'default': dict(default_configuration)}
+            tmp.update(configuration_files)
+            configuration_files = tmp
+        return configuration, configuration_files
 
 
 class EjectAction(Action):
@@ -277,20 +328,19 @@ class ReloadConfigAction(Action):
         Execute action
         """
         if context.watching:
-            data = config.read()
-            if data != config.loaded_data:
-                try:
-                    context.log.info("Configuration file has changed.")
-                    config.clear()
-                    config.load_from_data(data)
-                    all_features = features.all()
-                    for feature in all_features:
-                        feature.configure()
-                    context.log.info("Configuration has been reloaded.")
-                    events.config.reloaded()
-                except Exception as exc:  # pylint:disable=broad-except
-                    context.log.warning("Configuration has fail to reload: %s", str(exc))
-                    return
+            data, _ = config.read()
+            try:
+                context.log.info("Configuration file has changed.")
+                config.clear()
+                config.load_from_data(data)
+                all_features = features.all()
+                for feature in all_features:
+                    feature.configure()
+                context.log.info("Configuration has been reloaded.")
+                events.config.reloaded()
+            except Exception as exc:  # pylint:disable=broad-except
+                context.log.warning("Configuration has fail to reload: %s", str(exc))
+                return
 
 
 class VersionAction(Action):
