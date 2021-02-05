@@ -93,7 +93,7 @@ def check_for_update(github_repository: str, output=False, details=False):
             blocks = [_build_update_header(last_release)]
             if details:
                 row = _build_update_details(github_repository, last_release)
-                blocks.append([row])
+                blocks.append(row)
                 print(get_table_display(blocks))
             else:
                 for block in blocks:
@@ -390,7 +390,7 @@ class CheckForUpdateAction(InitializableAction):
         :param command command name
         :return:
         """
-        if command.name not in ['activate', 'deactivate', 'run', 'self-update']:
+        if not command.avoid_stdout:
             cache = caches.get('core.check_for_update.version')
             last_check = cache.get('last_check', None)
             today = date.today()

@@ -21,6 +21,13 @@ class Command(RegistryObject, ABC):
         Check if this command allow unknown args.
         """
 
+    @property
+    @abstractmethod
+    def avoid_stdout(self):
+        """
+        Should this command avoid stdout spoiling
+        """
+
     @abstractmethod
     def execute(self):
         """
@@ -45,15 +52,20 @@ class DefaultCommand(DefaultRegistryObject, Command):
     """
 
     def __init__(self, name: str, description: str = None, parent: Optional[Union[Command, str]] = None,
-                 allow_unknown_args=False, before_execute: Optional[Callable[[], Any]] = None):
+                 allow_unknown_args=False, before_execute: Optional[Callable[[], Any]] = None, avoid_stdout=False):
         super().__init__(name, description)
         self.before_execute = before_execute
         self._parent = parent
         self._allow_unknown_args = allow_unknown_args
+        self._avoid_stdout = avoid_stdout
 
     @property
     def allow_unknown_args(self):
         return self._allow_unknown_args
+
+    @property
+    def avoid_stdout(self):
+        return self._avoid_stdout
 
     @property
     def parent(self) -> Optional[Command]:
@@ -91,8 +103,9 @@ class LifecycleCommand(DefaultCommand):
     """
 
     def __init__(self, name: str, description: Union[str, None], *lifecycle: Union[str, Phase],
-                 parent: Optional[Union[Command, str]] = None, before_execute: Optional[Callable[[], Any]] = None):
-        super().__init__(name, description, parent, before_execute=before_execute)
+                 parent: Optional[Union[Command, str]] = None, before_execute: Optional[Callable[[], Any]] = None,
+                 avoid_stdout=False):
+        super().__init__(name, description, parent, before_execute=before_execute, avoid_stdout=avoid_stdout)
         self._lifecycle = list(map(lambda phase: phases.get(phase) if not isinstance(phase, Phase) else phase,
                                    lifecycle))  # type: Iterable[Phase]
         for phase in self._lifecycle:

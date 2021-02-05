@@ -63,15 +63,18 @@ class ShellFeature(Feature):
         return (
             LifecycleCommand("activate",
                              "Write a shell script to be executed to activate environment",
-                             "activate"
+                             "activate",
+                             avoid_stdout=True
                              ),
             LifecycleCommand("deactivate",
                              "Write a shell script to be executed to deactivate environment",
-                             "deactivate"
+                             "deactivate",
+                             avoid_stdout=True
                              ),
             LifecycleCommand("check-activated",
                              "Check if project is activated in current shell",
-                             "check-activated"
+                             "check-activated",
+                             avoid_stdout=True
                              ),
         )
 

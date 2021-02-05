@@ -108,7 +108,7 @@ class CoreFeature(Feature):
 
         return (
             LifecycleCommand("init", "Initialize the environment",
-                             "init"),
+                             "init", avoid_stdout=True),
 
             LifecycleCommand("configure", "Configure the environment",
                              "configure",
