@@ -3,6 +3,11 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.8.1 (2021-02-05)
+### Fix
+* **jsonnet:** Add configurable default value for Binary global flag ([`ed444eb`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/ed444eb166c6b008f8aabd3a7bb5928de639cdf7))
+* **gitignore:** Avoid addition of global binaries in .gitignore ([`15f95f4`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/15f95f413d03262fb2255a5f222fbe16ed20143d))
+
 ## v1.8.0 (2021-02-05)
 ### Feature
 * **config:** Enhance config command output and add options ([#189](https://github.com/inetum-orleans/docker-devbox-ddb/issues/189)) ([`02dbcb5`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/02dbcb51808b5891efd3a39468ccf3f2dfcfdbe2))
