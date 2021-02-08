@@ -10,6 +10,7 @@ a = Analysis(['ddb/__main__.py'],
                  ('ddb/feature/jsonnet/lib/*', 'ddb/feature/jsonnet/lib')
              ],
              hiddenimports=[
+                 'ddb.feature.jsonnet.docker',
                  'pkg_resources.py2_warn',  # https://github.com/pypa/setuptools/issues/1963
                  'cookiecutter.extensions',  # https://github.com/cookiecutter/cookiecutter/blob/b155476851448f1858884bf73c177c997319f5a6/cookiecutter/environment.py#L25-L30
                  'jinja2_time'
