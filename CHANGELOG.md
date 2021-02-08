@@ -3,6 +3,10 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.9.1 (2021-02-08)
+### Fix
+* **jsonnet:** Add missing ddb.feature.jsonnet.docker package in exe version ([`5253802`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/5253802f45bcc7a2462ae54ba2f6192afdab25a8))
+
 ## v1.9.0 (2021-02-05)
 ### Feature
 * **jsonnet:** Add port conflict solver as jsonnet postprocessor ([`0c7bd16`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/0c7bd165dabaf4b9d1338f1fd436b4fada0bc1c6))
