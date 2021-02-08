@@ -209,12 +209,24 @@ optional arguments:
 Display a script for the configured shell that must be evaluated to active the project environment inside the current
 shell session.
 
+```
+optional arguments:
+  -h, --help  show this help message and exit
+  --force     Force activation when a project is already activated.
+```
+
 Read more: [Shell feature](features/shell.md)
 
 ### ddb deactivate
 
 Display a script for the configured shell that must be evaluated to deactivate the project environment inside the
 current shell session.
+
+```
+optional arguments:
+  -h, --help  show this help message and exit
+  --force     Force deactivation when a project is already deactivated
+```
 
 Read more: [Shell feature](features/shell.md)
 

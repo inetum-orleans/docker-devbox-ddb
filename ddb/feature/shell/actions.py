@@ -263,8 +263,11 @@ class ActivateAction(Action):
         Execute action
         """
         try:
-            check_activated(True)
-            raise CheckIsActivatedException("project is already activated.")
+            check_activated('force' not in config.args or not config.args.force)
+            if config.args.force:
+                self._deactivate()
+            else:
+                raise CheckIsActivatedException("project is already activated.")
         except CheckIsNotActivatedException:
             pass
 
@@ -339,7 +342,7 @@ class DeactivateAction(Action):
         Execute action
         """
         try:
-            check_activated(True)
+            check_activated('force' not in config.args or not config.args.force)
         except CheckAnotherProjectActivatedException:
             pass
 
