@@ -129,12 +129,17 @@ class BashShellIntegration(ShellIntegration):
         return shim
 
     def create_binary_shim(self, shims_path: str, name: str, global_: bool):
-        command = f"$(ddb run {name} \"$@\")"
         if global_:
             environment_variable = next(
                 self.set_environment_variable(config.env_prefix + "_PROJECT_HOME", config.paths.project_home)
             )
-            command = f"{environment_variable}\n{command}"
+
+            command = f"$(ddb deactivate --force)\n" \
+                      f"{environment_variable}\n" \
+                      f"$(ddb activate --force)\n" \
+                      f"$(ddb run {name} \"$@\")"
+        else:
+            command = f"$(ddb run {name} \"$@\")"
 
         return self._write_shim(shims_path, name, 'binary', command)
 
@@ -203,10 +208,25 @@ class CmdShellIntegration(ShellIntegration):
     def create_binary_shim(self, shims_path: str, name: str, global_: bool):
         commands = []
         if global_:
-            environment_variable = next(
+            commands.extend([
+                "set command=(ddb deactivate --force)",
+                "%command%>cmd.txt",
+                "set /p execution=<cmd.txt",
+                "del cmd.txt",
+                "%execution%"
+            ])
+
+            commands.append(next(
                 self.set_environment_variable(config.env_prefix + "_PROJECT_HOME", config.paths.project_home)
-            )
-            commands.append(environment_variable)
+            ))
+
+            commands.extend([
+                "set command=(ddb activate --force)",
+                "%command%>cmd.txt",
+                "set /p execution=<cmd.txt",
+                "del cmd.txt",
+                "%execution%"
+            ])
 
         commands.extend([
             f"set command=(ddb run {name} \"%*\")",

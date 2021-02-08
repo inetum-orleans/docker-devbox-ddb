@@ -475,7 +475,7 @@ class SelfUpdateAction(Action):
         last_release = check_for_update(github_repository, True)
         if not last_release:
             print('ddb is already up to date.')
-            if not config.args.force:
+            if 'force' not in config.args or not config.args.force:
                 return
 
         if not last_release:

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+from argparse import ArgumentParser
 from typing import Iterable, ClassVar
 
 from dotty_dict import Dotty
@@ -52,9 +53,19 @@ class ShellFeature(Feature):
 
     @property
     def phases(self) -> Iterable[Phase]:
+        def activate_parser(parser: ArgumentParser):
+            parser.add_argument("--force", action="store_true",
+                                help="Force activation when a project is already activated.")
+
+        def deactivate_parser(parser: ArgumentParser):
+            parser.add_argument("--force", action="store_true",
+                                help="Force deactivation when a project is already deactivated")
+
         return (
-            DefaultPhase("activate", "Write a shell script to be executed to activate environment"),
-            DefaultPhase("deactivate", "Write a shell script to be executed to deactivate environment"),
+            DefaultPhase("activate", "Write a shell script to be executed to activate environment",
+                         activate_parser),
+            DefaultPhase("deactivate", "Write a shell script to be executed to deactivate environment",
+                         deactivate_parser),
             DefaultPhase("check-activated", "Check if project is activated in current shell"),
         )
 
@@ -64,7 +75,7 @@ class ShellFeature(Feature):
             LifecycleCommand("activate",
                              "Write a shell script to be executed to activate environment",
                              "activate",
-                             avoid_stdout=True
+                             avoid_stdout=True,
                              ),
             LifecycleCommand("deactivate",
                              "Write a shell script to be executed to deactivate environment",
