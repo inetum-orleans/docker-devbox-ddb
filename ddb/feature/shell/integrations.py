@@ -130,12 +130,17 @@ class BashShellIntegration(ShellIntegration):
 
     def create_binary_shim(self, shims_path: str, name: str, global_: bool):
         if global_:
-            environment_variable = next(
+            ddb_project_home_variable = next(
                 self.set_environment_variable(config.env_prefix + "_PROJECT_HOME", config.paths.project_home)
             )
 
+            compose_ignore_orphans_variable = next(
+                self.set_environment_variable("COMPOSE_IGNORE_ORPHANS", "1")
+            )
+
             command = f"$(ddb deactivate --force)\n" \
-                      f"{environment_variable}\n" \
+                      f"{ddb_project_home_variable}\n" \
+                      f"{compose_ignore_orphans_variable}\n" \
                       f"$(ddb activate --force)\n" \
                       f"$(ddb run {name} \"$@\")"
         else:
@@ -218,6 +223,10 @@ class CmdShellIntegration(ShellIntegration):
 
             commands.append(next(
                 self.set_environment_variable(config.env_prefix + "_PROJECT_HOME", config.paths.project_home)
+            ))
+
+            commands.append(next(
+                self.set_environment_variable("COMPOSE_IGNORE_ORPHANS", "1")
             ))
 
             commands.extend([
