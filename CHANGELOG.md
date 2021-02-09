@@ -3,6 +3,12 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.9.2 (2021-02-09)
+### Fix
+* **fixuid:** Fix automatic fixuid configuration for some Dockerfile ([`f504416`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/f504416b4f10f62f98a87e23d6c1cd13ed6eb3b9))
+* **binary:** Use COMPOSE_IGNORE_ORPHANS=1 in global binary shim ([`9d4a955`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/9d4a9556305d04031cdf0d10b52eb3e4ee5fb504))
+* **binary:** Fix orphan containers when using global binaries ([#195](https://github.com/inetum-orleans/docker-devbox-ddb/issues/195)) ([`40b3cae`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/40b3cae12450e1897496658d3f62ceb814087e00))
+
 ## v1.9.1 (2021-02-08)
 ### Fix
 * **jsonnet:** Add missing ddb.feature.jsonnet.docker package in exe version ([`5253802`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/5253802f45bcc7a2462ae54ba2f6192afdab25a8))
