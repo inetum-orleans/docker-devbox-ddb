@@ -13,7 +13,7 @@ from ddb.config import Config
 from pytest_mock import MockerFixture
 from verboselogs import SPAM
 
-from .utilstest import init_config_paths, load_config
+from .utilstest import init_config_paths
 
 pytest_plugins = ["docker_compose"]
 
@@ -64,6 +64,13 @@ def configure(mocker: MockerFixture):
     cwd = os.getcwd()
 
     Config.defaults = {'defaults': {'fail_fast': True}}
+
+    def overrides(config):
+        if not 'core' in config:
+            config['core'] = {}
+        config.get('core')['check_updates'] = False
+
+    Config.overrides = overrides
 
     try:
         if os.name == 'nt' and 'COMSPEC' not in os.environ:

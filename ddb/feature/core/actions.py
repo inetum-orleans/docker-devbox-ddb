@@ -390,7 +390,7 @@ class CheckForUpdateAction(InitializableAction):
         :param command command name
         :return:
         """
-        if not command.avoid_stdout:
+        if not command.avoid_stdout and config.data.get('core.check_updates'):
             cache = caches.get('core.check_for_update.version')
             last_check = cache.get('last_check', None)
             today = date.today()

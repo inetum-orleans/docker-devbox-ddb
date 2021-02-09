@@ -67,4 +67,5 @@ class CoreFeatureSchema(FeatureSchema):
     process = fields.Dict(fields.String(), fields.Nested(ProcessSchema()), default={})  # Process binary mappings
     configuration = fields.Nested(ConfigurationSchema(), default=ConfigurationSchema())
     github_repository = fields.String(required=True, default="inetum-orleans/docker-devbox-ddb")
+    check_updates = fields.Boolean(required=True, default=True)
     required_version = fields.String(required=False, allow_none=True, default=None)

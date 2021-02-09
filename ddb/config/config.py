@@ -56,8 +56,9 @@ class Config:  # pylint:disable=too-many-instance-attributes
     """
     Configuration
     """
-    # Static default values for configuration, can be modified from code mainly for tests purpose
+    # Static default/overrides values for configuration, can be modified from code mainly for tests purpose
     defaults = None
+    overrides = lambda config: config
 
     def __init__(self,
                  paths: Union[ConfigPaths, None] = None,
@@ -167,6 +168,9 @@ class Config:  # pylint:disable=too-many-instance-attributes
                     found_files[file] = self.apply_environ_overrides(deepcopy(file_data))
                     if file_data:
                         loaded_data = config_merger.merge(loaded_data, file_data)
+
+        if Config.overrides:  # pylint:disable=using-constant-test
+            Config.overrides(loaded_data)
 
         return self.apply_environ_overrides(loaded_data), found_files
 
