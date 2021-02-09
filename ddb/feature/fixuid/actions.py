@@ -28,7 +28,7 @@ class CustomDockerfileParser(DockerfileParser):
     Custom class to implement entrypoint property with the same behavior as cmd property.
     """
 
-    def get_last_instruction(self, instruction_type):
+    def get_last_instruction(self, instruction_type, instruction_condition = lambda instruction: True):
         """
         Determine the final instruction_type instruction, if any, in the final build stage.
         instruction_types from earlier stages are ignored.
@@ -38,7 +38,7 @@ class CustomDockerfileParser(DockerfileParser):
         for insndesc in self.structure:
             if insndesc['instruction'] == 'FROM':  # new stage, reset
                 last_instruction = None
-            elif insndesc['instruction'] == instruction_type:
+            elif insndesc['instruction'] == instruction_type and instruction_condition(insndesc):
                 last_instruction = insndesc
         return last_instruction
 
@@ -333,7 +333,10 @@ class FixuidDockerComposeAction(Action):
                 ret = True
 
             if not manual_install and self._dockerfile_lines[0] + "\n" not in parser.lines:
-                last_instruction_user = parser.get_last_instruction("USER")
+                last_instruction_user = parser\
+                    .get_last_instruction("USER",
+                                          lambda instruction: instruction.get('value') and
+                                                              instruction.get('value').lower() != 'root')
                 last_instruction_entrypoint = parser.get_last_instruction("ENTRYPOINT")
                 if last_instruction_user:
                     parser.add_lines_at(last_instruction_user, *self._dockerfile_lines)

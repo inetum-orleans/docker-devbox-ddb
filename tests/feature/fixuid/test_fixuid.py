@@ -41,7 +41,8 @@ class TestFixuidFeature:
         "from-php-empty",
         "from-php-with-entrypoint-only",
         "from-php-with-entrypoint-and-cmd",
-        "from-php-user"
+        "from-php-user",
+        "from-php-root-user"
     ])
     def test_fixuid(self, project_loader, project):
         project_loader(project)
