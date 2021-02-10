@@ -494,7 +494,7 @@ class SelfUpdateAction(Action):
         binary_path = get_binary_path()
 
         if not os.access(binary_path, os.W_OK):
-            raise PermissionError("You don't have permission to write on ddb binary file. ({})".format(sys.argv[0]))
+            raise PermissionError(f"You don't have permission to write on ddb binary file. ({binary_path})")
 
         remote_filename = 'ddb.exe' if os.name == 'nt' else 'ddb'
         url = 'https://github.com/{}/releases/download/v{}/{}'.format(github_repository, version, remote_filename)
