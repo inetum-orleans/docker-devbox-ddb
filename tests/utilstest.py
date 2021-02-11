@@ -3,9 +3,10 @@ import re
 import time
 
 from cfssl import cfssl
+
 from ddb.config import config
 from ddb.config.config import ConfigPaths
-from ddb.feature.bootstrap import get_sorted_features, bootstrap_features_configuration
+from ddb.feature.bootstrap import bootstrap_features_configuration
 from ddb.feature.gitignore import UpdateGitignoreAction
 
 
@@ -16,6 +17,7 @@ def load_config(data_dir: str = None, name: str = None):
     config.load(config.data)
 
     return config
+
 
 def init_config_paths(data_dir: str = None, name: str = None):
     root_dir = os.path.join(data_dir, name) if name else data_dir
@@ -88,3 +90,28 @@ def expect_gitignore(gitignore: str, *expected_lines: str):
             return False
 
     return True
+
+
+def get_user_uid_gid(username):
+    try:
+        import pwd  # pylint:disable=import-outside-toplevel
+        user = pwd.getpwnam(username)
+        return user.pw_uid, user.pw_gid
+    except ImportError:
+        return ''
+
+
+def get_group_gid(groupname):
+    try:
+        import grp  # pylint:disable=import-outside-toplevel
+        try :
+            group = grp.getgrnam(groupname)
+            return group.gr_gid
+        except KeyError:
+            pass
+
+        import pwd  # pylint:disable=import-outside-toplevel
+        user = pwd.getpwnam(groupname)
+        return user.pw_gid
+    except ImportError:
+        return ''

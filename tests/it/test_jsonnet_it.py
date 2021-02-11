@@ -2,8 +2,10 @@ import os
 
 import pytest
 import yaml
+from dotty_dict import Dotty
 
 from ddb.__main__ import main
+from tests.utilstest import get_user_uid_gid, get_group_gid
 
 
 class TestJsonnet:
@@ -35,6 +37,11 @@ class TestDockerJsonnet:
 
         with open('docker-compose.expected.yml', 'r') as f:
             docker_compose_expected = yaml.load(f, yaml.SafeLoader)
+
+        uid, _ = get_user_uid_gid('root')
+        gid = get_group_gid('nobody')
+
+        Dotty(docker_compose_expected)['services.maven.user'] = f"{uid}:{gid}"
 
         assert docker_compose == docker_compose_expected
 

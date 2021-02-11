@@ -93,3 +93,27 @@ def configure(mocker: MockerFixture):
         os.environ.clear()
         os.environ.update(original_environ)
         reset()
+
+
+def pytest_configure(config):
+    """
+    Makes verbose pytest diff without -v flag.
+
+    https://stackoverflow.com/questions/30938780/how-can-i-show-verbose-py-test-diffs-without-verbose-test-progress
+    """
+    terminal = config.pluginmanager.getplugin('terminal')
+
+    class QuietReporter(terminal.TerminalReporter):
+        @property
+        def verbosity(self):
+            return 0
+
+        @property
+        def showlongtestinfo(self):
+            return False
+
+        @property
+        def showfspath(self):
+            return False
+
+    terminal.TerminalReporter = QuietReporter

@@ -1,4 +1,5 @@
 python-semantic-release
+pyinstaller
 commitizen
 pre-commit
 tox
@@ -6,9 +7,10 @@ pylint
 pytest
 coverage
 docker-compose
-https://github.com/Toilal/pytest-docker-compose/archive/configuration-inside-tests.zip
+https://github.com/Toilal/pytest-docker-compose/archive/configuration-inside-tests.zip#egg=pytest-docker-compose
 waiting
 pytest-mock
+pytest-cov
 pex
 
 -r requirements.txt

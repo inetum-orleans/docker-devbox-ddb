@@ -15,7 +15,7 @@ Jinja2
 braceexpand
 toposort
 cookiecutter
-https://github.com/Toilal/jsonnet/archive/261ce562e4af4db278bf84a2e2cd018b0f682e17.zip#egg=jsonnet
+jsonnet-binary
 zgitignore
 cached-property
 # Because newer version makes communication fails with current docker registry

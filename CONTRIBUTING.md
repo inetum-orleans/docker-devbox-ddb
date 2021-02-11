@@ -54,29 +54,28 @@ cz commit
 You should use [pyenv-win](https://github.com/pyenv-win/pyenv-win) to install and manage your python versions on
 Windows.
 
-- Install python 3.7.x
+- Install python 3.8.x
 
 ```bash
-pyenv install 3.7.9
-pyenv local 3.7.9
+pyenv install 3.8.7
+pyenv local 3.8.7
 pyenv rehash
-python --version  # Python 3.7.9
+python --version  # Python 3.8.7
 ```
 
 - Create virtualenv
 
 ```bash
-python -m venv %USERPROFILE%\.pyenv\pyenv-win\versions\3.7.9-ddb
-pyenv local 3.7.9-ddb
+python -m venv %USERPROFILE%\.pyenv\pyenv-win\versions\3.8.7-ddb
+pyenv local 3.8.7-ddb
 pyenv rehash
-python --version  # Python 3.7.9
+python --version  # Python 3.8.7
 ```
 
 - Install dependencies
 
 ```bash
-pip install whl/jsonnet-0.15.0-cp37-cp37m-win_amd64.whl
-pip install -r requirements-dev.txt
+pip install -e .[dev]
 ```
 
 - Enable pre-commit hooks
@@ -105,26 +104,26 @@ You should use [pyenv](https://github.com/pyenv/pyenv) to install and manage you
 
 - Clone this repository and cd into it
 
-- Install python 3.7.x
+- Install python 3.8.x
 
 ```bash
-pyenv install 3.7.9
-pyenv local 3.7.9
-python --version  # Python 3.7.9
+pyenv install 3.8.7
+pyenv local 3.8.7
+python --version  # Python 3.8.7
 ```
 
 - Create virtualenv
 
 ```bash
-pyenv virtualenv 3.7.9 3.7.9-ddb
-pyenv local 3.7.9-ddb
-python --version  # Python 3.7.9
+pyenv virtualenv 3.8.7 3.8.7-ddb
+pyenv local 3.8.7-ddb
+python --version  # Python 3.8.7
 ```
 
 - Install dependencies
 
 ```bash
-pip install -r requirements-dev.txt
+pip install -e .[dev]
 ```
 
 - Enable pre-commit hooks

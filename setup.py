@@ -23,31 +23,35 @@ with io.open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
 with io.open(os.path.join(here, 'CHANGELOG.md'), encoding='utf-8') as f:
     history = f.read()
 
-dependency_links = []
-
 project_dir = os.path.dirname(os.path.realpath(__file__))
 
-requirements = os.path.join(project_dir, 'requirements.txt')
-requirements_dev = os.path.join(project_dir, 'requirements-dev.txt')
+def handle_requirements(*requirements_filepaths):
+    dependency_link_pattern = re.compile("(\S+:\/\/\S+)#egg=(\S+)")
+    dependency_links = []
+    requires = []
 
-with open(requirements) as f:
-    install_requires = list(map(str.strip, f.read().splitlines()))[1:]
+    for requirements_filepath in requirements_filepaths:
+        with open(requirements_filepath) as f:
+            requirements_lines = list(map(str.strip, f.read().splitlines()))
 
-with open(requirements_dev) as f:
-    dev_require = list(filter(lambda x: '://' not in x, map(str.strip, f.read().splitlines())))[:-1]
+        requires_item = []
+        for requirement_line in requirements_lines:
+            if not requirement_line or requirement_line.startswith('-') or requirement_line.startswith('#'):
+                continue
+            match = dependency_link_pattern.match(requirement_line)
+            if match:
+                requires_item.append(match.group(2))
+                dependency_links.append(match.group(1))
+            else:
+                requires_item.append(requirement_line)
+        requires.append(requires_item)
 
-dependency_link_pattern = re.compile("(\S+:\/\/\S+)#egg=(\S+)")
+    return requires[0] if len(requires) == 1 else tuple(requires), dependency_links
 
-dependency_links = []
-install_requires_fixed = []
-for req in install_requires:
-    match = dependency_link_pattern.match(req)
-    if match:
-        install_requires_fixed.append(match.group(2))
-        dependency_links.append(match.group(1))
-    else:
-        install_requires_fixed.append(req)
-install_requires = install_requires_fixed
+(install_requires, dev_requires), dependency_links = \
+    handle_requirements('requirements.txt', 'requirements-dev.txt')
+
+print(dev_requires)
 
 package_data = []
 
@@ -90,7 +94,7 @@ args = dict(name='docker-devbox-ddb',
             entry_points=entry_points,
             zip_safe=True,
             extras_require={
-                'dev': dev_require
+                'dev': dev_requires
             })
 
 setup(**args)
