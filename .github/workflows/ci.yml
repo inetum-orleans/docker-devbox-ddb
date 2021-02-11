@@ -59,6 +59,107 @@ jobs:
       - name: Codecov
         uses: codecov/codecov-action@v1
 
+  ci-macos:
+    # if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    # Tests needs to be fixed.
+    if: false
+    runs-on: macos-latest
+    continue-on-error: true
+
+    name: Python 3.8 (MacOS)
+
+    steps:
+      - name: Setup docker
+        uses: docker-practice/actions-setup-docker@master
+        with:
+          docker_version: "20.10"
+          docker_channel: "stable"
+
+      - name: Setup python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Git User config
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "github-actions"
+
+      - name: Install YTT
+        run: |
+          mkdir -p $HOME/bin
+          curl -fLo $HOME/bin/ytt https://github.com/vmware-tanzu/carvel-ytt/releases/download/v0.31.0/ytt-darwin-amd64
+          echo "$HOME/bin" >> $GITHUB_PATH
+          chmod +x $HOME/bin/ytt
+
+      - name: Check YTT version
+        run: |
+          ytt --version
+
+      - name: Install Dependencies
+        run: pip install -e .[dev]
+
+      - name: Pylint
+        run: pylint ddb
+
+      - name: Pytest (Coverage)
+        run: |
+          pytest --cov=ddb
+
+      - name: Codecov
+        uses: codecov/codecov-action@v1
+
+  ci-windows:
+    # if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    # Tests needs to be fixed.
+    if: false
+    runs-on: windows-latest
+    continue-on-error: true
+
+    name: Python 3.8 (Windows)
+
+    steps:
+      - name: Setup python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Git User config
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "github-actions"
+
+      - name: Install YTT
+        run: |
+          mkdir "$HOME\bin"
+          curl -fLo "$HOME\bin\ytt.exe" https://github.com/vmware-tanzu/carvel-ytt/releases/download/v0.31.0/ytt-windows-amd64.exe
+          echo "$HOME\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          ls "$HOME\bin"
+
+      - name: Check YTT version
+        run: |
+          ytt --version
+
+      - name: Install Dependencies
+        run: |
+          pip install -e .[dev]
+
+      - name: Pylint
+        run: pylint ddb
+
+      - name: Pytest (Coverage)
+        run: |
+          pytest --cov=ddb -m "not docker"
+
+      - name: Codecov
+        uses: codecov/codecov-action@v1
+
   commitlint:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
@@ -147,9 +248,87 @@ jobs:
           name: ddb-bin-linux
           path: ./dist
 
+  build-bin-windows:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    # needs: [ci-windows]
+
+    runs-on: windows-latest
+
+    name: Build (Windows)
+
+    steps:
+      - name: Setup python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Git User config
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "github-actions"
+
+      - name: Install Dependencies
+        run: |
+          pip install -e .[dev]
+
+      - name: Bump version
+        run: semantic-release -v DEBUG version
+
+      - name: Binary
+        run: pyinstaller --dist .\dist ddb.spec
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ddb-bin-windows
+          path: ./dist
+
+  build-bin-macos:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    # needs: [ci-macos]
+
+    runs-on: macos-latest
+
+    name: Build (MacOS)
+
+    steps:
+      - name: Setup python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Git User config
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "github-actions"
+
+      - name: Install Dependencies
+        run: |
+          pip install -e .[dev]
+
+      - name: Bump version
+        run: semantic-release -v DEBUG version
+
+      - name: Binary
+        run: pyinstaller --dist ./dist ddb.spec
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ddb-bin-macos
+          path: ./dist
+
   release:
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-    needs: [commitlint, build-setuptools-linux, build-bin-linux]
+    needs: [commitlint, build-setuptools-linux, build-bin-linux, build-bin-windows, build-bin-macos]
 
     runs-on: ubuntu-latest
 
@@ -179,6 +358,8 @@ jobs:
         run: |
           mkdir -p ./dist
           mv artifacts/ddb-bin-linux/ddb ./dist/ddb-linux
+          mv artifacts/ddb-bin-macos/ddb ./dist/ddb-macos
+          mv artifacts/ddb-bin-windows/ddb.exe ./dist/ddb-windows.exe
           mv artifacts/ddb-python/* ./dist
 
       - name: Install python-semantic-release
