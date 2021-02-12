@@ -204,12 +204,12 @@ class TraefikExtraServicesAction(InitializableAction):
         if extra_service_data.get('redirect_to_https'):
             extra_service['https'] = True
         if extra_service_data.get('redirect_to_https') is None and extra_service['https'] is None:
-            extra_service_data['redirect_to_https'] = config.data.get('docker.reverse_proxy.redirect_to_https')
+            extra_service_data['redirect_to_https'] = config.data.get('jsonnet.docker.virtualhost.redirect_to_https')
 
         if not extra_service_data.get('path_prefix'):
             extra_service_data['redirect_to_path_prefix'] = False
         if extra_service['redirect_to_path_prefix'] is None:
             extra_service_data['redirect_to_path_prefix'] = \
-                config.data.get('docker.reverse_proxy.redirect_to_path_prefix')
+                config.data.get('jsonnet.docker.virtualhost.redirect_to_path_prefix')
 
         return extra_service_data, data
