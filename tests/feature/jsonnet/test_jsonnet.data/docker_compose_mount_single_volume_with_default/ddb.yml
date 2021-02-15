@@ -1,0 +1,6 @@
+jsonnet:
+  docker:
+    mount:
+      directory: '/default'
+      directories:
+        shared-volume: 'shared-volume'

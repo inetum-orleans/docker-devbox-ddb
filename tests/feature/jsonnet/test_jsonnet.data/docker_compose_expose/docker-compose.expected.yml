@@ -5,9 +5,9 @@ services:
     init: true
     restart: 'no'
     ports:
-      - '14721:21'
-      - '14722:22/udp'
-      - '14799:23/tcp'
+      - '41621:21'
+      - '41622:22/udp'
+      - '41699:23/tcp'
       - '9912:9912'
 volumes: {}
 version: '3.7'
