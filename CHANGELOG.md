@@ -3,6 +3,15 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.10.0 (2021-02-15)
+### Feature
+* **jsonnet:** Add mount options to mount named volumes inside project directory ([`401c9bd`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/401c9bd7bc12060dc2514001fbd198eec443792f))
+* **config:** Add `core.check_updates` configuration ([`3a779a4`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/3a779a45c453f85ebe2e9f17b6d2ef51179786a1))
+
+### Fix
+* **traefik:** Stop using deprecated properties internally ([`d3f06d8`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/d3f06d8cadf48089a2cef2995959eb74e8c0ce50))
+* **selfupdate:** Display detected binary path on permission error ([`c0cfe91`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/c0cfe910c1a80824804250a6b10b1b3776b25b28))
+
 ## v1.9.2 (2021-02-09)
 ### Fix
 * **fixuid:** Fix automatic fixuid configuration for some Dockerfile ([`f504416`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/f504416b4f10f62f98a87e23d6c1cd13ed6eb3b9))
