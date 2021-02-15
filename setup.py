@@ -68,11 +68,11 @@ dev_requires = [
     "pre-commit",
     "tox",
     "pylint",
-    "astroid<2.5", # https://github.com/PyCQA/pylint/issues/4093
+    "docker-compose",
+    "astroid<2.5",  # https://github.com/PyCQA/pylint/issues/4093
     "pytest",
     "coverage",
     "docker-compose",
-    "pytest-docker-compose @ git+https://github.com/Toilal/pytest-docker-compose@configuration-inside-tests",
     "waiting",
     "pytest-mock",
     "pytest-cov",
@@ -84,7 +84,10 @@ package_data = []
 entry_points = {
     'console_scripts': [
         'ddb = ddb.__main__:console_script'
-    ]
+    ],
+    "pytest11": [
+        "docker_compose=tests.pytest_docker_compose:plugin",
+    ],
 }
 
 with io.open('ddb/__version__.py', 'r') as f:
