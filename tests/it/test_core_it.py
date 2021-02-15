@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+import pytest
 from _pytest.capture import CaptureFixture
 from pytest_mock import MockerFixture
 
@@ -45,8 +46,8 @@ class TestCore:
     def test_self_update_outdated(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
         mocker.patch('ddb.feature.core.actions.get_binary_path', lambda *args, **kwargs: self.bin)
         mocker.patch('ddb.feature.core.actions.is_binary', lambda *args, **kwargs: True)
-        mocker.patch('ddb.feature.core.actions.get_latest_release_version', lambda *args, **kwargs: '1.3.1')
-        mocker.patch('ddb.feature.core.actions.get_current_version', lambda *args, **kwargs: '1.3.0')
+        mocker.patch('ddb.feature.core.actions.get_latest_release_version', lambda *args, **kwargs: '1.10.0')
+        mocker.patch('ddb.feature.core.actions.get_current_version', lambda *args, **kwargs: '1.9.2')
 
         project_loader("empty")
 
@@ -56,13 +57,14 @@ class TestCore:
 
         outerr = capsys.readouterr()
         assert outerr.err == ""
-        assert outerr.out == 'A new version is available: 1.3.1\nddb has been updated.\n'
+        assert outerr.out == 'A new version is available: 1.10.0\nddb has been updated.\n'
 
+    @pytest.mark.skip("Should be enabled after 1.10.0 release")
     def test_self_update_up_to_date_force(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
         mocker.patch('ddb.feature.core.actions.get_binary_path', lambda *args, **kwargs: self.bin)
         mocker.patch('ddb.feature.core.actions.is_binary', lambda *args, **kwargs: True)
-        mocker.patch('ddb.feature.core.actions.get_latest_release_version', lambda *args, **kwargs: '1.3.0')
-        mocker.patch('ddb.feature.core.actions.get_current_version', lambda *args, **kwargs: '1.3.0')
+        mocker.patch('ddb.feature.core.actions.get_latest_release_version', lambda *args, **kwargs: '1.10.0')
+        mocker.patch('ddb.feature.core.actions.get_current_version', lambda *args, **kwargs: '1.9.2')
 
         project_loader("empty")
 

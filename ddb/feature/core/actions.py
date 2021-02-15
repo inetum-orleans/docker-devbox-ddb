@@ -5,6 +5,7 @@ import shutil
 import sys
 from datetime import date
 from pathlib import Path
+import platform
 from tempfile import NamedTemporaryFile
 from typing import Optional
 from urllib.error import HTTPError
@@ -132,6 +133,16 @@ def is_version_greater(reference, version):
     return coerce_version(reference) < coerce_version(version)
 
 
+def is_version_greater_or_equal(reference, version):
+    """
+    Check if version is greater or equal than reference.
+    :param reference:
+    :param version:
+    :return:
+    """
+    return coerce_version(reference) < coerce_version(version)
+
+
 def check_for_update(github_repository: str, output=False, details=False):
     """
     Check if a new version is available on github.
@@ -208,7 +219,24 @@ def get_binary_destination_path(binary_path: str):
             and Path(binary_path).read_text().startswith("#!/usr/bin/env python"):
         # Avoid removing main source file when running on development.
         binary_path = binary_path[:-3] + ".bin"
+
+    for qualifier in ['-linux', '-macos', '-windows']:
+        binary_path = binary_path.replace(qualifier, '')
     return binary_path
+
+
+def get_binary_remote_name():
+    """
+    Get binary remote name
+    :return:
+    """
+    if platform.system() == 'Windows':
+        return 'ddb-windows.exe'
+    if platform.system() == 'Darwin':
+        return 'ddb-macos'
+    if platform.system() == 'Linux':
+        return 'ddb-linux'
+    return None
 
 
 class FeaturesAction(Action):
@@ -489,7 +517,7 @@ class CheckRequiredVersion(Action):
             required_version = config.data.get('core.required_version')
             if not required_version:
                 return
-            if required_version > get_current_version():
+            if is_version_greater_or_equal(get_current_version(), required_version):
                 update_tip = _build_update_tip()
                 if update_tip:
                     update_tip = ' ' + update_tip
@@ -550,7 +578,11 @@ class SelfUpdateAction(Action):
         if not os.access(binary_path, os.W_OK):
             raise PermissionError(f"You don't have permission to write on ddb binary file. ({binary_path})")
 
-        remote_filename = 'ddb.exe' if os.name == 'nt' else 'ddb'
+        remote_filename = get_binary_remote_name()
+        if not remote_filename:
+            print('ddb is running from a platform that doesn\'t support binary package mode.')
+            return
+
         url = 'https://github.com/{}/releases/download/v{}/{}'.format(github_repository, version, remote_filename)
 
         progress_bar = None
