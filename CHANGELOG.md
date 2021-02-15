@@ -3,6 +3,10 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.10.1 (2021-02-15)
+### Fix
+* **core:** Use new binary names for self-update ([`56fc5ab`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/56fc5abfdb97a5750a504789c378561646e6d92f))
+
 ## v1.10.0 (2021-02-15)
 ### Feature
 * **jsonnet:** Add mount options to mount named volumes inside project directory ([`401c9bd`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/401c9bd7bc12060dc2514001fbd198eec443792f))
