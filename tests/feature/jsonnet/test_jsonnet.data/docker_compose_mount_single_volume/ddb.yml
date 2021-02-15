@@ -1,0 +1,5 @@
+jsonnet:
+  docker:
+    mount:
+      directories:
+        shared-volume: 'volumes/shared-volume'

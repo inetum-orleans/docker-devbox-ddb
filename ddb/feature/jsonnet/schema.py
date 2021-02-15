@@ -79,6 +79,15 @@ class ExposeSchema(DisableableSchema):
     port_prefix = fields.Integer(required=False)  # default is set in feature _configure_defaults
 
 
+class MountSchema(DisableableSchema):
+    """
+    Mount schema
+    """
+    directory = fields.String(required=False, allow_none=True, default=None)
+    directories = fields.Dict(required=False, allow_none=True, default=None,
+                              keys=fields.String(), values=fields.String())
+
+
 class UserSchema(DisableableSchema):
     """
     User schema
@@ -119,6 +128,7 @@ class DockerSchema(Schema):
     build = fields.Nested(BuildSchema(), default=BuildSchema())
     service = fields.Nested(ServiceSchema(), default=ServiceSchema())
     expose = fields.Nested(ExposeSchema(), default=ExposeSchema())
+    mount = fields.Nested(MountSchema(), default=MountSchema())
     registry = fields.Nested(RegistrySchema(), default=RegistrySchema())
     user = fields.Nested(UserSchema(), default=UserSchema())
     binary = fields.Nested(BinarySchema(), default=BinarySchema())

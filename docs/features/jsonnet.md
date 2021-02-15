@@ -84,6 +84,14 @@ Run `ddb configure` to evaluate templates and generate target files.
     | `port_prefix` | integer<br>`<based on core.project.name>` | Port prefix. |
 
 
+!!! summary "Docker Mount configuration (prefixed with `jsonnet.docker.mount.`)"
+    | Property | Type | Description |
+    | :---------: | :----: | :----------- |
+    | `disabled` | boolean<br>`False` | Should `ddb.Expose()` perform nothing ? |
+    | `directory` | string | Base directory for all named volume mounts, absolute or relative to project home. |
+    | `directories` | dict[string, string] | Directories for named volume mounts, absolute or relative to project home. key is the volume name, value is the local path to mount. |
+
+
 !!! summary "Docker Registry configuration (prefixed with `jsonnet.docker.registry.`)"
     | Property | Type | Description |
     | :---------: | :----: | :----------- |

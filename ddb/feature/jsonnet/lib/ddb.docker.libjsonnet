@@ -32,6 +32,9 @@ local _docker_compose_excluded_services = std.extVar("jsonnet.docker.compose.exc
 local _docker_compose_included_services = std.extVar("jsonnet.docker.compose.included_services");
 local _docker_expose_disabled = std.extVar("jsonnet.docker.expose.disabled");
 local _docker_expose_port_prefix = std.extVar("jsonnet.docker.expose.port_prefix");
+local _docker_mount_disabled = std.extVar("jsonnet.docker.mount.disabled");
+local _docker_mount_directory = std.extVar("jsonnet.docker.mount.directory");
+local _docker_mount_directories = std.extVar("jsonnet.docker.mount.directories");
 local _core_project_name = std.extVar("core.project.name");
 local _core_os = std.extVar("core.os");
 local _core_env_current = std.extVar("core.env.current");
@@ -51,6 +54,19 @@ local path = {
     ddb_home: mapPath(_core_path_ddb_home),
     home: mapPath(_core_path_home)
 };
+
+local File(thisFile) =
+	local splitFile = if std.isArray(thisFile) then thisFile else std.split(thisFile, "/");
+
+	local name = splitFile[std.length(splitFile) - 1];
+	if std.length(splitFile) >= 2 then
+		local parent = std.slice(splitFile, 0, std.length(splitFile) - 1, 1);
+		{
+		  name: name,
+		  parent: File(parent)
+		}
+	else
+		{name: name};
 
 local Service(restart=_docker_service_restart, init=_docker_service_init) = {
     [ if restart != null then "restart"]: restart,
@@ -149,18 +165,43 @@ local apply_resolve_ports_conflicts(compose) =
 
 local ServiceName(name=null) = std.join("-", std.prune([_core_project_name, name]));
 
-local Volumes(services) = {
-        [key]: {} for key in
-        std.set(
-            std.filter(volume_is_named,
-                std.map(volume_source,
-                    std.flatMap(function (f) if std.objectHas(services[f], "volumes") then services[f].volumes else [],
-                        std.objectFields(services)
-                    )
-                )
-            )
-        )
+local _ensure_absolute(path) =
+	if std.startsWith(path, '/') then
+		path
+	else
+		_core_path_project_home + '/' + path;
+
+local apply_volumes_mounts(volumes) = {
+	[key]: volumes[key] +
+	(if _docker_mount_directories != null && std.objectHas(_docker_mount_directories, key) then {
+		driver: 'local',
+		driver_opts: {type: 'none', o: 'bind', device: _ensure_absolute(_docker_mount_directories[key])}
+     } else if _docker_mount_directory != null then {
+		driver: 'local',
+		driver_opts: {type: 'none', o: 'bind', device: _ensure_absolute(_docker_mount_directory + '/' + key)}
+	}
+	else {})
+	for key in std.objectFields(volumes)
 };
+
+local Volumes(services) =
+	local volumes = {
+			[key]: {} for key in
+			std.set(
+				std.filter(volume_is_named,
+					std.map(volume_source,
+						std.flatMap(function (f) if std.objectHas(services[f], "volumes") then services[f].volumes else [],
+							std.objectFields(services)
+						)
+					)
+				)
+			)
+	};
+
+	if !_docker_mount_disabled then
+		apply_volumes_mounts(volumes)
+	else
+		volumes;
 
 local NoBinaryOptionsLabels(name, options, options_condition = null, index = null) = {};
 local BinaryOptionsLabels(name, options, options_condition = null, index = null) = {
@@ -318,19 +359,6 @@ local envIndex(env=_core_env_current) =
 
 local envIs(env) =
     env == _core_env_current;
-
-local File(thisFile) =
-	local splitFile = if std.isArray(thisFile) then thisFile else std.split(thisFile, "/");
-
-	local name = splitFile[std.length(splitFile) - 1];
-	if std.length(splitFile) >= 2 then
-		local parent = std.slice(splitFile, 0, std.length(splitFile) - 1, 1);
-		{
-		  name: name,
-		  parent: File(parent)
-		}
-	else
-		{name: name};
 
 local with(package, params={}, append=null, name=null, when=true) =
 	if when then

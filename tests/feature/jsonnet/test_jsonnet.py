@@ -43,23 +43,23 @@ class TestJsonnetAction:
 
     @pytest.mark.skipif("os.name == 'nt'")
     def test_named_user_group(self, project_loader):
-       project_loader("empty")
+        project_loader("empty")
 
-       features.register(JsonnetFeature())
-       load_registered_features()
+        features.register(JsonnetFeature())
+        load_registered_features()
 
-       assert config.data.get('jsonnet.docker.user.name_to_uid')
-       assert config.data.get('jsonnet.docker.user.group_to_gid')
+        assert config.data.get('jsonnet.docker.user.name_to_uid')
+        assert config.data.get('jsonnet.docker.user.group_to_gid')
 
     @pytest.mark.skipif("os.name != 'nt'")
     def test_named_user_group_windows(self, project_loader):
-       project_loader("empty")
+        project_loader("empty")
 
-       features.register(JsonnetFeature())
-       load_registered_features()
+        features.register(JsonnetFeature())
+        load_registered_features()
 
-       assert config.data.get('jsonnet.docker.user.name_to_uid') == {}
-       assert config.data.get('jsonnet.docker.user.group_to_gid') == {}
+        assert config.data.get('jsonnet.docker.user.name_to_uid') == {}
+        assert config.data.get('jsonnet.docker.user.group_to_gid') == {}
 
     def test_example1(self, project_loader):
         project_loader("example1")
@@ -436,34 +436,37 @@ class TestJsonnetAction:
         assert rendered == expected
 
     def test_docker_compose_included_services(self, project_loader):
-            project_loader("docker_compose_included_services")
+        project_loader("docker_compose_included_services")
 
-            features.register(CoreFeature())
-            features.register(FileFeature())
-            features.register(DockerFeature())
-            features.register(JsonnetFeature())
-            load_registered_features()
-            register_actions_in_event_bus(True)
+        features.register(CoreFeature())
+        features.register(FileFeature())
+        features.register(DockerFeature())
+        features.register(JsonnetFeature())
+        load_registered_features()
+        register_actions_in_event_bus(True)
 
-            action = FileWalkAction()
-            action.initialize()
-            action.execute()
+        action = FileWalkAction()
+        action.initialize()
+        action.execute()
 
-            assert os.path.exists('docker-compose.yml')
-            with open('docker-compose.yml', 'r') as f:
-                rendered = yaml.load(f.read(), yaml.SafeLoader)
+        assert os.path.exists('docker-compose.yml')
+        with open('docker-compose.yml', 'r') as f:
+            rendered = yaml.load(f.read(), yaml.SafeLoader)
 
-            with open('docker-compose.expected.yml', 'r') as f:
-                expected_data = f.read()
-                expected = yaml.load(expected_data, yaml.SafeLoader)
+        with open('docker-compose.expected.yml', 'r') as f:
+            expected_data = f.read()
+            expected = yaml.load(expected_data, yaml.SafeLoader)
 
-            assert rendered == expected
+        assert rendered == expected
 
     @pytest.mark.parametrize("variant", [
         "_register_binary",
         "_register_binary_with_one_option",
         # "_register_binary_with_multiple_options", TODO handle (options)(c1)
         "_shared_volumes",
+        "_mount_volumes",
+        "_mount_single_volume",
+        "_mount_single_volume_with_default",
         "_expose"
     ])
     def test_docker_compose_variants(self, project_loader, variant):
@@ -501,6 +504,12 @@ class TestJsonnetAction:
             expected = yaml.load(expected_data, yaml.SafeLoader)
 
         assert rendered == expected
+
+        if variant == '_mount_single_volume':
+            assert os.path.isdir('volumes/shared-volume')
+
+        if variant == '_mount_single_volume_with_default':
+            assert os.path.isdir('shared-volume')
 
     @pytest.mark.parametrize("variant", [
         "default",

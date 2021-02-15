@@ -1,0 +1,4 @@
+jsonnet:
+  docker:
+    mount:
+      directory: '/custom'

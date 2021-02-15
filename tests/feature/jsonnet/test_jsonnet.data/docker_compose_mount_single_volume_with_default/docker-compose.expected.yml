@@ -1,0 +1,46 @@
+networks: {}
+services:
+  s1:
+    image: alpine:3.6
+    init: true
+    restart: 'no'
+    volumes:
+      - shared-volume:/share
+  s2:
+    image: alpine:3.6
+    init: true
+    restart: 'no'
+    volumes:
+      - another-volume:/another
+  s3:
+    image: alpine:3.6
+    init: true
+    restart: 'no'
+    volumes:
+      - shared-volume:/share
+  s4:
+    image: alpine:3.6
+    init: true
+    restart: 'no'
+    volumes:
+      - another-volume2:/share
+version: '3.7'
+volumes:
+  another-volume:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/default/another-volume'
+  shared-volume:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '%ddb.path.project%/shared-volume'
+  another-volume2:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/default/another-volume2'

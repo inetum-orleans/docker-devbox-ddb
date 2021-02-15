@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
+import keyword
 import os
 import re
-import keyword
 from pathlib import PurePosixPath, Path
 from typing import Union, Iterable, List, Dict, Set
 
@@ -292,6 +292,9 @@ class LocalVolumesAction(Action):
 
         volume_mappings = self._get_volume_mappings(docker_compose_config, external_volumes)
 
+        volume_mappings = [(source, target) for (source, target) in volume_mappings if
+                           self._check_file_in_project(source)]
+
         for source, target in volume_mappings:
             self._create_local_volume(source, target)
 
@@ -329,13 +332,21 @@ class LocalVolumesAction(Action):
                                       relative_path)
 
     @staticmethod
+    def _check_file_in_project(target):
+        target_path = os.path.realpath(target)
+        cwd = os.path.realpath(".")
+        return target_path.startswith(cwd)
+
+    @staticmethod
     def _create_local_volume(source, target):
         rel_source = os.path.relpath(source, ".")
         if os.path.exists(source):
             context.log.notice("Local volume source: %s (exists)", rel_source)
         else:
             _, source_ext = os.path.splitext(source)
-            _, target_ext = os.path.splitext(target)
+            target_ext = None
+            if target:
+                _, target_ext = os.path.splitext(target)
             if source_ext or target_ext:
                 # Create empty file, because with have an extension in source or target.
                 os.makedirs(str(Path(source).parent), exist_ok=True)
@@ -352,7 +363,9 @@ class LocalVolumesAction(Action):
     @staticmethod
     def _get_volume_mappings(docker_compose_config, external_volumes):
         volume_mappings = []
-        for service in docker_compose_config['services'].values():
+        external_volumes_dict = {}
+
+        for service in docker_compose_config.get('services', {}).values():
             if 'volumes' not in service:
                 continue
 
@@ -364,12 +377,26 @@ class LocalVolumesAction(Action):
                     source, target, _ = volume_spec.rsplit(':', 2)
 
                 if source in external_volumes:
+                    external_volumes_dict[source] = target
                     continue
 
                 volume_mapping = (source, target)
 
                 if volume_mapping not in volume_mappings:
                     volume_mappings.append(volume_mapping)
+
+        for volume, volume_config in docker_compose_config.get('volumes', {}).items():
+            if volume_config and volume_config.get('driver') == 'local' and volume_config.get('driver_opts'):
+                driver_opts = volume_config.get('driver_opts')
+                device = driver_opts.get('device')
+                if device and driver_opts.get('o') == 'bind':
+                    source = PurePosixPath(device).joinpath(volume)
+                    target = external_volumes_dict.get(volume)
+                    if source and target:
+                        volume_mapping = (source, target)
+                        if volume_mapping not in volume_mappings:
+                            volume_mappings.append(volume_mapping)
+
         return volume_mappings
 
 
