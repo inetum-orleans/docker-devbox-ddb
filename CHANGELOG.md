@@ -3,6 +3,10 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.10.3 (2021-02-15)
+### Fix
+* **alpine:** Add Alpine Linux support ([`bcf04b5`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/bcf04b523482de438742e51d47198464d00f0553))
+
 ## v1.10.2 (2021-02-15)
 ### Fix
 * **package:** Fix binary package error `NameError: name 'help' is not defined` ([`b066513`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/b0665139196e0b9e035e8c66c6b28ca8bc419eda))
