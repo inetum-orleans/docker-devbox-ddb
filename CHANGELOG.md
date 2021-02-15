@@ -3,6 +3,11 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.10.2 (2021-02-15)
+### Fix
+* **package:** Fix binary package error `NameError: name 'help' is not defined` ([`b066513`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/b0665139196e0b9e035e8c66c6b28ca8bc419eda))
+* **package:** Fix binary package error `NameError: name 'help' is not defined` ([`47bf72c`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/47bf72c88a4bbe12cf553ab9d186b0b00844dcc5))
+
 ## v1.10.1 (2021-02-15)
 ### Fix
 * **core:** Use new binary names for self-update ([`56fc5ab`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/56fc5abfdb97a5750a504789c378561646e6d92f))
