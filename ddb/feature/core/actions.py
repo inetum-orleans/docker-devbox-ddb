@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import re
 import shutil
 import sys
 from datetime import date
@@ -12,6 +13,7 @@ import requests
 import yaml
 from dotty_dict import Dotty
 from progress.bar import IncrementalBar
+from semver import VersionInfo
 
 from ddb import __version__
 from ddb.action import Action, InitializableAction
@@ -78,6 +80,58 @@ def print_version(github_repository, silent=False):
     print(get_table_display(blocks))
 
 
+_version_re = re.compile(
+    r"""[vV]?
+        (?P<major>0|[1-9]\d*)
+        (\.
+        (?P<minor>0|[1-9]\d*)
+        (\.
+            (?P<patch>0|[1-9]\d*)
+        )?
+        )?
+    """,
+    re.VERBOSE,
+)
+
+
+def coerce_version(version):
+    """
+    Convert an incomplete version string into a semver-compatible VersionInfo
+    object
+
+    * Tries to detect a "basic" version string (``major.minor.patch``).
+    * If not enough components can be found, missing components are
+        set to zero to obtain a valid semver version.
+
+    :param str version: the version string to convert
+    :return: a tuple with a :class:`VersionInfo` instance (or ``None``
+        if it's not a version) and the rest of the string which doesn't
+        belong to a basic version.
+    :rtype: tuple(:class:`VersionInfo` | None, str)
+    """
+    match = _version_re.search(version)
+    if not match:
+        return None, version
+
+    ver = {
+        key: 0 if value is None else value for key, value in match.groupdict().items()
+    }
+
+    ver = VersionInfo(**ver)
+    rest = match.string[match.end():]
+    return ver, rest
+
+
+def is_version_greater(reference, version):
+    """
+    Check if version is greater than reference.
+    :param reference:
+    :param version:
+    :return:
+    """
+    return coerce_version(reference) < coerce_version(version)
+
+
 def check_for_update(github_repository: str, output=False, details=False):
     """
     Check if a new version is available on github.
@@ -88,7 +142,7 @@ def check_for_update(github_repository: str, output=False, details=False):
     """
     last_release = get_latest_release_version(github_repository)
 
-    if last_release and get_current_version() < last_release:
+    if last_release and is_version_greater(get_current_version(), last_release):
         if output:
             blocks = [_build_update_header(last_release)]
             if details:

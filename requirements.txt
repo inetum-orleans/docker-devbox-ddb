@@ -33,3 +33,4 @@ marshmallow-union
 progress
 ordered-set
 patch
+semver
