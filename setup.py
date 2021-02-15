@@ -25,33 +25,59 @@ with io.open(os.path.join(here, 'CHANGELOG.md'), encoding='utf-8') as f:
 
 project_dir = os.path.dirname(os.path.realpath(__file__))
 
-def handle_requirements(*requirements_filepaths):
-    dependency_link_pattern = re.compile("(\S+:\/\/\S+)#egg=(\S+)")
-    dependency_links = []
-    requires = []
+install_requires = [
+    "colorama",
+    "colorlog",
+    "verboselogs",
+    "netifaces",
+    "requests",
+    "PyYAML",
+    "marshmallow",
+    "dotty-dict",
+    "deepmerge",
+    "diskcache",
+    "python-slugify",
+    "dictdiffer",
+    "Jinja2",
+    "braceexpand",
+    "toposort",
+    "cookiecutter",
+    "jsonnet-binary",
+    "zgitignore",
+    "cached-property",
+    "docker[tls]",  # Because newer version makes communication fails with current docker registry
+    "dockerfile-parse",
+    "cfssl>=0.0.3b243",
+    "cryptography",
+    "watchdog",
+    "gitpython",
+    "chmod-monkey>=1.1.1",
+    "paramiko",
+    "wcmatch",
+    "marshmallow-union",
+    "progress",
+    "ordered-set",
+    "patch",
+    "semver"
+]
 
-    for requirements_filepath in requirements_filepaths:
-        with open(requirements_filepath) as f:
-            requirements_lines = list(map(str.strip, f.read().splitlines()))
-
-        requires_item = []
-        for requirement_line in requirements_lines:
-            if not requirement_line or requirement_line.startswith('-') or requirement_line.startswith('#'):
-                continue
-            match = dependency_link_pattern.match(requirement_line)
-            if match:
-                requires_item.append(match.group(2))
-                dependency_links.append(match.group(1))
-            else:
-                requires_item.append(requirement_line)
-        requires.append(requires_item)
-
-    return requires[0] if len(requires) == 1 else tuple(requires), dependency_links
-
-(install_requires, dev_requires), dependency_links = \
-    handle_requirements('requirements.txt', 'requirements-dev.txt')
-
-print(dev_requires)
+dev_requires = [
+    "python-semantic-release",
+    "pyinstaller",
+    "commitizen",
+    "pre-commit",
+    "tox",
+    "pylint",
+    "astroid<2.5", # https://github.com/PyCQA/pylint/issues/4093
+    "pytest",
+    "coverage",
+    "docker-compose",
+    "pytest-docker-compose @ git+https://github.com/Toilal/pytest-docker-compose@configuration-inside-tests",
+    "waiting",
+    "pytest-mock",
+    "pytest-cov",
+    "pex"
+]
 
 package_data = []
 
@@ -90,7 +116,6 @@ args = dict(name='docker-devbox-ddb',
             packages=find_packages(),
             include_package_data=True,
             install_requires=install_requires,
-            dependency_links=dependency_links,
             entry_points=entry_points,
             zip_safe=True,
             extras_require={

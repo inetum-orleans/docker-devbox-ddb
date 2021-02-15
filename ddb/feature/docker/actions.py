@@ -7,7 +7,7 @@ from typing import Union, Iterable, List, Dict, Set
 
 import yaml
 from dotty_dict import Dotty
-from simpleeval import simple_eval
+from ddb.utils.simpleeval import simple_eval
 
 from ddb.feature import features
 from ddb.feature.traefik import TraefikExtraServicesAction

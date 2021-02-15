@@ -4,7 +4,7 @@ import shlex
 from pathlib import Path
 from typing import Optional, Iterable
 
-from simpleeval import simple_eval
+from ddb.utils.simpleeval import simple_eval
 
 from ddb.binary.binary import AbstractBinary
 from ddb.config import config
