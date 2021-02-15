@@ -58,7 +58,8 @@ install_requires = [
     "progress",
     "ordered-set",
     "patch",
-    "semver"
+    "semver",
+    "distro"
 ]
 
 dev_requires = [

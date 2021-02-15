@@ -12,6 +12,7 @@ from urllib.error import HTTPError
 
 import requests
 import yaml
+import distro
 from dotty_dict import Dotty
 from progress.bar import IncrementalBar
 from semver import VersionInfo
@@ -220,7 +221,7 @@ def get_binary_destination_path(binary_path: str):
         # Avoid removing main source file when running on development.
         binary_path = binary_path[:-3] + ".bin"
 
-    for qualifier in ['-linux', '-macos', '-windows']:
+    for qualifier in ['-linux', '-alpine', '-macos', '-windows']:
         binary_path = binary_path.replace(qualifier, '')
     return binary_path
 
@@ -235,6 +236,8 @@ def get_binary_remote_name():
     if platform.system() == 'Darwin':
         return 'ddb-macos'
     if platform.system() == 'Linux':
+        if distro.id() == 'alpine':
+            return 'ddb-alpine'
         return 'ddb-linux'
     return None
 

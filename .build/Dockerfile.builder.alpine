@@ -1,0 +1,33 @@
+FROM alpine:3.13 as builder
+# We can't use edge because of faccessat2 enabled in musl.
+# https://wiki.alpinelinux.org/wiki/Draft_Release_Notes_for_Alpine_3.14.0#faccessat2
+
+RUN apk add --no-cache python3 && python3 --version
+RUN apk add --no-cache curl &&\
+  curl -fLo get-pip.py https://bootstrap.pypa.io/get-pip.py &&\
+  python3 get-pip.py &&\
+  rm get-pip.py &&\
+  apk del curl
+RUN apk add --no-cache build-base python3-dev libffi-dev openssl-dev
+
+COPY . /docker-devbox-ddb
+WORKDIR /docker-devbox-ddb
+
+RUN CRYPTOGRAPHY_DONT_BUILD_RUST=1 pip install -e .[dev] && pip uninstall -y pyinstaller
+
+# Build pyinstaller bootloader for alpine (from https://github.com/six8/pyinstaller-alpine)
+RUN pip uninstall -y pyinstaller &&\
+	apk --no-cache add zlib-dev git &&\
+	git clone --depth 1 --single-branch --branch "v4.2" https://github.com/pyinstaller/pyinstaller.git /tmp/pyinstaller &&\
+	cd /tmp/pyinstaller/bootloader &&\
+	python3 ./waf configure --no-lsb all &&\
+	pip install --force-reinstall ..
+
+RUN pyinstaller --dist ./dist ddb.spec
+RUN cp ./dist/ddb /usr/local/bin
+
+FROM alpine:3.13
+COPY --from=builder "/usr/local/bin/ddb"  "/usr/local/bin"
+
+RUN chmod +x "/usr/local/bin/ddb"
+CMD ["/usr/local/bin/ddb"]
