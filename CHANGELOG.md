@@ -3,6 +3,13 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.11.0 (2021-02-17)
+### Feature
+* **run:** Add `DDB_RUN_OPTS` support to add docker-compose options on ddb run ([`b1aca49`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/b1aca49abc85cfd0ede6d432430937fe4f5cdb82))
+
+### Fix
+* **core:** Disable core.check_updates after running self-update command ([`6274317`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/62743171b9868341f6ba9270fff39a938d11f5d8))
+
 ## v1.10.3 (2021-02-15)
 ### Fix
 * **alpine:** Add Alpine Linux support ([`bcf04b5`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/bcf04b523482de438742e51d47198464d00f0553))
