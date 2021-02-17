@@ -612,4 +612,5 @@ class SelfUpdateAction(Action):
 
             progress_bar.finish()
 
+        config.data['core.check_updates'] = False
         print("ddb has been updated.")
