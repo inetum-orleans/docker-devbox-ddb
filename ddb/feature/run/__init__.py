@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from argparse import ArgumentParser
 from typing import Iterable, ClassVar
 
 from .actions import RunAction
@@ -30,9 +31,12 @@ class RunFeature(Feature):
 
     @property
     def phases(self) -> Iterable[Phase]:
+        def run_parser(parser: ArgumentParser):
+            parser.add_argument("name", help="Binary name to run")
+
         return (
             DefaultPhase("run", "Display command to run project binary",
-                         lambda parser: parser.add_argument("name"),
+                         run_parser,
                          allow_unknown_args=True),
         )
 

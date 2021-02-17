@@ -25,6 +25,22 @@ class TestBinaries:
         output = capsys.readouterr()
         assert output.out.strip() == docker_compose_bin + " run --rm --workdir=/workdir/. db psql"
 
+    def test_docker_binaries_with_custom_options(self, project_loader, capsys: CaptureFixture):
+        project_loader("docker")
+
+        exceptions = main(["configure"])
+        assert not exceptions
+
+        os.environ['DDB_RUN_OPTS'] = "-e TEST"
+
+        exceptions = main(["run", "psql"])
+        assert not exceptions
+
+        assert os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql'))
+
+        output = capsys.readouterr()
+        assert output.out.strip() == docker_compose_bin + " run --rm --workdir=/workdir/. -e TEST db psql"
+
     def test_docker_binaries_exe(self, project_loader, capsys: CaptureFixture):
         project_loader("docker_exe")
 

@@ -76,6 +76,9 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
         if self.entrypoint:
             params.append(f"--entrypoint={self.entrypoint}")
 
+        if os.environ.get('DDB_RUN_OPTS'):
+            params.extend(shlex.split(os.environ.get('DDB_RUN_OPTS')))
+
         self.add_options_to_params(params, self.options, self.options_condition, *args)
 
         params.append(self.docker_compose_service)
