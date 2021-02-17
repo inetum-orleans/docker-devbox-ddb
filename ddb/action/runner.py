@@ -84,7 +84,7 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
             self._handle_exception(exception)
             if self.fail_fast or isinstance(exception, FailFastError):
                 raise
-
+            return False
         finally:
             if context.stack:
                 context.stack.pop()

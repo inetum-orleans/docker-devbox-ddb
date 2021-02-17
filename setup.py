@@ -68,9 +68,8 @@ dev_requires = [
     "commitizen",
     "pre-commit",
     "tox",
-    "pylint",
+    "pylint>=2.6.2",
     "docker-compose",
-    "astroid<2.5",  # https://github.com/PyCQA/pylint/issues/4093
     "pytest",
     "coverage",
     "docker-compose",
