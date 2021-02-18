@@ -77,6 +77,33 @@ class TestConfig:
         assert configurations['another.config.file.yaml']['app.value'] == 'config'
         assert configurations['ddb.local.yml']['app.value'] == 'local'
 
+    def test_config_output_extra_filenames_some_files_option(self, project_loader, capsys: CaptureFixture):
+        project_loader("extra-filenames")
+
+        main(["config", "some", "--files"])
+
+        reset()
+
+        output = capsys.readouterr().out
+
+        parts = [part.lstrip() for part in output.split('---') if part.strip()]
+        assert len(parts) == 1
+
+        configurations = {}
+
+        for part in parts:
+            filename, config = part.split('\n', 1)
+            assert filename.startswith('# ')
+            filename = filename[2:]
+            filename = os.path.relpath(filename, os.getcwd())
+            configurations[filename] = Dotty(yaml.safe_load(config))
+
+        assert ('some.custom.yml',) == \
+               tuple(configurations.keys())
+
+        assert configurations['some.custom.yml']['some'] is True
+        assert 'app.value' not in configurations['some.custom.yml']
+
     def test_config_local_falsy(self, project_loader):
         project_loader("local-falsy")
 
@@ -177,5 +204,105 @@ class TestConfig:
         assert config.data.get('core.env.current') == 'dev'
         assert config.data.get('core.env.available') == ['prod', 'prod', 'stage', 'stage', 'ci',
                                                          'dev']
+
+        reset()
+
+    def test_config_more_properties_jsonnet_docker(self, project_loader, capsys: CaptureFixture):
+        project_loader("more-properties")
+
+        main(["config", "jsonnet.docker"])
+
+        configuration = Dotty(yaml.safe_load(capsys.readouterr().out))
+
+        assert configuration['jsonnet.docker.compose.project_name'] == 'yo-custom'
+        assert configuration['jsonnet.docker.registry.name'] == 'gfiorleans.azurecr.io'
+        assert configuration['jsonnet.docker.registry.repository'] == 'yo-custom'
+        assert configuration['jsonnet.docker.virtualhost.redirect_to_https'] is True
+
+        assert 'docker' not in configuration
+        assert 'core' not in configuration
+
+        reset()
+
+    def test_config_more_properties_jsonnet_docker_compose(self, project_loader, capsys: CaptureFixture):
+        project_loader("more-properties")
+
+        main(["config", "jsonnet.docker.compose"])
+
+        configuration = Dotty(yaml.safe_load(capsys.readouterr().out))
+
+        assert configuration['jsonnet.docker.compose.project_name'] == 'yo-custom'
+        assert 'jsonnet.docker.registry.name' not in configuration
+        assert 'jsonnet.docker.registry.repository' not in configuration
+        assert 'jsonnet.docker.virtualhost.redirect_to_https' not in configuration
+        assert 'docker' not in configuration
+        assert 'core' not in configuration
+
+        reset()
+
+    def test_config_more_properties_docker_variables_full(self, project_loader, capsys: CaptureFixture):
+        project_loader("more-properties")
+
+        main(["config", "docker", "--variables", "--full"], reset_disabled=True)
+
+        out = capsys.readouterr().out
+
+        docker_ip = config.data.get('docker.ip')
+        docker_interface = config.data.get('docker.interface')
+        docker_user_gid = config.data.get('docker.user.gid')
+        docker_user_uid = config.data.get('docker.user.uid')
+
+        assert out == f"""docker.disabled: False
+docker.interface: {docker_interface}
+docker.ip: {docker_ip}
+docker.user.gid: {docker_user_gid}
+docker.user.group: None
+docker.user.name: None
+docker.user.uid: {docker_user_uid}
+"""
+
+        reset()
+
+    def test_config_more_properties_docker_user_variables(self, project_loader, capsys: CaptureFixture):
+        project_loader("more-properties")
+
+        main(["config", "docker.user", "--variables"], reset_disabled=True)
+
+        out = capsys.readouterr().out
+
+        docker_user_gid = config.data.get('docker.user.gid')
+        docker_user_uid = config.data.get('docker.user.uid')
+
+        assert out == f"""docker.user.gid: {docker_user_gid}
+docker.user.group: None
+docker.user.name: None
+docker.user.uid: {docker_user_uid}
+"""
+
+        reset()
+
+    def test_config_more_properties_docker_ip_value(self, project_loader, capsys: CaptureFixture):
+        project_loader("more-properties")
+
+        main(["config", "docker.ip", "--value"], reset_disabled=True)
+
+        out = capsys.readouterr().out
+
+        docker_ip = config.data.get('docker.ip')
+
+        assert out == f"{docker_ip}\n"
+
+        reset()
+
+    def test_config_more_properties_core_env_available_value(self, project_loader, capsys: CaptureFixture):
+        project_loader("more-properties")
+
+        main(["config", "core.env.available", "--value"], reset_disabled=True)
+
+        out = capsys.readouterr().out
+
+        available = config.data.get('core.env.available')
+
+        assert out == f"{available}\n"
 
         reset()

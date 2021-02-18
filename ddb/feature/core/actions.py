@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 import os
+import platform
 import re
 import shutil
 import sys
 from datetime import date
 from pathlib import Path
-import platform
 from tempfile import NamedTemporaryFile
 from typing import Optional
 from urllib.error import HTTPError
 
+import distro
 import requests
 import yaml
-import distro
 from dotty_dict import Dotty
 from progress.bar import IncrementalBar
 from semver import VersionInfo
@@ -284,28 +284,102 @@ class ConfigAction(Action):
         """
         Execute action
         """
-        configuration, configuration_files = ConfigAction._get_configuration_files(config.args.full, config.args.files)
+        configuration, configuration_files = ConfigAction._get_configuration_files(
+            config.args.full, config.args.files
+        )
+
+        if config.args.property:
+            configuration, configuration_files = ConfigAction._handle_property(configuration, configuration_files)
+
+        if config.args.value:
+            return ConfigAction._print_config_value(configuration, config.args.property)
 
         if config.args.variables:
-            if config.args.files and configuration_files:
-                for index, (file, configuration_file) in enumerate(configuration_files.items()):
-                    if index > 0:
-                        print()
-                    print(f"# {file}")
-                    flat = flatten(Dotty(configuration_file), keep_primitive_list=True)
-                    for key in sorted(flat.keys()):
-                        print(f"{key}: {flat[key]}")
-            else:
-                flat = flatten(Dotty(configuration), keep_primitive_list=True)
+            return ConfigAction._print_config_variables(configuration, configuration_files)
+
+        return ConfigAction._print_config_yaml(configuration, configuration_files)
+
+    @staticmethod
+    def _handle_property(configuration, configuration_files):
+        configuration, configuration_files = ConfigAction._get_configurations_for_prop(
+            config.args.property,
+            configuration,
+            configuration_files
+        )
+        if configuration is None and not config.args.full:
+            configuration, configuration_files = ConfigAction._get_configuration_files(
+                True, config.args.files
+            )
+
+            configuration, configuration_files = ConfigAction._get_configurations_for_prop(
+                config.args.property,
+                configuration,
+                configuration_files
+            )
+        if configuration is not None:
+            root_config = Dotty({})
+            root_config[config.args.property] = configuration
+            configuration = dict(root_config)
+        if configuration_files:
+            root_configuration_files = {}
+            for k, configuration_file in configuration_files.items():
+                root_configuration_file = Dotty({})
+                root_configuration_file[config.args.property] = configuration_file
+                root_configuration_files[k] = dict(root_configuration_file)
+            configuration_files = root_configuration_files
+        return configuration, configuration_files
+
+    @staticmethod
+    def _print_config_yaml(configuration, configuration_files):
+        if config.args.files and configuration_files:
+            for file, configuration_file in configuration_files.items():
+                print(f"--- # {file}")
+                print(yaml.safe_dump(configuration_file))
+        else:
+            if isinstance(configuration, (dict, list)):
+                print(yaml.safe_dump(configuration))
+            elif configuration is not None:
+                print(configuration)
+
+    @staticmethod
+    def _print_config_variables(configuration, configuration_files):
+        if config.args.files and configuration_files:
+            for index, (file, configuration_file) in enumerate(configuration_files.items()):
+                if index > 0:
+                    print()
+                print(f"# {file}")
+                flat = flatten(Dotty(configuration_file), keep_primitive_list=True)
                 for key in sorted(flat.keys()):
                     print(f"{key}: {flat[key]}")
         else:
-            if config.args.files and configuration_files:
-                for file, configuration_file in configuration_files.items():
-                    print(f"--- # {file}")
-                    print(yaml.safe_dump(configuration_file))
-            else:
-                print(yaml.safe_dump(configuration))
+            flat = flatten(Dotty(configuration), keep_primitive_list=True)
+            for key in sorted(flat.keys()):
+                print(f"{key}: {flat[key]}")
+
+    @staticmethod
+    def _print_config_value(configuration, prop):
+        if configuration is None:
+            raise ValueError(f"{prop} not found in configuration.")
+        dotty_configuration = Dotty(configuration)
+        if prop and prop not in dotty_configuration:
+            raise ValueError(f"{prop} not found in configuration.")
+        value = dotty_configuration[prop] if prop and prop in dotty_configuration else configuration
+        print(value)
+
+    @staticmethod
+    def _get_configurations_for_prop(prop, configuration, configuration_files):
+        prop_configuration = Dotty(configuration).get(prop)
+
+        if configuration_files:
+            prop_configuration_files = {}
+            for file, configuration_file in configuration_files.items():
+                prop_configuration_file = Dotty(configuration_file).get(prop)
+                if prop_configuration_file:
+                    prop_configuration_files[file] = prop_configuration_file
+        else:
+            prop_configuration_files = configuration_files
+
+        return prop_configuration, prop_configuration_files
 
     @staticmethod
     def _prune_default_configuration(default_configuration, flat_file_configuration):
@@ -323,20 +397,19 @@ class ConfigAction(Action):
 
     @staticmethod
     def _get_configuration_files(full, files):
+        default_configuration = dict(config.data.copy())
+
         if full and not files:
-            configuration = dict(config.data.copy())
             configuration_files = None
-            return configuration, configuration_files
+            return default_configuration, configuration_files
 
         configuration, configuration_files = config.read()
         if full:
-            default_configuration = config.data.copy()
-
             for file_configuration in configuration_files.values():
                 flat_file_configuration = flatten(file_configuration)
                 ConfigAction._prune_default_configuration(default_configuration, flat_file_configuration)
 
-            tmp = {'default': dict(default_configuration)}
+            tmp = {'default': default_configuration}
             tmp.update(configuration_files)
             configuration_files = tmp
         return configuration, configuration_files

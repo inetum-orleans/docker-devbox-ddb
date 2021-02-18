@@ -1,0 +1,25 @@
+core:
+  project:
+    name: custom
+  required_version: 1.10.0
+jsonnet:
+  docker:
+    compose:
+      project_name: yo-custom
+    registry:
+      name: gfiorleans.azurecr.io
+      repository: yo-custom
+    virtualhost:
+      redirect_to_https: true
+file:
+  excludes:
+    - '**/_*'
+    - '**/.git'
+    - '**/node_modules'
+    - '**/vendor'
+    - 'frontend/public/workbox*'
+    - 'frontend/public/dist'
+sonar:
+  host: http://sonarqube.test
+  token: ~
+  project_key: yo-custom

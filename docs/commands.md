@@ -50,12 +50,18 @@ Those are placed **after the command name**.
     `ddb config --help`
 
         ddb config --help
-           usage: ddb config [-h] [--variables]
+           usage: ddb config [-h] [--variables] [--value] [--full] [--files] [property]
+           
+           positional arguments:
+             property     Property to read
            
            optional arguments:
              -h, --help   show this help message and exit
              --variables  Output as a flat list of variables available in template
                           engines
+             --value      Output value of given property
+             --full       Output full configuration
+             --files      Group by loaded configuration file
 
 !!! info "Watch mode"
     When setting up a project, you have to execute `ddb configure` many times while trying to configure the project 

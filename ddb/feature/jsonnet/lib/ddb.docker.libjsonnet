@@ -81,17 +81,22 @@ local image_uri(image_name, image_tag=_docker_build_image_tag, registry_name=_do
     local image_uri = std.join('/', std.filter(function(s) s != null, [registry_name, registry_repository, image_name]));
     if image_tag != null then image_uri + ':' + image_tag else image_uri;
 
-local NoExpose(container_port, host_port_suffix = null, protocol = null, port_prefix=null) = {};
-local Expose(container_port, host_port_suffix = null, protocol = null, port_prefix=_docker_expose_port_prefix) =
+local NoExpose(container_port, host_port_suffix = null, protocol = null, port_prefix=null, expose=false) = {};
+local Expose(container_port, host_port_suffix = null, protocol = null, port_prefix=_docker_expose_port_prefix, expose=false) =
     local container_port_str = std.toString(container_port);
-    local host_port_suffix_str = if host_port_suffix == null then null else std.toString(host_port_suffix);
-    local effective_host_port_suffix = if host_port_suffix_str == null then std.substr(container_port_str, std.length(container_port_str) - 2, 2) else host_port_suffix_str;
     local effective_protocol = if protocol == null then "" else "/" + protocol;
-    {
-        ports+: [
-            port_prefix + effective_host_port_suffix + ":" + container_port + effective_protocol
-        ]
-    };
+    if std.length(std.findSubstr(":", container_port_str)) > 0 then
+		{
+			ports+: [container_port_str + effective_protocol]
+		}
+    else
+		local host_port_suffix_str = if host_port_suffix == null then null else std.toString(host_port_suffix);
+		local effective_host_port_suffix = if host_port_suffix_str == null then std.substr(container_port_str, std.length(container_port_str) - 2, 2) else host_port_suffix_str;
+		{
+			ports+: [
+				port_prefix + effective_host_port_suffix + ":" + container_port + effective_protocol
+			]
+		};
 
 local Build(name,
             image=name,

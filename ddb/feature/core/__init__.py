@@ -74,8 +74,12 @@ class CoreFeature(Feature):
                                 help="Autofix supported deprecated warnings by modifying template sources.")
 
         def config_parser(parser: ArgumentParser):
+            parser.add_argument("property", nargs='?',
+                                help="Property to read")
             parser.add_argument("--variables", action="store_true",
                                 help="Output as a flat list of variables available in template engines")
+            parser.add_argument("--value", action="store_true",
+                                help="Output value of given property")
             parser.add_argument("--full", action="store_true",
                                 help="Output full configuration")
             parser.add_argument("--files", action="store_true",
