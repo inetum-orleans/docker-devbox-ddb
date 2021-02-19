@@ -342,10 +342,11 @@ local VirtualHost = if (_docker_virtualhost_type == "traefik" && !_docker_virtua
 
 // XDebug 3 configuration has changed.
 // Default TCP port has changed from 9000 to 9003, but we still configure it to 9000 to avoid confusion while configuring code editors.
+// Set log_level=0 to workaround "Could not connect to debugging client" message (https://stackoverflow.com/questions/65213171/disable-xdebug-3-could-not-connect-message-in-cli)
 local NoXDebug(version=_docker_xdebug_version, session=_docker_xdebug_session, mode=_docker_xdebug_mode) = {};
 local XDebug(version=_docker_xdebug_version, session=_docker_xdebug_session, mode=_docker_xdebug_mode) =
 local xdebug2_config = ["remote_enable=" + if mode != "off" then "on" else "off", "remote_autostart=off", "idekey=" + session, "remote_host=" + _docker_xdebug_host];
-local xdebug3_config = ["client_host=" + _docker_xdebug_host, "client_port=9000"];
+local xdebug3_config = ["client_host=" + _docker_xdebug_host, "client_port=9000", "log_level=0"];
 {
     environment: {
         [if version == null || version == 2 then "PHP_IDE_CONFIG"]: "serverName=" + session,
