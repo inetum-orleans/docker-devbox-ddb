@@ -3,6 +3,14 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.12.0 (2021-02-19)
+### Feature
+* **config:** Add more capabilities to config command ([`89d20d6`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/89d20d6cecfe7b9189cda46e61171c94c5998ef3))
+
+### Fix
+* **jsonnet:** Remove client_port=9000 for xdebug3 configuration ([`d8ca959`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/d8ca959e4a88eb4ec3791bb5d50e926c91a40a95))
+* **jsonnet:** Set log_level=0 to xdebug3 configuration ([`689efb0`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/689efb0851841eb43e0a3b62e0f3d7fd8cd5a1ba))
+
 ## v1.11.0 (2021-02-17)
 ### Feature
 * **run:** Add `DDB_RUN_OPTS` support to add docker-compose options on ddb run ([`b1aca49`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/b1aca49abc85cfd0ede6d432430937fe4f5cdb82))
