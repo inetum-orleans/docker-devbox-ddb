@@ -346,7 +346,7 @@ local VirtualHost = if (_docker_virtualhost_type == "traefik" && !_docker_virtua
 local NoXDebug(version=_docker_xdebug_version, session=_docker_xdebug_session, mode=_docker_xdebug_mode) = {};
 local XDebug(version=_docker_xdebug_version, session=_docker_xdebug_session, mode=_docker_xdebug_mode) =
 local xdebug2_config = ["remote_enable=" + if mode != "off" then "on" else "off", "remote_autostart=off", "idekey=" + session, "remote_host=" + _docker_xdebug_host];
-local xdebug3_config = ["client_host=" + _docker_xdebug_host, "client_port=9000", "log_level=0"];
+local xdebug3_config = ["client_host=" + _docker_xdebug_host, "log_level=0"];
 {
     environment: {
         [if version == null || version == 2 then "PHP_IDE_CONFIG"]: "serverName=" + session,
