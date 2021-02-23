@@ -32,20 +32,26 @@ configuration settings, please check the documentation of related feature.
     *ddb.yml*
     
     ```yaml
-    docker:
-      disabled_services: ['python']
+    jsonnet:
+      docker:
+        compose:
+          excluded_services: ['python']
     ```
     
     *ddb.local.yml*
     ```yaml
-    docker:
-      disabled_services: []
+    jsonnet:
+      docker:
+        compose:
+          excluded_services: []
     ```
     
     *effective configuration (ddb config)*
     ```yaml
-    docker:
-      disabled_services: []
+    jsonnet:
+      docker:
+        compose:
+          excluded_services: []
     ```
     
     As you can see lists are overriden by default too.
@@ -75,22 +81,28 @@ configuration settings, please check the documentation of related feature.
     *ddb.yml*
     
     ```yaml
-    docker:
-      disabled_services: ['python']
+    jsonnet:
+      docker:
+        compose:
+          excluded_services: ['python']
     ```
     
     *ddb.local.yml*
     ```yaml
-    docker:
-      disabled_services:
-        merge: append_if_missing
-        value: ['gunicorn']
+    jsonnet:
+      docker:
+        compose:
+          excluded_services:
+            merge: append_if_missing
+            value: ['gunicorn']
     ```
     
     *effective configuration (ddb config)*
     ```yaml
-    docker:
-      disabled_services: ['python', 'gunicorn']
+    jsonnet:
+      docker:
+        compose:
+          excluded_services: ['python', 'gunicorn']
     ```
 
 !!! info "Configuration and environment variables"

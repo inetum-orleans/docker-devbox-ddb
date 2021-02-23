@@ -46,6 +46,16 @@ Run `ddb configure` to evaluate templates and generate target files.
         | `virtualhost` | *VirtualHost* | `ddb.VirtualHost()` defaults. |
         | `xdebug` | *XDebug* | `ddb.XDebug()` defaults. |
 
+!!! summary "Docker Compose configuration (prefixed with `jsonnet.docker.compose.`)"
+    === "Simple"
+        | Property | Type | Description |
+        | :---------: | :----: | :----------- |
+        | `project_name` | string | Docker compose project name |
+        | `network_name` | string | Docker compose network name |
+        | `version` | string<br>`3.7` | YAML File version to use  |
+        | `excluded_services` | string[]<br>`[]` | Services to exclude (Block list). |
+        | `included_services` | string[]<br>`[]` | Services to include (Allow list). |
+
 !!! summary "Docker Networks configuration (prefixed with `jsonnet.docker.networks`)"
     === "Simple"
         | Property | Type | Description |
