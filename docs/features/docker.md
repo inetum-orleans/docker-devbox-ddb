@@ -16,19 +16,6 @@ using jsonnet docker specific library brings many Docker related features to `dd
     | `user.group` | string | The host groupname that will get converted to GID to use inside a container when [jsonnet](./jsonnet.md) `User()` function is used. |
     | `path_mapping` | Dict[str, str] | Path mappings to apply on declared volume sources. |
 
-
-!!! quote "Defaults"
-    ```yaml
-    docker:
-      interface: docker0
-      ip: 172.17.0.1
-      user:
-        gid: 1000
-        uid: 1000
-        group: null
-        name: null
-    ```
-
 docker-compose configuration processing
 ---
 

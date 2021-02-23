@@ -7,12 +7,6 @@ The SmartCD feature provides automation to activate/deactive a ddb project envir
         | Property | Type | Description |
         | :---------: | :----: | :----------- |
         | `disabled` | boolean<br>`false` | Should this feature be disabled ? |
-
-!!! quote "Defaults"
-    ```yaml
-    smartcd:
-      disabled: false
-    ```
     
 SmartCD automation on Linux/Unix
 ---

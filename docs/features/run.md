@@ -12,12 +12,6 @@ was a native system command.
     | :---------: | :----: | :----------- |
     | `disabled` | boolean<br>`false` | Should this feature be disabled ? |
 
-!!! quote "Defaults"
-    ```yaml
-    run:
-        disabled: false
-    ```
-
 Run command in container as if it was native
 ---
 

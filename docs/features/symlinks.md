@@ -18,16 +18,6 @@ With `symlinks` feature, depending on environment, the final file is link to the
         | Property | Type | Description |
         | :---------: | :----: | :----------- |
         | `includes` | string[]<br>`['*.${core.env.current}{.*,}']` | A list of glob of filepath to include. It is automatically generated from `suffixes`. |
-
-!!! quote "Defaults"
-    ```yaml
-    symlinks:
-      disabled: false
-      includes:
-      - '*.dev{.*,}'
-      suffixes:
-      - .dev
-    ```
     
 Symlink creation
 ---

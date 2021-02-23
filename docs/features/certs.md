@@ -37,31 +37,6 @@ management.
         | `cfssl.writer.filenames.certificate_request_der` | string<br>`%s.csr.der` | Filename template of name of DER geberated certificate requests. |
         | `cfssl.writer.filenames.private_key` | string<br>`%s.key` | Filename template of generated PEM private key. |
 
-
-!!! quote "Defaults"
-    ```yaml
-    certs:
-      cfssl:
-        append_ca_certificate: true
-        server:
-          host: localhost
-          port: 7780
-          ssl: false
-          verify_cert: true
-        verify_checksum: true
-        writer:
-          filenames:
-            certificate: '%s.crt'
-            certificate_der: '%s.crt.der'
-            certificate_request: '%s.csr'
-            certificate_request_der: '%s.csr.der'
-            private_key: '%s.key'
-      destination: .certs
-      signer_destinations: []
-      disabled: false
-      type: cfssl
-    ```
-
 Certificate generation
 ---
 

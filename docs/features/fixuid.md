@@ -19,12 +19,6 @@ a `fixuid.yml` file is available in docker build context.
         | :---------: | :----: | :----------- |
         | `url` | string<br>`https://github.com/boxboat/fixuid/releases/download/v0.5/fixuid-0.5-linux-amd64.tar.gz` | URL to download the fixuid distribution binary. |
 
-!!! quote "Defaults"
-    ```yaml
-    fixuid:
-      disabled: false
-    ```
-
 Automatic configuration
 ---
 

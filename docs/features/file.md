@@ -11,18 +11,6 @@ directory and trigger events when files are found or removed.
     | `extensions` | string[] | A list of glob of supported extension. |
     | `includes` | string[] | A list of glob of filepath to include. |
     | `excludes` | string[]<br>`['**/.git', '**/.idea', '**/node_modules', '**/vendor', '**/target', '**/dist']` | A list of glob of filepath to exclude. |
-
-!!! quote "Defaults"
-    ```yaml
-    file:
-      disabled: false
-      excludes:
-      - '**/.git'
-      - '**/node_modules'
-      - '**/vendor'
-      - '**/target'
-      - '**/dist'
-    ```
     
 File walk and event triggering
 ---

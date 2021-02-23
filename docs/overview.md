@@ -16,8 +16,9 @@ Docker Devbox
 Even if **ddb** can be used as a standalone tool, it has been designed with **[docker](https://www.docker.com/) and 
 [docker-compose](https://docs.docker.com/compose/) in mind**. 
 
-Many features requires some containers to run in background. Those containers have been **configured and packaged in 
-[docker-devbox](https://github.com/inetum-orleans/docker-devbox)**, so you should really **consider to install** it.
+Many features requires some companion containers to run in background. Those containers have been **configured and 
+packaged in [docker-devbox](https://github.com/inetum-orleans/docker-devbox)**, so you should really 
+**consider installing** it.
 
 [docker-devbox](https://github.com/inetum-orleans/docker-devbox) brings the following containers:
 
@@ -37,13 +38,16 @@ Features, actions and events
 
 **ddb** make use of **features** to perform it's magic.
 
-Each feature holds it's own **configuration** and embeds at least one **action**. An action brings at least one 
-binding between an **event** and a **function**, so when this event occurs the function is called.
+Each feature holds it's own **configuration** and embeds one or many **actions**. An **action** configures
+bindings between an **event** and a **function**, so when an **event** occurs, each binded **functions** are called.
 
 An action's function implementation can also raise other events that will trigger other feature action functions, 
-making **ddb** a fully reactive software.
+making **ddb** a reactive software.
 
-!!! question "What occurs when running ddb ?"
+!!! question "What occurs when running `ddb configure` ?"
+    
+    [configure is the most import command](./commands.md#ddb-configure) in ddb.
+
     When running `ddb configure` command, a bunch of **events** are triggered.
     
     Firstly, the command raise the `phase.configure` event, which is binded to the [file feature](./features/file.md).
@@ -58,6 +62,6 @@ making **ddb** a fully reactive software.
     and [ytt](./features/ytt.md) features.
     
     Those actions raises other events, like `file:generated` for each generated files, that will be processed by the 
-    gitignore feature to add generated files to ignore list.  
+    [gitignore](./features/gitignore.md) feature to add generated files to ignore list.  
         
     And so on.

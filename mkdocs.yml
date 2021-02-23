@@ -27,6 +27,8 @@ nav:
   - Configuration: configuration.md
   - Commands: commands.md
   - Templates: templates.md
+  - Binaries: binaries.md
+  - Djp packages: djp.md
   - Guides:
       - PostgreSQL, Symfony, VueJS:  guides/psql-symfony-vue.md
   - Features:

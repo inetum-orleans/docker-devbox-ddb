@@ -26,46 +26,6 @@ For instance, generated binary shims are bash executables on Linux, but .bat fil
         | :---------: | :----: | :----------- |
         | `shell` | string<br>`bash` (linux)<br>`bash` (macos)<br>`cmd` (windows) | Type of shell to work with. Currently, only `bash` and `cmd` (windows) are supported. |
 
-
-!!! quote "Defaults"
-    ```yaml
-    shell:
-      disabled: false
-      envignore:
-      - PYENV_*
-      - _
-      - PS1
-      - PS2
-      - PS3
-      - PS4
-      path:
-        directories:
-        - .bin
-        - bin
-        prepend: true
-      shell: bash
-    ```
-    
-!!! quote "Defaults"
-    ```yaml
-    shell:
-      disabled: false
-      envignore:
-      - PYENV_*
-      - _
-      - PS1
-      - PS2
-      - PS3
-      - PS4
-      - PWD
-      path:
-        directories:
-        - .bin
-        - bin
-        prepend: true
-      shell: bash
-    ```
-
 Environment activation
 ---
 
@@ -149,7 +109,7 @@ instructions.
 Some of those aliases are really useful only in a specific project context.
 
 The shell feature allows you to create your own aliases which will be generated the same way as 
-[docker binaries](#docker-binary-generation) are.
+[jsonnet ddb.Binary()](jsonnet.md#ddbbinary).
 
 In order to declare them, you need to update the ddb configuration with the list of aliases : 
 

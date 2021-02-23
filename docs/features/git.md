@@ -9,12 +9,6 @@ The Git feature provides automation relatives to the git configuration of the pr
     | :---------: | :----: | :----------- |
     | `disabled` | boolean<br>`false` | Should this feature be disabled ? |
     | `fix_files_permissions` | boolean<br>`true` | Should file permissions be fixed from git index (executable flags) ? |
- 
-!!! quote "Defaults"
-    ```yaml
-    git:
-      disabled: false
-    ```
 
 !!! example "Configuration"
     ```yaml

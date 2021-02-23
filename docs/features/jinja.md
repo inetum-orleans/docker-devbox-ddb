@@ -18,19 +18,6 @@ using ddb configuration.
         | Property | Type | Description |
         | :---------: | :----: | :----------- |
         | `includes` | string[]<br>`['*.jinja{.*,}']` | A list of glob of filepath to include. It is automatically generated from `suffixes` and `extensions`. |
- 
-!!! quote "Defaults"
-    ```yaml
-    jinja:
-      disabled: false
-      extensions:
-      - .*
-      - ''
-      includes:
-      - '*.jinja{.*,}'
-      suffixes:
-      - .jinja
-    ```
 
 Jinja template processing
 --- 

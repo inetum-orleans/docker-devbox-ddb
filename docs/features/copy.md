@@ -19,12 +19,6 @@ This feature is bounded to the [`init` command](../commands.md).
     | `filename` | string | The destination filename. If empty and `destination` match a directory, `source` filename will be used. |
     | `dispatch` | string[]<br> | A list of directories or directory globs where the file will be duplicated. i.e if set to `['target']`, source file with be copied to `target` directory using filename defined in `destination` property. If set to ['target/*`], it will be copied in each subdirectory of target directory using filename defined in `destination` property. |
 
-!!! quote "Defaults"
-    ```yaml
-    copy:
-      disabled: false
-    ```
-
 !!! example "Copy a file from an URL"
       ```yaml
       copy:

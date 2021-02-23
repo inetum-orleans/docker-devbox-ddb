@@ -8,12 +8,6 @@ The Gitignore feature provides automation to the management of .gitignore files 
     | :---------: | :----: | :----------- |
     | `disabled` | boolean<br>`false` | Should this feature be disabled ? |
     | `enforce` | string[]<br>`['*ddb.local.*']` | List of file globs to force into `.gitignore`. |
- 
-!!! quote "Defaults"
-    ```yaml
-    gitignore:
-      disabled: false
-    ```
 
 Automatic management of gitignore
 ---

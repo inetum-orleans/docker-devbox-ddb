@@ -12,12 +12,6 @@ Well, this feature is made for you!
     | `disabled` | boolean<br>`false` | Should this feature be disabled ? |
     | `specs` | dict[string, string] | Key of the dict is a filepath glob matching the files to change, value is a chmod-like permission modifier like `+x` or `400`. |
 
-!!! quote "Defaults"
-    ```yaml
-    permissions:
-      disabled: false
-    ```
-
 !!! example "Add executable permission to each file in `bin/` directory"
     ```yaml
     permissions:

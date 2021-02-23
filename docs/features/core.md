@@ -40,29 +40,3 @@ It also handle the two following basic commands : `ddb features` and `ddb config
     | `bin` | string<span style="color:red">*</span> | The process path to override. |
     | `prepend` | string\|string[]<br> | Arguments to prepend to default arguments. |
     | `append` | string\|string[] | Arguments to append to default arguments. |
-
-!!! quote "Defaults"
-    ```yaml
-    core:
-      disabled: false
-      domain:
-        ext: test
-        sub: docker-devbox
-      env:
-        available:
-        - prod
-        - stage
-        - ci
-        - dev
-        current: dev
-      github_repository: inetum-orleans/docker-devbox-ddb
-      os: posix
-      path:
-        ddb_home: /home/devbox/.docker-devbox/ddb
-        home: /home/devbox/.docker-devbox
-        project_home: /home/devbox/projects/docker-devbox
-      process: {}
-      project:
-        name: docker-devbox
-      github_repository:
-    ```

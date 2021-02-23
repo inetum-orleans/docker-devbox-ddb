@@ -15,8 +15,8 @@ be erased. It provides features to generate, activate and adjust **configuration
 and extendable configuration**, while **enhancing the developer experience** and **reducing manual operations**.
 
 Primarly designed for [docker-compose](https://docs.docker.com/compose/) and [docker-devbox](https://github.com/inetum-orleans/docker-devbox), 
-this tool makes the developer **forget about the docker hard stuff** by providing commands right into it's PATH, so it's 
-experience **looks like everything is native** and locally installed.
+this tool makes the developer **forget about the docker hard stuff** by providing docker binaries right into it's 
+computer PATH, so it's experience **looks like everything is native** and locally installed.
 
 Thanks to a pluggable, event based and easy to extend architecture, it can bring **powerful configuration automation to 
 any technical context**.

@@ -1,9 +1,10 @@
 Cookiecutter
 ===
 
-Download and configure files from [Cookiecutter](https://github.com/cookiecutter/cookiecutter) templates.
+Download and generate files from [Cookiecutter](https://github.com/cookiecutter/cookiecutter) templates.
 
-This can be used to retrieve [djp packages](./jsonnet.md#djp-packages-ddb-jsonnet-packages) or any other Cookiecutter template.
+This can be used for [djp packages](../djp.md) or any other Cookiecutter with 
+[download command](../commands.md#ddb-download).
 
 !!! summary "Feature configuration (prefixed with `cookiecutter.`)"
     === "Simple"
