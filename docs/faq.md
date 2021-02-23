@@ -2,7 +2,7 @@ Frequently Asked Questions
 ===
 
 ??? question "How to customize the configuration for a single project ?"
-    You may create a `ddb.local.yml` configuration file in the project directory and add it to `.gitignore`.
+    You may create a `ddb.local.yml` configuration file in the project directory.
     
     Read more: [Configuration](configuration.md)
     
@@ -39,7 +39,8 @@ Frequently Asked Questions
     Read more: [Configuration](configuration.md)
     
 ??? question "How to disable/enable tags from docker images defined in generated docker-compose.yml file ?"
-    In your project `ddb.yml` file, you may disable this option in the docker feature with `docker.build_image_tag_from_version` set to false.
+    In your project `ddb.yml` file, you may disable this option in the [jsonnet feature](./features/jsonnet.md) 
+    with `jsonnet.docker.build.image_tag_from` set to false.
     
     Read more: [Configuration](configuration.md)
     
@@ -48,4 +49,8 @@ Frequently Asked Questions
     If no TTY is available, you have to set the following environment variable to workaround this issue
 
     COMPOSE_INTERACTIVE_NO_CLI=1
+
+??? question "How to clear cache ?"
+
+    Run `ddb --clear-cache configure` or `rm -Rf ~/.docker-devbox/cache`.
 
