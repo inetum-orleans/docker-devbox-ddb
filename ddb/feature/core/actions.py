@@ -198,14 +198,44 @@ def is_binary():
     return getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
 
 
-def get_binary_path():
+def get_local_binary_path():
     """
     Get the binary path
     :return:
     """
-    if config.cwd:
-        return os.path.join(config.cwd, sys.argv[0])
-    return os.path.abspath(sys.argv[0])
+    context.log.debug("sys.argv[0]: %s", sys.argv[0])
+    context.log.debug("config.cwd: %s", config.cwd)
+    context.log.debug("sys.frozen: %s", getattr(sys, 'frozen', False))
+    context.log.debug("sys._MEIPASS: %s", getattr(sys, '_MEIPASS', ''))
+    context.log.debug("sys.executable: %s", sys.executable)
+    context.log.debug("__file__: %s", __file__)
+
+    local_binary_path = None
+    if sys.executable and os.path.isfile(sys.executable):
+        context.log.debug("sys.executable match an existing file. Using this value as binary path.")
+        local_binary_path = sys.executable
+
+    if not local_binary_path:
+        if os.path.isabs(sys.argv[0]):
+            context.log.debug("sys.argv[0] is absolute. Using this value as binary path.")
+            local_binary_path = sys.argv[0]
+
+    if not local_binary_path:
+        argv0_basename = os.path.basename(sys.argv[0])
+        if argv0_basename == sys.argv[0]:
+            context.log.debug("sys.argv[0] is basename only. Use configuration values to find expected binary path.")
+            local_binary_path = os.path.join(config.paths.home, "bin", sys.argv[0])
+
+    if not local_binary_path:
+        if config.cwd:
+            context.log.debug("config.cwd is defined. Use configuration values to find expected binary path.")
+            local_binary_path = os.path.join(config.cwd, sys.argv[0])
+
+    context.log.debug("local_binary_path: %s", local_binary_path)
+
+    if not local_binary_path:
+        raise ValueError("Can't find local binary path to update.")
+    return local_binary_path
 
 
 def get_binary_destination_path(binary_path: str):
@@ -631,10 +661,13 @@ class SelfUpdateAction(Action):
         :param version:
         :return:
         """
-        binary_path = get_binary_path()
+        local_binary_path = get_local_binary_path()
 
-        if not os.access(binary_path, os.W_OK):
-            raise PermissionError(f"You don't have permission to write on ddb binary file. ({binary_path})")
+        if not os.access(local_binary_path, os.W_OK):
+            raise PermissionError(f"You don't have permission to write on ddb binary file. ({local_binary_path})")
+
+        if not os.path.isfile(local_binary_path):
+            raise ValueError(f"Local binary path is not a file. ({local_binary_path})")
 
         release_asset_name = config.data.get('core.release_asset_name')
         if not release_asset_name:
@@ -642,6 +675,7 @@ class SelfUpdateAction(Action):
             return
 
         url = 'https://github.com/{}/releases/download/v{}/{}'.format(github_repository, version, release_asset_name)
+        context.log.debug('Downloading ddb asset: %s', url)
 
         progress_bar = None
         with requests.get(url, stream=True) as response:
@@ -660,10 +694,10 @@ class SelfUpdateAction(Action):
             finally:
                 tmp.close()
 
-            binary_path = get_binary_destination_path(binary_path)
-            shutil.copymode(binary_path, tmp.name)
-            force_remove(binary_path)  # This is required on windows
-            os.rename(tmp.name, binary_path)
+            local_binary_path = get_binary_destination_path(local_binary_path)
+            shutil.copymode(local_binary_path, tmp.name)
+            force_remove(local_binary_path)  # This is required on windows
+            os.rename(tmp.name, local_binary_path)
 
             progress_bar.finish()
 

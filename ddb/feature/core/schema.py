@@ -70,4 +70,4 @@ class CoreFeatureSchema(FeatureSchema):
     check_updates = fields.Boolean(required=True, default=True)
     required_version = fields.String(required=False, allow_none=True, default=None)
     release_asset_name = fields.String(required=False, allow_none=True,
-                                        default=None)  # default is set in feature _configure_defaults
+                                       default=None)  # default is set in feature _configure_defaults
