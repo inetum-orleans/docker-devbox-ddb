@@ -54,3 +54,14 @@ Frequently Asked Questions
 
     Run `ddb --clear-cache configure` or `rm -Rf ~/.docker-devbox/cache`.
 
+??? question "ddb fails to run with message: `version 'GLIBC_2.25' not found`"
+
+    It seems you are running an old linux distribution, like Ubuntu 16.04.
+
+    You should either install ddb from pip, or use `ddb-linux-older-glic` binary from 
+    [github release page](https://github.com/inetum-orleans/docker-devbox-ddb/releases).
+
+    Then set `core.release_asset_name: ddb-linux-older-glic` inside your ddb configuration (`~/.docker-devbox/ddb.yml`)
+    to make `ddb self-update` download this edition.
+
+
