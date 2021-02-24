@@ -248,6 +248,46 @@ jobs:
           name: ddb-bin-linux
           path: ./dist
 
+  build-bin-linux-older-glibc:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    needs: [ci-linux]
+
+    runs-on: ubuntu-16.04
+
+    name: Build (Linux Binary - Older glibc)
+
+    steps:
+      - name: Setup python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Git User config
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "github-actions"
+
+      - name: Install Dependencies
+        run: |
+          pip install -e .[dev]
+
+      - name: Bump version
+        run: semantic-release -v DEBUG version
+
+      - name: Binary
+        run: pyinstaller --dist ./dist ddb.spec
+
+      - uses: actions/upload-artifact@v2
+        if: matrix.regex == '0'
+        with:
+          name: ddb-bin-linux-older-glibc
+          path: ./dist
+
   build-bin-alpine:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     needs: [ci-linux]
@@ -380,7 +420,7 @@ jobs:
 
   release:
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-    needs: [commitlint, build-setuptools-linux, build-bin-linux, build-bin-windows, build-bin-macos, build-bin-alpine]
+    needs: [commitlint, build-setuptools-linux, build-bin-linux, build-bin-linux-older-glibc, build-bin-windows, build-bin-macos, build-bin-alpine]
 
     runs-on: ubuntu-latest
 
@@ -410,6 +450,7 @@ jobs:
         run: |
           mkdir -p ./dist
           mv artifacts/ddb-bin-linux/ddb ./dist/ddb-linux
+          mv artifacts/ddb-bin-linux-older-glibc/ddb ./dist/ddb-linux-older-glibc
           mv artifacts/ddb-bin-alpine/ddb ./dist/ddb-alpine
           mv artifacts/ddb-bin-macos/ddb ./dist/ddb-macos
           mv artifacts/ddb-bin-windows/ddb.exe ./dist/ddb-windows.exe
