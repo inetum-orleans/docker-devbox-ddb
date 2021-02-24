@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import os
-import platform
 import re
 import shutil
 import sys
@@ -10,7 +9,6 @@ from tempfile import NamedTemporaryFile
 from typing import Optional
 from urllib.error import HTTPError
 
-import distro
 import requests
 import yaml
 from dotty_dict import Dotty
@@ -207,7 +205,7 @@ def get_binary_path():
     """
     if config.cwd:
         return os.path.join(config.cwd, sys.argv[0])
-    return sys.argv[0]
+    return os.path.abspath(sys.argv[0])
 
 
 def get_binary_destination_path(binary_path: str):
@@ -224,22 +222,6 @@ def get_binary_destination_path(binary_path: str):
     for qualifier in ['-linux', '-alpine', '-macos', '-windows']:
         binary_path = binary_path.replace(qualifier, '')
     return binary_path
-
-
-def get_binary_remote_name():
-    """
-    Get binary remote name
-    :return:
-    """
-    if platform.system() == 'Windows':
-        return 'ddb-windows.exe'
-    if platform.system() == 'Darwin':
-        return 'ddb-macos'
-    if platform.system() == 'Linux':
-        if distro.id() == 'alpine':
-            return 'ddb-alpine'
-        return 'ddb-linux'
-    return None
 
 
 class FeaturesAction(Action):
@@ -654,12 +636,12 @@ class SelfUpdateAction(Action):
         if not os.access(binary_path, os.W_OK):
             raise PermissionError(f"You don't have permission to write on ddb binary file. ({binary_path})")
 
-        remote_filename = get_binary_remote_name()
-        if not remote_filename:
+        release_asset_name = config.data.get('core.release_asset_name')
+        if not release_asset_name:
             print('ddb is running from a platform that doesn\'t support binary package mode.')
             return
 
-        url = 'https://github.com/{}/releases/download/v{}/{}'.format(github_repository, version, remote_filename)
+        url = 'https://github.com/{}/releases/download/v{}/{}'.format(github_repository, version, release_asset_name)
 
         progress_bar = None
         with requests.get(url, stream=True) as response:

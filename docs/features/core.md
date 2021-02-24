@@ -23,6 +23,7 @@ It also handle the two following basic commands : `ddb features` and `ddb config
         | `env.available` | string[]<br>`['prod', 'stage', 'ci', 'dev']` | List of available environments. You should any new custom environment to support here before trying to set `env.current` to this custom environment.|
         | `required_version` | string | Minimal required `ddb` version for the project to work properly. If `required_version` is greater than the currently running one, ddb will refuse to run until it's updated. |
         | `check_updates` | boolean<br>`true` | Should check for ddb updates be enabled ? |
+        | `release_asset_name` | string<br>`<plaform dependent>` | [Github release](https://github.com/inetum-orleans/docker-devbox-ddb/releases) asset name to use to download ddb on `self-update` command. |
         | `path.ddb_home` | string<br>`${env:HOME}/.docker-devbox/ddb` | The path where ddb is installed. |
         | `path.home` | string<br>`${env:HOME}/.docker-devbox` | The path where docker devbox is installed. |
         | `path.project_home` | string | The project directory. |

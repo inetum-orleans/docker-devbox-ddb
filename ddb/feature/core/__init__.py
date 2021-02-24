@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 import os
+import platform
 from argparse import ArgumentParser
 from typing import Iterable, ClassVar
 
+import distro
 from dotty_dict import Dotty
 
 from .actions import FeaturesAction, ConfigAction, ReloadConfigAction, EjectAction, SelfUpdateAction, \
@@ -207,6 +209,27 @@ class CoreFeature(Feature):
         if not feature_config.get('path.ddb_home') and config.paths.ddb_home:
             feature_config['path.ddb_home'] = config.paths.ddb_home
 
+        self._configure_release_asset_name_defaults(feature_config)
+
         config.path = ConfigPaths(ddb_home=feature_config.get('path.ddb_home'),
                                   home=feature_config.get('path.home'),
                                   project_home=feature_config.get('path.project_home'))
+
+    def _configure_release_asset_name_defaults(self, feature_config: Dotty):
+        if not feature_config.get('release_asset_name'):
+            feature_config['release_asset_name'] = self._get_default_binary_remote_name()
+
+    @staticmethod
+    def _get_default_binary_remote_name():
+        """
+        Get default binary remote name, based on current platform.
+        """
+        if platform.system() == 'Windows':
+            return 'ddb-windows.exe'
+        if platform.system() == 'Darwin':
+            return 'ddb-macos'
+        if platform.system() == 'Linux':
+            if distro.id() == 'alpine':
+                return 'ddb-alpine'
+            return 'ddb-linux'
+        return None
