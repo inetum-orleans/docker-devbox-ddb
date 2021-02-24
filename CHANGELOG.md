@@ -3,6 +3,13 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.13.1 (2021-02-24)
+### Fix
+* **self-update:** Fix permission issues with self-update command ([#146](https://github.com/inetum-orleans/docker-devbox-ddb/issues/146)) ([`4cd8bce`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/4cd8bcedda3f0b92653419b2939474855a7bc169))
+
+### Documentation
+* **faq:** Add ddb-linux-older-glic edition note ([`895742b`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/895742b06670871e55e892357ffe3cffb3bf1f94))
+
 ## v1.13.0 (2021-02-24)
 ### Feature
 * **core:** Add release_asset_name to customize asset to download on update ([`e2b3324`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/e2b3324b2279f0c9c960263bedc1f86588e4052c))
