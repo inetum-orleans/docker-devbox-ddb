@@ -3,6 +3,15 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.13.0 (2021-02-24)
+### Feature
+* **core:** Add release_asset_name to customize asset to download on update ([`e2b3324`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/e2b3324b2279f0c9c960263bedc1f86588e4052c))
+
+### Documentation
+* Update FAQ ([`4cea4bf`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/4cea4bfd6e6e89ce81206d1bd810e51850314398))
+* Remove defaults, add Djp packages and Binaries pages ([`0ebc892`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/0ebc89284c47722d3de4e7871702385ec86b28db))
+* **jsonnet:** Add missing jsonnet.docker.compose configuration properties ([`5941a46`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/5941a461b0f7dc9c42a81fd20e6ce5dc5a897874))
+
 ## v1.12.0 (2021-02-19)
 ### Feature
 * **config:** Add more capabilities to config command ([`89d20d6`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/89d20d6cecfe7b9189cda46e61171c94c5998ef3))
