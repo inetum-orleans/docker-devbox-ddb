@@ -8,7 +8,7 @@ Most often, binaries are registered inside `docker-compose.yml.jsonnet` using
 
 Docker binary shims **are available in the shell `PATH`** and acts as aliases to binaries living in images or containers of
 docker-compose services. They delegate to [ddb run command](./commands.md#ddb-run) to generate a complex
-`docker-compose run` or `docker-compose exe` command to invoke. 
+`docker-compose run` or `docker-compose exec` command to invoke. 
 
 Those binaries **let you think they are locally installed** on your computer, but everything still runs inside docker.
 This is because ddb take cares of **common docker pitfalls** : project and current working directory are mapped properly, 
