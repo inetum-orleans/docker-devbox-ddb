@@ -151,6 +151,8 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
             return False
         if self.options_condition != other.options_condition:
             return False
+        if self.condition != other.condition:
+            return False
         if self.args != other.args:
             return False
         if self.exe != other.exe:
@@ -166,6 +168,7 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
                      self.workdir,
                      self.options,
                      self.options_condition,
+                     self.condition,
                      self.args,
                      self.exe,
                      self.entrypoint))
