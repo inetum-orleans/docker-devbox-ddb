@@ -3,6 +3,13 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.13.2 (2021-03-24)
+### Fix
+* **binary:** Binary is now registered again when condition is changed ([`fd5230b`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/fd5230b0edaae574a0ed0107388206a9bd25bac9))
+
+### Documentation
+* **binaries:** Typo in docker compose command ([`88ab7b0`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/88ab7b0608dc788dc3ceefaa9cd9faaaf3051491))
+
 ## v1.13.1 (2021-02-24)
 ### Fix
 * **self-update:** Fix permission issues with self-update command ([#146](https://github.com/inetum-orleans/docker-devbox-ddb/issues/146)) ([`4cd8bce`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/4cd8bcedda3f0b92653419b2939474855a7bc169))
