@@ -23,3 +23,12 @@ Those binaries are then available from any directory. It can be handy to registe
 project as a way to package it.
 
 Binaries can also be registered through [shell feature Aliases Management](./features/shell.md#aliases-management).
+
+!!! info "Customize docker-compose run options for docker binaries"
+    You can customize docker-compose run options by using `DDB_RUN_OPTS` environment variable. It can be used define 
+    environment variables to the container running the binary using docker-compose `-e` flag.
+
+    ```shell
+    # To run phpunit with code coverage, XDEBUG_MODE environment variable has to be set to "coverage"
+    DDB_RUN_OPTS="-e XDEBUG_MODE=coverage" bin/phpunit
+    ```
