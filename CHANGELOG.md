@@ -3,6 +3,13 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.13.3 (2021-04-01)
+### Fix
+* **run:** Use avoid_stdout in ddb run command ([#204](https://github.com/inetum-orleans/docker-devbox-ddb/issues/204)) ([`589cb13`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/589cb13bbea3ff5ebaa04d4f08efa6c303f1143d))
+
+### Documentation
+* **binaries:** Add DDB_RUN_OPTS note ([`5425efe`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/5425efe86f6b6f5aefa73da55c9f158824486c66))
+
 ## v1.13.2 (2021-03-24)
 ### Fix
 * **binary:** Binary is now registered again when condition is changed ([`fd5230b`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/fd5230b0edaae574a0ed0107388206a9bd25bac9))
