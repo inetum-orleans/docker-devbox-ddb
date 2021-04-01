@@ -44,7 +44,7 @@ class RunFeature(Feature):
     def commands(self) -> Iterable[Command]:
         return (
             LifecycleWithoutHelpCommand("run", "Display command to run project binary",
-                                        "run"),
+                                        "run", avoid_stdout=True),
         )
 
     @property
