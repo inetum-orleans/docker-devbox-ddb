@@ -3,6 +3,14 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.14.0 (2021-08-04)
+### Feature
+* **jsonnet:** Generate compose network name without underscore ([`4b6c139`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/4b6c139b151c8b10f06a220f343eb57322a61e3f))
+
+### Fix
+* **jsonnet:** Replace dots with dash in traefik labels ([#205](https://github.com/inetum-orleans/docker-devbox-ddb/issues/205)) ([`9a79b7b`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/9a79b7b7eecc9d0101011cb5e4d03a1a39b73c2c))
+* **jsonnet:** Remove duplicate _default in COMPOSE_NETWORK_NAME env var ([`0c2113a`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/0c2113af98e854f325e33b4f67b9095513b55eb8))
+
 ## v1.13.3 (2021-04-01)
 ### Fix
 * **run:** Use avoid_stdout in ddb run command ([#204](https://github.com/inetum-orleans/docker-devbox-ddb/issues/204)) ([`589cb13`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/589cb13bbea3ff5ebaa04d4f08efa6c303f1143d))
