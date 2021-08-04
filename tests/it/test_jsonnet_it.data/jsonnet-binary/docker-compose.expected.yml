@@ -1,4 +1,6 @@
-networks: {}
+networks:
+  default:
+    name: %network_name%
 services:
   node10:
     image: node:10

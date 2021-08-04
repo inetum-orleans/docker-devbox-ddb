@@ -30,6 +30,7 @@ local _docker_virtualhost_redirect_to_https = std.extVar("jsonnet.docker.virtual
 local _docker_virtualhost_redirect_to_path_prefix = std.extVar("jsonnet.docker.virtualhost.redirect_to_path_prefix");
 local _docker_compose_excluded_services = std.extVar("jsonnet.docker.compose.excluded_services");
 local _docker_compose_included_services = std.extVar("jsonnet.docker.compose.included_services");
+local _docker_compose_network_name = std.extVar("jsonnet.docker.compose.network_name");
 local _docker_expose_disabled = std.extVar("jsonnet.docker.expose.disabled");
 local _docker_expose_port_prefix = std.extVar("jsonnet.docker.expose.port_prefix");
 local _docker_mount_disabled = std.extVar("jsonnet.docker.mount.disabled");
@@ -168,6 +169,14 @@ local apply_docker_compose_included_services(compose, included_services=_docker_
 local apply_resolve_ports_conflicts(compose) =
 	compose + {['__post_processors__']+: ['ddb.feature.jsonnet.docker.apply_resolve_ports_conflicts']};
 
+local apply_default_network_name(config) = config + {
+  networks+: {
+    default: {
+      name: std.strReplace(std.extVar('jsonnet.docker.compose.network_name'), '_', '-')
+    }
+  }
+};
+
 local ServiceName(name=null) = std.join("-", std.prune([_core_project_name, name]));
 
 local _ensure_absolute(path) =
@@ -255,10 +264,10 @@ local Networks(services, networks_names=_docker_networks_names) = {
 };
 
 local Compose(config={}, networks_names=_docker_networks_names, version=_docker_compose_version) =
-    apply_resolve_ports_conflicts(apply_docker_compose_included_services(apply_docker_compose_excluded_services(config))) + {
-        "version": version,
-        "networks": Networks(self.services, networks_names),
-        "volumes": Volumes(self.services)
+    apply_default_network_name(apply_resolve_ports_conflicts(apply_docker_compose_included_services(apply_docker_compose_excluded_services(config)))) + {
+        version: version,
+        networks+: Networks(self.services, networks_names),
+        volumes: Volumes(self.services)
     };
 
 local NoTraefikCertLabels(hostname, service_name, certresolver=null) = {};

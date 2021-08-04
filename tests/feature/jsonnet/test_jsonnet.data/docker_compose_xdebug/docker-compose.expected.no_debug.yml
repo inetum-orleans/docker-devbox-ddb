@@ -18,5 +18,7 @@ services:
     restart: "no"
     user: %uid%:%gid%
 
-networks: {}
+networks:
+  default:
+    name: %network_name%
 volumes: {}

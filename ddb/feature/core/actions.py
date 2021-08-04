@@ -681,8 +681,7 @@ class SelfUpdateAction(Action):
         with requests.get(url, stream=True) as response:
             response.raise_for_status()
 
-            tmp = NamedTemporaryFile(delete=False)
-            try:
+            with NamedTemporaryFile(delete=False) as tmp:
                 if not progress_bar:
                     content_length = int(response.headers['content-length'])
                     progress_bar = IncrementalBar('Downloading', max=content_length, suffix='%(percent)d%%')
@@ -691,8 +690,6 @@ class SelfUpdateAction(Action):
                     progress_bar.next(len(chunk))  # pylint:disable=not-callable
                     tmp.write(chunk)
                 tmp.flush()
-            finally:
-                tmp.close()
 
             local_binary_path = get_binary_destination_path(local_binary_path)
             shutil.copymode(local_binary_path, tmp.name)

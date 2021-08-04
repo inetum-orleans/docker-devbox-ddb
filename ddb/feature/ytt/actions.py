@@ -63,6 +63,7 @@ class YttAction(AbstractTemplateAction):
             depends_files.remove(target)
 
         input_files_args = []
+        # pylint:disable=consider-using-with
         yaml_config_file = tempfile.NamedTemporaryFile("w", suffix=".yml", encoding="utf-8", delete=False)
 
         try:

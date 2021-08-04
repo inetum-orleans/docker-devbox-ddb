@@ -174,7 +174,7 @@ class JsonnetFeature(Feature):
             compose_project_name = feature_config.get('core.project.name')
 
         def normalize_name(name):
-            return re.sub(r'[^-_a-z0-9]', '', name.lower())
+            return re.sub(r'[^-_a-z0-9]', '', name.lower()).replace('_', '-')
 
         if not compose_project_name:
             compose_project_name = os.path.basename(os.path.abspath(config.paths.project_home))
@@ -185,7 +185,7 @@ class JsonnetFeature(Feature):
 
         compose_network_name = feature_config.get('docker.compose.network_name')
         if not compose_network_name:
-            compose_network_name = compose_project_name + "_default"
+            compose_network_name = compose_project_name + "-default"
 
         compose_network_name = normalize_name(compose_network_name)
         feature_config['docker.compose.network_name'] = compose_network_name

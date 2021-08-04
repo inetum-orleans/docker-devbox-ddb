@@ -5,6 +5,7 @@ import yaml
 from dotty_dict import Dotty
 
 from ddb.__main__ import main
+from ddb.config import config
 from tests.utilstest import get_user_uid_gid, get_group_gid
 
 
@@ -29,14 +30,17 @@ class TestDockerJsonnet:
     def test_named_user_group(self, project_loader):
         project_loader("named-user-group")
 
-        main(["configure"])
+        main(["configure"], reset_disabled=True)
 
         assert os.path.exists('docker-compose.yml')
         with open('docker-compose.yml', 'r') as f:
             docker_compose = yaml.load(f, yaml.SafeLoader)
 
         with open('docker-compose.expected.yml', 'r') as f:
-            docker_compose_expected = yaml.load(f, yaml.SafeLoader)
+            expected_data = f.read()
+            expected_data = expected_data.replace("%network_name%",
+                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
+            docker_compose_expected = yaml.load(expected_data, yaml.SafeLoader)
 
         uid, _ = get_user_uid_gid('root')
         gid = get_group_gid('nobody')
@@ -54,27 +58,35 @@ class TestDockerJsonnet:
     def test_binary(self, project_loader):
         project_loader("jsonnet-binary")
 
-        main(["configure"])
+        main(["configure"], reset_disabled=True)
 
         assert os.path.exists('docker-compose.yml')
         with open('docker-compose.yml', 'r') as f:
             docker_compose = yaml.load(f, yaml.SafeLoader)
 
         with open('docker-compose.expected.yml', 'r') as f:
-            docker_compose_expected = yaml.load(f, yaml.SafeLoader)
+            expected_data = f.read()
+            expected_data = expected_data.replace("%network_name%",
+                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
+
+            docker_compose_expected = yaml.load(expected_data, yaml.SafeLoader)
 
         assert docker_compose == docker_compose_expected
 
     def test_resolve_ports_conflicts(self, project_loader):
         project_loader("jsonnet-resolve-ports-conflicts")
 
-        main(["configure"])
+        main(["configure"], reset_disabled=True)
 
         assert os.path.exists('docker-compose.yml')
         with open('docker-compose.yml', 'r') as f:
             docker_compose = yaml.safe_load(f)
 
         with open('docker-compose.expected.yml', 'r') as f:
-            docker_compose_expected = yaml.safe_load(f)
+            expected_data = f.read()
+            expected_data = expected_data.replace("%network_name%",
+                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
+
+            docker_compose_expected = yaml.load(expected_data, yaml.SafeLoader)
 
         assert docker_compose == docker_compose_expected

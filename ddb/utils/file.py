@@ -378,6 +378,7 @@ class SingleTemporaryFile:
         if "delete" in kwargs:
             kwargs.pop("delete")
 
+        # pylint:disable=consider-using-with
         self.named_temporary_file = NamedTemporaryFile(dir=self.tempdir, delete=False, **kwargs)
 
     def __enter__(self):

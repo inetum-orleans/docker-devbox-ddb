@@ -1,7 +1,7 @@
 import os
+import pathlib
 import re
 
-import pathlib
 import pytest
 import yaml
 
@@ -276,6 +276,8 @@ class TestJsonnetAction:
                 expected_data = expected_data.replace("%ddb.path.project%", mapped_cwd)
             else:
                 expected_data = expected_data.replace("%ddb.path.project%", os.getcwd())
+            expected_data = expected_data.replace("%network_name%",
+                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
             expected_data = expected_data.replace("%uid%", str(config.data.get('docker.user.uid')))
             expected_data = expected_data.replace("%gid%", str(config.data.get('docker.user.gid')))
             expected_data = expected_data.replace("%docker.debug.host%", str(config.data.get('docker.debug.host')))
@@ -322,6 +324,8 @@ class TestJsonnetAction:
                 expected_data = expected_data.replace("%ddb.path.project%", mapped_cwd)
             else:
                 expected_data = expected_data.replace("%ddb.path.project%", os.getcwd())
+            expected_data = expected_data.replace("%network_name%",
+                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
             expected_data = expected_data.replace("%uid%", str(config.data.get('docker.user.uid')))
             expected_data = expected_data.replace("%gid%", str(config.data.get('docker.user.gid')))
             expected_data = expected_data.replace("%docker.debug.host%", str(config.data.get('docker.debug.host')))
@@ -367,6 +371,8 @@ class TestJsonnetAction:
                 expected_data = expected_data.replace("%ddb.path.project%", mapped_cwd)
             else:
                 expected_data = expected_data.replace("%ddb.path.project%", os.getcwd())
+            expected_data = expected_data.replace("%network_name%",
+                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
             expected_data = expected_data.replace("%uid%", str(config.data.get('docker.user.uid')))
             expected_data = expected_data.replace("%gid%", str(config.data.get('docker.user.gid')))
             expected_data = expected_data.replace("%docker.debug.host%", str(config.data.get('docker.debug.host')))
@@ -403,6 +409,8 @@ class TestJsonnetAction:
                 expected_data = expected_data.replace("%ddb.path.project%", mapped_cwd)
             else:
                 expected_data = expected_data.replace("%ddb.path.project%", os.getcwd())
+            expected_data = expected_data.replace("%network_name%",
+                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
             expected_data = expected_data.replace("%uid%", str(config.data.get('docker.user.uid')))
             expected_data = expected_data.replace("%gid%", str(config.data.get('docker.user.gid')))
             expected_data = expected_data.replace("%docker.debug.host%", str(config.data.get('docker.debug.host')))
@@ -431,6 +439,9 @@ class TestJsonnetAction:
 
         with open('docker-compose.expected.yml', 'r') as f:
             expected_data = f.read()
+            expected_data = expected_data.replace("%network_name%",
+                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
+
             expected = yaml.load(expected_data, yaml.SafeLoader)
 
         assert rendered == expected
@@ -455,6 +466,9 @@ class TestJsonnetAction:
 
         with open('docker-compose.expected.yml', 'r') as f:
             expected_data = f.read()
+            expected_data = expected_data.replace("%network_name%",
+                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
+
             expected = yaml.load(expected_data, yaml.SafeLoader)
 
         assert rendered == expected
@@ -497,6 +511,8 @@ class TestJsonnetAction:
                 expected_data = expected_data.replace("%ddb.path.project%", mapped_cwd)
             else:
                 expected_data = expected_data.replace("%ddb.path.project%", os.getcwd())
+            expected_data = expected_data.replace("%network_name%",
+                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
             expected_data = expected_data.replace("%uid%", str(config.data.get('docker.user.uid')))
             expected_data = expected_data.replace("%gid%", str(config.data.get('docker.user.gid')))
             expected_data = expected_data.replace("%docker.debug.host%", str(config.data.get('docker.debug.host')))
@@ -542,6 +558,8 @@ class TestJsonnetAction:
         with open('docker-compose.expected.yml', 'r') as f:
             expected_data = f.read()
 
+            expected_data = expected_data.replace("%network_name%",
+                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
             expected_data = expected_data.replace("%uid%", str(config.data.get('docker.user.uid')))
             expected_data = expected_data.replace("%gid%", str(config.data.get('docker.user.gid')))
             expected_data = expected_data.replace("%docker.debug.host%", str(config.data.get('docker.debug.host')))

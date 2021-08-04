@@ -2,6 +2,8 @@ networks:
   reverse-proxy:
     external: true
     name: reverse-proxy
+  default:
+    name: %network_name%
 services:
   db:
     build:

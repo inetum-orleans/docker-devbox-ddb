@@ -115,4 +115,6 @@ volumes:
   node-npm-packages: {}
   php-composer-cache: {}
   php-composer-vendor: {}
-networks: {}
+networks:
+  default:
+    name: %network_name%
