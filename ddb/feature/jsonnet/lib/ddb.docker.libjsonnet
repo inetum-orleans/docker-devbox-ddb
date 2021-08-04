@@ -177,7 +177,7 @@ local apply_default_network_name(config) = config + {
   }
 };
 
-local ServiceName(name=null) = std.join("-", std.prune([_core_project_name, name]));
+local ServiceName(name=null) = std.strReplace(std.join("-", std.prune([_core_project_name, name])), ".", "-");
 
 local _ensure_absolute(path) =
 	if std.startsWith(path, '/') then

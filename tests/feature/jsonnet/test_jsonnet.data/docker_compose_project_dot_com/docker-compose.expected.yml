@@ -1,0 +1,31 @@
+version: '3.7'
+services:
+  web:
+    build:
+      context: .docker/web
+    init: true
+    labels:
+      traefik.http.middlewares.project-dot-com-auth.basicauth.users: "project-dot-com:$$apr1$$oTBtKtGR$$JlgPB1ZdGh1bYfPonp0IB0"
+      traefik.http.routers.project-dot-com-tls.middlewares: "project-dot-com-auth"
+      traefik.enable: "true"
+      traefik.http.routers.project-dot-com-tls.rule: Host(`api.project.dot.com.test`)
+      traefik.http.routers.project-dot-com-tls.service: project-dot-com
+      traefik.http.routers.project-dot-com-tls.tls: "true"
+      traefik.http.routers.project-dot-com.rule: Host(`api.project.dot.com.test`)
+      traefik.http.routers.project-dot-com.service: project-dot-com
+      traefik.http.services.project-dot-com.loadbalancer.server.port: '80'
+      ddb.emit.certs:generate[project-dot-com]: api.project.dot.com.test
+    networks:
+      - default
+      - reverse-proxy
+    restart: "no"
+    volumes:
+      - %ddb.path.project%/.docker/web/nginx.conf:/etc/nginx/conf.d/default.conf:rw
+      - %ddb.path.project%:/var/www/html:rw
+networks:
+  reverse-proxy:
+    external: true
+    name: reverse-proxy
+  default:
+    name: %network_name%
+volumes: { }
