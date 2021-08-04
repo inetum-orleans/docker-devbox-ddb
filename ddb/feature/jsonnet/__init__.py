@@ -189,7 +189,7 @@ class JsonnetFeature(Feature):
 
         compose_network_name = normalize_name(compose_network_name)
         feature_config['docker.compose.network_name'] = compose_network_name
-        config.env_additions['COMPOSE_NETWORK_NAME'] = compose_network_name + "_default"
+        config.env_additions['COMPOSE_NETWORK_NAME'] = compose_network_name
 
     @staticmethod
     def _configure_defaults_build_image_tag(feature_config):
