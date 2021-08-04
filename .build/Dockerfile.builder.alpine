@@ -8,7 +8,7 @@ RUN apk add --no-cache curl &&\
   python3 get-pip.py &&\
   rm get-pip.py &&\
   apk del curl
-RUN apk add --no-cache build-base python3-dev libffi-dev openssl-dev
+RUN apk add --no-cache build-base python3-dev libffi-dev openssl-dev zlib-dev
 
 COPY . /docker-devbox-ddb
 WORKDIR /docker-devbox-ddb
@@ -17,7 +17,7 @@ RUN CRYPTOGRAPHY_DONT_BUILD_RUST=1 pip install -e .[dev] && pip uninstall -y pyi
 
 # Build pyinstaller bootloader for alpine (from https://github.com/six8/pyinstaller-alpine)
 RUN pip uninstall -y pyinstaller &&\
-	apk --no-cache add zlib-dev git &&\
+	apk --no-cache add git &&\
 	git clone --depth 1 --single-branch --branch "v4.2" https://github.com/pyinstaller/pyinstaller.git /tmp/pyinstaller &&\
 	cd /tmp/pyinstaller/bootloader &&\
 	python3 ./waf configure --no-lsb all &&\
