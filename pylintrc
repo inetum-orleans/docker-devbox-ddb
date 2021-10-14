@@ -146,7 +146,8 @@ disable=print-statement,
         arguments-differ,
         unused-argument,
         too-few-public-methods,
-        assignment-from-none
+        assignment-from-none,
+        consider-using-f-string
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

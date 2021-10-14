@@ -58,7 +58,7 @@ def _flatten(prefix=None, sep=".", array_index_format="[%s]",
              key_transformer=None, value_transformer=None, keep_primitive_list=False,
              stop_for=(), data=None, output=None) -> dict:
     if output is None:
-        output = dict()
+        output = {}
 
     if prefix is None:
         prefix = ""

@@ -245,7 +245,7 @@ def get_binary_destination_path(binary_path: str):
     :return:
     """
     if binary_path.endswith('.py') \
-            and Path(binary_path).read_text().startswith("#!/usr/bin/env python"):
+            and Path(binary_path).read_bytes().startswith(b'#!/usr/bin/env python'):
         # Avoid removing main source file when running on development.
         binary_path = binary_path[:-3] + ".bin"
 

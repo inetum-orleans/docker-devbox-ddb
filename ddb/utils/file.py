@@ -19,8 +19,8 @@ def has_same_content(filename1: str, filename2: str, read_mode='rb') -> bool:
     """
     Check if the content of two files are same
     """
-    with open(filename1, mode=read_mode) as file1:
-        with open(filename2, mode=read_mode) as file2:
+    with open(filename1, mode=read_mode) as file1:  # pylint:disable=unspecified-encoding
+        with open(filename2, mode=read_mode) as file2:  # pylint:disable=unspecified-encoding
             return file1.read() == file2.read()
 
 
@@ -324,13 +324,13 @@ class TemplateFinder(FileWalker):
                 return None
 
         if self.skip_processed_sources:
-            if source in context.processed_sources.keys():
+            if source in context.processed_sources:
                 return None
 
         target, suffix = self._get_target_and_suffix(source, self.suffixes)
 
         if self.skip_processed_targets:
-            if target in context.processed_targets.keys():
+            if target in context.processed_targets:
                 previous_source = context.processed_targets[target]
                 _, previous_suffix = self._get_target_and_suffix(previous_source, self.suffixes)
                 if previous_suffix not in self.suffixes or \

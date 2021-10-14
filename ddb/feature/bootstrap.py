@@ -127,7 +127,7 @@ def append_available_feature(feature):
     """
     Append a feature to available features list.
     """
-    global _available_features  # pylint:disable=global-statement
+    global _available_features  # pylint:disable=global-statement,global-variable-not-assigned
     _available_features.append(feature)
 
 

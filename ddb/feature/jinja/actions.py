@@ -66,7 +66,7 @@ class JinjaAction(AbstractTemplateAction):
         self.env.tests.update(custom_tests)
 
         self.context = config.data.copy()
-        self.context['_config'] = dict()
+        self.context['_config'] = {}
         self.context['_config.eject'] = config.eject
         self.context['_config.args'] = vars(config.args)
         self.context['_config.unknown_args'] = config.unknown_args

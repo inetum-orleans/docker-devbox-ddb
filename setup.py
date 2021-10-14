@@ -69,10 +69,10 @@ dev_requires = [
     "tox",
     "astroid",
     "pylint",
+    "docker[tls]",
     "docker-compose",
     "pytest",
     "coverage",
-    "docker-compose",
     "waiting",
     "pytest-mock",
     "pytest-cov",
@@ -86,7 +86,7 @@ entry_points = {
         'ddb = ddb.__main__:console_script'
     ],
     "pytest11": [
-        "docker_compose=tests.pytest_docker_compose:plugin",
+        "docker_compose=pytest_docker_compose:plugin",
     ],
 }
 

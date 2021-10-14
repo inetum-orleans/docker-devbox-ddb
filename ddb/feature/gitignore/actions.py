@@ -73,7 +73,7 @@ class UpdateGitignoreAction(InitializableAction):
         """
         files = config.data.get('gitignore.enforce')
         cache = caches.get("gitignore")
-        cached_files = cache.get('enforced', list())
+        cached_files = cache.get('enforced', [])
 
         for file in cached_files:
             if file not in files:

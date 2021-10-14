@@ -308,7 +308,7 @@ def get_history():
     Get migrations history.
     :return:
     """
-    global _history  # pylint:disable=global-statement
+    global _history  # pylint:disable=global-statement,global-variable-not-assigned
     return _history
 
 
