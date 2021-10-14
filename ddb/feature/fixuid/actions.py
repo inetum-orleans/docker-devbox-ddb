@@ -179,15 +179,19 @@ class FixuidDockerComposeAction(Action):
 
     @staticmethod
     def _get_inspect_data(image):
-        context.log.warning("Loading registry data id for image %s...", image)
         try:
+            context.log.debug("Inspect base image %s", image)
             output = run('docker', 'inspect', '--format', '\'{{json .}}\'', image)
         except CalledProcessError:
+            context.log.warning("Pull base image %s (downloading)", image)
             run('docker', 'pull', '-q', image)
+            context.log.success("Pull base image %s (terminated)", image)
+            context.log.debug("Inspect base image %s", image)
             output = run('docker', 'inspect', '--format', '\'{{json .}}\'', image)
         output = output.decode().strip('\\\'\n').rstrip('\\\'\n')
         inspect_data = json.loads(output)
-        context.log.info("Inspect image %s (%s)", image, inspect_data['Id'])
+
+        context.log.debug("%s (%s)", image, inspect_data['Id'])
         return inspect_data
 
     @staticmethod
