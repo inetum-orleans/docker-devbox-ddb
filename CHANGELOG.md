@@ -3,6 +3,10 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.15.1 (2021-10-14)
+### Fix
+* **fixuid:** Enhance verbosity and user messages ([`3668379`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/366837987b0ab002189c57d561b1c249a85489e2))
+
 ## v1.15.0 (2021-10-14)
 ### Feature
 * Drop ubuntu 16.04 support for binary ([`7335a5c`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/7335a5c59f1b6da6a1c2873469c8a9b96279d50e))
