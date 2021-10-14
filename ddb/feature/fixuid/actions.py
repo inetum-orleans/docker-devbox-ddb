@@ -129,7 +129,7 @@ class FixuidDockerComposeAction(Action):
     """
 
     def __init__(self):
-        self.docker_compose_config = dict()
+        self.docker_compose_config = {}
         self._dockerfile_lines = ("ADD fixuid.tar.gz /usr/local/bin",
                                   "RUN chown root:root /usr/local/bin/fixuid && "
                                   "chmod 4755 /usr/local/bin/fixuid && "
@@ -187,7 +187,7 @@ class FixuidDockerComposeAction(Action):
             output = run('docker', 'inspect', '--format', '\'{{json .}}\'', image)
         output = output.decode().strip('\\\'\n').rstrip('\\\'\n')
         inspect_data = json.loads(output)
-        context.log.success("Inspect data retrieved for image %s (%s)", image, inspect_data['Id'])
+        context.log.info("Inspect image %s (%s)", image, inspect_data['Id'])
         return inspect_data
 
     @staticmethod

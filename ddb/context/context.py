@@ -48,9 +48,9 @@ class Context:  # pylint:disable=too-many-instance-attributes
         self.stack = []  # type: List[ContextStackItem]
         self.watching = False  # type: bool
         self.exceptions = []  # type: List[Exception]
-        self.processed_sources = dict()  # type: Dict[str, str]
-        self.processed_targets = dict()  # type: Dict[str, str]
-        self.data = Dotty(dict())
+        self.processed_sources = {}  # type: Dict[str, str]
+        self.processed_targets = {}  # type: Dict[str, str]
+        self.data = Dotty({})
 
     def reset(self):
         """
@@ -108,12 +108,12 @@ class Context:  # pylint:disable=too-many-instance-attributes
         """
         Mark sources and target as processed, for them to be skipped by other file template finders.
         """
-        if filepath and filepath in self.processed_sources.keys():
+        if filepath and filepath in self.processed_sources:
             linked_target = self.processed_sources.pop(filepath)
-            if linked_target in self.processed_targets.keys():
+            if linked_target in self.processed_targets:
                 self.processed_targets.pop(linked_target)
 
         if filepath in self.processed_targets:
             linked_source = self.processed_targets.pop(filepath)
-            if linked_source in self.processed_sources.keys():
+            if linked_source in self.processed_sources:
                 self.processed_sources.pop(linked_source)

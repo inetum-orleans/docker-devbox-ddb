@@ -149,7 +149,7 @@ class EmitDockerComposeConfigAction(Action):
 
             event_parsed_values = parsed_values.get(event_name)
             if not event_parsed_values:
-                event_parsed_values = dict()
+                event_parsed_values = {}
                 parsed_values[event_name] = event_parsed_values
 
             if event_id in event_parsed_values:
@@ -351,7 +351,7 @@ class LocalVolumesAction(Action):
                 # Create empty file, because with have an extension in source or target.
                 os.makedirs(str(Path(source).parent), exist_ok=True)
                 context.log.info("Local volume source: %s (file created)", rel_source)
-                with open(source, "w"):
+                with open(source, "wb"):
                     pass
                 events.file.generated(source=None, target=rel_source)
             else:

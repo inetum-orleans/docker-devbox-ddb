@@ -188,7 +188,7 @@ class DockerComposePlugin:
                     if ',' in docker_compose_option:
                         if not split_deprecated_displayed:
                             warnings.warn(DeprecationWarning(
-                                "Using ',' in --docker-compose option to specify multiple compose files is deprecated." 
+                                "Using ',' in --docker-compose option to specify multiple compose files is deprecated."
                                 "You can now use --docker-compose many times in the same command."))
                             split_deprecated_displayed = True
 

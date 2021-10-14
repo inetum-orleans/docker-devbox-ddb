@@ -41,7 +41,7 @@ class YttAction(AbstractTemplateAction):
                     new[escaped_k] = value
             new[key] = value
         if with_config:
-            new['_config'] = dict()
+            new['_config'] = {}
             new['_config']['eject'] = config.eject
             new['_config']['args'] = dict(vars(config.args))
             new['_config']['unknown_args'] = list(config.unknown_args)
