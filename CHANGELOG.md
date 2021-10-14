@@ -3,6 +3,14 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.15.0 (2021-10-14)
+### Feature
+* Drop ubuntu 16.04 support for binary ([`7335a5c`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/7335a5c59f1b6da6a1c2873469c8a9b96279d50e))
+* **fixuid:** Use docker cli instead of docker-py ([`cba2394`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/cba2394a0393e5e4127a1b9e48090ee75d34d505))
+
+### Fix
+* **fixuid:** Use fixuid v0.5.1 ([`0fd82e1`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/0fd82e10d58168c17304c964a006f90d1beafd8e))
+
 ## v1.14.0 (2021-08-04)
 ### Feature
 * **jsonnet:** Generate compose network name without underscore ([`4b6c139`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/4b6c139b151c8b10f06a220f343eb57322a61e3f))
