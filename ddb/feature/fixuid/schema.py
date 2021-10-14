@@ -9,4 +9,4 @@ class FixuidSchema(FeatureSchema):
     Certs feature schema.
     """
     url = fields.String(required=True, default="https://github.com/boxboat/fixuid/releases/download/"
-                                               "v0.5/fixuid-0.5-linux-amd64.tar.gz")
+                                               "v0.5.1/fixuid-0.5.1-linux-amd64.tar.gz")
