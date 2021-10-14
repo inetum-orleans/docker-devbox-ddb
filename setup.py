@@ -45,7 +45,6 @@ install_requires = [
     "jsonnet-binary",
     "zgitignore",
     "cached-property",
-    "docker[tls]",  # Because newer version makes communication fails with current docker registry
     "dockerfile-parse",
     "cfssl>=0.0.3b243",
     "cryptography",

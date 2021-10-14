@@ -4,9 +4,9 @@ import os
 import re
 import shlex
 from collections import namedtuple
+from subprocess import CalledProcessError
 from typing import Iterable
 
-import docker
 from chmod_monkey import tmp_chmod
 from dockerfile_parse import DockerfileParser
 from dotty_dict import Dotty
@@ -14,11 +14,11 @@ from dotty_dict import Dotty
 from ..copy.actions import copy_from_url
 from ...action import Action
 from ...action.action import EventBinding
-from ...cache import global_cache
 from ...config import config
 from ...context import context
 from ...event import events
 from ...utils.file import force_remove
+from ...utils.process import run
 
 BuildServiceDef = namedtuple("BuildServiceDef", "context dockerfile")
 
@@ -28,7 +28,7 @@ class CustomDockerfileParser(DockerfileParser):
     Custom class to implement entrypoint property with the same behavior as cmd property.
     """
 
-    def get_last_instruction(self, instruction_type, instruction_condition = lambda instruction: True):
+    def get_last_instruction(self, instruction_type, instruction_condition=lambda instruction: True):
         """
         Determine the final instruction_type instruction, if any, in the final build stage.
         instruction_types from earlier stages are ignored.
@@ -178,44 +178,22 @@ class FixuidDockerComposeAction(Action):
         return "fixuid:docker"
 
     @staticmethod
-    def _get_registry_data(image):
+    def _get_inspect_data(image):
         context.log.warning("Loading registry data id for image %s...", image)
-        client = docker.from_env()
-        registry_data = client.images.get_registry_data(image)
-        context.log.success("Id retrieved for image %s (%s)", image, registry_data.id)
-        return registry_data
-
-    @staticmethod
-    def _load_image_attrs(image):
-        registry_data_id_cache_key = "docker.image.name." + image + ".registry_data"
-        registry_data_id = global_cache().get(registry_data_id_cache_key)
-        registry_data = None
-        if not registry_data_id:
-            registry_data = FixuidDockerComposeAction._get_registry_data(image)
-            registry_data_id = registry_data.id
-            global_cache().set(registry_data_id_cache_key, registry_data_id)
-        else:
-            context.log.notice("Id retrieved for image %s (%s) (from cache)", image, registry_data_id)
-
-        image_attrs_cache_key = "docker.image.id." + registry_data_id + ".attrs"
-        image_attrs = global_cache().get(image_attrs_cache_key)
-
-        if not image_attrs:
-            if not registry_data:
-                registry_data = FixuidDockerComposeAction._get_registry_data(image)
-            context.log.warning("Loading attributes for image %s...", image)
-            pulled_image = registry_data.pull()
-            image_attrs = pulled_image.attrs
-            global_cache().set(image_attrs_cache_key, image_attrs)
-            context.log.success("Attributes retrieved for image %s", image)
-        else:
-            context.log.notice("Attributes retrieved for image %s (from cache)", image)
-        return image_attrs
+        try:
+            output = run('docker', 'inspect', '--format', '\'{{json .}}\'', image)
+        except CalledProcessError:
+            run('docker', 'pull', '-q', image)
+            output = run('docker', 'inspect', '--format', '\'{{json .}}\'', image)
+        output = output.decode().strip('\\\'\n').rstrip('\\\'\n')
+        inspect_data = json.loads(output)
+        context.log.success("Inspect data retrieved for image %s (%s)", image, inspect_data['Id'])
+        return inspect_data
 
     @staticmethod
     def _get_image_config(image):
         if image and image != 'scratch':
-            attrs = FixuidDockerComposeAction._load_image_attrs(image)
+            attrs = FixuidDockerComposeAction._get_inspect_data(image)
             if attrs and 'Config' in attrs:
                 return attrs['Config']
         return None
@@ -261,13 +239,11 @@ class FixuidDockerComposeAction(Action):
         if not entrypoint:
             baseimage_config = FixuidDockerComposeAction._get_image_config(parser.baseimage)
             if baseimage_config and 'Entrypoint' in baseimage_config:
-                entrypoint = baseimage_config['Entrypoint']
-                entrypoint = json.dumps(entrypoint)
+                entrypoint = json.dumps(baseimage_config['Entrypoint'])
         if not cmd and not reset_cmd:
             baseimage_config = FixuidDockerComposeAction._get_image_config(parser.baseimage)
             if baseimage_config and 'Cmd' in baseimage_config:
-                cmd = baseimage_config['Cmd']
-                cmd = json.dumps(cmd)
+                cmd = json.dumps(baseimage_config['Cmd'])
         if not cmd:
             cmd = None
         return cmd, entrypoint
@@ -333,7 +309,7 @@ class FixuidDockerComposeAction(Action):
                 ret = True
 
             if not manual_install and self._dockerfile_lines[0] + "\n" not in parser.lines:
-                last_instruction_user = parser\
+                last_instruction_user = parser \
                     .get_last_instruction("USER",
                                           lambda instruction: instruction.get('value') and
                                                               instruction.get('value').lower() != 'root')
