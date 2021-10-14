@@ -252,7 +252,7 @@ jobs:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     needs: [ci-linux]
 
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
 
     name: Build (Linux Binary - Older glibc)
 
