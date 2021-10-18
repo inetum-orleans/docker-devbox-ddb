@@ -4,11 +4,13 @@ import os
 import re
 
 import requests
+
 from ddb.action import Action
 from ddb.cache import caches, requests_cache_name
 from ddb.config import config
 from ddb.event import events
 from ddb.utils.file import write_if_different, copy_if_different
+
 
 def copy_from_url(source, destination, filename=None):
     """
@@ -86,7 +88,7 @@ class CopyAction(Action):
             dispatch_directories = get_dispatch_directories(dispatch)
 
             if not dispatch_directories:
-                dispatch_directories = [os.path.dirname(destination)]
+                dispatch_directories = ['']
 
             for dispatch_directory in dispatch_directories:
                 if destination:
@@ -107,12 +109,14 @@ class CopyAction(Action):
             target_path = copy_from_url(source, destination, spec.get('filename'))
             if target_path:
                 yield None, target_path
-        elif os.path.exists(source):
+        elif os.path.exists(source) and os.path.isfile(source):
             filename = spec.get('filename', os.path.basename(source))
             target_path = os.path.join(destination, filename)
             if copy_if_different(source, target_path, 'rb', 'wb', log=True) or config.eject:
                 yield source, target_path
         else:
+            if os.path.isdir(source):
+                source = source + '/*'
             for file in glob.glob(source):
                 target_path = os.path.join(destination, os.path.basename(file))
                 if copy_if_different(file, target_path, 'rb', 'wb', log=True) or config.eject:

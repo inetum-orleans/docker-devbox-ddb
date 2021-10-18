@@ -62,3 +62,33 @@ class TestCopyFeature:
         action = CopyAction()
         action.execute()
         assert os.path.exists(os.path.join('.', 'some-cert.crt'))
+
+    def test_copy_subdirectory(self, project_loader):
+        project_loader("copy-subdirectory")
+
+        features.register(CopyFeature())
+        load_registered_features()
+        register_default_caches()
+
+        action = CopyAction()
+        action.execute()
+        assert os.path.exists(os.path.join('sub', 'target'))
+
+        assert os.path.isfile(os.path.join('sub', 'target', 'test.abc.json'))
+        assert os.path.isfile(os.path.join('sub', 'target', 'test.def.json'))
+        assert os.path.isfile(os.path.join('sub', 'target', 'test.ijk.yaml'))
+
+    def test_copy_subdirectory_glob(self, project_loader):
+        project_loader("copy-subdirectory-glob")
+
+        features.register(CopyFeature())
+        load_registered_features()
+        register_default_caches()
+
+        action = CopyAction()
+        action.execute()
+        assert os.path.exists(os.path.join('sub', 'target'))
+
+        assert os.path.isfile(os.path.join('sub', 'target', 'test.abc.json'))
+        assert os.path.isfile(os.path.join('sub', 'target', 'test.def.json'))
+        assert not os.path.exists(os.path.join('sub', 'target', 'test.ijk.yaml'))

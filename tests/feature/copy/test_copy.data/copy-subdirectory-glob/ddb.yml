@@ -1,0 +1,4 @@
+copy:
+  specs:
+    - source: "sub/directory/*.json"
+      destination: "sub/target"
