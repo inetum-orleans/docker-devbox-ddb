@@ -3,6 +3,11 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.15.2 (2021-10-18)
+### Fix
+* **core:** Use tag instead of version to build release url ([`446b140`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/446b14046fb2da93ee89460bc44d54ebdb4738da))
+* **copy:** Fix copy when used in a subdirectory ([`602086b`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/602086b5492bda2ff437c24ba44137cb77225b0b))
+
 ## v1.15.1 (2021-10-14)
 ### Fix
 * **fixuid:** Enhance verbosity and user messages ([`3668379`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/366837987b0ab002189c57d561b1c249a85489e2))
