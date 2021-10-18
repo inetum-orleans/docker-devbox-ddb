@@ -31,7 +31,8 @@ class TestCore:
     def test_self_update_up_to_date(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
         mocker.patch('ddb.feature.core.actions.get_local_binary_path', lambda *args, **kwargs: self.bin)
         mocker.patch('ddb.feature.core.actions.is_binary', lambda *args, **kwargs: True)
-        mocker.patch('ddb.feature.core.actions.get_latest_release_version', lambda *args, **kwargs: __version__)
+        mocker.patch('ddb.feature.core.actions.get_latest_release',
+                     lambda *args, **kwargs: (__version__, 'v' + __version__))
 
         project_loader("empty")
 
@@ -46,7 +47,7 @@ class TestCore:
     def test_self_update_outdated(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
         mocker.patch('ddb.feature.core.actions.get_local_binary_path', lambda *args, **kwargs: self.bin)
         mocker.patch('ddb.feature.core.actions.is_binary', lambda *args, **kwargs: True)
-        mocker.patch('ddb.feature.core.actions.get_latest_release_version', lambda *args, **kwargs: '1.10.0')
+        mocker.patch('ddb.feature.core.actions.get_latest_release', lambda *args, **kwargs: ('1.10.0', 'v1.10.0'))
         mocker.patch('ddb.feature.core.actions.get_current_version', lambda *args, **kwargs: '1.9.2')
 
         project_loader("empty")
@@ -63,7 +64,7 @@ class TestCore:
     def test_self_update_up_to_date_force(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
         mocker.patch('ddb.feature.core.actions.get_local_binary_path', lambda *args, **kwargs: self.bin)
         mocker.patch('ddb.feature.core.actions.is_binary', lambda *args, **kwargs: True)
-        mocker.patch('ddb.feature.core.actions.get_latest_release_version', lambda *args, **kwargs: '1.10.0')
+        mocker.patch('ddb.feature.core.actions.get_latest_release', lambda *args, **kwargs: ('1.10.0', 'v1.10.0'))
         mocker.patch('ddb.feature.core.actions.get_current_version', lambda *args, **kwargs: '1.9.2')
 
         project_loader("empty")
@@ -79,7 +80,7 @@ class TestCore:
     def test_self_update_up_to_date(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
         mocker.patch('ddb.feature.core.actions.get_local_binary_path', lambda *args, **kwargs: self.bin)
         mocker.patch('ddb.feature.core.actions.is_binary', lambda *args, **kwargs: True)
-        mocker.patch('ddb.feature.core.actions.get_latest_release_version', lambda *args, **kwargs: '1.3.0')
+        mocker.patch('ddb.feature.core.actions.get_latest_release', lambda *args, **kwargs: ('1.3.0', 'v1.3.0'))
         mocker.patch('ddb.feature.core.actions.get_current_version', lambda *args, **kwargs: '1.3.0')
 
         project_loader("empty")
@@ -95,7 +96,7 @@ class TestCore:
     def test_version_up_to_date(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
         mocker.patch('ddb.feature.core.actions.get_local_binary_path', lambda *args, **kwargs: self.bin)
         mocker.patch('ddb.feature.core.actions.is_binary', lambda *args, **kwargs: True)
-        mocker.patch('ddb.feature.core.actions.get_latest_release_version', lambda *args, **kwargs: '1.3.0')
+        mocker.patch('ddb.feature.core.actions.get_latest_release', lambda *args, **kwargs: ('1.3.0', 'v1.3.0'))
         mocker.patch('ddb.feature.core.actions.get_current_version', lambda *args, **kwargs: '1.3.0')
 
         project_loader("empty")
@@ -114,7 +115,7 @@ class TestCore:
     def test_version_outdated_binary(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
         mocker.patch('ddb.feature.core.actions.get_local_binary_path', lambda *args, **kwargs: self.bin)
         mocker.patch('ddb.feature.core.actions.is_binary', lambda *args, **kwargs: True)
-        mocker.patch('ddb.feature.core.actions.get_latest_release_version', lambda *args, **kwargs: '1.3.1')
+        mocker.patch('ddb.feature.core.actions.get_latest_release', lambda *args, **kwargs: ('1.3.1', 'v1.3.1'))
         mocker.patch('ddb.feature.core.actions.get_current_version', lambda *args, **kwargs: '1.3.0')
 
         project_loader("empty")
@@ -123,19 +124,19 @@ class TestCore:
 
         outerr = capsys.readouterr()
         assert outerr.err == ""
-        assert outerr.out == '''+-------------------------------------------------------------------------------------+
-|                                      ddb 1.3.0                                      |
-+-------------------------------------------------------------------------------------+
-|                          A new version is available: 1.3.1                          |
-+-------------------------------------------------------------------------------------+
-|                      run "ddb self-update" command to update.                       |
-|                  For more information, check the following links:                   |
-|       https://github.com/inetum-orleans/docker-devbox-ddb/releases/tag/1.3.1        |
-| https://github.com/inetum-orleans/docker-devbox-ddb/releases/tag/1.3.1/CHANGELOG.md |
-+-------------------------------------------------------------------------------------+
-|                     Please report any bug or feature request at                     |
-|             https://github.com/inetum-orleans/docker-devbox-ddb/issues              |
-+-------------------------------------------------------------------------------------+\n'''
+        assert outerr.out == '''+--------------------------------------------------------------------------------------+
+|                                      ddb 1.3.0                                       |
++--------------------------------------------------------------------------------------+
+|                          A new version is available: 1.3.1                           |
++--------------------------------------------------------------------------------------+
+|                       run "ddb self-update" command to update.                       |
+|                   For more information, check the following links:                   |
+|       https://github.com/inetum-orleans/docker-devbox-ddb/releases/tag/v1.3.1        |
+| https://github.com/inetum-orleans/docker-devbox-ddb/releases/tag/v1.3.1/CHANGELOG.md |
++--------------------------------------------------------------------------------------+
+|                     Please report any bug or feature request at                      |
+|              https://github.com/inetum-orleans/docker-devbox-ddb/issues              |
++--------------------------------------------------------------------------------------+\n'''
 
     def test_required_version_eq(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
         mocker.patch('ddb.feature.core.actions.get_current_version', lambda *args, **kwargs: '1.3.0')

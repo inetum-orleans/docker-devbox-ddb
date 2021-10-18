@@ -30,9 +30,9 @@ from ...config.flatten import flatten
 from ...context import context
 
 
-def get_latest_release_version(github_repository: str):
+def get_latest_release(github_repository: str):
     """
-    Retrieve latest release version from GitHub API
+    Retrieve latest release version and tag_name from GitHub API
     :param github_repository github repository to check
     :return: Version from tag_name retrieved from GitHub API
     """
@@ -40,11 +40,12 @@ def get_latest_release_version(github_repository: str):
     try:
         response.raise_for_status()
         tag_name = response.json().get('tag_name')
-        if tag_name and tag_name.startswith('v'):
-            tag_name = tag_name[1:]
-        return tag_name
+        version = tag_name
+        if version and version.startswith('v'):
+            version = version[1:]
+        return version, tag_name
     except HTTPError:  # pylint:disable=bare-except
-        return None
+        return None, None
 
 
 def get_current_version():
@@ -68,11 +69,11 @@ def print_version(github_repository, silent=False):
     header_block = ['ddb ' + get_current_version()]
     blocks.append(header_block)
 
-    last_release = get_latest_release_version(github_repository)
+    last_release, tag_name = get_latest_release(github_repository)
 
     if last_release and get_current_version() < last_release:
         blocks.append(_build_update_header(last_release))
-        blocks.append(_build_update_details(github_repository, last_release))
+        blocks.append(_build_update_details(github_repository, tag_name))
     blocks.append([
         'Please report any bug or feature request at',
         'https://github.com/inetum-orleans/docker-devbox-ddb/issues'
@@ -150,36 +151,36 @@ def check_for_update(github_repository: str, output=False, details=False):
     :param details: if True, will display more details.
     :return: Version of the latest release if it doesn't match the current one.
     """
-    last_release = get_latest_release_version(github_repository)
+    last_release, tag_name = get_latest_release(github_repository)
 
     if last_release and is_version_greater(get_current_version(), last_release):
         if output:
             blocks = [_build_update_header(last_release)]
             if details:
-                row = _build_update_details(github_repository, last_release)
+                row = _build_update_details(github_repository, tag_name)
                 blocks.append(row)
                 print(get_table_display(blocks))
             else:
                 for block in blocks:
                     for row in block:
                         print(row)
-        return last_release
-    return None
+        return last_release, tag_name
+    return None, None
 
 
-def _build_update_header(last_release):
-    return ['A new version is available: {}'.format(last_release)]
+def _build_update_header(version):
+    return ['A new version is available: {}'.format(version)]
 
 
-def _build_update_details(github_repository, last_release):
+def _build_update_details(github_repository, tag_name):
     row = []
     update_tip = _build_update_tip()
     if update_tip:
         row.append(update_tip)
     row.extend((
         'For more information, check the following links:',
-        'https://github.com/{}/releases/tag/{}'.format(github_repository, last_release),
-        'https://github.com/{}/releases/tag/{}/CHANGELOG.md'.format(github_repository, last_release),
+        'https://github.com/{}/releases/tag/{}'.format(github_repository, tag_name),
+        'https://github.com/{}/releases/tag/{}/CHANGELOG.md'.format(github_repository, tag_name),
     ))
     return row
 
@@ -642,23 +643,20 @@ class SelfUpdateAction(Action):
             )
             return
 
-        last_release = check_for_update(github_repository, True)
+        last_release, tag_name = check_for_update(github_repository, True)
         if not last_release:
             print('ddb is already up to date.')
             if 'force' not in config.args or not config.args.force:
                 return
 
-        if not last_release:
-            last_release = get_latest_release_version(github_repository)
-
-        self.self_update_binary(github_repository, last_release)
+        self.self_update_binary(github_repository, tag_name)
 
     @staticmethod
-    def self_update_binary(github_repository, version):
+    def self_update_binary(github_repository, tag_name):
         """
         Self update the ddb binary
         :param github_repository:
-        :param version:
+        :param tag_name:
         :return:
         """
         local_binary_path = get_local_binary_path()
@@ -674,7 +672,7 @@ class SelfUpdateAction(Action):
             print('ddb is running from a platform that doesn\'t support binary package mode.')
             return
 
-        url = 'https://github.com/{}/releases/download/v{}/{}'.format(github_repository, version, release_asset_name)
+        url = 'https://github.com/{}/releases/download/{}/{}'.format(github_repository, tag_name, release_asset_name)
         context.log.debug('Downloading ddb asset: %s', url)
 
         progress_bar = None
