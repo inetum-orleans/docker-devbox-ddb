@@ -3,6 +3,10 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.15.4 (2021-11-05)
+### Fix
+* **shell:** Fix invalid generated binary shims ([#213](https://github.com/inetum-orleans/docker-devbox-ddb/issues/213)) ([`5301003`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/5301003e44edef14884bc8f3897960e251855469))
+
 ## v1.15.3 (2021-11-05)
 ### Fix
 * **shell:** Improve binary shim by generating temporary file ([#211](https://github.com/inetum-orleans/docker-devbox-ddb/issues/211)) ([`22046e9`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/22046e934778f4c95c78105164ea59ba0b3ed655))
