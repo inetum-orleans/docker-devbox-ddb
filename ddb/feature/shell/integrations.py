@@ -129,7 +129,7 @@ class BashShellIntegration(ShellIntegration):
         return shim
 
     def create_binary_shim(self, shims_path: str, name: str, global_: bool):
-        command = ""
+        command = []
         if global_:
             ddb_project_home_variable = next(
                 self.set_environment_variable(config.env_prefix + "_PROJECT_HOME", config.paths.project_home)
@@ -139,28 +139,27 @@ class BashShellIntegration(ShellIntegration):
                 self.set_environment_variable("COMPOSE_IGNORE_ORPHANS", "1")
             )
 
-            command += f"$(ddb deactivate --force)\n" \
-                       f"{ddb_project_home_variable}\n" \
-                       f"{compose_ignore_orphans_variable}\n" \
-                       f"$(ddb activate --force)\n"
+            command.extend(
+                ("$(ddb deactivate --force)",
+                 f"{ddb_project_home_variable}",
+                 f"{compose_ignore_orphans_variable}",
+                 "$(ddb activate --force)")
+            )
 
-        command += 'shim=$(tempfile -p ddb.run.)\n' \
-                   'echo "rm $shim">>"$shim"\n' \
-                   f'echo $(ddb run {name} \"$@\") "$@">>"$shim"\n' \
-                   'source "$shim"\n'
+        command.extend(
+            ('shim=$(tempfile -p ddb.run.)',
+             'echo "rm $shim">>"$shim"',
+             f'echo $(ddb run {name} \"$@\") "$@">>"$shim"',
+             'source "$shim"')
+        )
 
         return self._write_shim(shims_path, name, 'binary', command)
 
     def create_alias_binary_shim(self, shims_path: str, binary: Binary) -> Tuple[bool, str]:
-        alias_command = []
-        for command_item in binary.command():
-            alias_command.append(command_item)
-        alias_command.append('"$@"')
-
-        return self._write_shim(shims_path, binary.name, 'alias', alias_command)
+        return self._write_shim(shims_path, binary.name, 'alias', [' '.join(binary.command()) + ' "$@"'])
 
     @staticmethod
-    def _write_shim(shims_path: str, shim_name: str, shim_type: str, command: Iterable[str]) -> Tuple[bool, str]:
+    def _write_shim(shims_path: str, shim_name: str, shim_type: str, lines: Iterable[str]) -> Tuple[bool, str]:
         """
         Generate the shim file
         :return:
@@ -168,7 +167,10 @@ class BashShellIntegration(ShellIntegration):
         os.makedirs(shims_path, exist_ok=True)
         shim = os.path.join(os.path.normpath(shims_path), shim_name)
 
-        content = '\n'.join(["#!/usr/bin/env bash", "# ddb:shim:" + shim_type, ' '.join(command)]) + "\n"
+        all_lines = ["#!/usr/bin/env bash", "# ddb:shim:" + shim_type]
+        all_lines.extend(lines)
+
+        content = '\n'.join(all_lines) + "\n"
 
         written = write_if_different(shim, content, newline="\n")
 
@@ -221,13 +223,13 @@ class CmdShellIntegration(ShellIntegration):
     def create_binary_shim(self, shims_path: str, name: str, global_: bool):
         commands = []
         if global_:
-            commands.extend([
-                "set command=(ddb deactivate --force)",
-                "%command%>cmd.txt",
-                "set /p execution=<cmd.txt",
-                "del cmd.txt",
-                "%execution%"
-            ])
+            commands.extend(
+                ("set command=(ddb deactivate --force)",
+                 "%command%>cmd.txt",
+                 "set /p execution=<cmd.txt",
+                 "del cmd.txt",
+                 "%execution%")
+            )
 
             commands.append(next(
                 self.set_environment_variable(config.env_prefix + "_PROJECT_HOME", config.paths.project_home)
@@ -237,29 +239,29 @@ class CmdShellIntegration(ShellIntegration):
                 self.set_environment_variable("COMPOSE_IGNORE_ORPHANS", "1")
             ))
 
-            commands.extend([
-                "set command=(ddb activate --force)",
-                "%command%>cmd.txt",
-                "set /p execution=<cmd.txt",
-                "del cmd.txt",
-                "%execution%"
-            ])
+            commands.extend(
+                ("set command=(ddb activate --force)",
+                 "%command%>cmd.txt",
+                 "set /p execution=<cmd.txt",
+                 "del cmd.txt",
+                 "%execution%")
+            )
 
-        commands.extend([
-            f"set command=(ddb run {name} \"%*\")",
-            "%command%>cmd.txt",
-            "set /p execution=<cmd.txt",
-            "del cmd.txt",
-            "%execution% \"%*\""
-        ])
+        commands.extend(
+            (f"set command=(ddb run {name} \"%*\")",
+             "%command%>cmd.txt",
+             "set /p execution=<cmd.txt",
+             "del cmd.txt",
+             "%execution% \"%*\"")
+        )
 
         return self._write_shim(shims_path, name, 'binary', commands)
 
     def create_alias_binary_shim(self, shims_path: str, binary: Binary):
-        return self._write_shim(shims_path, binary.name, 'alias', binary.command())
+        return self._write_shim(shims_path, binary.name, 'alias', [' '.join(binary.command())])
 
     @staticmethod
-    def _write_shim(shims_path: str, shim_name: str, shim_type: str, command: Iterable[str]) -> Tuple[bool, str]:
+    def _write_shim(shims_path: str, shim_name: str, shim_type: str, lines: Iterable[str]) -> Tuple[bool, str]:
         """
         Generate the shim file
         :return:
@@ -267,7 +269,10 @@ class CmdShellIntegration(ShellIntegration):
         os.makedirs(shims_path, exist_ok=True)
         shim = os.path.join(os.path.normpath(shims_path), shim_name + '.bat')
 
-        content = '\n'.join(["@echo off", "REM ddb:shim:" + shim_type, "SHIFT", '\n'.join(command)]) + "\n"
+        all_lines = ["@echo off", "REM ddb:shim:" + shim_type, "SHIFT"]
+        all_lines.extend(lines)
+
+        content = '\n'.join(all_lines) + "\n"
 
         written = write_if_different(shim, content, newline="\n")
 
