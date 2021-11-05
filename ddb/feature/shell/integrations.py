@@ -129,6 +129,7 @@ class BashShellIntegration(ShellIntegration):
         return shim
 
     def create_binary_shim(self, shims_path: str, name: str, global_: bool):
+        command = ""
         if global_:
             ddb_project_home_variable = next(
                 self.set_environment_variable(config.env_prefix + "_PROJECT_HOME", config.paths.project_home)
@@ -138,18 +139,25 @@ class BashShellIntegration(ShellIntegration):
                 self.set_environment_variable("COMPOSE_IGNORE_ORPHANS", "1")
             )
 
-            command = f"$(ddb deactivate --force)\n" \
-                      f"{ddb_project_home_variable}\n" \
-                      f"{compose_ignore_orphans_variable}\n" \
-                      f"$(ddb activate --force)\n" \
-                      f"$(ddb run {name} \"$@\")"
-        else:
-            command = f"$(ddb run {name} \"$@\")"
+            command += f"$(ddb deactivate --force)\n" \
+                       f"{ddb_project_home_variable}\n" \
+                       f"{compose_ignore_orphans_variable}\n" \
+                       f"$(ddb activate --force)\n"
+
+        command += 'shim=$(tempfile -p ddb.run.)\n' \
+                   'echo "rm $shim">>"$shim"\n' \
+                   f'echo $(ddb run {name} \"$@\") "$@">>"$shim"\n' \
+                   'source "$shim"\n'
 
         return self._write_shim(shims_path, name, 'binary', command)
 
     def create_alias_binary_shim(self, shims_path: str, binary: Binary) -> Tuple[bool, str]:
-        return self._write_shim(shims_path, binary.name, 'alias', binary.command())
+        alias_command = []
+        for command_item in binary.command():
+            alias_command.append(command_item)
+        alias_command.append('"$@"')
+
+        return self._write_shim(shims_path, binary.name, 'alias', alias_command)
 
     @staticmethod
     def _write_shim(shims_path: str, shim_name: str, shim_type: str, command: Iterable[str]) -> Tuple[bool, str]:
@@ -160,7 +168,7 @@ class BashShellIntegration(ShellIntegration):
         os.makedirs(shims_path, exist_ok=True)
         shim = os.path.join(os.path.normpath(shims_path), shim_name)
 
-        content = '\n'.join(["#!/usr/bin/env bash", "# ddb:shim:" + shim_type, ''.join(command) + " \"$@\""]) + "\n"
+        content = '\n'.join(["#!/usr/bin/env bash", "# ddb:shim:" + shim_type, ' '.join(command)]) + "\n"
 
         written = write_if_different(shim, content, newline="\n")
 

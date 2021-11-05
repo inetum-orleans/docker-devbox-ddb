@@ -2,6 +2,7 @@
 import base64
 import json
 import os
+import shlex
 from typing import Iterable
 
 import zgitignore
@@ -213,7 +214,7 @@ class CreateAliasShim(Action):
             if not shim_directory:
                 continue
 
-            binary = DefaultBinary(alias, aliases[alias])
+            binary = DefaultBinary(alias, shlex.split(aliases[alias]))
             written, shim = self.shell.create_alias_binary_shim(shim_directory, binary)
             if written:
                 context.log.success("Shim created: %s", shim)
