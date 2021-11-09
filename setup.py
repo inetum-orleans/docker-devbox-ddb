@@ -108,6 +108,7 @@ args = dict(name='docker-devbox-ddb',
                          'Programming Language :: Python :: 3.7',
                          'Programming Language :: Python :: 3.8',
                          'Programming Language :: Python :: 3.9',
+                         'Programming Language :: Python :: 3.10',
                          'Topic :: Software Development :: Libraries :: Python Modules'
                          ],
             keywords='docker docker-compose development environment devops templates jsonnet jinja watch',
