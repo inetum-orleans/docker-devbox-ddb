@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 # pragma: no cover
-__version__ = '1.15.5'
+__version__ = '1.15.6'

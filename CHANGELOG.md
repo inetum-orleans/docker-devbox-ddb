@@ -3,6 +3,10 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.15.6 (2021-11-09)
+### Fix
+* **run:** Wrap $@ in single quote to echo command in temporary file ([`d5ee3a2`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/d5ee3a2f5693c9151e38d1186f19e0678c37cf43))
+
 ## v1.15.5 (2021-11-09)
 ### Fix
 * **run:** Fix DDB_RUN_OPTS handling to quote arguments properly ([`e91a168`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/e91a16817f77c7652439dc7ad005b1e13a9ac63d))
