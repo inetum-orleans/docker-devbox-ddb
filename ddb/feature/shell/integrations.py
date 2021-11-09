@@ -149,7 +149,7 @@ class BashShellIntegration(ShellIntegration):
         command.extend(
             ('shim=$(tempfile -p ddb.run.)',
              'echo "rm $shim">>"$shim"',
-             f'echo $(ddb run {name} \"$@\") "$@">>"$shim"',
+             f'echo $(ddb run {name} \"$@\") \'\"$@\"\'>>"$shim"',
              'source "$shim"')
         )
 
