@@ -3,6 +3,10 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.15.5 (2021-11-09)
+### Fix
+* **run:** Fix DDB_RUN_OPTS handling to quote arguments properly ([`e91a168`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/e91a16817f77c7652439dc7ad005b1e13a9ac63d))
+
 ## v1.15.4 (2021-11-05)
 ### Fix
 * **shell:** Fix invalid generated binary shims ([#213](https://github.com/inetum-orleans/docker-devbox-ddb/issues/213)) ([`5301003`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/5301003e44edef14884bc8f3897960e251855469))
