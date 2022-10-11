@@ -72,11 +72,8 @@ class DockerFeature(Feature):
                     raise FeatureConfigurationAutoConfigureError(self, 'ip',
                                                                  "Can't get ip address "
                                                                  "from network interface configuration: " + interface)
-        except FeatureConfigurationAutoConfigureError as error:
-            if os.path.exists('/var/run/docker.sock'):
-                ip_address = '127.0.0.1'
-            else:
-                raise error
+        except FeatureConfigurationAutoConfigureError:
+            ip_address = '127.0.0.1'
 
         feature_config['ip'] = ip_address
 
