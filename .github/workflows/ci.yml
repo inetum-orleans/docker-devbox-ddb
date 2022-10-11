@@ -50,7 +50,6 @@ jobs:
 
       - name: Pylint
         run: pylint ddb
-        if: matrix.python-version != '3.9'
 
       - name: Pytest (Coverage)
         run: |
