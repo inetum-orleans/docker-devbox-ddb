@@ -40,7 +40,9 @@ class JinjaAction(AbstractTemplateAction):
         return "jinja:render"
 
     def _build_template_finder(self):
-        return TemplateFinder(config.data.get("jinja.includes"),
+        return TemplateFinder([],
+                              [],
+                              config.data.get("jinja.includes"),
                               config.data.get("jinja.excludes"),
                               config.data.get("jinja.suffixes"))
 

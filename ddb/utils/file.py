@@ -13,6 +13,7 @@ from braceexpand import braceexpand
 
 from ddb.config import config
 from ddb.context import context
+from ddb.utils.re import build_or_pattern
 
 
 def has_same_content(filename1: str, filename2: str, read_mode='rb') -> bool:
@@ -157,6 +158,7 @@ class FileUtils:
             return file.read().decode("utf-8")
 
 
+# pylint:disable=too-many-instance-attributes
 class FileWalker:
     """
     Walk files inside project directory.
@@ -167,6 +169,8 @@ class FileWalker:
     def __init__(self,
                  includes: Optional[List[str]],
                  excludes: Optional[List[str]],
+                 include_files: Optional[List[str]],
+                 exclude_files: Optional[List[str]],
                  suffixes: Optional[List[str]],
                  rootpath: Optional[Union[Path, str]] = None,
                  recursive=True,
@@ -176,9 +180,22 @@ class FileWalker:
             includes = []
         if excludes is None:
             excludes = []
-        includes, excludes = self._braceexpand(includes, excludes)
-        self.includes = list(map(lambda x: re.compile(fnmatch.translate(x)), includes))
-        self.excludes = list(map(lambda x: re.compile(fnmatch.translate(x)), excludes))
+        if include_files is None:
+            include_files = []
+        if exclude_files is None:
+            exclude_files = []
+        includes = self._braceexpand(includes)
+        excludes = self._braceexpand(excludes)
+        include_files = self._braceexpand(include_files)
+        exclude_files = self._braceexpand(exclude_files)
+        self.includes = [FileWalker.re_compile_patterns(includes)] if includes else []
+        self.excludes = [
+            re.compile(
+                build_or_pattern([fnmatch.translate(x) for x in excludes]))] if excludes else []
+        self.include_files = [
+            re.compile(build_or_pattern([fnmatch.translate(x) for x in include_files]))] if include_files else []
+        self.exclude_files = [
+            re.compile(build_or_pattern([fnmatch.translate(x) for x in exclude_files]))] if exclude_files else []
         self.suffixes = suffixes if suffixes is not None else []
         if not rootpath:
             rootpath = os.path.relpath(config.paths.project_home)
@@ -196,62 +213,67 @@ class FileWalker:
         for source in self._walk(str(self.rootpath), recursive=self.recursive):
             yield from self._do_yield(source)
 
-    def _do_yield(self, source):  # pylint:disable=no-self-use
+    def _do_yield(self, source):
         yield source
 
-    def _walk(self, *args, recursive=True, **kwargs):
-        _walk_generator = os.walk(*args, **kwargs)
-        for root, dirs, files in os.walk(*args, **kwargs):
+    def _walk(self, path, recursive=True):
+        for root, dirs, files in os.walk(path):
+            context.log.debug('%s', root)
             for dirs_item in list(dirs):
-                dirpath = os.path.relpath(os.path.join(root, dirs_item))
-                if self._is_excluded(dirpath, *self.excludes):
-                    dirs.remove(dirs_item)
-                else:
+                dirpath = FileWalker._join(root, dirs_item)
+                if self._is_included(dirpath, *self.includes) and \
+                        not self._is_excluded(dirpath, *self.excludes):
                     yield dirpath
+                else:
+                    context.log.debug('%s [ignored]', dirpath)
+                    dirs.remove(dirs_item)
 
             for files_item in list(files):
-                filepath = os.path.relpath(os.path.join(root, files_item))
-                if self._is_included(filepath, *self.includes) and \
-                        not self._is_excluded(filepath, *self.excludes):
+                filepath = FileWalker._join(root, files_item)
+                if self._is_included(filepath, *self.include_files) and \
+                        not self._is_excluded(filepath, *self.exclude_files):
                     yield filepath
 
             if not recursive:
                 break
 
-    @staticmethod
-    def _braceexpand(includes, excludes):
-        expanded_includes = []
-        for include in includes:
-            expanded_includes.extend(braceexpand(include))
-
-        expanded_excludes = []
-        for exclude in excludes:
-            expanded_excludes.extend(braceexpand(exclude))
-
-        return expanded_includes, expanded_excludes
+    def is_source_filtered(self, candidate: str):
+        """
+        Check if a source path is filtered out by includes/excludes
+        """
+        return not self._is_included(candidate, *self.include_files) or \
+               self._is_excluded(candidate, *self.exclude_files) or \
+               self._has_ancestor_excluded(Path(candidate), *self.excludes)
 
     @staticmethod
-    def _is_excluded(candidate: str, *excludes: List[str]) -> bool:
-        excluded = False
+    def _braceexpand(expressions):
+        expanded_expressions = []
+        for expression in expressions:
+            expanded_expressions.extend(braceexpand(expression))
+
+        return expanded_expressions
+
+    @staticmethod
+    def _is_excluded(candidate: str, *excludes: re.Pattern) -> bool:
         if not excludes:
             return False
-        # TODO find a better solution instead of adding the "./" in front of the normed path
-        norm_candidate = FileWalker._prefix_path_to_current_folder(Path(os.path.normpath(candidate)).as_posix())
-        for exclude in excludes:
-            if exclude.match(candidate) or exclude.match(norm_candidate):
-                excluded = True
-                break
-        return excluded
+        return FileWalker.match_any_pattern(candidate, *excludes)
 
     @staticmethod
-    def _has_ancestor_excluded(candidate_path: Path, *excludes: List[str]) -> bool:
+    def _is_included(candidate: str, *includes: re.Pattern) -> bool:
+        if not includes:
+            return True
+        return FileWalker.match_any_pattern(candidate, *includes)
+
+    @staticmethod
+    def _has_ancestor_excluded(candidate_path: Path, *excludes: re.Pattern) -> bool:
         while True:
+            if FileWalker._is_excluded(str(candidate_path), *excludes):
+                return True
             candidate_path_parent = candidate_path.parent
             if not candidate_path_parent or candidate_path_parent == candidate_path:
                 break
             candidate_path = candidate_path_parent
-            if FileWalker._is_excluded(str(candidate_path), *excludes):
-                return True
         return False
 
     @staticmethod
@@ -260,27 +282,32 @@ class FileWalker:
             return path
         return './' + path
 
-    def is_source_filtered(self, candidate: str):
-        """
-        Check if a source path is filtered out by includes/excludes
-        """
-        return not self._is_included(candidate, *self.includes) or \
-               self._is_excluded(candidate, *self.excludes) or \
-               self._has_ancestor_excluded(Path(candidate), *self.excludes)
+    @staticmethod
+    def _as_posix_fast(path: str):
+        return path.replace('\\', '/')
 
     @staticmethod
-    def _is_included(candidate: str, *includes: List[str]) -> bool:
-        included = False
-        norm_candidate = None
-        if not includes:
-            return True
-        for include in includes:
-            if not norm_candidate:
-                norm_candidate = Path(os.path.normpath(candidate)).as_posix()
-            if include.match(candidate) or include.match(norm_candidate):
-                included = True
-                break
-        return included
+    def _join(parent: str, child: str):
+        return os.path.join(parent, child) if parent != '.' else child
+
+    @staticmethod
+    def re_compile_patterns(*patterns: List[str]):
+        """
+        Compile a list of string containing patterns to regexp
+        """
+        return re.compile(build_or_pattern([fnmatch.translate(pattern) for pattern in patterns]))
+
+    @staticmethod
+    def match_any_pattern(candidate: str, *patterns: re.Pattern):
+        """
+        Check if a string match at least one of provided compiled pattern
+        """
+        candidate = FileWalker._as_posix_fast(candidate)
+        norm_candidate = FileWalker._prefix_path_to_current_folder(candidate)
+        for pattern in patterns:
+            if pattern.match(candidate) or pattern.match(norm_candidate):
+                return True
+        return False
 
     @staticmethod
     def build_default_includes_from_suffixes(suffixes: List[str], extensions=(".*", "")):

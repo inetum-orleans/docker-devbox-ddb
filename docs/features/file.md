@@ -9,15 +9,17 @@ directory and trigger events when files are found or removed.
     | :---------: | :----: | :----------- |
     | `disabled` | boolean<br>`false` | Should this feature be disabled ? |
     | `extensions` | string[] | A list of glob of supported extension. |
-    | `includes` | string[] | A list of glob of filepath to include. |
-    | `excludes` | string[]<br>`['**/.git', '**/.idea', '**/node_modules', '**/vendor', '**/target', '**/dist']` | A list of glob of filepath to exclude. |
-    
+    | `includes` | string[] | A list of glob of directories to include. |
+    | `excludes` | string[]<br>`['**/_*', '**/.git', '**/.idea', '**/node_modules', '**/vendor', '**/target', '**/dist']` | A list of glob of directories to exclude. |
+    | `include_files` | string[] | A list of glob of files to include. |
+    | `exclude_files` | string[] | A list of glob of files to exclude. |
+
 File walk and event triggering
 ---
 
 As previously said, the soul purpose of the feature is to walk through files from the project directory, recursively.
 
-It does not check folders and files set in `file.excludes` configuration. 
+It does not dive into folders set in `file.excludes` configuration. 
 For instance, the directory `node_modules` which contains npm installed modules on the project is not process.
 By doing so, the feature is faster.
 

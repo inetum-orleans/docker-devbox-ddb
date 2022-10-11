@@ -14,11 +14,11 @@ class YttSchema(FeatureSchema):
     """
     Ytt schema.
     """
-    suffixes = fields.List(fields.String(), default=[".ytt"])
+    suffixes = fields.List(fields.String(), dump_default=[".ytt"])
     includes = fields.List(fields.String())  # default is build automatically from suffixes value
     excludes = fields.List(fields.String())
-    extensions = fields.List(fields.String(), default=[".yaml", ".yml", ""])
-    depends_suffixes = fields.List(fields.String(), default=[".data", ".overlay"])
-    args = fields.List(fields.String(), default=["--ignore-unknown-comments"])
-    keywords = fields.List(fields.String(), default=keywords + reserved)
-    keywords_escape_format = fields.String(default="%s_")
+    extensions = fields.List(fields.String(), dump_default=[".yaml", ".yml", ""])
+    depends_suffixes = fields.List(fields.String(), dump_default=[".data", ".overlay"])
+    args = fields.List(fields.String(), dump_default=["--ignore-unknown-comments"])
+    keywords = fields.List(fields.String(), dump_default=keywords + reserved)
+    keywords_escape_format = fields.String(dump_default="%s_")

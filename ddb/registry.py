@@ -75,7 +75,7 @@ class Registry(Generic[T]):
     def _register_cache_value_impl(self, value, key):
         self.register(value, key)
 
-    def _default_name(self, obj: T):  # pylint:disable=no-self-use
+    def _default_name(self, obj: T):
         """
         The name getter for an object.
         """
@@ -119,7 +119,7 @@ class Registry(Generic[T]):
             return self._has_obj_impl(self._objects_dict.get(name), obj)
         return ret
 
-    def _has_obj_impl(self, dict_value, obj) -> bool:  # pylint:disable=no-self-use
+    def _has_obj_impl(self, dict_value, obj) -> bool:
         return dict_value == obj
 
     def unregister(self, name, obj: Optional[T] = None, callback: Optional[Callable[[T], Any]] = None) -> bool:

@@ -8,18 +8,19 @@ class UserSchema(Schema):
     """
     User schema
     """
-    uid = fields.Integer(required=True, default=None)  # default is set in feature _configure_defaults
-    gid = fields.Integer(required=True, default=None)  # default is set in feature _configure_defaults
-    name = fields.String(required=False, allow_none=True, default=None)  # default is set in feature _configure_defaults
+    uid = fields.Integer(required=True, dump_default=None)  # default is set in feature _configure_defaults
+    gid = fields.Integer(required=True, dump_default=None)  # default is set in feature _configure_defaults
+    name = fields.String(required=False, allow_none=True,
+                         dump_default=None)  # default is set in feature _configure_defaults
     group = fields.String(required=False, allow_none=True,
-                          default=None)  # default is set in feature _configure_defaults
+                          dump_default=None)  # default is set in feature _configure_defaults
 
 
 class DockerSchema(FeatureSchema):
     """
     Docker schema.
     """
-    ip = fields.String(required=True, default=None)  # default is set in feature _configure_defaults
-    interface = fields.String(required=True, default="docker0")
-    user = fields.Nested(UserSchema(), default=UserSchema())
+    ip = fields.String(required=True, dump_default=None)  # default is set in feature _configure_defaults
+    interface = fields.String(required=True, dump_default="docker0")
+    user = fields.Nested(UserSchema(), dump_default=UserSchema())
     path_mapping = fields.Dict(required=False)  # default is set in feature _configure_defaults

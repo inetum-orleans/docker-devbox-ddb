@@ -234,7 +234,7 @@ class AbstractTemplateAction(InitializableAction, ABC):  # pylint:disable=abstra
         Perform template rendering to a string.
         """
 
-    def _autofix_render_error(self,  # pylint:disable=no-self-use
+    def _autofix_render_error(self,
                               template: str,
                               target: str,
                               original_template: str,

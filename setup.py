@@ -76,6 +76,8 @@ dev_requires = [
     "waiting",
     "pytest-mock",
     "pytest-cov",
+    "pytest-benchmark",
+    "pytest-profiling",
     "pex"
 ]
 
@@ -104,7 +106,6 @@ args = dict(name='docker-devbox-ddb',
                          'Operating System :: OS Independent',
                          'Intended Audience :: Developers',
                          'Programming Language :: Python :: 3',
-                         'Programming Language :: Python :: 3.6',
                          'Programming Language :: Python :: 3.7',
                          'Programming Language :: Python :: 3.8',
                          'Programming Language :: Python :: 3.9',

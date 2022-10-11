@@ -454,7 +454,7 @@ class CheckActivatedAction(Action):
     def disabled(self) -> bool:
         return config.data.get('shell.shell') != self.shell.name
 
-    def execute(self):  # pylint:disable=no-self-use
+    def execute(self):
         """
         Execute action
         """

@@ -83,13 +83,13 @@ class ShellIntegration(ABC):
         should not be restored on deactivation.
         """
 
-    def header(self) -> Iterable[str]:  # pylint:disable=no-self-use
+    def header(self) -> Iterable[str]:
         """
         Returns header of script
         """
         yield from ()
 
-    def footer(self) -> Iterable[str]:  # pylint:disable=no-self-use
+    def footer(self) -> Iterable[str]:
         """
         Returns footer of script
         """

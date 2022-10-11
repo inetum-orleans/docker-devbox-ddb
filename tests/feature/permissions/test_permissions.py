@@ -1,13 +1,12 @@
 import os
-import stat
 
 import pytest
 
 from ddb.__main__ import load_registered_features, register_actions_in_event_bus
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
-from ddb.feature.jinja import JinjaFeature
 from ddb.feature.file import FileFeature, FileWalkAction
+from ddb.feature.jinja import JinjaFeature
 from ddb.feature.permissions import PermissionsFeature
 
 
@@ -15,22 +14,6 @@ from ddb.feature.permissions import PermissionsFeature
 class TestPermissionsAction:
     def test_project(self, project_loader):
         project_loader("project")
-        features.register(CoreFeature())
-        features.register(FileFeature())
-        features.register(PermissionsFeature())
-
-        load_registered_features()
-        register_actions_in_event_bus()
-
-        action = FileWalkAction()
-        action.initialize()
-        action.execute()
-
-        assert os.access("script.sh", os.X_OK)
-        assert not os.access(os.path.join("subdirectory", "another-script.sh"), os.X_OK)
-
-    def test_project2(self, project_loader):
-        project_loader("project2")
         features.register(CoreFeature())
         features.register(FileFeature())
         features.register(PermissionsFeature())

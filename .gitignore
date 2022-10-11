@@ -3,6 +3,8 @@
 /.coverage
 /.python-version
 /.tox/
+/prof/
+.benchmarks/
 *.egg-info
 __pycache__/
 *.pyc

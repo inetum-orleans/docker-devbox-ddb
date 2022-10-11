@@ -23,7 +23,9 @@ class YttAction(AbstractTemplateAction):
         return "ytt:render"
 
     def _build_template_finder(self):
-        return TemplateFinder(config.data.get("ytt.includes"),
+        return TemplateFinder([],
+                              [],
+                              config.data.get("ytt.includes"),
                               config.data.get("ytt.excludes"),
                               config.data.get("ytt.suffixes"))
 
@@ -54,7 +56,11 @@ class YttAction(AbstractTemplateAction):
             config.data["ytt.depends_suffixes"],
             config.data["ytt.extensions"]
         )
-        template_finder = TemplateFinder(includes, [], config.data["ytt.depends_suffixes"],
+        template_finder = TemplateFinder(includes,
+                                         [],
+                                         [],
+                                         [],
+                                         config.data["ytt.depends_suffixes"],
                                          os.path.dirname(target),
                                          recursive=False, skip_processed_targets=False)
 

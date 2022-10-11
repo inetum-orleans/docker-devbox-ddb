@@ -148,9 +148,8 @@ def bootstrap_features_configuration():
     Preconfigure features with default bootstrap configuration.
     :return:
     """
+    filenames, extensions = config.filenames, config.extensions
     try:
-        filenames, extensions = config.filenames, config.extensions
-
         config.filenames, config.extensions = (), ()
 
         enabled_features = [f for f in features.all() if not f.disabled]

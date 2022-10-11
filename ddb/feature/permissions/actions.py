@@ -3,13 +3,11 @@ import os
 import shutil
 from typing import Optional
 
-from wcmatch.glob import globmatch, GLOBSTAR
-
 from ddb.action import Action
 from ddb.action.action import EventBinding
 from ddb.config import config
 from ddb.event import events
-from ddb.utils.file import chmod
+from ddb.utils.file import chmod, FileWalker
 
 
 class PermissionsAction(Action):
@@ -23,12 +21,16 @@ class PermissionsAction(Action):
 
     @property
     def event_bindings(self):
+        specs = config.data.get('permissions.specs')
+        compiled_specs = []
+        if specs:
+            for spec, mode in specs.items():
+                compiled_specs.append((FileWalker.re_compile_patterns(spec), mode))
+
         def file_found_processor(file: str):
-            specs = config.data.get('permissions.specs')
-            if specs:
-                for spec, mode in specs.items():
-                    if globmatch(file, spec, flags=GLOBSTAR):
-                        return (), {"file": file, "mode": mode}
+            for spec, mode in compiled_specs:
+                if FileWalker.match_any_pattern(file, spec):
+                    return (), {"file": file, "mode": mode}
             return None
 
         def file_generated_processor(source: Optional[str], target: str):

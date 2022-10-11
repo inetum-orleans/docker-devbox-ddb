@@ -27,6 +27,8 @@ class JsonnetAction(AbstractTemplateAction):
     def _build_template_finder(self) -> TemplateFinder:
         return TemplateFinder(config.data.get("jsonnet.includes"),
                               config.data.get("jsonnet.excludes"),
+                              [],
+                              [],
                               config.data.get("jsonnet.suffixes"))
 
     def _render_template(self, template: str, target: str) -> Iterable[Tuple[Union[str, bytes, bool], str]]:

@@ -471,7 +471,7 @@ class DockerDisplayInfoAction(Action):
         return environments
 
     @staticmethod
-    def _retrieve_service_ports(service_config: Dotty) -> List[ServicePort]:  # pylint: disable=no-self-use
+    def _retrieve_service_ports(service_config: Dotty) -> List[ServicePort]:
         """
         Retrieve services ports data
         :param service_config: the service configuration
@@ -497,7 +497,7 @@ class DockerDisplayInfoAction(Action):
         return service_ports
 
     @staticmethod
-    def _retrieve_binaries_data(service_config: Dotty) -> List[str]:  # pylint: disable=no-self-use
+    def _retrieve_binaries_data(service_config: Dotty) -> List[str]:
         """
         Retrieve binaries data
         :param service_config: the service configuration
@@ -522,7 +522,7 @@ class DockerDisplayInfoAction(Action):
         return binaries_labels
 
     @staticmethod
-    def _retrieve_vhosts_data(service_config: Dotty) -> List[str]:  # pylint: disable=no-self-use
+    def _retrieve_vhosts_data(service_config: Dotty) -> List[str]:
         """
         Retrieve vhosts data
         :param service_config: the service configuration
@@ -557,7 +557,7 @@ class DockerDisplayInfoAction(Action):
         return vhosts_labels
 
     @staticmethod
-    def _output_data(service_name: str, environments: Dict[str, str],  # pylint: disable=no-self-use
+    def _output_data(service_name: str, environments: Dict[str, str],
                      ports: List[ServicePort], docker_binaries: List[str], vhosts: List[str]):
         """
         Process the data and render it to the user
