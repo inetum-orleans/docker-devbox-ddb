@@ -18,7 +18,6 @@ jobs:
       - name: Setup docker
         uses: docker-practice/actions-setup-docker@master
         with:
-          docker_version: "20.10"
           docker_channel: "stable"
 
       - name: Setup python ${{ matrix.python-version }}
@@ -170,7 +169,7 @@ jobs:
 
   build-setuptools-linux:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
-    needs: [ci-linux]
+    needs: [ ci-linux ]
 
     runs-on: ubuntu-latest
 
@@ -209,7 +208,7 @@ jobs:
 
   build-bin-linux:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
-    needs: [ci-linux]
+    needs: [ ci-linux ]
 
     runs-on: ubuntu-latest
 
@@ -249,7 +248,7 @@ jobs:
 
   build-bin-linux-older-glibc:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
-    needs: [ci-linux]
+    needs: [ ci-linux ]
 
     runs-on: ubuntu-18.04
 
@@ -289,7 +288,7 @@ jobs:
 
   build-bin-alpine:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
-    needs: [ci-linux]
+    needs: [ ci-linux ]
 
     runs-on: ubuntu-latest
 
@@ -419,7 +418,7 @@ jobs:
 
   release:
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-    needs: [commitlint, build-setuptools-linux, build-bin-linux, build-bin-linux-older-glibc, build-bin-windows, build-bin-macos, build-bin-alpine]
+    needs: [ commitlint, build-setuptools-linux, build-bin-linux, build-bin-linux-older-glibc, build-bin-windows, build-bin-macos, build-bin-alpine ]
 
     runs-on: ubuntu-latest
 

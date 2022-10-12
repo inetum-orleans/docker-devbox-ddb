@@ -7,7 +7,7 @@ from _pytest.capture import CaptureFixture
 from ddb.__main__ import main, reset
 from ddb.config import Config, config
 
-docker_compose_bin = "docker-compose" if os.name != "nt" else "docker-compose.exe"
+docker_compose_bin = "docker compose" if os.name != "nt" else "docker.exe compose"
 
 
 class TestBinaries:
@@ -39,6 +39,7 @@ class TestBinaries:
         assert os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql'))
 
         output = capsys.readouterr()
+
         assert output.out.strip() == docker_compose_bin + " run --rm --workdir=/workdir/. -e TEST db psql"
 
     def test_docker_binaries_exe(self, project_loader, capsys: CaptureFixture):

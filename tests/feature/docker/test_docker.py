@@ -2,7 +2,6 @@ import os
 import shutil
 
 import pytest
-
 from _pytest.capture import CaptureFixture
 from compose.config.types import ServicePort
 from dotty_dict import Dotty
@@ -19,10 +18,42 @@ from ddb.feature.core import CoreFeature
 from ddb.feature.docker import DockerDisplayInfoAction
 from ddb.feature.docker import DockerFeature, EmitDockerComposeConfigAction
 from ddb.feature.docker.binaries import DockerBinary
-from ddb.feature.docker.utils import get_mapped_path
+from ddb.feature.docker.utils import get_mapped_path, DockerComposeControl
 from ddb.feature.traefik import TraefikFeature
-from ddb.utils.process import effective_command
 from tests.utilstest import setup_cfssl
+
+docker_compose_bin = "docker compose" if os.name != "nt" else "docker.exe compose"
+
+
+class TestDockerComposeControl:
+    def test_basic_manipulations(self, project_loader):
+        project_loader("control")
+
+        features.register(DockerFeature())
+        load_registered_features()
+
+        control = DockerComposeControl()
+
+        container_name = 'web'
+        control.stop(container_name)
+
+        assert not control.is_up(container_name)
+
+        control.up(container_name)
+
+        assert control.is_up(container_name)
+        control.stop(container_name)
+
+        assert not control.is_up(container_name)
+
+        control.start(container_name)
+
+        assert control.is_up(container_name)
+        control.down()
+
+        assert not control.is_up(container_name)
+
+        assert control.config()['services']
 
 
 class TestDockerFeature:
@@ -62,11 +93,9 @@ class TestDockerFeature:
         action.execute()
 
         assert len(custom_event_listeners) == 1
-        assert custom_event_listeners[0] in [
-            # docker-compose >= 1.27.0 returns major version only. see https://github.com/docker/compose/issues/7730
-            {"version": "3", "services": {"docker": {"image": "ubuntu"}}},
-            {"version": "3.7", "services": {"docker": {"image": "ubuntu"}}}
-        ]
+        assert custom_event_listeners[0] == {'name': 'test_ubuntu0',
+                                             'services': {'docker': {'image': 'ubuntu', 'networks': {'default': None}}},
+                                             'networks': {'default': {'name': 'test_ubuntu0_default'}}}
 
     def test_emit_one_arg(self, project_loader):
         project_loader("emit-one-arg")
@@ -134,7 +163,9 @@ class TestDockerFeature:
         assert {"args": ("emit-some-arg",),
                 "kwargs": {'image': 'ubuntu', 'kw1': 'emit-one-kwarg', 'kw2': 7, 'version': '3.7'}} in some_events or \
                {"args": ("emit-some-arg",),
-                "kwargs": {'image': 'ubuntu', 'kw1': 'emit-one-kwarg', 'kw2': 7, 'version': '3'}} in some_events
+                "kwargs": {'image': 'ubuntu', 'kw1': 'emit-one-kwarg', 'kw2': 7, 'version': '3'}} in some_events or \
+               {"args": ("emit-some-arg",),
+                "kwargs": {'image': 'ubuntu', 'kw1': 'emit-one-kwarg', 'kw2': 7, 'version': None}} in some_events
 
         assert len(another_events) == 2
         assert {"args": ("emit-another-arg",), "kwargs": {}} in another_events
@@ -173,33 +204,27 @@ class TestDockerFeature:
         npm_simple_set = binaries.get("npm-simple")
         assert len(npm_simple_set) == 1
         npm_simple = list(npm_simple_set)[0]
-        assert npm_simple.command() == (''.join(
-            effective_command(
-                "docker-compose")) + " run --rm --workdir=/app/. --label traefik.enable=false node").split()
-        assert npm_simple.command("serve") == (''.join(
-            effective_command(
-                "docker-compose")) + ' run --rm --workdir=/app/. --label traefik.enable=false node').split()
-        assert npm_simple.command("run serve") == (''.join(
-            effective_command(
-                "docker-compose")) + ' run --rm --workdir=/app/. --label traefik.enable=false node').split()
+        assert npm_simple.command() == (
+                docker_compose_bin + " run --rm --workdir=/app/. --label traefik.enable=false node").split()
+        assert npm_simple.command("serve") == (
+                docker_compose_bin + ' run --rm --workdir=/app/. --label traefik.enable=false node').split()
+        assert npm_simple.command("run serve") == (
+                docker_compose_bin + ' run --rm --workdir=/app/. --label traefik.enable=false node').split()
 
         npm_conditions_set = binaries.get("npm-conditions")
         assert len(npm_conditions_set) == 1
         npm_conditions = list(npm_conditions_set)[0]
-        assert npm_conditions.command() == (''.join(
-            effective_command(
-                "docker-compose")) + " run --rm --workdir=/app/. --label traefik.enable=false node").split()
-        assert npm_conditions.command("serve") == (''.join(
-            effective_command(
-                "docker-compose")) + ' run --rm --workdir=/app/. --label traefik.enable=false node').split()
-        assert npm_conditions.command("run serve") == (
-                ''.join(effective_command("docker-compose")) + ' run --rm --workdir=/app/. node').split()
+        assert npm_conditions.command() == (
+                docker_compose_bin + " run --rm --workdir=/app/. --label traefik.enable=false node").split()
+        assert npm_conditions.command("serve") == (
+                docker_compose_bin + ' run --rm --workdir=/app/. --label traefik.enable=false node').split()
+        assert npm_conditions.command("run serve") == (docker_compose_bin + ' run --rm --workdir=/app/. node').split()
 
         mysql_set = binaries.get("mysql")
         assert len(mysql_set) == 1
         mysql = list(mysql_set)[0]
-        assert mysql.command() == (''.join(effective_command(
-            "docker-compose")) + ' run --rm --workdir=/app/. db mysql -hdb -uproject-management-tool -pproject-management-tool').split()
+        assert mysql.command() == (
+                docker_compose_bin + ' run --rm --workdir=/app/. db mysql -hdb -uproject-management-tool -pproject-management-tool').split()
 
     def test_local_volume_simple(self, project_loader):
         project_loader("local-volume-simple")
@@ -291,6 +316,7 @@ class TestDockerFeature:
         assert os.path.exists(os.path.join(config.paths.home, "certs", "web-changed.domain.tld.key"))
         assert os.path.exists(os.path.join(config.paths.home, "certs", "web-changed.domain.tld.crt"))
         assert os.path.exists(os.path.join(config.paths.home, "traefik", "config", "web-changed.domain.tld.ssl.toml"))
+
 
 class TestDockerDisplayInfoAction:
 

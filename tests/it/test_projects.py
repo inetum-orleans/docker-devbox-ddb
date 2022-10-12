@@ -7,9 +7,9 @@ class TestSymfonyVuejs:
     def test_activate(self, project_loader):
         project_loader("symfony-vuejs")
 
-        main(["configure"])
-
         main(["activate"])
+
+        main(["configure"])
 
         assert os.path.exists("docker-compose.override.yml")
 

@@ -9,12 +9,13 @@ from ddb.binary.binary import DefaultBinary
 from ddb.config import config
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
+from ddb.feature.docker import DockerFeature
 from ddb.feature.docker.binaries import DockerBinary
+from ddb.feature.docker.utils import DockerComposeControl
 from ddb.feature.run import RunFeature, RunAction
 from ddb.feature.shell import ShellFeature
-from ddb.utils.docker import DockerUtils
 
-docker_compose_bin = "docker-compose" if os.name != "nt" else "docker-compose.exe"
+docker_compose_bin = "docker compose" if os.name != "nt" else "docker.exe compose"
 
 
 class TestRunFeature:
@@ -78,6 +79,7 @@ class TestRunFeature:
         config.cwd = config.paths.project_home
 
         features.register(CoreFeature())
+        features.register(DockerFeature())
         features.register(RunFeature())
         features.register(ShellFeature())
         load_registered_features()
@@ -97,6 +99,7 @@ class TestRunFeature:
         config.cwd = os.path.join(config.paths.project_home, "sub")
 
         features.register(CoreFeature())
+        features.register(DockerFeature())
         features.register(RunFeature())
         features.register(ShellFeature())
         load_registered_features()
@@ -116,6 +119,7 @@ class TestRunFeature:
         config.cwd = os.path.join(config.paths.project_home, "../outside")
 
         features.register(CoreFeature())
+        features.register(DockerFeature())
         features.register(RunFeature())
         features.register(ShellFeature())
         load_registered_features()
@@ -132,7 +136,7 @@ class TestRunFeature:
         real_cwd = os.path.realpath(cwd)
 
         assert read.out == docker_compose_bin + " -f ../project/docker-compose.yml " \
-                                                "run --rm "\
+                                                "run --rm " \
                                                 f"--volume={real_cwd}:/app " \
                                                 "--workdir=/app " \
                                                 "service\n"
@@ -141,6 +145,7 @@ class TestRunFeature:
         project_loader("exe")
 
         features.register(CoreFeature())
+        features.register(DockerFeature())
         features.register(RunFeature())
         features.register(ShellFeature())
         load_registered_features()
@@ -151,8 +156,10 @@ class TestRunFeature:
                                        args="echo",
                                        exe=True))
 
-        DockerUtils.service_stop('web')
-        assert not DockerUtils.is_container_up('web')
+        control = DockerComposeControl()
+
+        control.stop('web')
+        assert not control.is_up('web')
 
         action = RunAction()
         action.run("echo")
@@ -161,12 +168,13 @@ class TestRunFeature:
 
         assert read.out == docker_compose_bin + " exec web echo\n"
 
-        assert DockerUtils.is_container_up('web')
+        assert control.is_up('web')
 
     def test_run_binary_condition(self, project_loader, capsys: CaptureFixture):
         project_loader("empty")
 
         features.register(CoreFeature())
+        features.register(DockerFeature())
         features.register(RunFeature())
         features.register(ShellFeature())
         load_registered_features()

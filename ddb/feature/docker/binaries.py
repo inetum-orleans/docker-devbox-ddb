@@ -4,13 +4,12 @@ import shlex
 from pathlib import Path
 from typing import Optional, Iterable
 
-from ddb.utils.simpleeval import simple_eval
-
 from ddb.binary.binary import AbstractBinary
 from ddb.config import config
-from ddb.feature.docker.utils import get_mapped_path
-from ddb.utils.docker import DockerUtils
+from ddb.feature.docker.lib.compose.config.errors import ConfigurationError
+from ddb.feature.docker.utils import get_mapped_path, DockerComposeControl
 from ddb.utils.process import effective_command
+from ddb.utils.simpleeval import simple_eval
 
 
 class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attributes
@@ -85,7 +84,10 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
         if self.args:
             params.extend([shlex.quote(param) for param in shlex.split(self.args)])
 
-        command = effective_command("docker-compose", *params)
+        docker_compose_command = config.data.get('docker.docker_compose_command')
+        if not docker_compose_command:
+            raise ConfigurationError('DockerBinary requires docker feature configuration')
+        command = effective_command(*shlex.split(docker_compose_command), *params)
         return command
 
     def add_options_to_params(self, params, options, condition, *args):
@@ -105,8 +107,9 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
                 params.extend(shlex.split(options))
 
     def before_run(self, *args):
-        if self.exe and not DockerUtils.is_container_up(self.docker_compose_service):
-            DockerUtils.service_up(self.docker_compose_service)
+        control = DockerComposeControl()
+        if self.exe and not control.is_up(self.docker_compose_service):
+            control.up(self.docker_compose_service)
 
     def should_run(self, *args) -> bool:
         if self.condition:

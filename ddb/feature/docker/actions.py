@@ -7,12 +7,13 @@ from typing import Union, Iterable, List, Dict, Set
 
 import yaml
 from dotty_dict import Dotty
-from ddb.utils.simpleeval import simple_eval
 
 from ddb.feature import features
 from ddb.feature.traefik import TraefikExtraServicesAction
+from ddb.utils.simpleeval import simple_eval
 from .binaries import DockerBinary
 from .lib.compose.config.types import ServicePort
+from .utils import DockerComposeControl
 from ...action import Action
 from ...action.action import EventBinding, InitializableAction
 from ...binary import binaries, Binary
@@ -20,7 +21,6 @@ from ...cache import caches, register_project_cache
 from ...config import config
 from ...context import context
 from ...event import bus, events
-from ...utils.process import run
 from ...utils.table_display import get_table_display
 
 
@@ -59,15 +59,14 @@ class EmitDockerComposeConfigAction(Action):
         if not os.path.exists("docker-compose.yml"):
             return
 
-        yaml_output = run("docker-compose", "config")
-
-        parsed_config = yaml.load(yaml_output, yaml.SafeLoader)
-        docker_compose_config = Dotty(parsed_config)
+        control = DockerComposeControl()
+        yaml_output = control.config(parse=False)
 
         if self.current_yaml_output == yaml_output:
             return
         self.current_yaml_output = yaml_output
 
+        docker_compose_config = Dotty(yaml.load(yaml_output, yaml.SafeLoader))
         events.docker.docker_compose_config(docker_compose_config=docker_compose_config)
 
         services = docker_compose_config.get('services')
@@ -426,15 +425,14 @@ class DockerDisplayInfoAction(Action):
         if not os.path.exists("docker-compose.yml"):
             return
 
-        yaml_output = run("docker-compose", "config")
-
-        parsed_config = yaml.load(yaml_output, yaml.SafeLoader)
-        docker_compose_config = Dotty(parsed_config)
+        control = DockerComposeControl()
+        yaml_output = control.config(parse=False)
 
         if self.current_yaml_output == yaml_output:
             return
         self.current_yaml_output = yaml_output
 
+        docker_compose_config = Dotty(yaml.load(yaml_output, yaml.SafeLoader))
         services = docker_compose_config.get('services')
         if not services:
             return

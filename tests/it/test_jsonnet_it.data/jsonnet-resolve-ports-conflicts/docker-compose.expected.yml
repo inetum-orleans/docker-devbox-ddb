@@ -54,15 +54,15 @@ services:
     image: postgres
     init: true
     ports:
-    - published: '2939'
-      target: '5438'
+    - published: 2939
+      target: 5438
     restart: 'no'
   db_j:
     image: postgres
     init: true
     ports:
-    - published: '2940'
-      target: '5438'
+    - published: 2940
+      target: 5438
     restart: 'no'
 version: '3.7'
 volumes: {}

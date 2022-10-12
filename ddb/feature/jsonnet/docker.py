@@ -30,7 +30,7 @@ def apply_resolve_ports_conflicts(compose):
                                 if not new_port.protocol and port.endswith('/tcp'):
                                     port = port[:-4]
                             else:
-                                port['published'] = str(new_published)
+                                port['published'] = new_published
                             service_ports[index] = port
 
     return compose

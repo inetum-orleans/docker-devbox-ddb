@@ -24,3 +24,5 @@ class DockerSchema(FeatureSchema):
     interface = fields.String(required=True, dump_default="docker0")
     user = fields.Nested(UserSchema(), dump_default=UserSchema())
     path_mapping = fields.Dict(required=False)  # default is set in feature _configure_defaults
+    docker_command = fields.String(required=True, dump_default='docker')
+    docker_compose_command = fields.String(required=True, dump_default='docker compose')

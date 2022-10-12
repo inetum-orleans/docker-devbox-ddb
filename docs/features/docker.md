@@ -10,6 +10,8 @@ using jsonnet docker specific library brings many Docker related features to `dd
     | `disabled` | boolean<br>`false` | Should this feature be disabled ? |
     | `ip` | string | IP Address of the docker engine |
     | `interface` | string | Network interface of the docker engine |
+    | `docker_command` | string<br>`docker` | command used to run docker CLI |
+    | `docker_compose_command` | string<br>`docker compose` | command used to run docker compose CLI |
     | `user.uid` | string | The user UID to use inside a container when [jsonnet](./jsonnet.md) `User()` function is used. |
     | `user.gid` | string | The user GID to use inside a container when [jsonnet](./jsonnet.md) `User()` function is used. |
     | `user.name` | string | The host username that will get converted to UID to use inside a container when [jsonnet](./jsonnet.md) `User()` function is used. |
