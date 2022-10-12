@@ -22,12 +22,12 @@ jobs:
           docker_channel: "stable"
 
       - name: Setup python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Git User config
         run: |
@@ -56,7 +56,7 @@ jobs:
           pytest --cov=ddb
 
       - name: Codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
 
   ci-macos:
     # if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
@@ -75,12 +75,12 @@ jobs:
           docker_channel: "stable"
 
       - name: Setup python 3.8
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.8'
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Git User config
         run: |
@@ -109,7 +109,7 @@ jobs:
           pytest --cov=ddb
 
       - name: Codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
 
   ci-windows:
     # if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
@@ -122,12 +122,12 @@ jobs:
 
     steps:
       - name: Setup python 3.8
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.8'
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Git User config
         run: |
@@ -157,16 +157,16 @@ jobs:
           pytest --cov=ddb -m "not docker"
 
       - name: Codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
 
   commitlint:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: wagoid/commitlint-github-action@v2
+      - uses: wagoid/commitlint-github-action@v5
 
   build-setuptools-linux:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
@@ -178,12 +178,12 @@ jobs:
 
     steps:
       - name: Setup python 3.8
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.8'
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -202,7 +202,7 @@ jobs:
       - name: Build
         run: python setup.py sdist bdist_wheel
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: ddb-python
           path: ./dist
@@ -217,12 +217,12 @@ jobs:
 
     steps:
       - name: Setup python 3.8
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.8'
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -241,7 +241,7 @@ jobs:
       - name: Binary
         run: pyinstaller --dist ./dist ddb.spec
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: matrix.regex == '0'
         with:
           name: ddb-bin-linux
@@ -257,12 +257,12 @@ jobs:
 
     steps:
       - name: Setup python 3.8
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.8'
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -281,7 +281,7 @@ jobs:
       - name: Binary
         run: pyinstaller --dist ./dist ddb.spec
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: matrix.regex == '0'
         with:
           name: ddb-bin-linux-older-glibc
@@ -303,12 +303,12 @@ jobs:
           docker_channel: "stable"
 
       - name: Setup python 3.8
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.8'
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -333,7 +333,7 @@ jobs:
           docker cp "$id:/usr/local/bin/ddb" ./dist/ddb
           docker rm -v $id
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: matrix.regex == '0'
         with:
           name: ddb-bin-alpine
@@ -349,12 +349,12 @@ jobs:
 
     steps:
       - name: Setup python 3.8
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.8'
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -373,7 +373,7 @@ jobs:
       - name: Binary
         run: pyinstaller --dist .\dist ddb.spec
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: ddb-bin-windows
           path: ./dist
@@ -388,12 +388,12 @@ jobs:
 
     steps:
       - name: Setup python 3.8
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.8'
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -412,7 +412,7 @@ jobs:
       - name: Binary
         run: pyinstaller --dist ./dist ddb.spec
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: ddb-bin-macos
           path: ./dist
@@ -427,12 +427,12 @@ jobs:
 
     steps:
       - name: Setup python 3.8
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.8'
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -441,7 +441,7 @@ jobs:
           git config --global user.email "action@github.com"
           git config --global user.name "github-actions"
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           path: artifacts
 
@@ -465,7 +465,7 @@ jobs:
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
 
       - name: Merge master to develop
-        uses: robotology/gh-action-nightly-merge@v1.3.2
+        uses: robotology/gh-action-nightly-merge@v1.3.3
         with:
           stable_branch: 'master'
           development_branch: 'develop'
