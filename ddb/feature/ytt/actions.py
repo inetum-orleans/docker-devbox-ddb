@@ -56,9 +56,9 @@ class YttAction(AbstractTemplateAction):
             config.data["ytt.depends_suffixes"],
             config.data["ytt.extensions"]
         )
-        template_finder = TemplateFinder(includes,
+        template_finder = TemplateFinder([],
                                          [],
-                                         [],
+                                         includes,
                                          [],
                                          config.data["ytt.depends_suffixes"],
                                          os.path.dirname(target),

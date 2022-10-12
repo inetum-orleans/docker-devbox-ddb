@@ -135,11 +135,14 @@ class TestRunFeature:
         cwd = config.cwd if config.cwd else os.getcwd()
         real_cwd = os.path.realpath(cwd)
 
-        assert read.out == docker_compose_bin + " -f ../project/docker-compose.yml " \
-                                                "run --rm " \
-                                                f"--volume={real_cwd}:/app " \
-                                                "--workdir=/app " \
-                                                "service\n"
+        assert read.out == docker_compose_bin + \
+               " -f " + \
+               os.path.join("..", "project", "docker-compose.yml") + \
+               " " \
+               "run --rm " \
+               f"--volume={real_cwd}:/app " \
+               "--workdir=/app " \
+               "service\n"
 
     def test_run_docker_binary_exe(self, project_loader, capsys: CaptureFixture):
         project_loader("exe")

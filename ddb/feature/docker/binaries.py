@@ -1,13 +1,13 @@
 import os
 import posixpath
 import shlex
-from pathlib import Path
 from typing import Optional, Iterable
 
 from ddb.binary.binary import AbstractBinary
 from ddb.config import config
 from ddb.feature.docker.lib.compose.config.errors import ConfigurationError
 from ddb.feature.docker.utils import get_mapped_path, DockerComposeControl
+from ddb.utils.compat import path_as_posix_fast
 from ddb.utils.process import effective_command
 from ddb.utils.simpleeval import simple_eval
 
@@ -48,8 +48,8 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
                     names={"args": " ".join(args),
                            "argv": args,
                            "config": config,
-                           "cwd": str(Path(config.cwd).as_posix()) if config.cwd else None,
-                           "project_cwd": str(Path(config.project_cwd).as_posix()) if config.project_cwd else None})
+                           "cwd": path_as_posix_fast(config.cwd) if config.cwd else None,
+                           "project_cwd": path_as_posix_fast(config.project_cwd) if config.project_cwd else None})
 
     def command(self, *args) -> Iterable[str]:
         cwd = config.cwd if config.cwd else os.getcwd()

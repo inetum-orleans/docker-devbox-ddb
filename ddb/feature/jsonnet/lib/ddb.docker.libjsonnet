@@ -189,10 +189,10 @@ local apply_volumes_mounts(volumes) = {
 	[key]: volumes[key] +
 	(if _docker_mount_directories != null && std.objectHas(_docker_mount_directories, key) then {
 		driver: 'local',
-		driver_opts: {type: 'none', o: 'bind', device: _ensure_absolute(_docker_mount_directories[key])}
+		driver_opts: {type: 'none', o: 'bind', device: _docker_mount_directories[key]}
      } else if _docker_mount_directory != null then {
 		driver: 'local',
-		driver_opts: {type: 'none', o: 'bind', device: _ensure_absolute(_docker_mount_directory + '/' + key)}
+		driver_opts: {type: 'none', o: 'bind', device: _docker_mount_directory + '/' + key}
 	}
 	else {})
 	for key in std.objectFields(volumes)

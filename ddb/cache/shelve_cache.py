@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
+import dbm
 import os
 import shelve
 import tempfile
 
 from .cache import Cache
 from ..config import config
-
-import dbm
 
 # Easy fix for https://github.com/inetum-orleans/docker-devbox-ddb/issues/49
 # pylint:disable=protected-access
@@ -23,8 +22,10 @@ class ShelveCache(Cache):
     A cache implementation relying of shelve module.
     """
 
-    def __init__(self, namespace: str):
+    def __init__(self, namespace: str, eternal=False):
         super().__init__(namespace)
+
+        clear_cache = config.clear_cache and not eternal
 
         if config.paths.home:
             path = os.path.join(config.paths.home, "cache")
@@ -33,7 +34,7 @@ class ShelveCache(Cache):
         os.makedirs(path, exist_ok=True)
 
         self.basename = os.path.join(path, self._namespace)
-        if config.clear_cache:
+        if clear_cache:
             self._delete_files(self.basename)
         try:
             self._shelf = shelve.open(self.basename)
@@ -45,7 +46,7 @@ class ShelveCache(Cache):
                     raise open_error from fallback_error
             else:
                 raise open_error
-        if config.clear_cache:
+        if clear_cache:
             self._shelf.clear()
 
     @staticmethod

@@ -13,6 +13,7 @@ from ddb.feature.core import CoreFeature
 from ddb.feature.docker import DockerFeature
 from ddb.feature.file import FileFeature, FileWalkAction
 from ddb.feature.jsonnet import JsonnetFeature
+from ddb.utils.compat import path_as_posix_fast
 
 
 class TestJsonnetAction:
@@ -270,10 +271,7 @@ class TestJsonnetAction:
             expected_data = f.read()
 
             if os.name == 'nt':
-                mapped_cwd = re.sub(r"^([a-zA-Z]):", r"/\1", os.getcwd())
-                mapped_cwd = pathlib.Path(mapped_cwd).as_posix()
-
-                expected_data = expected_data.replace("%ddb.path.project%", mapped_cwd)
+                expected_data = expected_data.replace("%ddb.path.project%", path_as_posix_fast(os.getcwd()))
             else:
                 expected_data = expected_data.replace("%ddb.path.project%", os.getcwd())
             expected_data = expected_data.replace("%network_name%",
@@ -318,10 +316,7 @@ class TestJsonnetAction:
             expected_data = f.read()
 
             if os.name == 'nt':
-                mapped_cwd = re.sub(r"^([a-zA-Z]):", r"/\1", os.getcwd())
-                mapped_cwd = pathlib.Path(mapped_cwd).as_posix()
-
-                expected_data = expected_data.replace("%ddb.path.project%", mapped_cwd)
+                expected_data = expected_data.replace("%ddb.path.project%", path_as_posix_fast(os.getcwd()))
             else:
                 expected_data = expected_data.replace("%ddb.path.project%", os.getcwd())
             expected_data = expected_data.replace("%network_name%",
@@ -365,10 +360,7 @@ class TestJsonnetAction:
             expected_data = f.read()
 
             if os.name == 'nt':
-                mapped_cwd = re.sub(r"^([a-zA-Z]):", r"/\1", os.getcwd())
-                mapped_cwd = pathlib.Path(mapped_cwd).as_posix()
-
-                expected_data = expected_data.replace("%ddb.path.project%", mapped_cwd)
+                expected_data = expected_data.replace("%ddb.path.project%", path_as_posix_fast(os.getcwd()))
             else:
                 expected_data = expected_data.replace("%ddb.path.project%", os.getcwd())
             expected_data = expected_data.replace("%network_name%",
@@ -403,10 +395,7 @@ class TestJsonnetAction:
             expected_data = f.read()
 
             if os.name == 'nt':
-                mapped_cwd = re.sub(r"^([a-zA-Z]):", r"/\1", os.getcwd())
-                mapped_cwd = pathlib.Path(mapped_cwd).as_posix()
-
-                expected_data = expected_data.replace("%ddb.path.project%", mapped_cwd)
+                expected_data = expected_data.replace("%ddb.path.project%", path_as_posix_fast(os.getcwd()))
             else:
                 expected_data = expected_data.replace("%ddb.path.project%", os.getcwd())
             expected_data = expected_data.replace("%network_name%",
@@ -441,10 +430,7 @@ class TestJsonnetAction:
             expected_data = f.read()
 
             if os.name == 'nt':
-                mapped_cwd = re.sub(r"^([a-zA-Z]):", r"/\1", os.getcwd())
-                mapped_cwd = pathlib.Path(mapped_cwd).as_posix()
-
-                expected_data = expected_data.replace("%ddb.path.project%", mapped_cwd)
+                expected_data = expected_data.replace("%ddb.path.project%", path_as_posix_fast(os.getcwd()))
             else:
                 expected_data = expected_data.replace("%ddb.path.project%", os.getcwd())
             expected_data = expected_data.replace("%network_name%",
@@ -543,10 +529,7 @@ class TestJsonnetAction:
             expected_data = f.read()
 
             if os.name == 'nt':
-                mapped_cwd = re.sub(r"^([a-zA-Z]):", r"/\1", os.getcwd())
-                mapped_cwd = pathlib.Path(mapped_cwd).as_posix()
-
-                expected_data = expected_data.replace("%ddb.path.project%", mapped_cwd)
+                expected_data = expected_data.replace("%ddb.path.project%", path_as_posix_fast(os.getcwd()))
             else:
                 expected_data = expected_data.replace("%ddb.path.project%", os.getcwd())
             expected_data = expected_data.replace("%network_name%",

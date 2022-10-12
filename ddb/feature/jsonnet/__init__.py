@@ -12,6 +12,7 @@ from ddb.feature import Feature
 from .actions import JsonnetAction
 from .schema import JsonnetSchema
 from ...config import config
+from ...utils.compat import path_as_posix_fast
 from ...utils.file import TemplateFinder
 
 
@@ -49,6 +50,7 @@ class JsonnetFeature(Feature):
         self._configure_defaults_build_image_tag(feature_config)
         self._configure_defaults_restart_policy(feature_config)
         self._configure_defaults_https(feature_config)
+        self._configure_defaults_mount(feature_config)
 
     @staticmethod
     def _configure_defaults_includes(feature_config):
@@ -229,3 +231,22 @@ class JsonnetFeature(Feature):
 
         if redirect_to_https and not https:
             feature_config['docker.virtualhost.redirect_to_https'] = False
+
+    @staticmethod
+    def _configure_defaults_mount(feature_config):
+        directory = feature_config.get('docker.mount.directory')
+        if directory is not None:
+            absolute_directory = os.path.abspath(directory) if \
+                not os.path.isabs(directory) else directory
+            if os.name == 'nt':
+                absolute_directory = path_as_posix_fast(absolute_directory)
+            feature_config['docker.mount.directory'] = absolute_directory
+        directories = feature_config.get('docker.mount.directories')
+        if directories is not None:
+            absolute_directories = {}
+            for directory_key, directory_value in directories.items():
+                absolute_directories[directory_key] = os.path.abspath(directory_value) if \
+                    not os.path.isabs(directory_value) else directory_value
+                if os.name == 'nt':
+                    absolute_directories[directory_key] = path_as_posix_fast(absolute_directories[directory_key])
+            feature_config['docker.mount.directories'] = absolute_directories

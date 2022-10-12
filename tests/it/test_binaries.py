@@ -8,6 +8,7 @@ from ddb.__main__ import main, reset
 from ddb.config import Config, config
 
 docker_compose_bin = "docker compose" if os.name != "nt" else "docker.exe compose"
+bin_ext = '.bat' if os.name == "nt" else ''
 
 
 class TestBinaries:
@@ -20,7 +21,7 @@ class TestBinaries:
         exceptions = main(["run", "psql"])
         assert not exceptions
 
-        assert os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql'))
+        assert os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql' + bin_ext))
 
         output = capsys.readouterr()
         assert output.out.strip() == docker_compose_bin + " run --rm --workdir=/workdir/. db psql"
@@ -36,7 +37,7 @@ class TestBinaries:
         exceptions = main(["run", "psql"])
         assert not exceptions
 
-        assert os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql'))
+        assert os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql' + bin_ext))
 
         output = capsys.readouterr()
 
@@ -51,7 +52,7 @@ class TestBinaries:
         exceptions = main(["run", "psql"])
         assert not exceptions
 
-        assert os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql'))
+        assert os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql' + bin_ext))
 
         output = capsys.readouterr()
         assert output.out.strip() == docker_compose_bin + " exec --workdir=/workdir/. db psql"
@@ -65,7 +66,7 @@ class TestBinaries:
         exceptions = main(["run", "psql"])
         assert not exceptions
 
-        assert os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql'))
+        assert os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql' + bin_ext))
 
         output = capsys.readouterr()
         assert output.out.strip() == docker_compose_bin + " run --rm --workdir=/workdir/. --entrypoint=/custom/ep db psql"
@@ -79,8 +80,8 @@ class TestBinaries:
         exceptions = main(["run", "psql"])
         assert not exceptions
 
-        assert not os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql'))
-        assert os.path.exists(os.path.join(os.getcwd(), '..', 'home', '.bin', 'psql'))
+        assert not os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql' + bin_ext))
+        assert os.path.exists(os.path.join(os.getcwd(), '..', 'home', '.bin', 'psql' + bin_ext))
 
         output = capsys.readouterr()
         assert output.out.strip() == docker_compose_bin + " run --rm --workdir=/workdir/. db psql"
@@ -94,8 +95,8 @@ class TestBinaries:
         exceptions = main(["run", "psql"])
         assert not exceptions
 
-        assert not os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql'))
-        assert os.path.exists(os.path.join(os.getcwd(), '..', 'home', '.bin', 'psql'))
+        assert not os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql' + bin_ext))
+        assert os.path.exists(os.path.join(os.getcwd(), '..', 'home', '.bin', 'psql' + bin_ext))
 
         output = capsys.readouterr()
         assert output.out.strip() == docker_compose_bin + " run --rm --workdir=/workdir/. db psql"
@@ -108,7 +109,7 @@ class TestBinaries:
         exceptions = main(["run", "psql"])
         assert not exceptions
 
-        assert os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql'))
+        assert os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql' + bin_ext))
 
     def test_docker_binaries_removed(self, project_loader, capsys: CaptureFixture):
         Config.defaults = None
@@ -117,21 +118,18 @@ class TestBinaries:
 
         main(["configure"])
 
-        if os.name == 'nt':
-            assert os.path.isfile(os.path.join(".bin", "psql.bat"))
-        else:
-            assert os.path.isfile(os.path.join(".bin", "psql"))
+        assert os.path.isfile(os.path.join(".bin", "psql" + bin_ext))
 
         exceptions = main(["run", "psql"])
         assert not exceptions
 
-        assert os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql'))
+        assert os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql' + bin_ext))
 
         copy(os.path.join("..", "replacement", "docker-compose.yml.jsonnet"), 'docker-compose.yml.jsonnet')
 
         main(["configure"])
 
-        assert not os.path.isfile(os.path.join(".bin", "psql"))
+        assert not os.path.isfile(os.path.join(".bin", "psql" + bin_ext))
 
         exceptions = main(["run", "psql"])
         assert exceptions

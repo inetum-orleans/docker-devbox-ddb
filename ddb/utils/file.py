@@ -277,10 +277,13 @@ class FileWalker:
         return False
 
     @staticmethod
-    def _prefix_path_to_current_folder(path: str):
+    def _path_alternatives_for_pattern_match(path: str):
         if path[0:2] == './':
-            return path
-        return './' + path
+            yield path[2:]
+            yield path
+        else:
+            yield path
+            yield './' + path
 
     @staticmethod
     def _as_posix_fast(path: str):
@@ -303,10 +306,10 @@ class FileWalker:
         Check if a string match at least one of provided compiled pattern
         """
         candidate = FileWalker._as_posix_fast(candidate)
-        norm_candidate = FileWalker._prefix_path_to_current_folder(candidate)
         for pattern in patterns:
-            if pattern.match(candidate) or pattern.match(norm_candidate):
-                return True
+            for candidate_alternative in FileWalker._path_alternatives_for_pattern_match(candidate):
+                if pattern.match(candidate_alternative):
+                    return True
         return False
 
     @staticmethod

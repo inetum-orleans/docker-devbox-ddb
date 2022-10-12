@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import os
-import pathlib
 import re
 from typing import Iterable, ClassVar
 
@@ -14,6 +13,7 @@ from ..feature import Feature, FeatureConfigurationAutoConfigureError
 from ..schema import FeatureSchema
 from ...action import Action
 from ...config import config
+from ...utils.compat import path_as_posix_fast
 
 
 class DockerFeature(Feature):
@@ -142,10 +142,9 @@ class DockerFeature(Feature):
         path_mapping = feature_config.get('path_mapping')
         if path_mapping is None:
             path_mapping = {}
-            if config.data.get('core.os') == 'nt':
-                raw = config.data.get('core.path.project_home')
-                mapped = re.sub(r"^([a-zA-Z]):", r"/\1", raw)
-                mapped = pathlib.Path(mapped).as_posix()
-                mapped = re.sub(r"(\/)(.)(\/.*)", lambda x: x.group(1) + x.group(2).lower() + x.group(3), mapped)
-                path_mapping[raw] = mapped
-            feature_config['path_mapping'] = path_mapping
+        if config.data.get('core.os') == 'nt':
+            for key in ('core.path.project_home', 'core.path.ddb_home', 'core.path.home'):
+                raw = config.data.get(key)
+                if raw:
+                    path_mapping[raw] = path_as_posix_fast(raw)
+        feature_config['path_mapping'] = path_mapping

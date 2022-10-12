@@ -1,5 +1,7 @@
 import os
 
+import pytest
+
 from ddb.__main__ import load_registered_features, register_actions_in_event_bus
 from ddb.config import migrations, config
 from ddb.config.migrations import PropertyMigration
@@ -9,6 +11,7 @@ from ddb.feature.file import FileFeature, FileWalkAction
 from ddb.feature.ytt import YttFeature
 
 
+@pytest.mark.skipif("os.name == 'nt'")
 class TestYttAction:
     def test_empty_project_without_core(self, project_loader):
         project_loader("empty")
@@ -118,6 +121,7 @@ class TestYttAction:
         assert rendered == expected
 
 
+@pytest.mark.skipif("os.name == 'nt'")
 class TestYttAutofix:
     def teardown_method(self, test_method):
         migrations.set_history()

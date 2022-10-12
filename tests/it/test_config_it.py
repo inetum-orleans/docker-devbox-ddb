@@ -252,16 +252,18 @@ class TestConfig:
         docker_user_gid = config.data.get('docker.user.gid')
         docker_user_uid = config.data.get('docker.user.uid')
 
-        assert out == f"""docker.disabled: False
+        assert out.startswith(f"""docker.disabled: False
 docker.docker_command: docker
 docker.docker_compose_command: docker compose
 docker.interface: {docker_interface}
 docker.ip: {docker_ip}
+""")
+        assert out.endswith(f"""
 docker.user.gid: {docker_user_gid}
 docker.user.group: None
 docker.user.name: None
 docker.user.uid: {docker_user_uid}
-"""
+""")
 
         reset()
 
