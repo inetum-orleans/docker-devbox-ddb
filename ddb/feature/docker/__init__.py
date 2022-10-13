@@ -147,4 +147,7 @@ class DockerFeature(Feature):
                 raw = config.data.get(key)
                 if raw:
                     path_mapping[raw] = path_as_posix_fast(raw)
-        feature_config['path_mapping'] = path_mapping
+        sorted_path_mapping = {}
+        for k in sorted(path_mapping, key=len, reverse=True):
+            sorted_path_mapping[k] = path_mapping[k]
+        feature_config['path_mapping'] = sorted_path_mapping

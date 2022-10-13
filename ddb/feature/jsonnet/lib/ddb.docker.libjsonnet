@@ -45,8 +45,13 @@ local _core_path_ddb_home = std.extVar("core.path.ddb_home");
 local _core_path_home = std.extVar("core.path.home");
 
 local mapPath(path) =
-  local key = std.filter(function(mapping_field) std.startsWith(path, mapping_field), std.objectFields(_docker_path_mapping));
-  if std.length(key) > 0 then _docker_path_mapping[key[0]] + std.substr(path, std.length(_docker_path_mapping[key[0]]), std.length(path)) else path;
+    local keys = std.filter(function(mapping_field) std.startsWith(path, mapping_field), std.objectFields(_docker_path_mapping));
+    if (std.length(keys) > 0) then
+        # Keep longuest directory to use as path mapping
+        local key = std.foldl(function(x, y) if std.length(x) > std.length(y) then x else y, keys, "");
+        _docker_path_mapping[key + std.substr(path, std.length(_docker_path_mapping[key]), std.length(path))]
+    else
+        path;
 
 local path = {
     map: mapPath,
