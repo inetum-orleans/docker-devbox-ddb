@@ -14,6 +14,7 @@ class FileSchema(FeatureSchema):
     excludes = fields.List(fields.String(), dump_default=[
         "**/.git",
         "**/.idea",
+        "**/.yarn",
         "**/node_modules",
         "**/vendor",
         "**/target",
