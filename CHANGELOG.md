@@ -3,6 +3,20 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.16.0 (2022-10-13)
+### Feature
+* **file:** Add `**/.yarn` to `file.excludes` default value ([`5ccfb47`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/5ccfb470c031e471e2fb763b756221dc8aa604d1))
+* **windows:** Improve windows support ([`2aded1f`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/2aded1f9e25dde0467659499cfe92c3ac4082444))
+* **docker:** Add docker compose v2 support ([`d1d522b`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/d1d522bffb1b38160abe9eeb9dfb6d44dc615f5f))
+* **docker:** Set `docker.ip` fallback to `127.0.0.1` ([`5d0afb8`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/5d0afb8a056d2471ae1841413b5bb426ba336a33))
+
+### Fix
+* **windows:** Fix invalid mapPath in libjsonnet ([`74ef98a`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/74ef98a56ff5366a50cb1afca96b6a4a0d168436))
+* **docker:** Sort path mapping in both python and jsonnet ([`e9d53e3`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/e9d53e32c184fa450d020dc84866b2bf4bed7857))
+
+### Performance
+* **file:** Improve performance of file walker ([`6bf49ea`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/6bf49eac9926c8f57b88ef7a2dae183ef0c8435e))
+
 ## v1.15.6 (2021-11-09)
 ### Fix
 * **run:** Wrap $@ in single quote to echo command in temporary file ([`d5ee3a2`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/d5ee3a2f5693c9151e38d1186f19e0678c37cf43))
