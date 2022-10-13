@@ -21,6 +21,7 @@ from ...cache import caches, register_project_cache
 from ...config import config
 from ...context import context
 from ...event import bus, events
+from ...utils.compat import posix_as_path_fast
 from ...utils.table_display import get_table_display
 
 
@@ -331,13 +332,19 @@ class LocalVolumesAction(Action):
                                       relative_path)
 
     @staticmethod
-    def _check_file_in_project(target):
-        target_path = os.path.realpath(target)
+    def _check_file_in_project(source):
+        if os.name == 'nt':
+            source = posix_as_path_fast(source)
+
+        target_path = os.path.realpath(source)
         cwd = os.path.realpath(".")
         return target_path.startswith(cwd)
 
     @staticmethod
     def _create_local_volume(source, target):
+        if os.name == 'nt':
+            source = posix_as_path_fast(source)
+
         rel_source = os.path.relpath(source, ".")
         if os.path.exists(source):
             context.log.notice("Local volume source: %s (exists)", rel_source)
@@ -392,7 +399,7 @@ class LocalVolumesAction(Action):
                     source = PurePosixPath(device).joinpath(volume)
                     target = external_volumes_dict.get(volume)
                     if source and target:
-                        volume_mapping = (source, target)
+                        volume_mapping = (str(source), target)
                         if volume_mapping not in volume_mappings:
                             volume_mappings.append(volume_mapping)
 
