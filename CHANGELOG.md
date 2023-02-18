@@ -3,6 +3,13 @@ History
 
 <!--next-version-placeholder-->
 
+## v1.17.0 (2023-02-18)
+### Feature
+* **dependencies:** Add python 3.11 support ([`e6fcd6a`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/e6fcd6a030db8a4fd47428db58cfb27cb10b17f4))
+
+### Fix
+* **shell:** Replace tempfile with mktemp to remove the deprecation warning ([`46329df`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/46329df2b83db57e4696faab54c8b2a3bd88f225))
+
 ## v1.16.0 (2022-10-13)
 ### Feature
 * **file:** Add `**/.yarn` to `file.excludes` default value ([`5ccfb47`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/5ccfb470c031e471e2fb763b756221dc8aa604d1))
