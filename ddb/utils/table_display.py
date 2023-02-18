@@ -1,5 +1,5 @@
 import math
-from typing import List, Iterable
+from typing import Iterable
 
 
 def _get_content(content: str, line_length: int, centered: bool = True):

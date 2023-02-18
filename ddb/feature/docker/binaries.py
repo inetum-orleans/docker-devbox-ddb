@@ -44,12 +44,16 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
         """
         Retrieve the simple_eval options
         """
-        return dict(functions={},
-                    names={"args": " ".join(args),
-                           "argv": args,
-                           "config": config,
-                           "cwd": path_as_posix_fast(config.cwd) if config.cwd else None,
-                           "project_cwd": path_as_posix_fast(config.project_cwd) if config.project_cwd else None})
+        return {
+            "functions": {},
+            "names": {
+                "args": " ".join(args),
+                "argv": args,
+                "config": config,
+                "cwd": path_as_posix_fast(config.cwd) if config.cwd else None,
+                "project_cwd": path_as_posix_fast(config.project_cwd) if config.project_cwd else None
+            }
+        }
 
     def command(self, *args) -> Iterable[str]:
         cwd = config.cwd if config.cwd else os.getcwd()
