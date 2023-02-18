@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 import patch
-from typing import Union
 
 from cookiecutter.config import DEFAULT_CONFIG
 from cookiecutter.main import cookiecutter
