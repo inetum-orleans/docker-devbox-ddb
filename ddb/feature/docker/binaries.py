@@ -62,7 +62,10 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
         project_relpath = os.path.relpath(config.paths.project_home, config.cwd if config.cwd else os.getcwd())
 
         if real_cwd.startswith(real_project_home):
-            params = ["exec"] if hasattr(self, "exe") and self.exe else ["-f", os.path.join(project_relpath, "docker-compose.yml"), "run", "--rm"]
+            params = ["exec"] if hasattr(self, "exe") and self.exe else [
+                "-f", os.path.join(project_relpath, "docker-compose.yml"),
+                "run", "--rm"
+            ]
 
             if self.workdir:
                 relpath = os.path.relpath(cwd, config.paths.project_home)
