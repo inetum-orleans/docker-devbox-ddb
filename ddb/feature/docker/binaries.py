@@ -59,9 +59,13 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
         cwd = config.cwd if config.cwd else os.getcwd()
         real_cwd = os.path.realpath(cwd)
         real_project_home = os.path.realpath(config.paths.project_home)
+        project_relpath = os.path.relpath(config.paths.project_home, config.cwd if config.cwd else os.getcwd())
 
         if real_cwd.startswith(real_project_home):
-            params = ["exec"] if hasattr(self, "exe") and self.exe else ["run", "--rm"]
+            params = ["exec"] if hasattr(self, "exe") and self.exe else [
+                "-f", os.path.join(project_relpath, "docker-compose.yml"),
+                "run", "--rm"
+            ]
 
             if self.workdir:
                 relpath = os.path.relpath(cwd, config.paths.project_home)
@@ -69,7 +73,6 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
                 params.append(f"--workdir={container_workdir}")
         else:
             # cwd is outside of project home.
-            project_relpath = os.path.relpath(config.paths.project_home, config.cwd if config.cwd else os.getcwd())
             params = ["-f", os.path.join(project_relpath, "docker-compose.yml"), "run", "--rm"]
             if self.workdir:
                 mapped_cwd = get_mapped_path(real_cwd)
