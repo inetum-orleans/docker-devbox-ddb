@@ -205,26 +205,26 @@ class TestDockerFeature:
         assert len(npm_simple_set) == 1
         npm_simple = list(npm_simple_set)[0]
         assert npm_simple.command() == (
-                docker_compose_bin + " run --rm --workdir=/app/. --label traefik.enable=false node").split()
+                docker_compose_bin + " -f ./docker-compose.yml run --rm --workdir=/app/. --label traefik.enable=false node").split()
         assert npm_simple.command("serve") == (
-                docker_compose_bin + ' run --rm --workdir=/app/. --label traefik.enable=false node').split()
+                docker_compose_bin + ' -f ./docker-compose.yml run --rm --workdir=/app/. --label traefik.enable=false node').split()
         assert npm_simple.command("run serve") == (
-                docker_compose_bin + ' run --rm --workdir=/app/. --label traefik.enable=false node').split()
+                docker_compose_bin + ' -f ./docker-compose.yml run --rm --workdir=/app/. --label traefik.enable=false node').split()
 
         npm_conditions_set = binaries.get("npm-conditions")
         assert len(npm_conditions_set) == 1
         npm_conditions = list(npm_conditions_set)[0]
         assert npm_conditions.command() == (
-                docker_compose_bin + " run --rm --workdir=/app/. --label traefik.enable=false node").split()
+                docker_compose_bin + " -f ./docker-compose.yml run --rm --workdir=/app/. --label traefik.enable=false node").split()
         assert npm_conditions.command("serve") == (
-                docker_compose_bin + ' run --rm --workdir=/app/. --label traefik.enable=false node').split()
-        assert npm_conditions.command("run serve") == (docker_compose_bin + ' run --rm --workdir=/app/. node').split()
+                docker_compose_bin + ' -f ./docker-compose.yml run --rm --workdir=/app/. --label traefik.enable=false node').split()
+        assert npm_conditions.command("run serve") == (docker_compose_bin + ' -f ./docker-compose.yml run --rm --workdir=/app/. node').split()
 
         mysql_set = binaries.get("mysql")
         assert len(mysql_set) == 1
         mysql = list(mysql_set)[0]
         assert mysql.command() == (
-                docker_compose_bin + ' run --rm --workdir=/app/. db mysql -hdb -uproject-management-tool -pproject-management-tool').split()
+                docker_compose_bin + ' -f ./docker-compose.yml run --rm --workdir=/app/. db mysql -hdb -uproject-management-tool -pproject-management-tool').split()
 
     def test_local_volume_simple(self, project_loader):
         project_loader("local-volume-simple")
