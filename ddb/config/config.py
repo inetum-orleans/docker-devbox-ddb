@@ -169,7 +169,7 @@ class Config:  # pylint:disable=too-many-instance-attributes
                     if file_data:
                         loaded_data = config_merger.merge(loaded_data, file_data)
 
-        if Config.overrides:  # pylint:disable=using-constant-test
+        if Config.overrides:  # pylint:disable=using-constant-test,missing-parentheses-for-call-in-test
             Config.overrides(loaded_data)
 
         return self.apply_environ_overrides(loaded_data), found_files
