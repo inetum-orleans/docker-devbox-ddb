@@ -14,7 +14,7 @@ ddb
 be erased. It provides features to generate, activate and adjust configuration files based on a single overridable and
 extendable configuration, while enhancing the developer experience and reducing manual operations.
 
-Primarly designed for [docker-compose](https://docs.docker.com/compose/) and [docker-devbox](https://github.com/inetum-orleans/docker-devbox), 
+Primarly designed for [docker compose](https://docs.docker.com/compose/) and [docker-devbox](https://github.com/inetum-orleans/docker-devbox), 
 this tool makes the developer forget about the docker hard stuff by providing commands right into it's PATH, so it's 
 experience looks like everything is native and locally installed.
 
