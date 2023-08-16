@@ -62,7 +62,7 @@ install_requires = [
 ]
 
 dev_requires = [
-    "python-semantic-release",
+    "python-semantic-release<8",
     "pyinstaller",
     "commitizen",
     "pre-commit",
