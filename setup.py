@@ -70,7 +70,6 @@ dev_requires = [
     "astroid",
     "pylint",
     "docker[tls]",
-    "docker-compose",
     "pytest",
     "coverage",
     "waiting",
