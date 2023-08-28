@@ -73,6 +73,7 @@ def configure(mocker: MockerFixture):
     Config.overrides = overrides
 
     try:
+        os.environ.pop('DDB_OVERRIDE_CORE_DOMAIN_EXT', None)
         if os.name == 'nt' and 'COMSPEC' not in os.environ:
             os.environ['COMSPEC'] = r'C:\Windows\System32\cmd.exe'
         if os.name != 'nt' and 'SHELL' not in os.environ:
