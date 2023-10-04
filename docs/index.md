@@ -24,15 +24,15 @@ any technical context**.
 Install
 -------
 
-!!! warning "ddb should most often be installed by [docker-devbox](https://github.com/inetum-orleans/docker-devbox-ddb)"
-    You should better install the whole [docker-devbox](https://github.com/inetum-orleans/docker-devbox-ddb) toolkit 
+!!! warning "ddb should most often be installed by [docker-devbox](https://github.com/inetum-orleans/docker-devbox)"
+    You should better install the whole [docker-devbox](https://github.com/inetum-orleans/docker-devbox) toolkit 
     to enjoy the experience.
     
-    [docker-devbox](https://github.com/inetum-orleans/docker-devbox-ddb) automatically installs **ddb** as a 
+    [docker-devbox](https://github.com/inetum-orleans/docker-devbox) automatically installs **[ddb](https://github.com/inetum-orleans/docker-devbox-ddb)** as a 
     dependency, along some **helper docker containers**.
     
-    Only **advanced users** should install **ddb** on their own. If you are not sure what to do, do not install **ddb** 
-    on your own, but follow [docker-devbox](https://github.com/inetum-orleans/docker-devbox-ddb) installation docs.
+    Only **advanced users** should install **[ddb](https://github.com/inetum-orleans/docker-devbox-ddb)** on their own. If you are not sure what to do, do not install **ddb** 
+    on your own, but follow [docker-devbox](https://github.com/inetum-orleans/docker-devbox) installation docs.
     
 **ddb** is supported on **Linux**, **Windows** and **MacOS**. 
 
