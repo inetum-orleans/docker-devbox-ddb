@@ -497,7 +497,7 @@ It will use the following `ddb` configuration to generate appropriate `environme
         
 !!! example 
     ```json
-    ddb.Xdebug()
+    ddb.XDebug()
     ```
 
     will produce
