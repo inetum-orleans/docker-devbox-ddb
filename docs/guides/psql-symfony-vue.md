@@ -72,11 +72,11 @@ volumes: {}
     You may have noticed that a `.gitignore` has also been generated, to exclude `docker-compose.yml`. ddb may generates
     many files from templates. When ddb generates a file, it will always be added to the `.gitignore` file.
 
-Launch the stack with docker-compose, and check database logs.
+Launch the stack with docker compose, and check database logs.
 
 ```bash
-docker-compose up -d
-docker-compose logs db
+docker compose up -d
+docker compose logs db
 ```
 
 Sadly, there's an error in logs and container has stopped. You only have to define a database password with environment 
@@ -131,8 +131,8 @@ volumes: {}
 ```
 
 ```bash
-docker-compose up -d
-docker-compose logs db
+docker compose up -d
+docker compose logs db
 ```
 
 The database should be up now ! Great :)
@@ -162,7 +162,7 @@ As you may already know, you need to setup a volume for data to be persisted if 
 Let's stop and destroy all containers for now.
 
 ```bash
-docker-compose down
+docker compose down
 ```
 
 Map a named volume to the `db` service inside `docker-compose.yml.jsonnet`.
@@ -216,7 +216,7 @@ Database docker image contains binaries that you may need to run, like ...
   - `psql` - PostgreSQL client binary.
   - `pg_dump` - PostgreSQL command line tool to export data to a file.
 
-With docker-compose or raw docker, it may be really painful to find out the right `docker-compose` command to run those 
+With docker compose or raw docker, it may be really painful to find out the right `docker compose` command to run those 
 binary from your local environment. You may also have issues to read input data file, or to write output data file.
 
 With ddb, you can register those binaries right into `docker-compose.yml.jsonnet` to make them accessible from your local 
@@ -367,8 +367,8 @@ ddb.Compose({
 Stop containers, destroy data from existing database, and start again.
 
 ```bash
-docker-compose down -v
-docker-compose up -d
+docker compose down -v
+docker compose up -d
 ```
 
 Perform the dump.
@@ -443,7 +443,7 @@ paths:
   - /composer/cache
 ```
 
-Then build the docker image with `docker-compose build`.
+Then build the docker image with `docker compose build`.
 
 Composer has been installed in the image, so let's make it available by registering a binary into 
 `docker-compose.yml.jsonnet`. We can also register the `php` binary for it to be available locally too.
@@ -624,13 +624,13 @@ RUN sed -i '/LoadModule rewrite_module/s/^#//g' /usr/local/apache2/conf/httpd.co
 </VirtualHost>
 ```
 
-And now, we are ready start all containers : `docker-compose up -d`. 
+And now, we are ready start all containers : `docker compose up -d`. 
 
 Run `ddb info` command to check the URL of your virtualhost for the web service.
 
 You should be able to view Symfony landing page at 
-[http://ddb-quickstart.test](http://api.ddb-quickstart.test) and 
-[https://ddb-quickstart.test](https://api.ddb-quickstart.test).
+[http://api.ddb-quickstart.test](http://api.ddb-quickstart.test) and 
+[https://api.ddb-quickstart.test](https://api.ddb-quickstart.test).
 
 !!! note "You may have to restart traefik container"
     If you have some issues with certificate validity on the https:// url, you may need to restart traefik container : 
