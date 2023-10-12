@@ -407,21 +407,20 @@ ddb.Compose({
 And the related `Dockerfile.jinja` inside `.docker/php` directory.
 
 ```dockerfile
-FROM php:7.3-fpm
+FROM php:8.2-fpm
 
-RUN docker-php-ext-install opcache
 RUN yes | pecl install xdebug && docker-php-ext-enable xdebug
 
-RUN apt-get update -y &&\
- apt-get install -y libpq-dev &&\
- rm -rf /var/lib/apt/lists/* &&\
- docker-php-ext-install pdo pdo_pgsql
+RUN apt-get update && apt-get install -y \
+libpq-dev \
+&& docker-php-ext-install pdo pdo_pgsql
+RUN rm -rf /var/lib/apt/lists/*
 
 ENV COMPOSER_HOME /composer
 ENV PATH /composer/vendor/bin:$PATH
 ENV COMPOSER_ALLOW_SUPERUSER 1
 
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+COPY --from=composer /usr/bin/composer /usr/bin/composer
 RUN apt-get update -y &&\
  apt-get install -y git zip unzip &&\
  rm -rf /var/lib/apt/lists/*
@@ -459,6 +458,7 @@ ddb.Compose({
              ddb.User() +
              ddb.Binary("composer", "/var/www/html", "composer") +
              ddb.Binary("php", "/var/www/html", "php") +
+             ddb.XDebug() +
              {
               volumes+: [
                  ddb.path.project + ":/var/www/html",
@@ -474,13 +474,13 @@ And activate the project, with `$(ddb activate)`. The composer command in now av
 
 ```bash
 $ composer --version
-Composer version 1.10.10 2020-08-03 11:35:19
+Composer version 2.6.5 2023-10-06 10:11:52
 
 $ php --version
-PHP 7.3.10 (cli) (built: Oct 17 2019 15:09:28) ( NTS )
-Copyright (c) 1997-2018 The PHP Group
-Zend Engine v3.3.10, Copyright (c) 1998-2018 Zend Technologies
-    with Xdebug v2.9.6, Copyright (c) 2002-2020, by Derick Rethans
+PHP 8.2.11 (cli) (built: Sep 30 2023 02:26:43) (NTS)
+Copyright (c) The PHP Group
+Zend Engine v4.2.11, Copyright (c) Zend Technologies
+    with Xdebug v3.2.2, Copyright (c) 2002-2023, by Derick Rethans
 ```
 
 Now PHP and composer are available, you can generate the symfony skeleton inside a `backend` directory.
