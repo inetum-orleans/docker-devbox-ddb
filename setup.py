@@ -58,7 +58,8 @@ install_requires = [
     "ordered-set",
     "patch",
     "semver",
-    "distro"
+    "distro",
+    "python-on-whales"
 ]
 
 dev_requires = [

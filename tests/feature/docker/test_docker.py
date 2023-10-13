@@ -3,7 +3,6 @@ import shutil
 
 import pytest
 from _pytest.capture import CaptureFixture
-from compose.config.types import ServicePort
 from dotty_dict import Dotty
 
 from ddb.__main__ import load_registered_features, register_actions_in_event_bus
@@ -18,6 +17,7 @@ from ddb.feature.core import CoreFeature
 from ddb.feature.docker import DockerDisplayInfoAction
 from ddb.feature.docker import DockerFeature, EmitDockerComposeConfigAction
 from ddb.feature.docker.binaries import DockerBinary
+from ddb.feature.docker.lib.compose.config.types import ServicePort
 from ddb.feature.docker.utils import get_mapped_path, DockerComposeControl
 from ddb.feature.traefik import TraefikFeature
 from tests.utilstest import setup_cfssl
