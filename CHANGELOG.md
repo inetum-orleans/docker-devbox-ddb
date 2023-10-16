@@ -3,6 +3,29 @@ History
 
 <!--next-version-placeholder-->
 
+## v2.0.0 (2023-10-16)
+
+### Feature
+
+* Always specify the docker-compose.yml file in docker run ([#224](https://github.com/inetum-orleans/docker-devbox-ddb/issues/224)) ([`3f756de`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/3f756de12786f3ca48ddddc97cac02e2e6a840a7))
+
+### Fix
+
+* **tests:** Replace docker-compose with python-on-whales ([#227](https://github.com/inetum-orleans/docker-devbox-ddb/issues/227)) ([`52c2bce`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/52c2bce66edb06c9c961a06db1cd15142037597a))
+* **doc:** Fix XDebug typo in doc ([`25a87f3`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/25a87f3f49a5e72b572fbdcfd45a2f43ed8c1d0d))
+* **doc:** Links to docker-devbox should go on the correct repo ([`2bee946`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/2bee946471778db3a545fe6ba2a0c11a2a846aca))
+* **tests:** Unset local variable override to allow local tests ([`09f7caa`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/09f7caad6df9deda356b00d1091532cd37b1ac60))
+* **ci:** Remove deprecated docker-compose dependency ([`714da68`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/714da68456bb1b463b155a96f39c98d7ce9b9691))
+* **ci:** Use python-semantic-release < 8 for now ([`f51174d`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/f51174d4a1c8679952f14c5cfb458cbe3f606372))
+* **readme:** Replace compose v1 with v2 ([`b63fdd0`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/b63fdd00641f47c59e87dfb39512c0ca202f6b7d))
+* **tests:** Fixed tests related to the recent ddb run modification ([`cf0376f`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/cf0376fc9d1db5cd4ccfcdccdcaa48ea47345353))
+* **pylint:** Disable false-positive pylint warning ([`cb460c9`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/cb460c951b6f50ee285025ba0e6a388eb0c534bd))
+* **doc:** Fixed typo in symfony sample ([`ffb8f19`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/ffb8f1916c559f3392bed8164a734f333fc54117))
+
+### Breaking
+
+* remove support for ubuntu 18 ([`b2ff624`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/b2ff6248389e966e4a608f55e5b710deb0a2c60c))
+
 ## v1.17.0 (2023-02-18)
 ### Feature
 * **dependencies:** Add python 3.11 support ([`e6fcd6a`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/e6fcd6a030db8a4fd47428db58cfb27cb10b17f4))
