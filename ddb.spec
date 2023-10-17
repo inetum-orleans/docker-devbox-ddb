@@ -2,12 +2,21 @@
 
 block_cipher = None
 
+# since version 2.2.3, cookiecutter comes with a VERSION.txt file that needs to be included
+# as a datafile. This is kind of a temporary hack until a PR for cookiecutter is accepted
+# to turn this VERSION.txt file into a regular Python module.
+
+import cookiecutter
+from pathlib import Path
+COOKIECUTTER_PATH = Path(cookiecutter.__file__).parent.resolve()
+
 
 a = Analysis(['ddb/__main__.py'],
              pathex=[],
              binaries=[],
              datas=[
-                 ('ddb/feature/jsonnet/lib/*', 'ddb/feature/jsonnet/lib')
+                 ('ddb/feature/jsonnet/lib/*', 'ddb/feature/jsonnet/lib'),
+                 (str(COOKIECUTTER_PATH / 'VERSION.txt'), 'cookiecutter'),
              ],
              hiddenimports=[
                  'ddb.feature.jsonnet.docker',
