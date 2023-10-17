@@ -3,6 +3,12 @@ History
 
 <!--next-version-placeholder-->
 
+## v2.0.1 (2023-10-17)
+
+### Fix
+
+* **pyinstaller:** Add a datafile from cookiecutter to the binary bundle of pyInstaller ([`c51361d`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/c51361d5370107fee35c1fd82abd8e802f7d077b))
+
 ## v2.0.0 (2023-10-16)
 
 ### Feature
