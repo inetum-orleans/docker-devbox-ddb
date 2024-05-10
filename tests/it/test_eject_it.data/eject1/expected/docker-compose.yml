@@ -25,6 +25,5 @@ services:
     volumes:
     - .:/workdir
     - db-data:/var/lib/postgresql/data
-version: '3.7'
 volumes:
   db-data: {}

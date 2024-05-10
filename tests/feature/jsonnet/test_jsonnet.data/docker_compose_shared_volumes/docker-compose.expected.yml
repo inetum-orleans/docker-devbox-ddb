@@ -20,7 +20,6 @@ services:
     restart: 'no'
     volumes:
       - shared-volume:/share
-version: '3.7'
 volumes:
   another-volume: {}
   shared-volume: {}

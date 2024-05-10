@@ -12,4 +12,3 @@ services:
       - '41699:23/tcp'
       - '9912:9912'
 volumes: {}
-version: '3.7'

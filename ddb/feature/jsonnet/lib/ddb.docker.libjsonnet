@@ -15,7 +15,6 @@ local _docker_build_cache_from_image = std.extVar("jsonnet.docker.build.cache_fr
 local _docker_build_image_tag = std.extVar("jsonnet.docker.build.image_tag");
 local _docker_build_context_base_directory = std.extVar("jsonnet.docker.build.context.base_directory");
 local _docker_build_context_use_project_home = std.extVar("jsonnet.docker.build.context.use_project_home");
-local _docker_compose_version = std.extVar("jsonnet.docker.compose.version");
 local _docker_networks_names = std.extVar("jsonnet.docker.networks.names");
 local _docker_service_init = std.extVar("jsonnet.docker.service.init");
 local _docker_virtualhost_disabled = std.extVar("jsonnet.docker.virtualhost.disabled");
@@ -268,9 +267,8 @@ local Networks(services, networks_names=_docker_networks_names) = {
         ))
 };
 
-local Compose(config={}, networks_names=_docker_networks_names, version=_docker_compose_version) =
+local Compose(config={}, networks_names=_docker_networks_names) =
     apply_default_network_name(apply_resolve_ports_conflicts(apply_docker_compose_included_services(apply_docker_compose_excluded_services(config)))) + {
-        version: version,
         networks+: Networks(self.services, networks_names),
         volumes: Volumes(self.services)
     };

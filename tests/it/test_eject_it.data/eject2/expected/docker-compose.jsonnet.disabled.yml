@@ -26,7 +26,6 @@ services:
     restart: 'no'
     volumes:
     - elastic-data:/usr/share/elasticsearch/data
-version: '3.7'
 volumes:
   db-data: {}
   elastic-data: {}

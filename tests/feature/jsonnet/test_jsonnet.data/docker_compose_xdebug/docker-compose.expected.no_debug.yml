@@ -1,4 +1,3 @@
-version: '3.7'
 services:
   php-default:
     image: php:7.4-fpm

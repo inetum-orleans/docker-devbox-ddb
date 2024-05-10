@@ -64,5 +64,4 @@ services:
     - published: 2940
       target: 5438
     restart: 'no'
-version: '3.7'
 volumes: {}

@@ -181,7 +181,6 @@ This function defines the main entrypoint to generate a docker-compose configura
     | :---------: | :----: | :----------- |
     | `config` | object | Docker compose configuration |
     | `networks_names` | dict[str, str]<br>`${jsonnet.docker.networks.names}` | Network id to name mapping |
-    | `version` | string<br>`${jsonnet.docker.compose.version}` | docker-compose.yml file version.  |
 
 !!! example 
     ```json
@@ -191,7 +190,6 @@ This function defines the main entrypoint to generate a docker-compose configura
     without any service configuration will produce
 
     ```yaml
-    version: '3.7'
     networks:
       reverse-proxy:
         external: true
@@ -212,7 +210,6 @@ This function defines the main entrypoint to generate a docker-compose configura
     with a configuration with produce
 
     ```yaml
-    version: '3.7'
     networks:
       reverse-proxy:
         external: true

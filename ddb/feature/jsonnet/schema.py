@@ -109,7 +109,6 @@ class ComposeSchema(Schema):
     """
     project_name = fields.String(required=True, dump_default=None)  # default is set in feature _configure_defaults
     network_name = fields.String(required=True, dump_default=None)  # default is set in feature _configure_defaults
-    version = fields.String(required=True, dump_default="3.7")
     excluded_services = fields.List(fields.String(), required=False, allow_none=True, dump_default=[])
     included_services = fields.List(fields.String(), required=False, allow_none=True, dump_default=None)
 

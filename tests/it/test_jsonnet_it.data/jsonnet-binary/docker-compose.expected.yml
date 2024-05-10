@@ -37,5 +37,4 @@ services:
       ddb.emit.docker:binary[npm](name): npm
       ddb.emit.docker:binary[npm](workdir): /
     restart: 'no'
-version: '3.7'
 volumes: {}

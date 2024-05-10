@@ -64,7 +64,6 @@ services:
     image: postgres
     init: true
     restart: 'no'
-version: '3.7'
 volumes: {}
 ```
 
@@ -126,7 +125,6 @@ services:
     image: postgres
     init: true
     restart: 'no'
-version: '3.7'
 volumes: {}
 ```
 
@@ -194,7 +192,6 @@ services:
     restart: 'no'
     volumes:
     - db-data:/var/lib/postgresql/data
-version: '3.7'
 volumes:
   db-data: {}
 ```
