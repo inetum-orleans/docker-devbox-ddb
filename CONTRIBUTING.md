@@ -54,22 +54,22 @@ cz commit
 You should use [pyenv-win](https://github.com/pyenv-win/pyenv-win) to install and manage your python versions on
 Windows.
 
-- Install python 3.8.x
+- Install python 3.11.x
 
 ```bash
-pyenv install 3.8.7
-pyenv local 3.8.7
+pyenv install 3.11.9
+pyenv local 3.11.9
 pyenv rehash
-python --version  # Python 3.8.7
+python --version  # Python 3.11.9
 ```
 
 - Create virtualenv
 
 ```bash
-python -m venv %USERPROFILE%\.pyenv\pyenv-win\versions\3.8.7-ddb
-pyenv local 3.8.7-ddb
+python -m venv %USERPROFILE%\.pyenv\pyenv-win\versions\3.11.9-ddb
+pyenv local 3.11.9-ddb
 pyenv rehash
-python --version  # Python 3.8.7
+python --version  # Python 3.11.9
 ```
 
 - Install dependencies
@@ -104,20 +104,20 @@ You should use [pyenv](https://github.com/pyenv/pyenv) to install and manage you
 
 - Clone this repository and cd into it
 
-- Install python 3.8.x
+- Install python 3.11.x
 
 ```bash
-pyenv install 3.8.7
-pyenv local 3.8.7
-python --version  # Python 3.8.7
+pyenv install 3.11.9
+pyenv local 3.11.9
+python --version  # Python 3.11.9
 ```
 
 - Create virtualenv
 
 ```bash
-pyenv virtualenv 3.8.7 3.8.7-ddb
-pyenv local 3.8.7-ddb
-python --version  # Python 3.8.7
+pyenv virtualenv 3.11.9 3.11.9-ddb
+pyenv local 3.11.9-ddb
+python --version  # Python 3.11.9
 ```
 
 - Install dependencies
