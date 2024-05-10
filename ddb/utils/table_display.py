@@ -17,9 +17,7 @@ def _max_length(cells: Iterable[Iterable[str]]) -> int:
     max_length = 0
     for cell in cells:
         for row in cell:
-            length = len(row)
-            if length > max_length:
-                max_length = length
+            max_length = max(max_length, len(row))
     return max_length
 
 
