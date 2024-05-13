@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ '3.7', '3.8', '3.9', '3.10', '3.11' ]
+        python-version: [ '3.7', '3.8', '3.9', '3.10', '3.11', '3.12' ]
 
     steps:
       - name: Setup docker
@@ -64,19 +64,19 @@ jobs:
     runs-on: macos-latest
     continue-on-error: true
 
-    name: Python 3.8 (MacOS)
+    name: Python 3.11 (MacOS)
 
     steps:
       - name: Setup docker
         uses: docker-practice/actions-setup-docker@master
         with:
-          docker_version: "20.10"
+          docker_version: "24.0"
           docker_channel: "stable"
 
-      - name: Setup python 3.8
+      - name: Setup python 3.11
         uses: actions/setup-python@v4
         with:
-          python-version: '3.8'
+          python-version: '3.1'
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -117,13 +117,13 @@ jobs:
     runs-on: windows-latest
     continue-on-error: true
 
-    name: Python 3.8 (Windows)
+    name: Python 3.11 (Windows)
 
     steps:
-      - name: Setup python 3.8
+      - name: Setup python 3.11
         uses: actions/setup-python@v4
         with:
-          python-version: '3.8'
+          python-version: '3.11'
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -176,10 +176,10 @@ jobs:
     name: Build (Linux Setuptools)
 
     steps:
-      - name: Setup python 3.8
+      - name: Setup python 3.11
         uses: actions/setup-python@v4
         with:
-          python-version: '3.8'
+          python-version: '3.11'
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -215,10 +215,10 @@ jobs:
     name: Build (Linux Binary)
 
     steps:
-      - name: Setup python 3.8
+      - name: Setup python 3.11
         uses: actions/setup-python@v4
         with:
-          python-version: '3.8'
+          python-version: '3.11'
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -258,13 +258,13 @@ jobs:
       - name: Setup docker
         uses: docker-practice/actions-setup-docker@master
         with:
-          docker_version: "20.10"
+          docker_version: "24.0"
           docker_channel: "stable"
 
-      - name: Setup python 3.8
+      - name: Setup python 3.11
         uses: actions/setup-python@v4
         with:
-          python-version: '3.8'
+          python-version: '3.11'
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -307,10 +307,10 @@ jobs:
     name: Build (Windows)
 
     steps:
-      - name: Setup python 3.8
+      - name: Setup python 3.11
         uses: actions/setup-python@v4
         with:
-          python-version: '3.8'
+          python-version: '3.11'
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -346,10 +346,10 @@ jobs:
     name: Build (MacOS)
 
     steps:
-      - name: Setup python 3.8
+      - name: Setup python 3.11
         uses: actions/setup-python@v4
         with:
-          python-version: '3.8'
+          python-version: '3.11'
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -385,10 +385,10 @@ jobs:
     name: Release
 
     steps:
-      - name: Setup python 3.8
+      - name: Setup python 3.11
         uses: actions/setup-python@v4
         with:
-          python-version: '3.8'
+          python-version: '3.11'
 
       - name: Checkout
         uses: actions/checkout@v3
