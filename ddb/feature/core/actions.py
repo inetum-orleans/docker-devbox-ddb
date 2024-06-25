@@ -511,8 +511,6 @@ class ReloadConfigAction(Action):
                 events.config.reloaded()
             except Exception as exc:  # pylint:disable=broad-except
                 context.log.warning("Configuration has fail to reload: %s", str(exc))
-                return
-
 
 class VersionAction(Action):
     """
