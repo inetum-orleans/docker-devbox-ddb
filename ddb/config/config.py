@@ -12,7 +12,7 @@ import yaml
 from ddb.config.merger import config_merger
 from ddb.config.migrations import MigrationsDotty
 
-ConfigPaths = namedtuple('ConfigPaths', ['ddb_home', 'home', 'project_home'])
+ConfigPaths = namedtuple('ConfigPaths', ['ddb_home', 'home', 'user_home', 'project_home'])
 
 
 def configuration_file(path: str, filenames: Iterable[str], extensions: Iterable[str]):
@@ -46,10 +46,11 @@ def get_default_config_paths(env_prefix, filenames, extensions) -> ConfigPaths:
 
     project_home = os.path.abspath(project_home)
 
-    home = os.environ.get(env_prefix + '_HOME', os.path.join(str(Path.home()), '.docker-devbox'))
+    user_home = os.environ.get(env_prefix + '_USER_HOME', str(Path.home()))
+    home = os.environ.get(env_prefix + '_HOME', os.path.join(user_home, '.docker-devbox'))
     ddb_home = os.environ.get(env_prefix + '_DDB_HOME', os.path.join(home, 'ddb'))
 
-    return ConfigPaths(ddb_home=ddb_home, home=home, project_home=project_home)
+    return ConfigPaths(ddb_home=ddb_home, home=home, user_home=user_home, project_home=project_home)
 
 
 class Config:  # pylint:disable=too-many-instance-attributes

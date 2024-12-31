@@ -11,21 +11,22 @@ def test_defaults():
     assert config.env_prefix == 'DDB'
     assert config.filenames == ('ddb', 'ddb.local')
     assert config.extensions == ('yml', 'yaml')
-    assert len(config.paths) == 3
+    assert len(config.paths) == 4
 
 
 def test_load_and_clear(data_dir):
     Config.defaults = None
     Config.overrides = None
 
-    ddb_home, home, project = os.path.join(data_dir, 'load', 'ddb_home'), \
+    ddb_home, home, user_home, project = os.path.join(data_dir, 'load', 'ddb_home'), \
                               os.path.join(data_dir, 'load', 'home'), \
+                              os.path.join(data_dir, 'load', 'user_home'), \
                               os.path.join(data_dir, 'load', 'project')
 
     with open(os.path.join(data_dir, 'load', 'expect.yml'), 'rb') as stream:
         expected = yaml.load(stream, Loader=yaml.FullLoader)
 
-    config = Config(paths=(ddb_home, home, project))
+    config = Config(paths=(ddb_home, home, user_home, project))
     config.load()
 
     assert config.data == expected
@@ -38,8 +39,9 @@ def test_load_with_env_overrides(data_dir):
     Config.defaults = None
     Config.overrides = None
 
-    ddb_home, home, project = os.path.join(data_dir, 'load', 'ddb_home'), \
+    ddb_home, home, user_home, project = os.path.join(data_dir, 'load', 'ddb_home'), \
                               os.path.join(data_dir, 'load', 'home'), \
+                              os.path.join(data_dir, 'load', 'user_home'), \
                               os.path.join(data_dir, 'load', 'project')
 
     os.environ['DDB_OVERRIDE_SOME_DEEP'] = "env"
@@ -48,7 +50,7 @@ def test_load_with_env_overrides(data_dir):
     with open(os.path.join(data_dir, 'load', 'expect_env.yml'), 'rb') as stream:
         expected = yaml.load(stream, Loader=yaml.FullLoader)
 
-    config = Config(paths=(ddb_home, home, project))
+    config = Config(paths=(ddb_home, home, user_home, project))
     config.load()
 
     assert config.data == expected

@@ -218,10 +218,11 @@ class ActivateActionBase(ABC):
     def test_global_aliases_projects_in_home(self, project_loader, data_dir):
         def project_in_home_config_provider(root_dir):
             paths = ConfigPaths(ddb_home=os.path.join(root_dir, 'ddb_home'), home=os.path.join(root_dir, 'home'),
+                                user_home=os.path.join(root_dir, 'user_home'),
                                 project_home=os.path.join(root_dir, 'home', 'project'))
 
             if not [path for path in paths if os.path.isdir(path)]:
-                paths = ConfigPaths(ddb_home=None, home=None, project_home=root_dir)
+                paths = ConfigPaths(ddb_home=None, home=None, user_home=None, project_home=root_dir)
 
             config.paths = paths
             config.load()

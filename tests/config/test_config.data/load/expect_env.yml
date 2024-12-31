@@ -13,3 +13,6 @@ some:
     - a
     - replaced
     - c
+user_home_override: user_home
+user_home_local_override: user_home_local
+project_override: project

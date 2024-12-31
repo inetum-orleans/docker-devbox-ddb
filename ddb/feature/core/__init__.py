@@ -179,6 +179,7 @@ class CoreFeature(Feature):
         if config.eject:
             config.data['core.path.ddb_home'] = '.ddb-home'
             config.data['core.path.home'] = '.docker-devbox-home'
+            config.data['core.path.user_home'] = '~'
             config.data['core.path.project_home'] = '.'
 
     def _configure_defaults(self, feature_config: Dotty):
@@ -206,6 +207,9 @@ class CoreFeature(Feature):
         if not feature_config.get('path.home') and config.paths.home:
             feature_config['path.home'] = config.paths.home
 
+        if not feature_config.get('path.user_home') and config.paths.user_home:
+            feature_config['path.user_home'] = config.paths.user_home
+
         if not feature_config.get('path.ddb_home') and config.paths.ddb_home:
             feature_config['path.ddb_home'] = config.paths.ddb_home
 
@@ -213,6 +217,7 @@ class CoreFeature(Feature):
 
         config.path = ConfigPaths(ddb_home=feature_config.get('path.ddb_home'),
                                   home=feature_config.get('path.home'),
+                                  user_home=feature_config.get('path.user_home'),
                                   project_home=feature_config.get('path.project_home'))
 
     def _configure_release_asset_name_defaults(self, feature_config: Dotty):

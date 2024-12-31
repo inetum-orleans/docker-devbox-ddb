@@ -143,7 +143,7 @@ class DockerFeature(Feature):
         if path_mapping is None:
             path_mapping = {}
         if config.data.get('core.os') == 'nt':
-            for key in ('core.path.project_home', 'core.path.ddb_home', 'core.path.home'):
+            for key in ('core.path.project_home', 'core.path.ddb_home', 'core.path.user_home', 'core.path.home'):
                 raw = config.data.get(key)
                 if raw:
                     path_mapping[raw] = path_as_posix_fast(raw)

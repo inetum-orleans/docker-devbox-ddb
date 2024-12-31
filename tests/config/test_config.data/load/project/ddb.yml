@@ -8,3 +8,4 @@ some:
   deep:
     nested:
       variable: true
+project_override: project

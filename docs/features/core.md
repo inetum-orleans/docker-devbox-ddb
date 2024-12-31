@@ -26,6 +26,7 @@ It also handle the two following basic commands : `ddb features` and `ddb config
         | `release_asset_name` | string<br>`<plaform dependent>` | [Github release](https://github.com/inetum-orleans/docker-devbox-ddb/releases) asset name to use to download ddb on `self-update` command. |
         | `path.ddb_home` | string<br>`${env:HOME}/.docker-devbox/ddb` | The path where ddb is installed. |
         | `path.home` | string<br>`${env:HOME}/.docker-devbox` | The path where docker devbox is installed. |
+        | `path.user_home` | string<br>`${env:HOME}` | The user home path |
         | `path.project_home` | string | The project directory. |
         | `process` | **Process**[] | List of process configurations. A process configuration allow to add custom arguments before and after a command executed internally (like `git`). |
     === "Internal"

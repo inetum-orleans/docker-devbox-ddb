@@ -23,10 +23,11 @@ def init_config_paths(data_dir: str = None, name: str = None):
     root_dir = os.path.join(data_dir, name) if name else data_dir
 
     paths = ConfigPaths(ddb_home=os.path.join(root_dir, 'ddb_home'), home=os.path.join(root_dir, 'home'),
+                        user_home=os.path.join(root_dir, 'user_home'),
                         project_home=os.path.join(root_dir, 'project'))
 
     if not [path for path in paths if os.path.isdir(path)]:
-        paths = ConfigPaths(ddb_home=None, home=None, project_home=root_dir)
+        paths = ConfigPaths(ddb_home=None, home=None, user_home=None, project_home=root_dir)
 
     config.paths = paths
 
