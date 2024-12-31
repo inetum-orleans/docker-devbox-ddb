@@ -7,7 +7,7 @@ Frequently Asked Questions
     Read more: [Configuration](configuration.md)
     
 ??? question "How to customize the configuration for all project on the host ?"
-    You may create a `ddb.yml` configuration file in the `~/.docker-devbox` installation directory.
+    You may create a `ddb.yml` configuration file in the `~/.docker-devbox` installation directory or in your home folder.
     
     You can also add environment variable matching the property name to override, in UPPERCASE, prefixed 
     with `DDB_` and `.` replaced with `_`.
@@ -32,7 +32,7 @@ Frequently Asked Questions
     
     Those settings are joined with `.`, `folder.test` to build the main domain name.
     
-    You can override `core.domain.ext` setting globally by creating a `ddb.local.yml` file in `~/.docker-devbox` installation directory.
+    You can override `core.domain.ext` setting globally by creating a `ddb.local.yml` file in `~/.docker-devbox` installation directory or in your home folder.
     
     You can also define a system environment variable named `DDB_CORE_DOMAIN_EXT` with the domain extension.
     

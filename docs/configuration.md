@@ -11,6 +11,7 @@ Those files can be placed in those **directories**:
 
 - Inside `~/.docker-devbox/ddb`
 - Inside `~/.docker-devbox`
+- Inside `~`
 - Inside the project directory root
 
 If many configuration files are found, they are **merged** with given filenames and directories order.

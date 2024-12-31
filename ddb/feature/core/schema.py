@@ -12,6 +12,7 @@ class PathSchema(Schema):
     """
     project_home = fields.String(dump_default=None)  # default is set in feature _configure_defaults
     home = fields.String(dump_default=None, allow_none=True)  # default is set in feature _configure_defaults
+    user_home = fields.String(dump_default=None, allow_none=True)  # default is set in feature _configure_defaults
     ddb_home = fields.String(dump_default=None, allow_none=True)  # default is set in feature _configure_defaults
 
 

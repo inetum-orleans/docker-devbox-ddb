@@ -42,6 +42,7 @@ local _core_env_available = std.extVar("core.env.available");
 local _core_path_project_home = std.extVar("core.path.project_home");
 local _core_path_ddb_home = std.extVar("core.path.ddb_home");
 local _core_path_home = std.extVar("core.path.home");
+local _core_path_user_home = std.extVar("core.path.user_home");
 
 local mapPath(path) =
     local keys = std.filter(function(mapping_field) std.startsWith(path, mapping_field), std.objectFields(_docker_path_mapping));
@@ -57,7 +58,8 @@ local path = {
     project: mapPath(_core_path_project_home),
     project_home: mapPath(_core_path_project_home),
     ddb_home: mapPath(_core_path_ddb_home),
-    home: mapPath(_core_path_home)
+    home: mapPath(_core_path_home),
+    user_home: mapPath(_core_path_user_home)
 };
 
 local File(thisFile) =
