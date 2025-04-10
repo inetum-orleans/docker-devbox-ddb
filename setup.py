@@ -71,7 +71,7 @@ dev_requires = [
     "astroid",
     "pylint",
     "docker[tls]",
-    "pytest",
+    "pytest==7.4.4",
     "coverage",
     "waiting",
     "pytest-mock",
