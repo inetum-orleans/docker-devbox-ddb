@@ -48,7 +48,7 @@ install_requires = [
     "dockerfile-parse",
     "cfssl>=0.0.3b243",
     "cryptography",
-    "watchdog",
+    "watchdog==4.0.2",
     "gitpython",
     "chmod-monkey>=1.1.1",
     "paramiko",
