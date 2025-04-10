@@ -15,11 +15,6 @@ jobs:
         python-version: [ '3.7', '3.8', '3.9', '3.10', '3.11', '3.12' ]
 
     steps:
-      - name: Setup docker
-        uses: docker-practice/actions-setup-docker@master
-        with:
-          docker_channel: "stable"
-
       - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
@@ -69,12 +64,6 @@ jobs:
     name: Python 3.11 (MacOS)
 
     steps:
-      - name: Setup docker
-        uses: docker-practice/actions-setup-docker@master
-        with:
-          docker_version: "24.0"
-          docker_channel: "stable"
-
       - name: Setup python 3.11
         uses: actions/setup-python@v5
         with:
@@ -261,12 +250,6 @@ jobs:
     name: Build (Alpine Binary)
 
     steps:
-      - name: Setup docker
-        uses: docker-practice/actions-setup-docker@master
-        with:
-          docker_version: "24.0"
-          docker_channel: "stable"
-
       - name: Setup python 3.11
         uses: actions/setup-python@v5
         with:
