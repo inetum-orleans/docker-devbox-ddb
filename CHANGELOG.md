@@ -3,6 +3,16 @@ History
 
 <!--next-version-placeholder-->
 
+## v3.0.2 (2025-04-11)
+
+### Fix
+
+* Retour arrière vers un binaire unique compatible ubuntu-22.04+ ([`9df7891`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/9df78918368288255f0ce37dd1ef24c2f6ffcd14))
+
+### Documentation
+
+* Add emergency procedure to restore a previous version ([`bf6490d`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/bf6490db1afee92a4983588d33634c1bafc42621))
+
 ## v3.0.1 (2025-04-11)
 
 ### Fix
