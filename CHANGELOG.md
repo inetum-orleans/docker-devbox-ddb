@@ -3,6 +3,12 @@ History
 
 <!--next-version-placeholder-->
 
+## v3.0.1 (2025-04-11)
+
+### Fix
+
+* **release:** Ajout d'une release pour les devbox en ubuntu 22.04 ([`d548ba4`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/d548ba42fc9a5fe6d6f31f6ca4da4992010eae12))
+
 ## v3.0.0 (2025-04-11)
 
 ### Feature
