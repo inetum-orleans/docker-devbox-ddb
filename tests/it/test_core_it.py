@@ -1,9 +1,11 @@
 import os
 from pathlib import Path
+from unittest.mock import Mock
 
 import pytest
 from _pytest.capture import CaptureFixture
 from pytest_mock import MockerFixture
+import responses
 
 from ddb import __version__
 from ddb.__main__ import main
@@ -20,7 +22,7 @@ class TestCore:
 
         main(["self-update"])
 
-        assert Path('./bin/ddb').read_bytes() == b"binary"
+        assert Path(self.bin).read_bytes() == b"binary"
 
         outerr = capsys.readouterr()
         assert outerr.err == ""
@@ -38,39 +40,57 @@ class TestCore:
 
         main(["self-update"])
 
-        assert Path('./bin/ddb').read_bytes() == b"binary"
+        assert Path(self.bin).read_bytes() == b"binary"
 
         outerr = capsys.readouterr()
         assert outerr.err == ""
         assert outerr.out == 'ddb is already up to date.\n'
 
+    @responses.activate
     def test_self_update_outdated(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
         mocker.patch('ddb.feature.core.actions.get_local_binary_path', lambda *args, **kwargs: self.bin)
         mocker.patch('ddb.feature.core.actions.is_binary', lambda *args, **kwargs: True)
         mocker.patch('ddb.feature.core.actions.get_latest_release', lambda *args, **kwargs: ('1.10.0', 'v1.10.0'))
         mocker.patch('ddb.feature.core.actions.get_current_version', lambda *args, **kwargs: '1.9.2')
+        responses.get(
+            'https://github.com/inetum-orleans/docker-devbox-ddb/releases/download/v1.10.0/ddb-linux',
+            status=200,
+            body=b'binary data',
+            headers={
+                'content-length': '11',
+            }
+        )
 
         project_loader("empty")
 
         main(["self-update"])
 
-        assert Path('./bin/ddb').read_bytes() != b"binary"
+        assert Path(self.bin).read_bytes() == b"binary data"
 
         outerr = capsys.readouterr()
         assert outerr.err == ""
         assert outerr.out == 'A new version is available: 1.10.0\nddb has been updated.\n'
 
+    @responses.activate
     def test_self_update_up_to_date_force(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
         mocker.patch('ddb.feature.core.actions.get_local_binary_path', lambda *args, **kwargs: self.bin)
         mocker.patch('ddb.feature.core.actions.is_binary', lambda *args, **kwargs: True)
         mocker.patch('ddb.feature.core.actions.get_latest_release', lambda *args, **kwargs: ('1.10.0', 'v1.10.0'))
         mocker.patch('ddb.feature.core.actions.get_current_version', lambda *args, **kwargs: '1.10.0')
+        responses.get(
+            'https://github.com/inetum-orleans/docker-devbox-ddb/releases/download/v1.10.0/ddb-linux',
+            status=200,
+            body=b'binary data',
+            headers={
+                'content-length': '11',
+            }
+        )
 
         project_loader("empty")
 
         main(["self-update", "--force"])
 
-        assert Path('./bin/ddb').read_bytes() != b"binary"
+        assert Path(self.bin).read_bytes() == b"binary data"
 
         outerr = capsys.readouterr()
         assert outerr.err == ""
@@ -86,7 +106,7 @@ class TestCore:
 
         main(["self-update"])
 
-        assert Path('./bin/ddb').read_bytes() == b"binary"
+        assert Path(self.bin).read_bytes() == b"binary"
 
         outerr = capsys.readouterr()
         assert outerr.err == ""
