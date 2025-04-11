@@ -689,6 +689,9 @@ class SelfUpdateAction(Action):
                 tmp.flush()
 
             local_binary_path = get_binary_destination_path(local_binary_path)
+            local_old_binary_path = local_binary_path + '.old'
+            # Create a backup to be able to restore in case of failure
+            shutil.copy(local_binary_path, local_old_binary_path)
             shutil.copymode(local_binary_path, tmp.name)
             force_remove(local_binary_path)  # This is required on windows
             os.rename(tmp.name, local_binary_path)
