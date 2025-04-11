@@ -78,6 +78,7 @@ dev_requires = [
     "pytest-cov",
     "pytest-benchmark",
     "pytest-profiling",
+    "responses",
     "pex"
 ]
 
