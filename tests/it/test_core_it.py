@@ -60,12 +60,11 @@ class TestCore:
         assert outerr.err == ""
         assert outerr.out == 'A new version is available: 1.10.0\nddb has been updated.\n'
 
-    @pytest.mark.skip("Should be enabled after 1.10.0 release")
     def test_self_update_up_to_date_force(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
         mocker.patch('ddb.feature.core.actions.get_local_binary_path', lambda *args, **kwargs: self.bin)
         mocker.patch('ddb.feature.core.actions.is_binary', lambda *args, **kwargs: True)
         mocker.patch('ddb.feature.core.actions.get_latest_release', lambda *args, **kwargs: ('1.10.0', 'v1.10.0'))
-        mocker.patch('ddb.feature.core.actions.get_current_version', lambda *args, **kwargs: '1.9.2')
+        mocker.patch('ddb.feature.core.actions.get_current_version', lambda *args, **kwargs: '1.10.0')
 
         project_loader("empty")
 

@@ -646,6 +646,7 @@ class SelfUpdateAction(Action):
             print('ddb is already up to date.')
             if 'force' not in config.args or not config.args.force:
                 return
+            tag_name = 'v' + get_current_version()
 
         self.self_update_binary(github_repository, tag_name)
 
