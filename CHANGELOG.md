@@ -3,6 +3,31 @@ History
 
 <!--next-version-placeholder-->
 
+## v3.0.0 (2025-04-11)
+
+### Feature
+
+* **config:** Allow loading ddb(.local).yml from user home ([`31cc3c3`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/31cc3c36f9994c92b6907be21d17cd658f739792))
+
+### Fix
+
+* **ci:** Pinned version of pytest ([`4cfeada`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/4cfeadad52a45b8e26b0ebab0cb09783f844344b))
+* **ci:** Remove docker installation ([`efaea0c`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/efaea0c183b9599b425c30b15d0f0bdf309b6bb8))
+* **tests:** Workaround of a regression in watchdog tests by pinning the version ([`19d628e`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/19d628e16941a25af049b60cdaf113e5d57c408b))
+* **pylint:** Fixed useless return ([`0d54086`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/0d5408640c200a99579582459ea0016ab8c46f05))
+* **ci:** Updated python version and fixed alpine build ([`2da3893`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/2da3893bb3b2172ed6263629450447643ccfdf89))
+* **tests:** Fixed matching of the export environment variables names ([`5c81561`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/5c81561888bc7d33121a8521d50a1812ad9a7ff5))
+* **tests:** Cookiecutter-django repository changed ([`a5a2313`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/a5a231343b6ffcf5f3d26628fb52302667850cf7))
+
+### Breaking
+
+* dropped support for python 3.7 ([`456af5c`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/456af5c2f336c07b6fae90894a886e2b06735b9e))
+* drop support for docker-compose v1 ([`7bc7719`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/7bc7719a1ade9be7fe1d9684ea123a430d6192f9))
+
+### Documentation
+
+* Update license ([`6d4ecc8`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/6d4ecc8872b40383d22f8062a2ecff773e25da63))
+
 ## v2.0.1 (2023-10-17)
 
 ### Fix
