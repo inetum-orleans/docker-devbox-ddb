@@ -13,6 +13,7 @@ from ddb.__main__ import main
 
 class TestCore:
     bin = './bin/ddb'
+    oldbin = './bin/ddb.old'
 
     def test_self_update_no_binary(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
         mocker.patch('ddb.feature.core.actions.get_local_binary_path', lambda *args, **kwargs: self.bin)
@@ -66,6 +67,35 @@ class TestCore:
         main(["self-update"])
 
         assert Path(self.bin).read_bytes() == b"binary data"
+        assert Path(self.oldbin).read_bytes() == b"binary"
+
+        outerr = capsys.readouterr()
+        assert outerr.err == ""
+        assert outerr.out == 'A new version is available: 1.10.0\nddb has been updated.\n'
+    
+    @responses.activate
+    def test_self_update_outdated_with_previous_old(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
+        mocker.patch('ddb.feature.core.actions.get_local_binary_path', lambda *args, **kwargs: self.bin)
+        mocker.patch('ddb.feature.core.actions.is_binary', lambda *args, **kwargs: True)
+        mocker.patch('ddb.feature.core.actions.get_latest_release', lambda *args, **kwargs: ('1.10.0', 'v1.10.0'))
+        mocker.patch('ddb.feature.core.actions.get_current_version', lambda *args, **kwargs: '1.9.2')
+        responses.get(
+            'https://github.com/inetum-orleans/docker-devbox-ddb/releases/download/v1.10.0/ddb-linux',
+            status=200,
+            body=b'binary data',
+            headers={
+                'content-length': '11',
+            }
+        )
+
+        project_loader("empty")
+
+        Path(self.oldbin).write_bytes(b"oldbin")
+
+        main(["self-update"])
+
+        assert Path(self.bin).read_bytes() == b"binary data"
+        assert Path(self.oldbin).read_bytes() == b"binary"
 
         outerr = capsys.readouterr()
         assert outerr.err == ""
@@ -91,6 +121,7 @@ class TestCore:
         main(["self-update", "--force"])
 
         assert Path(self.bin).read_bytes() == b"binary data"
+        assert Path(self.oldbin).read_bytes() == b"binary"
 
         outerr = capsys.readouterr()
         assert outerr.err == ""

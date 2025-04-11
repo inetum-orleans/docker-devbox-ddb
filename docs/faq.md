@@ -54,15 +54,28 @@ Frequently Asked Questions
 
     Run `ddb --clear-cache configure` or `rm -Rf ~/.docker-devbox/cache`.
 
-??? question "ddb fails to run with message: `version 'GLIBC_2.38' not found`"
+??? question "ddb fails to run with message: `version 'GLIBC_2.35' not found`"
 
     It seems you are running an old, unsupported linux distribution, like Ubuntu 16.04.
 
-    You should either install ddb from pip, revert to a previous version from 
-    [github release page](https://github.com/inetum-orleans/docker-devbox-ddb/releases), or upgrade your distribution.
+    Currently, ddb works on ubuntu 22.04 or equivalent, using glibc 2.35 or higher.
+    You may also have luck installing ddb from pip if your distribution can run a supported python version.
 
-    To manually install (or restore) a specific version, you can run the following command:
+??? question "What to do in case of a `ddb self-update` failure ?"
+    Starting from version 3.1.0, ddb creates a `ddb.old` backup file in the installation directory
+    (usually `~/.docker-devbox/bin`), before upgrading to a higher version.
+    
+    You can restore it by running the following command:
 
     ```bash
-    curl -L -o ~/.docker-devbox/bin/ddb https://github.com/inetum-orleans/docker-devbox-ddb/releases/download/v2.0.1/ddb-linux && chmod +x ~/.docker-devbox/bin/ddb
+    mv ~/.docker-devbox/bin/ddb.old ~/.docker-devbox/bin/ddb
     ```
+
+    Otherwise you may also install a specific version of ddb by using the command below:
+
+    ```bash
+    curl -L -o ~/.docker-devbox/bin/ddb https://github.com/inetum-orleans/docker-devbox-ddb/releases/download/v3.0.2/ddb-linux && chmod +x ~/.docker-devbox/bin/ddb
+    ```
+
+    You may also download one of the release from the
+    [github release page](https://github.com/inetum-orleans/docker-devbox-ddb/releases) manually and place it in the installation directory.
