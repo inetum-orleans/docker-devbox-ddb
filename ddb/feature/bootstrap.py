@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from typing import Iterable
 
-import pkg_resources
+import importlib.metadata
 from toposort import toposort_flatten
 
 from . import features
@@ -61,7 +61,7 @@ def get_sorted_features(available_features: Iterable[Feature] = None):
         available_features = _available_features
 
     entrypoint_features = {f.name: f for f in available_features}
-    for entry_point in pkg_resources.iter_entry_points('ddb_features'):
+    for entry_point in importlib.metadata.entry_points(group='ddb_features'):
         feature = entry_point.load()()
         entrypoint_features[feature.name] = feature
 
