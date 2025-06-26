@@ -3,6 +3,18 @@ History
 
 <!--next-version-placeholder-->
 
+## v3.1.0 (2025-06-26)
+
+### Feature
+
+* **core:** Create ddb.old on self-update ([`74be19e`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/74be19ebd7ab26de1b39f2c432e132e944ed44c5))
+
+### Fix
+
+* **shell:** Don't use SingleTemporaryFile ([`7c012bc`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/7c012bc5e0d5d209c401f74d9733e3a07724d509))
+* Fix marshmallow warning about Field constructor ([`f7f283f`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/f7f283fadc690bc88d5c5f0e24c75d869925866c))
+* **core:** Fixed behavior of self-update --force ([`69183ae`](https://github.com/inetum-orleans/docker-devbox-ddb/commit/69183ae354c8bfaa1d4e80697894106c8273dfb7))
+
 ## v3.0.2 (2025-04-11)
 
 ### Fix
