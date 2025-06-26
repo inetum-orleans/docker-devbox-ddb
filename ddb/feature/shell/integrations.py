@@ -33,6 +33,12 @@ class ShellIntegration(ABC):
         """
 
     @abstractmethod
+    def remove_self_script(self, script_path: str) -> Iterable[str]:
+        """
+        Returns an instruction that removes the script currently being executed.
+        """
+
+    @abstractmethod
     def remove_binary_shim(self, shims_path: str, name: str) -> Optional[str]:
         """
         Delete a binary shim for this shell.
@@ -120,6 +126,9 @@ class BashShellIntegration(ShellIntegration):
 
     def remove_environment_variable(self, key):
         yield "unset " + self._sanitize_key(key)
+
+    def remove_self_script(self, script_path: str) -> Iterable[str]:
+        yield f'rm -- {shlex.quote(script_path)}'
 
     def remove_binary_shim(self, shims_path: str, name: str) -> Optional[str]:
         shim = os.path.join(shims_path, name)
@@ -212,6 +221,10 @@ class CmdShellIntegration(ShellIntegration):
 
     def remove_environment_variable(self, key):
         yield "set " + self._sanitize_key(key) + "="
+
+    def remove_self_script(self, script_path: str) -> Iterable[str]:
+        # https://stackoverflow.com/a/20333152/2663813
+        yield f'start /b "" cmd /c del "{script_path}"&exit /b'
 
     def remove_binary_shim(self, shims_path: str, name: str) -> Optional[str]:
         shim = os.path.join(shims_path, name + '.bat')
