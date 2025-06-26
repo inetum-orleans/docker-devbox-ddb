@@ -3,6 +3,7 @@ import base64
 import json
 import os
 import shlex
+from tempfile import NamedTemporaryFile
 from typing import Iterable
 
 import zgitignore
@@ -17,7 +18,6 @@ from ...config import config
 from ...config.flatten import to_environ
 from ...context import context
 from ...event import events
-from ...utils.file import SingleTemporaryFile
 
 _env_environ_backup = config.env_prefix + "_SHELL_ENVIRON_BACKUP"
 
@@ -282,9 +282,9 @@ class ActivateAction(Action):
         os.environ[_env_environ_backup] = encode_environ_backup(to_encode_environ)
         os.environ[config.env_prefix + '_PROJECT_HOME'] = config.paths.project_home
 
-        with SingleTemporaryFile("ddb", "activate",
+        with NamedTemporaryFile(delete=False,
                                  mode='w',
-                                 prefix="",
+                                 prefix="ddb_activate_",
                                  suffix="." + self.shell.name,
                                  **self.shell.temporary_file_kwargs) as file:
             script_filepath = file.name
@@ -307,6 +307,9 @@ class ActivateAction(Action):
                 file.write('\n')
 
             file.writelines('\n'.join(self.shell.footer()))
+            file.write('\n')
+
+            file.writelines('\n'.join(self.shell.remove_self_script(file.name)))
             file.write('\n')
 
         for ins in self.shell.evaluate_script(script_filepath):
@@ -350,9 +353,9 @@ class DeactivateAction(Action):
         if os.environ.get(_env_environ_backup):
             environ_backup = decode_environ_backup(os.environ[_env_environ_backup])
 
-            with SingleTemporaryFile("ddb", "deactivate",
+            with NamedTemporaryFile(delete=False,
                                      mode='w',
-                                     prefix="",
+                                     prefix="ddb_deactivate_",
                                      suffix="." + self.shell.name,
                                      **self.shell.temporary_file_kwargs) as file:
                 script_filepath = file.name
@@ -367,6 +370,9 @@ class DeactivateAction(Action):
                 file.write('\n')
 
                 file.writelines('\n'.join(self.shell.footer()))
+                file.write('\n')
+
+                file.writelines('\n'.join(self.shell.remove_self_script(file.name)))
                 file.write('\n')
 
             for ins in self.shell.evaluate_script(script_filepath):
@@ -499,9 +505,9 @@ class CommandAction(Action):
 
         path_additions = None
 
-        with SingleTemporaryFile("ddb", "run",
+        with NamedTemporaryFile(delete=False,
                                  mode='w',
-                                 prefix="",
+                                 prefix="ddb_run_",
                                  suffix="." + self.shell.name,
                                  **self.shell.temporary_file_kwargs) as file:
             script_filepath = file.name
@@ -527,6 +533,9 @@ class CommandAction(Action):
                     print(instruction, end="", file=file)
 
             print(file=file)
+
+            file.writelines('\n'.join(self.shell.remove_self_script(file.name)))
+            file.write('\n')
 
         for ins in self.shell.evaluate_script(script_filepath):
             print(ins)
