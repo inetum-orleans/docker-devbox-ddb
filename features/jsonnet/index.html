@@ -1,0 +1,2960 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Erase environment differences, make developers happy !">
+      
+      
+        <meta name="author" content="Rémi Alvergnat <remi.alvergnat@inetum.world>, Pierre Lejeune <pierre.lejeune@inetum.world>">
+      
+      
+        <link rel="canonical" href="https://inetum-orleans.github.io/docker-devbox-ddb/features/jsonnet/">
+      
+      
+        <link rel="prev" href="../jinja/">
+      
+      
+        <link rel="next" href="../permissions/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+    
+    
+      
+        <title>jsonnet - ddb (for Docker Devbox)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.342714a4.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../css/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#jsonnet" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ddb (for Docker Devbox)" class="md-header__button md-logo" aria-label="ddb (for Docker Devbox)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ddb (for Docker Devbox)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              jsonnet
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/inetum-orleans/docker-devbox-ddb" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ddb (for Docker Devbox)" class="md-nav__button md-logo" aria-label="ddb (for Docker Devbox)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ddb (for Docker Devbox)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/inetum-orleans/docker-devbox-ddb" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Configuration
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Commands
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../templates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Templates
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../binaries/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Binaries
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../djp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Djp packages
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Guides
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Guides
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/psql-symfony-vue/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PostgreSQL, Symfony, VueJS
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Features
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Features
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../certs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    certs
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cookiecutter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    cookiecutter
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../copy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    copy
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    core
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    docker
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../file/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    file
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fixuid/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    fixuid
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../git/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    git
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gitignore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    gitignore
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../jinja/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    jinja
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    jsonnet
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    jsonnet
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#djp-packages-ddb-jsonnet-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      djp packages (ddb jsonnet packages)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docker-compose-jsonnet-library" class="md-nav__link">
+    <span class="md-ellipsis">
+      Docker-compose jsonnet library
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Docker-compose jsonnet library">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ddbcompose" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.Compose()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbbuild" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.Build()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbimage" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.Image()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbexpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.Expose()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbuser" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.User()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbvirtualhost" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.VirtualHost()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbbinary" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.Binary()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbxdebug-php" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.XDebug() (PHP)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbenvis" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.env.is()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbenvcurrent-ddbenvavailable" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.env.current / ddb.env.available
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbprojectname-ddbdomain" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.projectName / ddb.domain
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbsubdomain" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.subDomain()
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced functions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ddbservicename" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.ServiceName()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbbinarylabels" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.BinaryLabels()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbbinaryoptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.BinaryOptions()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbbinaryoptionslabels" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.BinaryOptionsLabels()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbpath" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.path
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbenvindex" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.env.index()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbmergeall" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.mergeAll()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbpathmappath" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.path.mapPath()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbfile" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.File
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../permissions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    permissions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    run
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shell/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    shell
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../smartcd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    smartcd
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../symlinks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    symlinks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../traefik/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    traefik
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../version/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    version
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ytt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    ytt
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    FAQ
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#djp-packages-ddb-jsonnet-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      djp packages (ddb jsonnet packages)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docker-compose-jsonnet-library" class="md-nav__link">
+    <span class="md-ellipsis">
+      Docker-compose jsonnet library
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Docker-compose jsonnet library">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ddbcompose" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.Compose()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbbuild" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.Build()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbimage" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.Image()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbexpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.Expose()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbuser" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.User()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbvirtualhost" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.VirtualHost()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbbinary" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.Binary()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbxdebug-php" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.XDebug() (PHP)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbenvis" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.env.is()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbenvcurrent-ddbenvavailable" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.env.current / ddb.env.available
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbprojectname-ddbdomain" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.projectName / ddb.domain
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbsubdomain" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.subDomain()
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced functions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ddbservicename" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.ServiceName()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbbinarylabels" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.BinaryLabels()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbbinaryoptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.BinaryOptions()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbbinaryoptionslabels" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.BinaryOptionsLabels()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbpath" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.path
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbenvindex" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.env.index()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbmergeall" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.mergeAll()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbpathmappath" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.path.mapPath()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddbfile" class="md-nav__link">
+    <span class="md-ellipsis">
+      ddb.File
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="jsonnet">Jsonnet<a class="headerlink" href="#jsonnet" title="Permanent link">&para;</a></h1>
+<p><a href="https://jsonnet.org/">Jsonnet</a> is embedded into ddb. You only have to use the right file extension for ddb to 
+process it through the appropriate template engine.</p>
+<p>Mainly used to generate <code>docker-compose.yml</code> configuration, you can still use it for any other json or yaml based 
+templating purpose.</p>
+<p>When a jsonnet template is processed, ddb use it's configuration as context, so you can use them as you need using 
+jsonnet standard library function.</p>
+<div class="highlight"><pre><span></span><code><span class="err">s</span><span class="kc">t</span><span class="err">d.ex</span><span class="kc">t</span><span class="err">Var(</span><span class="s2">&quot;&lt;name of the configuration variable&gt;&quot;</span><span class="err">)</span>
+</code></pre></div>
+<p>Run <code>ddb configure</code> to evaluate templates and generate target files.</p>
+<div class="admonition summary">
+<p class="admonition-title">Feature configuration (prefixed with <code>jsonnet.</code>)</p>
+<div class="tabbed-set" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><label for="__tabbed_1_1">Simple</label><div class="tabbed-content">
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>disabled</code></td>
+<td style="text-align: center;">boolean<br><code>false</code></td>
+<td style="text-align: left;">Should this feature be disabled ?</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>suffixes</code></td>
+<td style="text-align: center;">string[]<br><code>['.jsonnet']</code></td>
+<td style="text-align: left;">A list of filename suffix to include.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>extensions</code></td>
+<td style="text-align: center;">string[]<br><code>['.*', '']</code></td>
+<td style="text-align: left;">A list of glob of supported extension.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>excludes</code></td>
+<td style="text-align: center;">string[]<br><code>[]</code></td>
+<td style="text-align: left;">A list of glob of filepath to exclude.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>docker</code></td>
+<td style="text-align: center;"><em>Docker</em></td>
+<td style="text-align: left;">Docker related configuration.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><label for="__tabbed_1_2">Advanced</label><div class="tabbed-content">
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>includes</code></td>
+<td style="text-align: center;">string[]<br><code>['*.jsonnet{.*,}']</code></td>
+<td style="text-align: left;">A list of glob of filepath to include. It is automatically generated from <code>suffixes</code> and <code>extensions</code>.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="admonition summary">
+<p class="admonition-title">Docker configuration (prefixed with <code>jsonnet.docker.</code>)</p>
+<div class="tabbed-set" data-tabs="2:1"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><label for="__tabbed_2_1">Simple</label><div class="tabbed-content">
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>compose</code></td>
+<td style="text-align: center;"><em>Compose</em></td>
+<td style="text-align: left;">docker-compose defaults.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>networks</code></td>
+<td style="text-align: center;"><em>Networks</em></td>
+<td style="text-align: left;"><code>ddb.Networks()</code> defaults.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>build</code></td>
+<td style="text-align: center;"><em>Build</em></td>
+<td style="text-align: left;"><code>ddb.Build()</code> defaults.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>service</code></td>
+<td style="text-align: center;"><em>Service</em></td>
+<td style="text-align: left;"><code>ddb.Service()</code> defaults.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>expose</code></td>
+<td style="text-align: center;"><em>Expose</em></td>
+<td style="text-align: left;"><code>ddb.Expose()</code> defaults.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>registry</code></td>
+<td style="text-align: center;"><em>Registry</em></td>
+<td style="text-align: left;">Image registry settings.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>user</code></td>
+<td style="text-align: center;"><em>User</em></td>
+<td style="text-align: left;"><code>ddb.User()</code> defaults.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>binary</code></td>
+<td style="text-align: center;"><em>Binary</em></td>
+<td style="text-align: left;"><code>ddb.Binary()</code> defaults.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>virtualhost</code></td>
+<td style="text-align: center;"><em>VirtualHost</em></td>
+<td style="text-align: left;"><code>ddb.VirtualHost()</code> defaults.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>xdebug</code></td>
+<td style="text-align: center;"><em>XDebug</em></td>
+<td style="text-align: left;"><code>ddb.XDebug()</code> defaults.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="admonition summary">
+<p class="admonition-title">Docker Compose configuration (prefixed with <code>jsonnet.docker.compose.</code>)</p>
+<div class="tabbed-set" data-tabs="3:1"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><label for="__tabbed_3_1">Simple</label><div class="tabbed-content">
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>project_name</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Docker compose project name</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>network_name</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Docker compose network name</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>version</code></td>
+<td style="text-align: center;">string<br><code>3.7</code></td>
+<td style="text-align: left;">YAML File version to use</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>excluded_services</code></td>
+<td style="text-align: center;">string[]<br><code>[]</code></td>
+<td style="text-align: left;">Services to exclude (Block list).</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>included_services</code></td>
+<td style="text-align: center;">string[]<br><code>[]</code></td>
+<td style="text-align: left;">Services to include (Allow list).</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="admonition summary">
+<p class="admonition-title">Docker Networks configuration (prefixed with <code>jsonnet.docker.networks</code>)</p>
+<div class="tabbed-set" data-tabs="4:1"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><label for="__tabbed_4_1">Simple</label><div class="tabbed-content">
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>names</code></td>
+<td style="text-align: center;">Dict[str, str]</td>
+<td style="text-align: left;">Additional external networks</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="admonition summary">
+<p class="admonition-title">Docker Build configuration (prefixed with <code>jsonnet.docker.build.</code>)</p>
+<div class="tabbed-set" data-tabs="5:2"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio" /><label for="__tabbed_5_1">Simple</label><div class="tabbed-content">
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>cache_from_image</code></td>
+<td style="text-align: center;">boolean<br><code>False</code></td>
+<td style="text-align: left;">Add cache_from_image to configuration.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>context.base_directory</code></td>
+<td style="text-align: center;">string<br><code>.docker</code></td>
+<td style="text-align: left;">Base directory for build context.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>context.use_project_home</code></td>
+<td style="text-align: center;">boolean<br><code>False</code></td>
+<td style="text-align: left;">Use project home directory as build context.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>image_tag_from</code></td>
+<td style="text-align: center;">boolean</td>
+<td style="text-align: left;">string<br><code>False</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+<input id="__tabbed_5_2" name="__tabbed_5" type="radio" /><label for="__tabbed_5_2">Advanced</label><div class="tabbed-content">
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>image_tag</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Image tag value.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="admonition summary">
+<p class="admonition-title">Docker Service configuration (prefixed with <code>jsonnet.docker.service.</code>)</p>
+<div class="tabbed-set" data-tabs="6:2"><input checked="checked" id="__tabbed_6_1" name="__tabbed_6" type="radio" /><label for="__tabbed_6_1">Simple</label><div class="tabbed-content">
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>restart</code></td>
+<td style="text-align: center;">string<br><code>unless-stopped</code><br><code>no</code></td>
+<td style="text-align: left;">The restart policy to use for all services. Can be <code>no</code>, <code>always</code>, <code>on-failure</code> or <code>unless-stopped</code>. Default value is <code>unless-stopped</code>, unless <code>core.env.current</code> is set to <code>dev</code> then it's set to <code>no</code>.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<input id="__tabbed_6_2" name="__tabbed_6" type="radio" /><label for="__tabbed_6_2">Advanced</label><div class="tabbed-content">
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>init</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;"></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="admonition summary">
+<p class="admonition-title">Docker Expose configuration (prefixed with <code>jsonnet.docker.expose.</code>)</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>disabled</code></td>
+<td style="text-align: center;">boolean<br><code>False</code></td>
+<td style="text-align: left;">Should <code>ddb.Expose()</code> perform nothing ?</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>port_prefix</code></td>
+<td style="text-align: center;">integer<br><code>&lt;based on core.project.name&gt;</code></td>
+<td style="text-align: left;">Port prefix.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition summary">
+<p class="admonition-title">Docker Mount configuration (prefixed with <code>jsonnet.docker.mount.</code>)</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>disabled</code></td>
+<td style="text-align: center;">boolean<br><code>False</code></td>
+<td style="text-align: left;">Should <code>ddb.Expose()</code> perform nothing ?</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>directory</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Base directory for all named volume mounts, absolute or relative to project home.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>directories</code></td>
+<td style="text-align: center;">dict[string, string]</td>
+<td style="text-align: left;">Directories for named volume mounts, absolute or relative to project home. key is the volume name, value is the local path to mount.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition summary">
+<p class="admonition-title">Docker Registry configuration (prefixed with <code>jsonnet.docker.registry.</code>)</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>name</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Registry name.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>repository</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Registry repository.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition summary">
+<p class="admonition-title">Docker User configuration (prefixed with <code>jsonnet.docker.user.</code>)</p>
+<div class="tabbed-set" data-tabs="7:2"><input checked="checked" id="__tabbed_7_1" name="__tabbed_7" type="radio" /><label for="__tabbed_7_1">Simple</label><div class="tabbed-content">
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>uid</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">The user UID to use inside a container.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>gid</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">The user GID to use inside a container.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>name</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">The host username that will get converted to UID.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>group</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">The host groupname that will get converted to GID.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<input id="__tabbed_7_2" name="__tabbed_7" type="radio" /><label for="__tabbed_7_2">Internal</label><div class="tabbed-content">
+<p>| <code>name_to_uid</code> | Dict[str, integer] | Mapping of user names to uid. |
+| <code>group_to_gid</code> | Dict[str, integer] | Mapping of group names to gid. |</p>
+</div>
+</div>
+</div>
+<div class="admonition summary">
+<p class="admonition-title">Docker Binary configuration (prefixed with <code>jsonnet.docker.binary.</code>)</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>disabled</code></td>
+<td style="text-align: center;">boolean<br><code>False</code></td>
+<td style="text-align: left;">Should binary generation be disabled ?</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>global</code></td>
+<td style="text-align: center;">boolean</td>
+<td style="text-align: left;">Should binaries be generated as global by default ?</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition summary">
+<p class="admonition-title">Docker VirtualHost configuration (prefixed with <code>jsonnet.docker.virtualhost.</code>)</p>
+<div class="tabbed-set" data-tabs="8:2"><input checked="checked" id="__tabbed_8_1" name="__tabbed_8" type="radio" /><label for="__tabbed_8_1">Simple</label><div class="tabbed-content">
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>https</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Should services be available as HTTPS ? If unset, it is available as both HTTP and HTTPS.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>redirect_to_https</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Should services redirect to HTTPS when requested on HTTP ?</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>redirect_to_path_prefix</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Should services redirect to path_prefix when requested on root path ?</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>certresolver</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">certresolver to use. <code>letsencrypt</code> is supported when using traefik reverse proxy.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<input id="__tabbed_8_2" name="__tabbed_8" type="radio" /><label for="__tabbed_8_2">Internal</label><div class="tabbed-content">
+<p>| <code>type</code> | string<br><code>traefik</code> (when available) | Type of reverse proxy to use. |
+| <code>network_id</code> | string<br><code>reverse-proxy</code> | Network id used. |</p>
+</div>
+</div>
+</div>
+<div class="admonition summary">
+<p class="admonition-title">Docker XDebug configuration (prefixed with <code>jsonnet.docker.xdebug.</code>)</p>
+<div class="tabbed-set" data-tabs="9:1"><input checked="checked" id="__tabbed_9_1" name="__tabbed_9" type="radio" /><label for="__tabbed_9_1">Simple</label><div class="tabbed-content">
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>disabled</code></td>
+<td style="text-align: center;">boolean<br><code>false</code></td>
+<td style="text-align: left;">Should debug features be generated in <code>docker-compose.yml</code> by <a href="./">jsonnet</a> feature ?</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>host</code></td>
+<td style="text-align: center;">string<br><code>${jsonnet}</code></td>
+<td style="text-align: left;">The host to connect back for debug features.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>version</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">XDebug version to configure (<code>2</code> or <code>3</code>). If unset, both XDebug 2 and 3 configurations will generated in a merged object.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>session</code></td>
+<td style="text-align: center;">string<br><code>${core.project.name}</code></td>
+<td style="text-align: left;">XDebug session (v3) and/or idekey/serverName (v2) to configure. You can set this value explicitly to set env vars <code>XDEBUG_SESSION</code> (v3) and/or <code>PHP_IDE_CONFIG</code>/<code>XDEBUG_CONFIG</code> (v2).</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>mode</code></td>
+<td style="text-align: center;">string<br><code>debug</code></td>
+<td style="text-align: left;">XDebug mode (v3 only).</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<h2 id="djp-packages-ddb-jsonnet-packages">djp packages (ddb jsonnet packages)<a class="headerlink" href="#djp-packages-ddb-jsonnet-packages" title="Permanent link">&para;</a></h2>
+<p>You can include one or many <strong>ddb jsonnet packages</strong>, aka <strong>djp</strong>, into <code>ddb.Compose</code> configuration using <code>ddb.with()</code>.</p>
+<p>More information: <a href="../../djp/">Djp packages</a></p>
+<h2 id="docker-compose-jsonnet-library">Docker-compose jsonnet library<a class="headerlink" href="#docker-compose-jsonnet-library" title="Permanent link">&para;</a></h2>
+<p>Jsonnet feature provides a library with handful functions to help generate <code>docker-compose.yml</code>.</p>
+<p>In order to make those available, you need to import the library:</p>
+<div class="highlight"><pre><span></span><code><span class="k">local</span><span class="w"> </span><span class="nv">ddb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">import</span><span class="w"> </span><span class="s">&#39;ddb.docker.libjsonnet&#39;</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="ddbcompose">ddb.Compose()<a class="headerlink" href="#ddbcompose" title="Permanent link">&para;</a></h3>
+<p>This function defines the main entrypoint to generate a docker-compose configuration. </p>
+<div class="admonition abstract">
+<p class="admonition-title">Parameters</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>config</code></td>
+<td style="text-align: center;">object</td>
+<td style="text-align: left;">Docker compose configuration</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>networks_names</code></td>
+<td style="text-align: center;">dict[str, str]<br><code>${jsonnet.docker.networks.names}</code></td>
+<td style="text-align: left;">Network id to name mapping</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<div class="highlight"><pre><span></span><code><span class="err">ddb.Compose()</span>
+</code></pre></div>
+<p>without any service configuration will produce</p>
+<div class="highlight"><pre><span></span><code><span class="nt">networks</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">reverse-proxy</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">external</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reverse-proxy</span>
+</code></pre></div>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<div class="highlight"><pre><span></span><code><span class="err">ddb.Compose(</span><span class="p">{</span>
+<span class="w">    </span><span class="err">services</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="err">db</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="err">image</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;postgres&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span><span class="err">)</span>
+</code></pre></div>
+<p>with a configuration with produce</p>
+<div class="highlight"><pre><span></span><code><span class="nt">networks</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">reverse-proxy</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">external</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reverse-proxy</span>
+<span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">db</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;postgres&quot;</span>
+</code></pre></div>
+</div>
+<h3 id="ddbbuild">ddb.Build()<a class="headerlink" href="#ddbbuild" title="Permanent link">&para;</a></h3>
+<p>This function generates a service configuration from a <code>Dockerfile</code> available in <code>.docker/&lt;service&gt;</code> directory.</p>
+<p>If a docker registry is configured inside docker feature, <code>image</code> configuration will also be generated from the 
+service name.</p>
+<div class="admonition abstract">
+<p class="admonition-title">Parameters</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>name</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Generate a build configuration based on given name.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>image</code></td>
+<td style="text-align: center;">string<br><code>&lt;name&gt;</code></td>
+<td style="text-align: left;">The name of the image. If <code>registry_name</code> and/or <code>registry_name</code> settings are defined, it will generate the full image name.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>cache_from_image</code></td>
+<td style="text-align: center;">boolean<br><code>${jsonnet.docker.build.cache_from_image}</code></td>
+<td style="text-align: left;">If set to true and docker registry is defined, it will generate the <code>build.cache_from</code> configuration uri.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>context_base_directory</code></td>
+<td style="text-align: center;">boolean<br><code>${jsonnet.docker.build.context.base_directory}</code></td>
+<td style="text-align: left;">Build context base directory.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>context_use_project_home</code></td>
+<td style="text-align: center;">boolean<br><code>${jsonnet.docker.build.context.use_project_home}</code></td>
+<td style="text-align: left;">Use project home directory as context.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>restart</code></td>
+<td style="text-align: center;">string<br><code>${jsonnet.docker.service.restart}</code></td>
+<td style="text-align: left;">Service restart policy.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>init</code></td>
+<td style="text-align: center;">boolean<br><code>${jsonnet.docker.service.init}</code></td>
+<td style="text-align: left;">Service init.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>registry_name</code></td>
+<td style="text-align: center;">string<br><code>${jsonnet.docker.registry.name}</code></td>
+<td style="text-align: left;">Name of the docker image registry.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>registry_repository</code></td>
+<td style="text-align: center;">string<br><code>${jsonnet.docker.registry.repository}</code></td>
+<td style="text-align: left;">Repository in the docker image registry.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>image_tag</code></td>
+<td style="text-align: center;">boolean</td>
+<td style="text-align: left;">string<br><code>${jsonnet.docker.build.image_tag}</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Example with a registry defined</p>
+<p>if ddb.yml contains the following</p>
+<div class="highlight"><pre><span></span><code>jsonnet:
+  docker:
+    registry:
+      name: docker.io
+      repository: project
+    build:
+      image_tag_from: True
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="err">ddb.Build(</span><span class="s2">&quot;db&quot;</span><span class="err">)</span>
+</code></pre></div>
+<p>will produce</p>
+<div class="highlight"><pre><span></span><code><span class="nt">build</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">context</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.docker/db</span>
+<span class="w">  </span><span class="nt">cache_from</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker.io/project/db:master</span>
+<span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker.io/project/db:master</span>
+</code></pre></div>
+</div>
+<h3 id="ddbimage">ddb.Image()<a class="headerlink" href="#ddbimage" title="Permanent link">&para;</a></h3>
+<p>This function generates a service configuration based on an external image.</p>
+<p>It will also add the <code>init</code> to true and <code>restart</code> configurations for the service.</p>
+<p>The <code>restart</code> configuration will be set with the <code>jsonnet.docker.service.restart</code> ddb configuration.</p>
+<div class="admonition abstract">
+<p class="admonition-title">Parameters</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>image</code></td>
+<td style="text-align: center;">string<span style="color: red">*</span></td>
+<td style="text-align: left;">The name of the image to use.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>restart</code></td>
+<td style="text-align: center;">string<br><code>${jsonnet.docker.service.restart}</code></td>
+<td style="text-align: left;">Service restart policy.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>init</code></td>
+<td style="text-align: center;">boolean<br><code>${jsonnet.docker.service.init}</code></td>
+<td style="text-align: left;">Service init.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<div class="highlight"><pre><span></span><code><span class="err">ddb.Image(</span><span class="s2">&quot;nginx:latest&quot;</span><span class="err">)</span>
+</code></pre></div>
+<p>will produce</p>
+<div class="highlight"><pre><span></span><code><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx:latest</span>
+<span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">no</span>
+<span class="nt">init</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+</div>
+<h3 id="ddbexpose">ddb.Expose()<a class="headerlink" href="#ddbexpose" title="Permanent link">&para;</a></h3>
+<p>This function generates an exposed port inside a service.</p>
+<p>It use <code>jsonnet.docker.expose.port_prefix</code> to generate a fixed mapped port in order to avoid port collisions between projects.</p>
+<div class="admonition abstract">
+<p class="admonition-title">Parameters</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>container_port</code></td>
+<td style="text-align: center;">string|integer<span style="color:red">*</span></td>
+<td style="text-align: left;">Container port number to expose.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>host_port_suffix</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">End of the mapped port on host. from <code>1 to 99</code>. If <code>null</code>, use last 2 digits of <code>container_port</code> value.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>protocol</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">The protocol to use. Can be <code>null</code>, <code>tcp</code> or <code>udp</code>.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>port_prefix</code></td>
+<td style="text-align: center;">string|integer<br><code>${jsonnet.docker.expose.port_prefix}</code></td>
+<td style="text-align: left;">Port prefix.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<div class="highlight"><pre><span></span><code><span class="err">ddb.Expose(</span><span class="mi">21</span><span class="err">)</span><span class="w"> </span><span class="err">+</span>
+<span class="err">ddb.Expose(</span><span class="mi">22</span><span class="p">,</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;udp&quot;</span><span class="err">)</span><span class="w"> </span><span class="err">+</span>
+<span class="err">ddb.Expose(</span><span class="mi">23</span><span class="p">,</span><span class="w"> </span><span class="mi">99</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;tcp&quot;</span><span class="err">)</span>
+</code></pre></div>
+<p>will produce</p>
+<div class="highlight"><pre><span></span><code><span class="nt">ports</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;14721:21&#39;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;14722:22/udp&#39;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;14799:23/tcp&#39;</span>
+</code></pre></div>
+<p><code>147</code> is <code>jsonnet.docker.expose.port_prefix</code> configuration value.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">You can expose the same container port many times</p>
+<p>To resolve published port collisions, when a published port is already consumed by another ddb.Expose() invocation, 
+ddb automatically increments the published port until it's available.</p>
+<div class="highlight"><pre><span></span><code><span class="err">ddb.Expose(</span><span class="mi">21</span><span class="err">)</span><span class="w"> </span><span class="err">+</span>
+<span class="err">ddb.Expose(</span><span class="mi">21</span><span class="err">)</span><span class="w"> </span><span class="err">+</span>
+</code></pre></div>
+<p>will produce</p>
+<div class="highlight"><pre><span></span><code><span class="nt">ports</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;14721:21&#39;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;14722:21&#39;</span>
+</code></pre></div>
+<p><code>147</code> is <code>jsonnet.docker.expose.port_prefix</code> configuration value.</p>
+</div>
+<h3 id="ddbuser">ddb.User()<a class="headerlink" href="#ddbuser" title="Permanent link">&para;</a></h3>
+<p>This function generates the <code>user</code> configuration for a Service.</p>
+<p>In ddb, it is mainly use for <a href="../fixuid/">fixuid</a> automatic integration</p>
+<div class="admonition abstract">
+<p class="admonition-title">Parameters</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>uid</code></td>
+<td style="text-align: center;">string<br><code>${jsonnet.docker.user.uid}</code><br><code>${~jsonnet.docker.user.name}</code></td>
+<td style="text-align: left;">UID of user running the container.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>gid</code></td>
+<td style="text-align: center;">string<br><code>${jsonnet.docker.user.gid}</code><br><code>${~jsonnet.docker.user.group}</code></td>
+<td style="text-align: left;">GID of user running the container.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<div class="highlight"><pre><span></span><code><span class="err">ddb.User()</span>
+</code></pre></div>
+<p>will produce</p>
+<div class="highlight"><pre><span></span><code><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1000:1000</span>
+</code></pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title"><code>userNameToUid</code> and <code>groupNameToGid</code> to retrieve host uid/gid from names</p>
+<div class="highlight"><pre><span></span><code><span class="err">ddb.User(gid=ddb.groupNameToGid(</span><span class="s2">&quot;docker&quot;</span><span class="err">))</span>
+</code></pre></div>
+<p>will produce</p>
+<div class="highlight"><pre><span></span><code><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1000:998</span>
+</code></pre></div>
+<p>when <code>getent group docker</code> returns <code>docker:x:998:</code> on the host.</p>
+<p>It can be used when you need the container to access the docker socket through a volume mount.</p>
+</div>
+<h3 id="ddbvirtualhost">ddb.VirtualHost()<a class="headerlink" href="#ddbvirtualhost" title="Permanent link">&para;</a></h3>
+<p>This function generates service configuration used for reverse-proxy auto-configuration.</p>
+<p>The output generated depends on the <code>jsonnet.docker.virtualhost.type</code> ddb configuration. Currently, only traefik is supported.
+If this configuration is anything else, there will be no output.</p>
+<div class="admonition abstract">
+<p class="admonition-title">Parameters</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>port</code></td>
+<td style="text-align: center;">string<span style="color: red">*</span></td>
+<td style="text-align: left;">HTTP port inside the container.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>hostname</code></td>
+<td style="text-align: center;">string<span style="color: red">*</span></td>
+<td style="text-align: left;">Hostname that will be exposed.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>name</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Unique name for this VirtualHost.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>network_id</code></td>
+<td style="text-align: center;">string<br><code>${jsonnet.docker.virtualhost.network_id}</code></td>
+<td style="text-align: left;">The reverse-proxy network id.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>certresolver</code></td>
+<td style="text-align: center;">string<br><code>${jsonnet.docker.virtualhost.certresolver}</code></td>
+<td style="text-align: left;">certresolver to use inside reverse proxy (traefik). <code>letsencrypt</code> is supported when using <code>traefik</code> feature.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>router_rule</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>https</code></td>
+<td style="text-align: center;">string<br><code>${jsonnet.docker.virtualhost.https}</code></td>
+<td style="text-align: left;">Should service be available as HTTPS ? If unset, it is available as both HTTP and HTTPS.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>redirect_to_https</code></td>
+<td style="text-align: center;">string<br><code>${jsonnet.docker.virtualhost.redirect_to_https}</code></td>
+<td style="text-align: left;">Should service redirect to HTTPS when requested on HTTP ?</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>path_prefix</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Path prefix of this virtualhost</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>redirect_to_path_prefix</code></td>
+<td style="text-align: center;">boolean</td>
+<td style="text-align: left;">Redirect to configured path prefix</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Example with traefik as reverse proxy</p>
+<div class="highlight"><pre><span></span><code><span class="err">ddb.Vir</span><span class="kc">tual</span><span class="err">Hos</span><span class="kc">t</span><span class="err">(</span><span class="s2">&quot;80&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;your-project.test&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;app&quot;</span><span class="err">)</span>
+</code></pre></div>
+<p>will produce</p>
+<div class="highlight"><pre><span></span><code><span class="nt">labels</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">traefik.enable</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;true&#39;</span>
+<span class="w">  </span><span class="nt">traefik.http.routers.your-project-app-tls.rule</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Host(`your-project.test`)</span>
+<span class="w">  </span><span class="nt">traefik.http.routers.your-project-app-tls.service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">your-project-app</span>
+<span class="w">  </span><span class="nt">traefik.http.routers.your-project-app-tls.tls</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;true&#39;</span>
+<span class="w">  </span><span class="nt">traefik.http.routers.your-project-app.rule</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Host(`your-project.test`)</span>
+<span class="w">  </span><span class="nt">traefik.http.routers.your-project-app.service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">your-project-app</span>
+<span class="w">  </span><span class="nt">traefik.http.services.your-project-app.loadbalancer.server.port</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;80&#39;</span>
+<span class="nt">networks</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reverse-proxy</span>
+</code></pre></div>
+</div>
+<h3 id="ddbbinary">ddb.Binary()<a class="headerlink" href="#ddbbinary" title="Permanent link">&para;</a></h3>
+<p>Binary allow the creation of alias for command execution inside the service.</p>
+<div class="admonition abstract">
+<p class="admonition-title">Parameters</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>name</code></td>
+<td style="text-align: center;">string<span style="color: red">*</span></td>
+<td style="text-align: left;">Binary name. This will be the command you type in shell (see <a href="../shell/">shell</a> feature).</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>workdir</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Default container directory to run the command. In most case, it should match the service workdir.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>args</code></td>
+<td style="text-align: center;">string<br><code>&lt;name&gt;</code></td>
+<td style="text-align: left;">Command to execute inside the container.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>options</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Options to add to the command.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>options_condition</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Add a condition to be evaluated to make <code>options</code> optional. If condition is defined and evaluated, <code>options</code> are not added to the command.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>exe</code></td>
+<td style="text-align: center;">boolean<br><code>false</code></td>
+<td style="text-align: left;">Launch command with docker-compose <code>exec</code> instead of <code>run</code>.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>entrypoint</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Override entrypoint for this binary.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>global</code></td>
+<td style="text-align: center;">boolean<br><code>false</code></td>
+<td style="text-align: left;">Creates a global binary shim in <code>~/.docker-devbox/.bin</code> directory so it can be runned everywhere.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>condition</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Add a condition for the command to be enabled. If condition is defined and evaluated to false, command won't be used by <a href="../run/">run</a> feature.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<div class="highlight"><pre><span></span><code><span class="err">ddb.Bi</span><span class="kc">nar</span><span class="err">y(</span><span class="s2">&quot;npm&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;/app&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;npm&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;--label traefik.enable=false&quot;</span><span class="p">,</span><span class="w"> </span><span class="err">&#39;</span><span class="s2">&quot;serve&quot;</span><span class="w"> </span><span class="kc">n</span><span class="err">o</span><span class="kc">t</span><span class="w"> </span><span class="err">i</span><span class="kc">n</span><span class="w"> </span><span class="err">args&#39;)</span>
+</code></pre></div>
+<p>will produce</p>
+<div class="highlight"><pre><span></span><code><span class="nt">labels</span><span class="p">:</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">ddb.emit.docker:binary[npm](args)</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">npm</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">ddb.emit.docker:binary[npm](name)</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">npm</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">ddb.emit.docker:binary[npm](options)</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--label traefik.enable=false</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">ddb.emit.docker:binary[npm](options_condition)</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&#39;&quot;serve&quot;</span><span class="nv"> </span><span class="s">not</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">args&#39;</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">ddb.emit.docker:binary[npm](workdir)</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/app</span>
+</code></pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Register the same command many times</p>
+<p>You may want is some projects to have many binaries defined for the same command, i.e many version of <code>composer</code> or 
+<code>npm</code>.</p>
+<p>It is possible to implement a condition on each Binary in order to enable one binary in a project directory, and 
+another one in another project directory.</p>
+<p>Each binary sharing the same name should be defined in distinct services though, as it doesn't make sense to define 
+the same command on the same service.</p>
+<p>You can find more information in <a href="../run/">run</a> feature: <a href="../run/#register-many-binaries-for-the-same-command">Register many binaries for the same command</a>.</p>
+</div>
+<h3 id="ddbxdebug-php">ddb.XDebug() (PHP)<a class="headerlink" href="#ddbxdebug-php" title="Permanent link">&para;</a></h3>
+<p>This function generates <code>environment</code> configuration used for XDebug (PHP Debugger).</p>
+<p>If <code>jsonnet.docker.xdebug.disabled</code> is set to <code>true</code>, the function returns an empty object.</p>
+<p>It will use the following <code>ddb</code> configuration to generate appropriate <code>environment</code>:</p>
+<ul>
+<li><code>core.project.name</code>: <ul>
+<li>XDebug 2: set <code>serverName</code> and <code>idekey</code></li>
+<li>XDebug 3: set <code>XDEBUG_SESSION</code></li>
+</ul>
+</li>
+<li><code>jsonnet.docker.xdebug.host</code>: <ul>
+<li>XDebug 2: set <code>remote_host</code></li>
+<li>XDebug 3: set <code>client_host</code></li>
+</ul>
+</li>
+</ul>
+<div class="admonition abstract">
+<p class="admonition-title">Parameters</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>version</code></td>
+<td style="text-align: center;">string<br><code>${jsonnet.docker.xdebug.version}</code></td>
+<td style="text-align: left;">XDebug version to configure (<code>2</code> or <code>3</code>). If unset, both XDebug 2 and 3 configurations will generated in a merged object.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>session</code></td>
+<td style="text-align: center;">string<br><code>${jsonnet.docker.xdebug.session}</code></td>
+<td style="text-align: left;">XDebug session (v3) and/or idekey/serverName (v2) to configure. You can set this value explicitly to set env vars <code>XDEBUG_SESSION</code> (v3) and/or <code>PHP_IDE_CONFIG</code>/<code>XDEBUG_CONFIG</code> (v2).</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>mode</code></td>
+<td style="text-align: center;">string<br><code>${jsonnet.docker.xdebug.mode}</code></td>
+<td style="text-align: left;">XDebug mode (v3 only).</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<div class="highlight"><pre><span></span><code><span class="err">ddb.XDebug()</span>
+</code></pre></div>
+<p>will produce</p>
+<div class="highlight"><pre><span></span><code><span class="nt">environment</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">PHP_IDE_CONFIG</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">serverName=project-name</span>
+<span class="w">  </span><span class="nt">XDEBUG_CONFIG</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">remote_enable=on remote_autostart=off idekey=project-name remote_host=192.168.85.1</span>
+</code></pre></div>
+</div>
+<h3 id="ddbenvis">ddb.env.is()<a class="headerlink" href="#ddbenvis" title="Permanent link">&para;</a></h3>
+<p>This function allows you to check if the given environment is the current one, i.e. is equals to <code>core.env.current</code>.</p>
+<p>It does not have any input parameter and returns boolean.</p>
+<p>This can be used to add environment condition to a service activation, a specific configuration,... </p>
+<div class="admonition abstract">
+<p class="admonition-title">Parameters</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>env</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Environment name to verify.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<p>With the following configuration :<br />
+<div class="highlight"><pre><span></span><code>core:
+  env:
+    current: dev
+</code></pre></div></p>
+<ul>
+<li><code>ddb.env.is("prod")</code> =&gt; <code>false</code></li>
+<li><code>ddb.env.is("dev")</code> =&gt; <code>true</code></li>
+</ul>
+</div>
+<h3 id="ddbenvcurrent-ddbenvavailable">ddb.env.current / ddb.env.available<a class="headerlink" href="#ddbenvcurrent-ddbenvavailable" title="Permanent link">&para;</a></h3>
+<p>Shortcuts for <code>std.extVar("core.env.current")</code> and <code>std.extVar("core.env.available")</code>.</p>
+<h3 id="ddbprojectname-ddbdomain">ddb.projectName / ddb.domain<a class="headerlink" href="#ddbprojectname-ddbdomain" title="Permanent link">&para;</a></h3>
+<p>Shortcuts for <code>std.extVar("core.project.name")</code>, <code>std.extVar("core.domain.value")</code></p>
+<h3 id="ddbsubdomain">ddb.subDomain()<a class="headerlink" href="#ddbsubdomain" title="Permanent link">&para;</a></h3>
+<p>Builds a subdomain string from default domain name of another domain name.</p>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<p>With the following configuration :<br />
+<div class="highlight"><pre><span></span><code>core:
+  domain:
+    sub: domain
+    ext: tld
+</code></pre></div></p>
+<ul>
+<li><code>ddb.subDomain("mailcatcher")</code> =&gt; <code>mailcatcher.domain.tld</code></li>
+<li><code>ddb.subDomain("mailcatcher", "inetum.world")</code> =&gt; <code>mailcatcher.inetum.world</code></li>
+</ul>
+</div>
+<h2 id="advanced-functions">Advanced functions<a class="headerlink" href="#advanced-functions" title="Permanent link">&para;</a></h2>
+<p>Those functions are for advanced configuration and should not be used in most common cases.</p>
+<details class="info">
+<summary>Advanced</summary>
+<h3 id="ddbservicename">ddb.ServiceName()<a class="headerlink" href="#ddbservicename" title="Permanent link">&para;</a></h3>
+<p>This function generates the right service name for a service.</p>
+<p>The main purpose is to have more easy way to manage Labels for traefik and easily add a middleware to a specific 
+service.</p>
+<p>It concatenates the given name with <code>${core.project.name}</code>.</p>
+<div class="admonition abstract">
+<p class="admonition-title">Parameters</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>name</code></td>
+<td style="text-align: center;">string<span style="color: red">*</span></td>
+<td style="text-align: left;">Name of the service.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<p>With a project named "ddb" 
+<div class="highlight"><pre><span></span><code><span class="err">ddb.ServiceName(</span><span class="s2">&quot;test&quot;</span><span class="err">)</span>
+</code></pre></div>
+will return
+```yaml
+ddb-test</p>
+</div>
+<h3 id="ddbbinarylabels">ddb.BinaryLabels()<a class="headerlink" href="#ddbbinarylabels" title="Permanent link">&para;</a></h3>
+<p>BinaryLabels is mostly the same as <a href="#binary">Binary</a> but output configuration without the <code>labels:</code> part, so you can add 
+it directly to your own labels block.</p>
+<div class="admonition abstract">
+<p class="admonition-title">Parameters</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>name</code></td>
+<td style="text-align: center;">string<span style="color: red">*</span></td>
+<td style="text-align: left;">Binary name. This will be the command you type in shell (see <a href="../shell/">shell</a> feature).</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>workdir</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Default container directory to run the command. In most case, it should match the service workdir.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>args</code></td>
+<td style="text-align: center;">string<br><code>&lt;name&gt;</code></td>
+<td style="text-align: left;">Command to execute inside the container.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>options</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Options to add to the command.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>options_condition</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Add a condition to be evaluated to make <code>options</code> optional. If condition is defined and evaluated, <code>options</code> are not added to the command.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<div class="highlight"><pre><span></span><code><span class="err">ddb.Bi</span><span class="kc">nar</span><span class="err">yLabels(</span><span class="s2">&quot;npm&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;/app&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;npm&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;--label traefik.enable=false&quot;</span><span class="p">,</span><span class="w"> </span><span class="err">&#39;</span><span class="s2">&quot;serve&quot;</span><span class="w"> </span><span class="kc">n</span><span class="err">o</span><span class="kc">t</span><span class="w"> </span><span class="err">i</span><span class="kc">n</span><span class="w"> </span><span class="err">args&#39;)</span>
+</code></pre></div>
+<p>will produce</p>
+<div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">ddb.emit.docker:binary[npm](args)</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">npm</span>
+<span class="l l-Scalar l-Scalar-Plain">ddb.emit.docker:binary[npm](name)</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">npm</span>
+<span class="l l-Scalar l-Scalar-Plain">ddb.emit.docker:binary[npm](options)</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--label traefik.enable=false</span>
+<span class="l l-Scalar l-Scalar-Plain">ddb.emit.docker:binary[npm](options_condition)</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&#39;&quot;serve&quot;</span><span class="nv"> </span><span class="s">not</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">args&#39;</span>
+<span class="l l-Scalar l-Scalar-Plain">ddb.emit.docker:binary[npm](workdir)</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/app</span>
+</code></pre></div>
+</div>
+<h3 id="ddbbinaryoptions">ddb.BinaryOptions()<a class="headerlink" href="#ddbbinaryoptions" title="Permanent link">&para;</a></h3>
+<p>BinaryOptions allow you to add options to service's binary previously declared.</p>
+<div class="admonition abstract">
+<p class="admonition-title">Parameters</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>name</code></td>
+<td style="text-align: center;">string<span style="color: red">*</span></td>
+<td style="text-align: left;">Binary name. This will be the command you type in shell (see <a href="../shell/">shell</a> feature).</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>options</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Options to add to the command.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>options_condition</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Add a condition to be evaluated to make <code>options</code> optional. If condition is defined and evaluated, <code>options</code> are not added to the command.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<div class="highlight"><pre><span></span><code><span class="err">ddb.Bi</span><span class="kc">nar</span><span class="err">yOp</span><span class="kc">t</span><span class="err">io</span><span class="kc">ns</span><span class="err">(</span><span class="s2">&quot;npm&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;--label traefik.enable=false&quot;</span><span class="p">,</span><span class="w"> </span><span class="err">&#39;</span><span class="s2">&quot;serve&quot;</span><span class="w"> </span><span class="kc">n</span><span class="err">o</span><span class="kc">t</span><span class="w"> </span><span class="err">i</span><span class="kc">n</span><span class="w"> </span><span class="err">args&#39;)</span>
+</code></pre></div>
+<p>will produce</p>
+<div class="highlight"><pre><span></span><code><span class="nt">labels</span><span class="p">:</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">ddb.emit.docker:binary[npm](options)</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--label traefik.enable=false</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">ddb.emit.docker:binary[npm](options_condition)</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&#39;&quot;serve&quot;</span><span class="nv"> </span><span class="s">not</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">args&#39;</span>
+</code></pre></div>
+</div>
+<h3 id="ddbbinaryoptionslabels">ddb.BinaryOptionsLabels()<a class="headerlink" href="#ddbbinaryoptionslabels" title="Permanent link">&para;</a></h3>
+<p>BinaryOptionsLabels is mostly the same as <a href="#binaryoptions">BinaryOptions</a> but output configuration without the 
+<code>labels:</code> part, so you can add it directly to your own labels block.</p>
+<div class="admonition abstract">
+<p class="admonition-title">Parameters</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>name</code></td>
+<td style="text-align: center;">string<span style="color: red">*</span></td>
+<td style="text-align: left;">Binary name. This will be the command you type in shell (see <a href="../shell/">shell</a> feature).</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>options</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Options to add to the command.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>options_condition</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Add a condition to be evaluated to make <code>options</code> optional. If condition is defined and evaluated, <code>options</code> are not added to the command.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<div class="highlight"><pre><span></span><code><span class="err">ddb.Bi</span><span class="kc">nar</span><span class="err">yOp</span><span class="kc">t</span><span class="err">io</span><span class="kc">ns</span><span class="err">(</span><span class="s2">&quot;npm&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;--label traefik.enable=false&quot;</span><span class="p">,</span><span class="w"> </span><span class="err">&#39;</span><span class="s2">&quot;serve&quot;</span><span class="w"> </span><span class="kc">n</span><span class="err">o</span><span class="kc">t</span><span class="w"> </span><span class="err">i</span><span class="kc">n</span><span class="w"> </span><span class="err">args&#39;)</span>
+</code></pre></div>
+<p>will produce</p>
+<div class="highlight"><pre><span></span><code><span class="nt">labels</span><span class="p">:</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">ddb.emit.docker:binary[npm](options)</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--label traefik.enable=false</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">ddb.emit.docker:binary[npm](options_condition)</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&#39;&quot;serve&quot;</span><span class="nv"> </span><span class="s">not</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">args&#39;</span>
+</code></pre></div>
+</div>
+<h3 id="ddbpath">ddb.path<a class="headerlink" href="#ddbpath" title="Permanent link">&para;</a></h3>
+<p>Path is easy access to ddb configuration paths <code>core.path</code> values.</p>
+<p>It is mostly used to add a folder as volume to service.</p>
+<h3 id="ddbenvindex">ddb.env.index()<a class="headerlink" href="#ddbenvindex" title="Permanent link">&para;</a></h3>
+<p>This function allows you to get the index of the given environment in the list <code>core.env.available</code>.</p>
+<p>If there is no parameter given, it provides the index of the current one. </p>
+<p>This can be used to add environment condition to a service activation, a specific configuration,... </p>
+<div class="admonition abstract">
+<p class="admonition-title">Parameters</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>env</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Environment name to verify.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<p>With the following configuration :<br />
+<div class="highlight"><pre><span></span><code>core:
+  env:
+    available:
+    - prod
+    - stage
+    - ci
+    - dev
+    current: dev
+</code></pre></div></p>
+<ul>
+<li><code>ddb.env.index()</code> will return 3</li>
+<li><code>ddb.env.index("ci")</code> will return 2</li>
+</ul>
+</div>
+<h3 id="ddbmergeall">ddb.mergeAll()<a class="headerlink" href="#ddbmergeall" title="Permanent link">&para;</a></h3>
+<p>This function merge an array of objects.</p>
+<div class="admonition abstract">
+<p class="admonition-title">Parameters</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>object_array</code></td>
+<td style="text-align: center;">dict[]</td>
+<td style="text-align: left;">the array of objects to merge.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<p>With the following jsonnet declaration :<br />
+<div class="highlight"><pre><span></span><code><span class="k">local</span><span class="w"> </span><span class="nv">sites</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s">&#39;www&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;api&#39;</span><span class="p">];</span>
+
+<span class="p">{</span>
+<span class="w">    </span><span class="nv">&quot;web&quot;</span><span class="p">:</span><span class="w"> </span><span class="nv">ddb</span><span class="p">.</span><span class="nf">Build</span><span class="p">(</span><span class="s">&quot;web&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="o">+</span><span class="w"> </span><span class="nv">ddb</span><span class="p">.</span><span class="nf">mergeAll</span><span class="p">([</span><span class="nv">ddb</span><span class="p">.</span><span class="nf">VirtualHost</span><span class="p">(</span><span class="s">&quot;80&quot;</span><span class="p">,</span><span class="w"> </span><span class="nb">std.join</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="nv">site</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;domain.tld&quot;</span><span class="p">]),</span><span class="w"> </span><span class="nv">site</span><span class="p">)</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nv">site</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nv">sites</span><span class="p">])</span>
+<span class="w">        </span><span class="o">+</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nv">&quot;volumes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                </span><span class="nv">ddb</span><span class="p">.</span><span class="nv">path</span><span class="p">.</span><span class="nv">project</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;/.docker/web/nginx.conf:/etc/nginx/conf.d/default.conf:rw&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="nv">ddb</span><span class="p">.</span><span class="nv">path</span><span class="p">.</span><span class="nv">project</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;:/var/www/html:rw&quot;</span>
+<span class="w">            </span><span class="p">]</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<p>The result will be
+<div class="highlight"><pre><span></span><code><span class="nt">labels</span><span class="p">:</span><span class="w"> </span>
+<span class="w">  </span><span class="nt">traefik.enable</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;true&quot;</span>
+<span class="w">  </span><span class="nt">traefik.http.routers.your-project-api-tls.rule</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Host(`api.domain.tld`)</span>
+<span class="w">  </span><span class="nt">traefik.http.routers.your-project-api-tls.service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">your-project-api</span>
+<span class="w">  </span><span class="nt">traefik.http.routers.your-project-api-tls.tls</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;true&quot;</span>
+<span class="w">  </span><span class="nt">traefik.http.routers.your-project-api.rule</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Host(`api.domain.tld`)</span>
+<span class="w">  </span><span class="nt">traefik.http.routers.your-project-api.service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">your-project-api</span>
+<span class="w">  </span><span class="nt">traefik.http.services.your-project-api.loadbalancer.server.port</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;80&#39;</span>
+<span class="w">  </span><span class="nt">traefik.http.routers.your-project-www-tls.rule</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Host(`www.domain.tld`)</span>
+<span class="w">  </span><span class="nt">traefik.http.routers.your-project-www-tls.service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">your-project-www</span>
+<span class="w">  </span><span class="nt">traefik.http.routers.your-project-www-tls.tls</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;true&quot;</span>
+<span class="w">  </span><span class="nt">traefik.http.routers.your-project-www.rule</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Host(`www.domain.tld`)</span>
+<span class="w">  </span><span class="nt">traefik.http.routers.your-project-www.service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">your-project-www</span>
+<span class="w">  </span><span class="nt">traefik.http.services.your-project-www.loadbalancer.server.port</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;80&#39;</span>
+</code></pre></div></p>
+</div>
+<h3 id="ddbpathmappath">ddb.path.mapPath()<a class="headerlink" href="#ddbpathmappath" title="Permanent link">&para;</a></h3>
+<p>Get the mapped value of a given filepath according to mappings configured in <code>docker.path_mapping</code>.</p>
+<div class="admonition abstract">
+<p class="admonition-title">Parameters</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Property</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>path</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Source path.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="ddbfile">ddb.File<a class="headerlink" href="#ddbfile" title="Permanent link">&para;</a></h3>
+<p>Wrap a string matching a Filesystem path into a File object containing <code>name</code> and <code>parent</code>. <code>name</code> match the filename of 
+this path, and <code>parent</code> is another File object matching the parent path.</p>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<ul>
+<li><code>ddb.File(".docker/postgres/djp.libsonnet")</code> =&gt; <code>{name: 'djp.libjsonnet', parent: {name: postgres, parent: {name: .docker}}}</code></li>
+</ul>
+</div>
+</details>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Inetum
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      
+    
+  </body>
+</html>
