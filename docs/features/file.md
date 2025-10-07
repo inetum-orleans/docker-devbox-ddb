@@ -4,7 +4,7 @@ File
 As **ddb** work on files, there is a dedicated feature which soul purpose is to walk through files from the project
 directory and trigger events when files are found or removed.
 
-!!! summary "Feature configuration (prefixed with `jinja.`)"
+!!! summary "Feature configuration (prefixed with `file.`)"
     | Property | Type | Description |
     | :---------: | :----: | :----------- |
     | `disabled` | boolean<br>`false` | Should this feature be disabled ? |
