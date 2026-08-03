@@ -1,0 +1,180 @@
+[project]
+name = "docker-devbox-ddb"
+dynamic = ["version"]
+description = "ddb - Erase environment differences, make developers happy !"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Rémi Alvergnat", email = "remi.alvergnat@gfi.world" }]
+keywords = [
+    "docker",
+    "docker-compose",
+    "development",
+    "environment",
+    "devops",
+    "templates",
+    "jsonnet",
+    "jinja",
+    "watch",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "braceexpand",
+    "cfssl>=0.0.3b243",
+    "chmod-monkey>=1.1.1",
+    "colorama",
+    "colorlog",
+    "cookiecutter",
+    "cryptography",
+    "deepmerge",
+    "dictdiffer",
+    "diskcache",
+    "distro",
+    # docker-py is a runtime dependency: ddb.feature.docker.lib.compose imports
+    # docker.utils.ports, and that module is loaded by the docker feature itself.
+    "docker",
+    "dockerfile-parse",
+    "dotty-dict",
+    "gitpython",
+    "Jinja2",
+    # Official google/jsonnet bindings, exposing the same `_jsonnet` module as the
+    # unmaintained jsonnet-binary fork, with abi3 wheels up to Python 3.14.
+    "jsonnet>=0.22",
+    "marshmallow",
+    "marshmallow-union",
+    "netifaces",
+    "ordered-set",
+    "paramiko",
+    "patch",
+    "progress",
+    "python-on-whales",
+    "python-slugify",
+    "PyYAML",
+    "requests",
+    "semver",
+    "toposort",
+    "verboselogs",
+    # Pinned: watchdog 5 hangs the test suite, see issue #242.
+    "watchdog==4.0.2",
+    "wcmatch",
+    "zgitignore",
+]
+
+[project.urls]
+Homepage = "https://inetum-orleans.github.io/docker-devbox-ddb"
+Documentation = "https://inetum-orleans.github.io/docker-devbox-ddb"
+Repository = "https://github.com/inetum-orleans/docker-devbox-ddb"
+Changelog = "https://github.com/inetum-orleans/docker-devbox-ddb/blob/develop/CHANGELOG.md"
+
+[project.scripts]
+ddb = "ddb.__main__:console_script"
+
+[project.entry-points.pytest11]
+docker_compose = "pytest_docker_compose:plugin"
+
+[dependency-groups]
+test = [
+    "coverage",
+    "pytest",
+    "pytest-benchmark",
+    "pytest-cov",
+    "pytest-mock",
+    "pytest-profiling",
+    "responses",
+    "waiting",
+]
+lint = ["ruff"]
+build = ["pex", "pyinstaller"]
+dev = [
+    { include-group = "build" },
+    { include-group = "lint" },
+    { include-group = "test" },
+    # Tooling driven by .pre-commit-config.yaml: the hooks run via `uv run`, so
+    # these must be in the dev env / uv.lock — pre-commit itself, ruff (via the
+    # lint group above) and commitizen.
+    "commitizen",
+    "pre-commit",
+    "python-semantic-release",
+    "tox",
+    "tox-uv",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "ddb/__version__.py"
+
+[tool.hatch.build.targets.wheel]
+# pytest_docker_compose is a vendored fork shipped with the package: it is
+# exposed as a pytest plugin through the pytest11 entry point above.
+packages = ["ddb", "pytest_docker_compose"]
+
+[tool.commitizen]
+# Conventional Commits ruleset, used by `cz check` (local commit-msg hook + CI).
+name = "cz_conventional_commits"
+
+[tool.semantic_release]
+version_variables = ["ddb/__version__.py:__version__"]
+# `uv lock` re-stamps the bumped version into uv.lock (which pins ddb's own
+# version); `assets` includes it in the release commit so the lockfile never
+# drifts behind the released version. Wheels, sdist and binaries are built by
+# the dedicated CI jobs, so no `uv build` is needed here.
+build_command = "uv lock"
+assets = ["uv.lock"]
+commit_message = "chore(release): release v{version}"
+commit_author = "github-actions <actions@github.com>"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+# Vendored code kept as close as possible to its upstream source.
+extend-exclude = ["ddb/feature/docker/lib", "ddb/utils/simpleeval.py", "pytest_docker_compose"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "SIM",  # flake8-simplify
+    "PIE",  # flake8-pie
+    "RET",  # flake8-return
+    "ISC",  # flake8-implicit-str-concat
+    "TC",   # flake8-type-checking
+    "FA",   # flake8-future-annotations
+    "PT",   # flake8-pytest-style
+    "RUF",  # ruff-specific rules
+]
+# SIM102: collapsing nested `if`s hurts readability with long conditions here.
+ignore = ["SIM102"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests reach into private helpers and assert on them; that is intentional here.
+"tests/**" = ["B011", "PT011", "PT012", "SIM115"]
+
+[tool.pytest.ini_options]
+addopts = "-s --ignore=build --ignore=docs --docker-compose-remove-volumes"
+testpaths = ["tests"]
+markers = ["docker: marks tests requiring docker engine"]
+
+[tool.coverage.run]
+omit = ["ddb/__version__.py", "ddb/utils/simpleeval.py", "pytest_docker_compose/*"]
+
+[tool.coverage.report]
+exclude_lines = ["pragma: no cover"]
