@@ -4,17 +4,19 @@ import os
 import re
 from collections.abc import Iterable
 from pathlib import Path, PurePosixPath
+from typing import Any
 
 import yaml
 from dotty_dict import Dotty
 
+from ddb.action.action import EventBindings
 from ddb.feature import features
 from ddb.feature.traefik import TraefikExtraServicesAction
 from ddb.utils.simpleeval import simple_eval
 
 from ...action import Action
 from ...action.action import EventBinding, InitializableAction
-from ...binary import binaries
+from ...binary import Binary, binaries
 from ...cache import caches, register_project_cache
 from ...config import config
 from ...context import context
@@ -33,15 +35,15 @@ class EmitDockerComposeConfigAction(Action):
     To generate multiple events of same name in the same service, event-name can be suffixed with "[xxx]".
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.current_yaml_output = None
+        self.current_yaml_output: str | None = None
         self.key_re = re.compile(r"^\s*ddb\.emit\.(.+?)(?:\[(.+?)\])?(?:\((.+?)\))?\s*$")
         self.eval_re = re.compile(r"^\s*eval\((.*)\)\s*$")
         self._cert_domains_cache = register_project_cache("docker.cert-domains")
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return (
             # TODO: Add support for custom docker-compose -f option (custom filename and multiple files)
             EventBinding(events.file.found, processor=lambda file: ((), {}) if file == "docker-compose.yml" else False),
@@ -55,7 +57,7 @@ class EmitDockerComposeConfigAction(Action):
     def name(self) -> str:
         return "docker:emit-docker-compose-config"
 
-    def execute(self):
+    def execute(self) -> None:
         """
         Execute action.
         """
@@ -80,7 +82,7 @@ class EmitDockerComposeConfigAction(Action):
 
         cert_domains = []
 
-        def on_available(domain: str, *, wildcard: bool, private_key: bytes | str, certificate: bytes | str):
+        def on_available(domain: str, *, wildcard: bool, private_key: bytes | str, certificate: bytes | str) -> None:
             """
             When a certificate is available.
 
@@ -102,7 +104,7 @@ class EmitDockerComposeConfigAction(Action):
 
         events.docker.docker_compose_after_events(docker_compose_config=docker_compose_config)
 
-    def _parse_docker_compose(self, docker_compose_config: dict, services):
+    def _parse_docker_compose(self, docker_compose_config: dict[str, Any], services: dict[str, Any]) -> None:
         for service_name, service in services.items():
             labels = service.get("labels")
             if not labels:
@@ -117,7 +119,7 @@ class EmitDockerComposeConfigAction(Action):
                 for _, (args, kwargs) in event_parsed_values.items():
                     bus.emit(event_name, *args, **kwargs)
 
-    def _update_cache_and_emit_certs_remove(self, cert_domains: Iterable[str]):
+    def _update_cache_and_emit_certs_remove(self, cert_domains: Iterable[str]) -> None:
         removed_domains = []
         for previous_cert_domain in self._cert_domains_cache.keys():
             if previous_cert_domain not in cert_domains:
@@ -130,8 +132,10 @@ class EmitDockerComposeConfigAction(Action):
         for cert_domain in cert_domains:
             self._cert_domains_cache.set(cert_domain, None)
 
-    def _build_event_data(self, docker_compose_config, labels, service, service_name):
-        parsed_values = {}
+    def _build_event_data(
+        self, docker_compose_config: dict[str, Any], labels: dict[str, str], service: dict[str, Any], service_name: str
+    ) -> dict[str, dict[str, tuple[list[Any], dict[str, Any]]]]:
+        parsed_values: dict[str, dict[str, tuple[list[Any], dict[str, Any]]]] = {}
         for key, value in labels.items():
             match = self.key_re.match(key)
             if not match:
@@ -163,13 +167,16 @@ class EmitDockerComposeConfigAction(Action):
                 event_parsed_values[event_id] = args, kwargs
         return parsed_values
 
-    def _parse_value(self, value, names, property_name=None):
+    def _parse_value(
+        self, value: str, names: dict[str, Any], property_name: str | None = None
+    ) -> tuple[list[Any], dict[str, Any]]:
         values = map(str.strip, value.split("|")) if not property_name else [value]
 
         args = []
         kwargs = {}
 
         for expression in values:
+            var: str | None
             if not property_name and "=" in expression:
                 var, val = expression.split("=", 1)
             else:
@@ -192,12 +199,12 @@ class DockerComposeBinaryAction(InitializableAction):
     Convert ddb.event.bus.emit.docker:binary events to binary available from shell.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.binaries = set()  # type: Set[Binary]
+        self.binaries: set[Binary] = set()
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return (
             events.docker.binary,
             EventBinding(events.docker.docker_compose_before_events, call=self.before_events),
@@ -208,25 +215,25 @@ class DockerComposeBinaryAction(InitializableAction):
     def name(self) -> str:
         return "docker:docker-compose-binary"
 
-    def initialize(self):
+    def initialize(self) -> None:
         register_project_cache("docker.binaries")
 
-    def destroy(self):
+    def destroy(self) -> None:
         if caches.has("docker.binaries"):
             caches.unregister("docker.binaries", callback=lambda c: c.close())
 
-    def before_events(self, docker_compose_config):
+    def before_events(self, docker_compose_config: dict[str, Any]) -> None:
         """
         Reset current binaries dict.
         """
         self.binaries = set()
 
-    def after_events(self, docker_compose_config):
+    def after_events(self, docker_compose_config: dict[str, Any]) -> None:
         """
         Cache binaries and emit unregistered events for those removed from the previous run.
         """
         docker_binaries_cache = caches.get("docker.binaries")
-        cached_binaries = docker_binaries_cache.get("cached_binaries")  # type: Set[Binary]
+        cached_binaries: set[Binary] = docker_binaries_cache.get("cached_binaries")
         if cached_binaries is None:
             cached_binaries = set()
 
@@ -248,18 +255,18 @@ class DockerComposeBinaryAction(InitializableAction):
 
     def execute(
         self,
-        name=None,
-        workdir=None,
-        options=None,
-        options_condition=None,
-        condition=None,
-        args=None,
+        name: str | None = None,
+        workdir: str | None = None,
+        options: str | None = None,
+        options_condition: str | None = None,
+        condition: str | None = None,
+        args: str | None = None,
         *,
-        exe=False,
-        entrypoint=None,
-        global_=None,
-        docker_compose_service=None,
-    ):
+        exe: bool = False,
+        entrypoint: str | None = None,
+        global_: bool | None = None,
+        docker_compose_service: str | None = None,
+    ) -> None:
         """
         Execute action.
         """
@@ -267,6 +274,9 @@ class DockerComposeBinaryAction(InitializableAction):
             name = docker_compose_service
         if name is None:
             msg = "name should be defined"
+            raise ValueError(msg)
+        if docker_compose_service is None:
+            msg = "docker_compose_service should be defined"
             raise ValueError(msg)
 
         binary = DockerBinary(
@@ -279,7 +289,7 @@ class DockerComposeBinaryAction(InitializableAction):
             args=args,
             exe=exe,
             entrypoint=entrypoint,
-            global_=global_,
+            global_=bool(global_),
         )
 
         self.binaries.add(binary)
@@ -303,14 +313,14 @@ class LocalVolumesAction(Action):
     """
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return events.docker.docker_compose_config
 
     @property
     def name(self) -> str:
         return "docker:docker-compose-local-volumes"
 
-    def execute(self, docker_compose_config: dict):
+    def execute(self, docker_compose_config: dict[str, Any]) -> None:
         """
         Execute action.
         """
@@ -345,7 +355,7 @@ class LocalVolumesAction(Action):
                     self._fix_owner(rel_related_path)
 
     @staticmethod
-    def _fix_owner(relative_path):
+    def _fix_owner(relative_path: str) -> None:
         if hasattr(os, "chown"):
             stat_info = Path(relative_path).stat()
             uid = stat_info.st_uid
@@ -364,7 +374,7 @@ class LocalVolumesAction(Action):
                     )
 
     @staticmethod
-    def _check_file_in_project(source):
+    def _check_file_in_project(source: str) -> bool:
         if os.name == "nt":
             source = posix_as_path_fast(source)
 
@@ -373,7 +383,7 @@ class LocalVolumesAction(Action):
         return target_path.startswith(cwd)
 
     @staticmethod
-    def _create_local_volume(source, target):
+    def _create_local_volume(source: str, target: str) -> None:
         if os.name == "nt":
             source = posix_as_path_fast(source)
 
@@ -399,9 +409,11 @@ class LocalVolumesAction(Action):
         LocalVolumesAction._fix_owner(rel_source)
 
     @staticmethod
-    def _get_volume_mappings(docker_compose_config, external_volumes):
-        volume_mappings = []
-        external_volumes_dict = {}
+    def _get_volume_mappings(
+        docker_compose_config: dict[str, Any], external_volumes: Iterable[str]
+    ) -> list[tuple[str, str]]:
+        volume_mappings: list[tuple[str, str]] = []
+        external_volumes_dict: dict[str, str] = {}
 
         for service in docker_compose_config.get("services", {}).values():
             if "volumes" not in service:
@@ -443,19 +455,19 @@ class DockerDisplayInfoAction(Action):
     Retrieve exposed ports and vhosts from docker-compose config and display them to the user.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.current_yaml_output = None
+        self.current_yaml_output: str | None = None
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return events.phase.info
 
     @property
     def name(self) -> str:
         return "docker:display-info"
 
-    def execute(self):
+    def execute(self) -> None:
         """
         Execute action.
         """
@@ -500,7 +512,7 @@ class DockerDisplayInfoAction(Action):
         :param service_config: the service configuration
         :return: a dict containing environment variables.
         """
-        environments = service_config.get("environment")
+        environments: dict[str, str] | None = service_config.get("environment")
         if not environments:
             return {}
 
@@ -518,9 +530,10 @@ class DockerDisplayInfoAction(Action):
         if not ports:
             return []
 
-        def _to_service_ports(port):
+        def _to_service_ports(port: Any) -> list[ServicePort]:
             if isinstance(port, str):
-                return ServicePort.parse(port)
+                parsed: list[ServicePort] = ServicePort.parse(port)
+                return parsed
 
             parameters = {"target": None, "published": None, "protocol": None, "mode": None, "external_ip": None}
             parameters.update(port)
@@ -600,7 +613,7 @@ class DockerDisplayInfoAction(Action):
         ports: list[ServicePort],
         docker_binaries: list[str],
         vhosts: list[str],
-    ):
+    ) -> str:
         """
         Process the data and render it to the user.
 
@@ -646,12 +659,12 @@ class DockerDisplayInfoAction(Action):
         return ""
 
     @staticmethod
-    def _output_traefik_data(id_, extra_service_data):
+    def _output_traefik_data(id_: str, extra_service_data: dict[str, Any]) -> str:
         if "domain" in extra_service_data:
-            domain = extra_service_data.get("domain")
+            domain = str(extra_service_data.get("domain"))
             domain = "https://" + domain if extra_service_data.get("https") in [None, True] else "http://" + domain
         else:
-            domain = extra_service_data.get("rule")
+            domain = str(extra_service_data.get("rule"))
 
-        blocks = [[id_ + " (extra)"], [domain + " --> " + extra_service_data.get("url")]]
+        blocks = [[id_ + " (extra)"], [domain + " --> " + str(extra_service_data.get("url"))]]
         return get_table_display(blocks, centered=False)

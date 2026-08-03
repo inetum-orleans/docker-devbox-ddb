@@ -1,11 +1,14 @@
 import logging
-from collections.abc import Callable
-from typing import TYPE_CHECKING
+from collections.abc import Callable, Sequence
+from typing import TYPE_CHECKING, Any
 
+import verboselogs
 from dotty_dict import Dotty
 
 if TYPE_CHECKING:
     from ..action import Action
+    from ..command import Command
+    from ..phase import Phase
 
 
 class ContextStackItem:
@@ -13,7 +16,14 @@ class ContextStackItem:
     A stack item inside context.
     """
 
-    def __init__(self, event_name: str, action: "Action", to_call: Callable, args: list, kwargs: dict):
+    def __init__(
+        self,
+        event_name: str,
+        action: "Action",
+        to_call: Callable[..., Any],
+        args: Sequence[Any],
+        kwargs: dict[str, Any],
+    ) -> None:
         self.event_name = event_name
         self.action = action
         self.to_call = to_call
@@ -21,7 +31,7 @@ class ContextStackItem:
         self.kwargs = kwargs
 
     @staticmethod
-    def _build_parameters_repr(*args, **kwargs):
+    def _build_parameters_repr(*args: Any, **kwargs: Any) -> str:
         parameters_repr = ", ".join(map(str, args))
         for key, value in sorted(kwargs.items()):
             if parameters_repr:
@@ -29,7 +39,7 @@ class ContextStackItem:
             parameters_repr += key + "=" + str(value)
         return parameters_repr
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         parameters_repr = self._build_parameters_repr(*self.args, **self.kwargs)
         return f"{self.event_name} => {type(self.action).__name__}.{self.to_call.__name__}({parameters_repr})"
 
@@ -39,21 +49,21 @@ class Context:
     Execution context.
     """
 
-    def __init__(self):
-        self.phase = None  # type: Optional['Phase']
-        self.command = None  # type: Optional['Command']
-        self.stack = []  # type: List[ContextStackItem]
-        self.watching = False  # type: bool
-        self.exceptions = []  # type: List[Exception]
-        self.processed_sources = {}  # type: Dict[str, str]
-        self.processed_targets = {}  # type: Dict[str, str]
+    def __init__(self) -> None:
+        self.phase: Phase | None = None
+        self.command: Command | None = None
+        self.stack: list[ContextStackItem] = []
+        self.watching = False
+        self.exceptions: list[Exception] = []
+        self.processed_sources: dict[str, str] = {}
+        self.processed_targets: dict[str, str] = {}
         self.data = Dotty({})
 
-    def reset(self):
+    def reset(self) -> None:
         """
         Reset the context.
         """
-        self.__init__()
+        Context.__init__(self)
 
     @property
     def event_name(self) -> str | None:
@@ -70,14 +80,14 @@ class Context:
         return self.stack[-1].action if self.stack else None
 
     @property
-    def to_call(self) -> Callable | None:
+    def to_call(self) -> Callable[..., Any] | None:
         """
         Current callable in stack.
         """
         return self.stack[-1].to_call if self.stack else None
 
     @property
-    def log(self):
+    def log(self) -> verboselogs.VerboseLogger:
         """
         Logger for current context.
         """
@@ -86,20 +96,20 @@ class Context:
         return logging.getLogger(logger_name)
 
     @property
-    def logger(self):
+    def logger(self) -> verboselogs.VerboseLogger:
         """
         Logger for current context.
         """
         return self.log
 
-    def mark_as_processed(self, source, target):
+    def mark_as_processed(self, source: str, target: str) -> None:
         """
         Mark sources and target as processed, for them to be skipped by other file template finders.
         """
         self.processed_sources[source] = target
         self.processed_targets[target] = source
 
-    def mark_as_unprocessed(self, filepath=None):
+    def mark_as_unprocessed(self, filepath: str | None = None) -> None:
         """
         Mark sources and target as processed, for them to be skipped by other file template finders.
         """

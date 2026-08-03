@@ -35,7 +35,7 @@ class DefaultRegistryObject(RegistryObject):
     Default object that can be registered in a registry. It should have a unique name.
     """
 
-    def __init__(self, name: str, description: str | None = None):
+    def __init__(self, name: str, description: str | None = None) -> None:
         self._name = name
         self._description = description
 
@@ -56,14 +56,14 @@ class Registry(Generic[T]):
     Container for registered objects. Objects can be retrieved with their unique name.
     """
 
-    def __init__(self, clazz: type[T], type_name="Object"):
+    def __init__(self, clazz: type[T], type_name: str = "Object") -> None:
         self._clazz = clazz
         self._type_name = type_name
         self._objects: list[T] = []
         self._objects_dict: dict[str, Any] = {}
         self._cache: Cache | None = None
 
-    def set_cache(self, cache: "Cache"):
+    def set_cache(self, cache: "Cache") -> None:
         """
         Set a cache provider, and register cached entries into registry.
         """
@@ -72,19 +72,19 @@ class Registry(Generic[T]):
             for key in self._cache.keys():
                 self._register_cache_value_impl(self._cache.get(key), key)
 
-    def _register_cache_value_impl(self, value, key):
+    def _register_cache_value_impl(self, value: Any, key: str) -> None:
         self.register(value, key)
 
-    def _default_name(self, obj: T):
+    def _default_name(self, obj: T) -> str:
         """
         The name getter for an object.
         """
         if hasattr(obj, "name"):
-            return obj.name
+            return str(obj.name)
         msg = "Name should be provided to register this kind of object"
         raise ValueError(msg)
 
-    def register(self, obj: T, name=None):
+    def register(self, obj: T, name: str | None = None) -> T:
         """
         Register an object instance.
         """
@@ -97,7 +97,7 @@ class Registry(Generic[T]):
 
         return self._register_impl(name, obj)
 
-    def _register_impl(self, name: str, obj: T):
+    def _register_impl(self, name: str, obj: T) -> T:
         if name in self._objects_dict:
             raise ValueError(self._type_name + ' name "' + name + '" is already registered')
 
@@ -119,10 +119,10 @@ class Registry(Generic[T]):
             return self._has_obj_impl(self._objects_dict.get(name), obj)
         return ret
 
-    def _has_obj_impl(self, dict_value, obj) -> bool:
-        return dict_value == obj
+    def _has_obj_impl(self, dict_value: Any, obj: T) -> bool:
+        return bool(dict_value == obj)
 
-    def unregister(self, name, obj: T | None = None, callback: Callable[[T], Any] | None = None) -> bool:
+    def unregister(self, name: str, obj: T | None = None, callback: Callable[[T], Any] | None = None) -> bool:
         """
         Unregister an object instance.
         """
@@ -131,7 +131,7 @@ class Registry(Generic[T]):
 
         return self._unregister_impl(name, obj, callback)
 
-    def _unregister_impl(self, name, obj=None, callback: Callable[[T], Any] | None = None) -> bool:
+    def _unregister_impl(self, name: str, obj: T | None = None, callback: Callable[[T], Any] | None = None) -> bool:
         item = self._objects_dict.get(name)
         if item is None:
             return False
@@ -154,7 +154,8 @@ class Registry(Generic[T]):
         """
         if name not in self._objects_dict:
             raise ValueError(self._type_name + ' name "' + name + '" is not registered')
-        return self._objects_dict[name]
+        obj: T = self._objects_dict[name]
+        return obj
 
     def all(self) -> tuple[T, ...]:
         """
@@ -162,7 +163,7 @@ class Registry(Generic[T]):
         """
         return tuple(self._objects)
 
-    def clear(self):
+    def clear(self) -> None:
         """
         Remove all object instances.
         """
@@ -171,7 +172,7 @@ class Registry(Generic[T]):
         if self._cache:
             self._cache.clear()
 
-    def close(self):
+    def close(self) -> None:
         """
         Close this registry, closing the underlying cache if defined and then removing all objects instances.
 
@@ -188,16 +189,17 @@ class RegistryOrderedSet(Registry[T]):
     Container for registered objects. Objects set can be retrieved with their unique name.
     """
 
-    def __init__(self, clazz: type[T], type_name="Object"):
+    def __init__(self, clazz: type[T], type_name: str = "Object") -> None:
         super().__init__(clazz, type_name)
         self._objects_dict = defaultdict(OrderedSet)
 
-    def _register_cache_value_impl(self, value, key):
+    def _register_cache_value_impl(self, value: Any, key: str) -> None:
         for obj in value:
             self.register(obj, key)
 
-    def _register_impl(self, name: str, obj: T):
-        items = self._objects_dict[name]
+    # Deliberately narrows the base registry: entries are sets of objects sharing a name.
+    def _register_impl(self, name: str, obj: T) -> OrderedSet[T]:  # type: ignore[override]
+        items: OrderedSet[T] = self._objects_dict[name]
         if obj in items:
             raise ValueError("This " + self._type_name + ' is already registered for name "' + name + '"')
         items.add(obj)
@@ -209,7 +211,7 @@ class RegistryOrderedSet(Registry[T]):
 
         return items
 
-    def _unregister_impl(self, name, obj=None, callback: Callable[[T], Any] | None = None) -> bool:
+    def _unregister_impl(self, name: str, obj: T | None = None, callback: Callable[[T], Any] | None = None) -> bool:
         items = self._objects_dict.get(name)
         ret = False
         if items:
@@ -230,9 +232,8 @@ class RegistryOrderedSet(Registry[T]):
                         self._cache.set(name, items)
         return ret
 
-    def _has_obj_impl(self, dict_value: OrderedSet[T], obj) -> bool:
+    def _has_obj_impl(self, dict_value: OrderedSet[T], obj: T) -> bool:
         return obj in dict_value
 
-    # Deliberately narrows the base registry: entries are sets of objects sharing a name.
     def get(self, name: str) -> OrderedSet[T]:  # type: ignore[override]
         return super().get(name)  # type: ignore[return-value]

@@ -13,7 +13,7 @@ class CryptoException(Exception):
     """
 
 
-def convert_pem_to_der(part, content):
+def convert_pem_to_der(part: str, content: bytes) -> bytes:
     """
     Converts a PEM certificate, csr or crl to DER.
 

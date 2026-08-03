@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import ClassVar
+from typing import Any, ClassVar
 
 
 class Bus:
@@ -9,10 +9,10 @@ class Bus:
     Can be used to register/unregister events listeners, and emit events.
     """
 
-    _named_listeners: ClassVar[dict[str, list[Callable]]] = {}
-    _listeners: ClassVar[list[Callable]] = []
+    _named_listeners: ClassVar[dict[str, list[Callable[..., Any]]]] = {}
+    _listeners: ClassVar[list[Callable[..., Any]]] = []
 
-    def on(self, event_name: str | None, listener: Callable):
+    def on(self, event_name: str | None, listener: Callable[..., Any]) -> Callable[[], None]:
         """
         Register a listener on given event name.
         """
@@ -25,7 +25,7 @@ class Bus:
             self._listeners.append(listener)
         return lambda: self.off(event_name, listener)
 
-    def off(self, event_name: str | None, listener: Callable):
+    def off(self, event_name: str | None, listener: Callable[..., Any]) -> None:
         """
         Unregister a listener from given event name.
         """
@@ -36,14 +36,14 @@ class Bus:
         else:
             self._listeners.remove(listener)
 
-    def clear(self):
+    def clear(self) -> None:
         """
         Unregister all listeners.
         """
         self._named_listeners.clear()
         self._listeners.clear()
 
-    def emit(self, event_name: str, *args, **kwargs):
+    def emit(self, event_name: str, *args: Any, **kwargs: Any) -> None:
         """
         Emit a new event with given payload.
         """

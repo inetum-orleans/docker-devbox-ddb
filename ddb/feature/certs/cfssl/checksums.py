@@ -3,11 +3,12 @@ Checksums module.
 """
 
 import hashlib
+from typing import Any
 
 from .crypto import convert_pem_to_der
 
 
-def validate_checksums(response):
+def validate_checksums(response: dict[str, Any]) -> None:
     """
     Validate checksums from certificate request response.
 
@@ -23,7 +24,7 @@ def validate_checksums(response):
             validate_checksum(part, content.encode("ascii"), sums_item)
 
 
-def validate_checksum(part, content, sums_item, *, content_is_der=False):
+def validate_checksum(part: str, content: bytes, sums_item: dict[str, str], *, content_is_der: bool = False) -> None:
     """
     Validate a checksum from certificate sums and content.
 
@@ -37,7 +38,9 @@ def validate_checksum(part, content, sums_item, *, content_is_der=False):
         validate_checksum_algo(part, content, algo, checksum, content_is_der=content_is_der)
 
 
-def validate_checksum_algo(part, content, algo, checksum, *, content_is_der=False):
+def validate_checksum_algo(
+    part: str, content: bytes, algo: str, checksum: str, *, content_is_der: bool = False
+) -> None:
     """
     Validate a checksum using content, algo and checksum.
 

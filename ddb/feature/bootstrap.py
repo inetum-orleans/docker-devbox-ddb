@@ -1,4 +1,4 @@
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from importlib.metadata import entry_points
 
 from toposort import toposort_flatten
@@ -51,7 +51,7 @@ _default_available_features = [
 _available_features = list(_default_available_features)
 
 
-def get_sorted_features(available_features: Iterable[Feature] | None = None):
+def get_sorted_features(available_features: Iterable[Feature] | None = None) -> Iterator[Feature]:
     """
     Register default features and setuptools entrypoint 'ddb_features' inside features registry.
     Features are registered in order for their dependency to be registered first with a topological sort.
@@ -83,15 +83,17 @@ def get_sorted_features(available_features: Iterable[Feature] | None = None):
             yield feature
 
 
-def _prepare_dependencies_data(entrypoint_features):
+def _prepare_dependencies_data(
+    entrypoint_features: dict[str, Feature],
+) -> tuple[dict[str, list[str]], dict[str, set[str]]]:
     """
     Compute required dependencies and toposort data.
     """
-    required_dependencies = {}
-    toposort_data = {}
+    required_dependencies: dict[str, list[str]] = {}
+    toposort_data: dict[str, set[str]] = {}
     for name, feat in entrypoint_features.items():
-        feat_required_dependencies = []
-        dependencies = set()
+        feat_required_dependencies: list[str] = []
+        dependencies: set[str] = set()
         for dependency_item in feat.dependencies:
             if not dependency_item.endswith("[optional]"):
                 feat_required_dependencies.append(dependency_item)
@@ -104,7 +106,9 @@ def _prepare_dependencies_data(entrypoint_features):
     return required_dependencies, toposort_data
 
 
-def _check_missing_dependencies(entrypoint_features, required_dependencies):
+def _check_missing_dependencies(
+    entrypoint_features: dict[str, Feature], required_dependencies: dict[str, list[str]]
+) -> None:
     """
     Check missing required dependencies.
     """
@@ -116,7 +120,7 @@ def _check_missing_dependencies(entrypoint_features, required_dependencies):
                 )
 
 
-def reset_available_features():
+def reset_available_features() -> None:
     """
     Reset available features to default list.
     """
@@ -124,7 +128,7 @@ def reset_available_features():
     _available_features = list(_default_available_features)
 
 
-def append_available_feature(feature):
+def append_available_feature(feature: Feature) -> None:
     """
     Append a feature to available features list.
     """
@@ -132,7 +136,7 @@ def append_available_feature(feature):
     _available_features.append(feature)
 
 
-def bootstrap_register_features():
+def bootstrap_register_features() -> None:
     """
     Register all features in order.
 
@@ -145,7 +149,7 @@ def bootstrap_register_features():
     config.clear()
 
 
-def bootstrap_features_configuration():
+def bootstrap_features_configuration() -> None:
     """
     Preconfigure features with default bootstrap configuration.
 
@@ -163,7 +167,7 @@ def bootstrap_features_configuration():
         config.filenames, config.extensions = filenames, extensions
 
 
-def load_bootstrap_config():
+def load_bootstrap_config() -> None:
     """
     Load bootstrap configuration.
     """

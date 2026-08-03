@@ -2,7 +2,7 @@ import os
 import shlex
 import subprocess
 from abc import ABC, abstractmethod
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 from typing import Any
 
@@ -18,18 +18,18 @@ class ShellIntegration(ABC):
     Interface for shell integration.
     """
 
-    def __init__(self, name, description):
+    def __init__(self, name: str, description: str) -> None:
         self.name = name
         self.description = description
 
     @abstractmethod
-    def set_environment_variable(self, key, value) -> Iterable[str]:
+    def set_environment_variable(self, key: str, value: str) -> Iterator[str]:
         """
         Returns an instruction that set an environment variable to shell.
         """
 
     @abstractmethod
-    def remove_environment_variable(self, key) -> Iterable[str]:
+    def remove_environment_variable(self, key: str) -> Iterator[str]:
         """
         Returns an instruction that unset an environment variable to shell.
         """
@@ -64,7 +64,7 @@ class ShellIntegration(ABC):
         """
 
     @abstractmethod
-    def evaluate_script(self, script_filepath) -> Iterable[str]:
+    def evaluate_script(self, script_filepath: str) -> Iterable[str]:
         """
         Get the command to evaluate the script inside the current shell context.
         """
@@ -82,12 +82,12 @@ class ShellIntegration(ABC):
         """
 
     @abstractmethod
-    def generate_cmdline(self, command: Iterable[str], *, system_path=True) -> str:
+    def generate_cmdline(self, command: Iterable[str], *, system_path: bool = True) -> str:
         """
         Build the shell command to run the given command inside the current shell context.
         """
 
-    def before_environ_backup(self, environ: dict[str, str]):
+    def before_environ_backup(self, environ: dict[str, str]) -> None:
         """
         Alter environment variables before backup. This should be used to remove for saved environ variables that
         should not be restored on deactivation.
@@ -118,17 +118,17 @@ class BashShellIntegration(ShellIntegration):
     Bash integration.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("bash", "Bash")
 
     @staticmethod
-    def _sanitize_key(key):
+    def _sanitize_key(key: str) -> str:
         return slugify(key, regex_pattern=r"[^-a-zA-Z0-9_]+", separator="_").upper()
 
-    def set_environment_variable(self, key, value):
+    def set_environment_variable(self, key: str, value: str) -> Iterator[str]:
         yield "export " + self._sanitize_key(key) + "=" + shlex.quote(value)
 
-    def remove_environment_variable(self, key):
+    def remove_environment_variable(self, key: str) -> Iterator[str]:
         yield "unset " + self._sanitize_key(key)
 
     def remove_self_script(self, script_path: str) -> Iterable[str]:
@@ -141,7 +141,7 @@ class BashShellIntegration(ShellIntegration):
         force_remove(shim)
         return shim
 
-    def create_binary_shim(self, shims_path: str, name: str, *, global_: bool):
+    def create_binary_shim(self, shims_path: str, name: str, *, global_: bool) -> tuple[bool, str]:
         command: list[str] = []
         if global_:
             ddb_project_home_variable = next(
@@ -197,7 +197,7 @@ class BashShellIntegration(ShellIntegration):
     def temporary_file_kwargs(self) -> dict[str, Any]:
         return {"encoding": "utf-8", "newline": "\n"}
 
-    def evaluate_script(self, script_filepath) -> Iterable[str]:
+    def evaluate_script(self, script_filepath: str) -> Iterable[str]:
         yield f". {script_filepath}"
 
     def generate_and_operator(self, *, new_line: bool = False) -> str:
@@ -206,7 +206,7 @@ class BashShellIntegration(ShellIntegration):
     def generate_or_operator(self, *, new_line: bool = False) -> str:
         return " ||" + ("\\" if new_line else " ")
 
-    def generate_cmdline(self, command: Iterable[str], *, system_path=True) -> str:
+    def generate_cmdline(self, command: Iterable[str], *, system_path: bool = True) -> str:
         return subprocess.list2cmdline(command)
 
 
@@ -215,18 +215,18 @@ class CmdShellIntegration(ShellIntegration):
     Windows cmd integration.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("cmd", "Windows cmd.exe")
 
     @staticmethod
-    def _sanitize_key(key):
+    def _sanitize_key(key: str) -> str:
         return slugify(key, regex_pattern=r"[^-a-zA-Z0-9_]+", separator="_").upper()
 
-    def set_environment_variable(self, key, value):
+    def set_environment_variable(self, key: str, value: str) -> Iterator[str]:
         # TODO: Maybe use subprocess.list2cmdline for Windows ?
         yield "set " + self._sanitize_key(key) + "=" + value.replace("\n", "!NL! ^\n")
 
-    def remove_environment_variable(self, key):
+    def remove_environment_variable(self, key: str) -> Iterator[str]:
         yield "set " + self._sanitize_key(key) + "="
 
     def remove_self_script(self, script_path: str) -> Iterable[str]:
@@ -240,7 +240,7 @@ class CmdShellIntegration(ShellIntegration):
         force_remove(shim)
         return shim
 
-    def create_binary_shim(self, shims_path: str, name: str, *, global_: bool):
+    def create_binary_shim(self, shims_path: str, name: str, *, global_: bool) -> tuple[bool, str]:
         commands: list[str] = []
         if global_:
             commands.extend(
@@ -281,7 +281,7 @@ class CmdShellIntegration(ShellIntegration):
 
         return self._write_shim(shims_path, name, "binary", commands)
 
-    def create_alias_binary_shim(self, shims_path: str, binary: Binary):
+    def create_alias_binary_shim(self, shims_path: str, binary: Binary) -> tuple[bool, str]:
         return self._write_shim(shims_path, binary.name, "alias", [" ".join(binary.command())])
 
     @staticmethod
@@ -304,7 +304,7 @@ class CmdShellIntegration(ShellIntegration):
         chmod(shim, "+x", logging=False)
         return written, shim
 
-    def evaluate_script(self, script_filepath) -> Iterable[str]:
+    def evaluate_script(self, script_filepath: str) -> Iterable[str]:
         yield f"call {script_filepath}"
 
     def header(self) -> Iterable[str]:
@@ -316,5 +316,5 @@ class CmdShellIntegration(ShellIntegration):
     def generate_or_operator(self, *, new_line: bool = False) -> str:
         return " ||" + ("\\" if new_line else " ")
 
-    def generate_cmdline(self, command: Iterable[str], *, system_path=True) -> str:
+    def generate_cmdline(self, command: Iterable[str], *, system_path: bool = True) -> str:
         return subprocess.list2cmdline(command)

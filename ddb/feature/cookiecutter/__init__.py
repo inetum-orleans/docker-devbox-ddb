@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+from typing import Any
 
 from dotty_dict import Dotty
 
@@ -30,12 +31,12 @@ class CookiecutterFeature(Feature):
     def actions(self) -> Iterable[Action]:
         return (CookiecutterAction(),)
 
-    def _configure_defaults(self, feature_config: Dotty):
+    def _configure_defaults(self, feature_config: Dotty) -> None:
         if "templates" in feature_config:
             feature_config["templates"] = [self._sanitize_template(t) for t in feature_config["templates"]]
 
     @staticmethod
-    def _sanitize_template(template):
+    def _sanitize_template(template: dict[str, Any]) -> dict[str, Any]:
         if template.get("output_dir"):
             template["extra_context"] = {"directory": "."}
         return template

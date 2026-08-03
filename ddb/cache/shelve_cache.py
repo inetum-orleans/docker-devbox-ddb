@@ -1,7 +1,9 @@
 import dbm
 import shelve
 import tempfile
+from collections.abc import Iterable
 from pathlib import Path
+from typing import Any
 
 from ..config import config
 from .cache import Cache
@@ -20,7 +22,7 @@ class ShelveCache(Cache):
     A cache implementation relying of shelve module.
     """
 
-    def __init__(self, namespace: str, *, eternal=False):
+    def __init__(self, namespace: str, *, eternal: bool = False) -> None:
         super().__init__(namespace)
 
         clear_cache = config.clear_cache and not eternal
@@ -45,7 +47,7 @@ class ShelveCache(Cache):
             self._shelf.clear()
 
     @staticmethod
-    def _delete_files(basename):
+    def _delete_files(basename: str) -> bool:
         deleted = False
         for filename in (basename, f"{basename}.dat", f"{basename}.dir"):
             if Path(filename).exists():
@@ -53,13 +55,13 @@ class ShelveCache(Cache):
                 deleted = True
         return deleted
 
-    def close(self):
+    def close(self) -> None:
         self._shelf.close()
 
-    def flush(self):
+    def flush(self) -> None:
         self._shelf.sync()
 
-    def get(self, key: str, default=None):
+    def get(self, key: str, default: Any = None) -> Any:
         try:
             return self._shelf.get(key, default)
         except AttributeError:
@@ -67,13 +69,13 @@ class ShelveCache(Cache):
             self._delete_files(self.basename)
             raise
 
-    def keys(self):
+    def keys(self) -> Iterable[str]:
         return self._shelf.keys()
 
-    def set(self, key: str, data):
+    def set(self, key: str, data: Any) -> None:
         self._shelf[key] = data
 
-    def pop(self, key: str):
+    def pop(self, key: str) -> Any:
         try:
             return self._shelf.pop(key)
         except AttributeError:
@@ -81,7 +83,7 @@ class ShelveCache(Cache):
             self._delete_files(self.basename)
             raise
 
-    def clear(self):
+    def clear(self) -> None:
         try:
             self._shelf.clear()
         except AttributeError:
@@ -89,5 +91,5 @@ class ShelveCache(Cache):
             self._delete_files(self.basename)
             raise
 
-    def __contains__(self, key):
+    def __contains__(self, key: str) -> bool:
         return self._shelf.__contains__(key)

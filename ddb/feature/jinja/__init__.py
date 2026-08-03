@@ -31,7 +31,7 @@ class JinjaFeature(Feature):
     def actions(self) -> Iterable[Action]:
         return (JinjaAction(),)
 
-    def _configure_defaults(self, feature_config: Dotty):
+    def _configure_defaults(self, feature_config: Dotty) -> None:
         includes = feature_config.get("includes")
         if includes is None:
             includes = TemplateFinder.build_default_includes_from_suffixes(

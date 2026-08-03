@@ -46,13 +46,13 @@ class DockerFeature(Feature):
             DockerDisplayInfoAction(),
         )
 
-    def _configure_defaults(self, feature_config: Dotty):
+    def _configure_defaults(self, feature_config: Dotty) -> None:
         self._configure_defaults_ip(feature_config)
         self._configure_defaults_user_from_name_and_group(feature_config)
         self._configure_defaults_user(feature_config)
         self._configure_defaults_path_mapping(feature_config)
 
-    def _configure_defaults_ip(self, feature_config):
+    def _configure_defaults_ip(self, feature_config: Dotty) -> None:
         ip_address = feature_config.get("ip")
         if not ip_address:
             docker_host = os.environ.get("DOCKER_HOST")
@@ -78,7 +78,7 @@ class DockerFeature(Feature):
         feature_config["ip"] = ip_address
 
     @staticmethod
-    def _configure_defaults_user_from_name_and_group(feature_config):
+    def _configure_defaults_user_from_name_and_group(feature_config: Dotty) -> None:
         uid = feature_config.get("user.uid")
         gid = feature_config.get("user.gid")
 
@@ -106,7 +106,7 @@ class DockerFeature(Feature):
                     import grp
 
                     struct_group = grp.getgrnam(group)
-                    gid = struct_group.gr_id
+                    gid = struct_group.gr_gid
                     feature_config["user.gid"] = gid
                 except ImportError:
                     pass
@@ -114,7 +114,7 @@ class DockerFeature(Feature):
                     pass
 
     @staticmethod
-    def _configure_defaults_user(feature_config):
+    def _configure_defaults_user(feature_config: Dotty) -> None:
         uid = feature_config.get("user.uid")
         if uid is None:
             try:
@@ -132,7 +132,7 @@ class DockerFeature(Feature):
             feature_config["user.gid"] = gid
 
     @staticmethod
-    def _configure_defaults_path_mapping(feature_config):
+    def _configure_defaults_path_mapping(feature_config: Dotty) -> None:
         """
         On windows, this generates a default path mapping matching docker-compose behavior when
         COMPOSE_CONVERT_WINDOWS_PATHS=1 is enabled.

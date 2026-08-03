@@ -5,7 +5,7 @@ import subprocess
 from ddb.config import config
 
 
-def run(executable: str, *args: str):
+def run(executable: str, *args: str) -> bytes:
     """
     Run executable using core.process configuration, replacing bin with configured one, appending and prepending args.
     """

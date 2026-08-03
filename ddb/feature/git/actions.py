@@ -4,6 +4,7 @@ from pathlib import Path
 from git import InvalidGitRepositoryError, Repo
 
 from ddb.action import Action
+from ddb.action.action import EventBindings
 from ddb.config import config
 from ddb.context import context
 from ddb.event import events
@@ -20,14 +21,14 @@ class FixFilePermissionsAction(Action):
         return "git:fix-file-permissions"
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return events.phase.configure
 
     @property
     def disabled(self) -> bool:
         return not config.data.get("git.fix_files_permissions") or os.name == "nt"
 
-    def execute(self):
+    def execute(self) -> None:
         """
         Execute the action.
 
@@ -39,7 +40,7 @@ class FixFilePermissionsAction(Action):
         except InvalidGitRepositoryError:
             pass
 
-    def process_repository(self, repo: Repo):
+    def process_repository(self, repo: Repo) -> None:
         """
         Process a repository.
 
@@ -56,7 +57,7 @@ class FixFilePermissionsAction(Action):
             self.process_repository(submodule.module())
 
     @staticmethod
-    def update_mode(path, git_mode):
+    def update_mode(path: str, git_mode: str) -> None:
         """
         Update the chmod of the file.
 

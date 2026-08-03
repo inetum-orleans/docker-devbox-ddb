@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+from typing import Any
 
 from ddb.binary import Binary as BinaryType
 
@@ -12,7 +13,7 @@ class File:
     """
 
     @event("file:deleted")
-    def deleted(self, file: str):
+    def deleted(self, file: str) -> None:
         """
         When a file is deleted.
 
@@ -20,7 +21,7 @@ class File:
         """
 
     @event("file:found")
-    def found(self, file: str):
+    def found(self, file: str) -> None:
         """
         When a file is found.
 
@@ -28,7 +29,7 @@ class File:
         """
 
     @event("file:generated")
-    def generated(self, source: str | None, target: str):
+    def generated(self, source: str | None, target: str) -> None:
         """
         When a file is generated.
 
@@ -43,7 +44,7 @@ class Certs:
     """
 
     @event("certs:generate")
-    def generate(self, domain: str, *, wildcard: bool = True):
+    def generate(self, domain: str, *, wildcard: bool = True) -> None:
         """
         Ask to generate a certificate.
 
@@ -52,7 +53,7 @@ class Certs:
         """
 
     @event("certs:remove")
-    def remove(self, domain: str):
+    def remove(self, domain: str) -> None:
         """
         Ask to remove a certificate.
 
@@ -60,7 +61,7 @@ class Certs:
         """
 
     @event("certs:generated")
-    def generated(self, domain: str, *, wildcard: bool, private_key: bytes | str, certificate: bytes | str):
+    def generated(self, domain: str, *, wildcard: bool, private_key: bytes | str, certificate: bytes | str) -> None:
         """
         When a certificate is generated.
 
@@ -71,7 +72,7 @@ class Certs:
         """
 
     @event("certs:removed")
-    def removed(self, domain: str):
+    def removed(self, domain: str) -> None:
         """
         When a certificate is removed.
 
@@ -79,7 +80,7 @@ class Certs:
         """
 
     @event("certs:available")
-    def available(self, domain: str, *, wildcard: bool, private_key: bytes | str, certificate: bytes | str):
+    def available(self, domain: str, *, wildcard: bool, private_key: bytes | str, certificate: bytes | str) -> None:
         """
         When a certificate is available.
 
@@ -97,7 +98,7 @@ class Binary:
     """
 
     @event("binary:unregistered")
-    def unregistered(self, binary: BinaryType):
+    def unregistered(self, binary: BinaryType) -> None:
         """
         When a binary as been unregistered.
 
@@ -106,7 +107,7 @@ class Binary:
         """
 
     @event("binary:registered")
-    def registered(self, binary: BinaryType):
+    def registered(self, binary: BinaryType) -> None:
         """
         When a binary has been registered.
 
@@ -115,7 +116,7 @@ class Binary:
         """
 
     @event("binary:found")
-    def found(self, binary: BinaryType):
+    def found(self, binary: BinaryType) -> None:
         """
         When a binary has been found.
 
@@ -129,7 +130,7 @@ class Run:
     """
 
     @event("run:run")
-    def run(self, name: str):
+    def run(self, name: str) -> None:
         """
         When a command has been runned.
 
@@ -137,7 +138,7 @@ class Run:
         """
 
     @event("run:command")
-    def command(self, command: Iterable[str], *, system_path: bool = False):
+    def command(self, command: Iterable[str], *, system_path: bool = False) -> None:
         """
         When a command request should be handled.
 
@@ -152,7 +153,7 @@ class Docker:
     """
 
     @event("docker:docker-compose-config")
-    def docker_compose_config(self, docker_compose_config: dict):
+    def docker_compose_config(self, docker_compose_config: dict[str, Any]) -> None:
         """
         When a docker compose configuration has been read.
 
@@ -160,7 +161,7 @@ class Docker:
         """
 
     @event("docker:docker-compose-before-events")
-    def docker_compose_before_events(self, docker_compose_config: dict):
+    def docker_compose_before_events(self, docker_compose_config: dict[str, Any]) -> None:
         """
         Before docker compose to emit events.
 
@@ -168,7 +169,7 @@ class Docker:
         """
 
     @event("docker:docker-compose-after-events")
-    def docker_compose_after_events(self, docker_compose_config: dict):
+    def docker_compose_after_events(self, docker_compose_config: dict[str, Any]) -> None:
         """
         After docker compose has emitted events.
 
@@ -178,18 +179,18 @@ class Docker:
     @event("docker:binary")
     def binary(
         self,
-        name=None,
-        workdir=None,
-        options=None,
-        options_condition=None,
-        condition=None,
-        args=None,
+        name: str | None = None,
+        workdir: str | None = None,
+        options: str | None = None,
+        options_condition: str | None = None,
+        condition: str | None = None,
+        args: str | None = None,
         *,
-        exe=False,
-        entrypoint=None,
-        global_=None,
-        docker_compose_service=None,
-    ):
+        exe: bool = False,
+        entrypoint: str | None = None,
+        global_: bool | None = None,
+        docker_compose_service: str | None = None,
+    ) -> None:
         """
         Ask a binary to be generated from docker compose service.
         """
@@ -201,49 +202,49 @@ class Phase:
     """
 
     @event("phase:init")
-    def init(self):
+    def init(self) -> None:
         """
         Init phase.
         """
 
     @event("phase:configure")
-    def configure(self):
+    def configure(self) -> None:
         """
         Configure phase.
         """
 
     @event("phase:download")
-    def download(self):
+    def download(self) -> None:
         """
         Download phase.
         """
 
     @event("phase:features")
-    def features(self):
+    def features(self) -> None:
         """
         Features phase.
         """
 
     @event("phase:info")
-    def info(self):
+    def info(self) -> None:
         """
         Features phase.
         """
 
     @event("phase:config")
-    def config(self):
+    def config(self) -> None:
         """
         Config phase.
         """
 
     @event("phase:run")
-    def run(self):
+    def run(self) -> None:
         """
         Run phase.
         """
 
     @event("phase:selfupdate")
-    def selfupdate(self):
+    def selfupdate(self) -> None:
         """
         Selfupdate phase.
         """
@@ -255,7 +256,7 @@ class Config:
     """
 
     @event("config:reloaded")
-    def reloaded(self):
+    def reloaded(self) -> None:
         """
         Config has been reloaded.
         """
@@ -267,19 +268,19 @@ class Main:
     """
 
     @event("main:start")
-    def start(self, command: Command):
+    def start(self, command: Command) -> None:
         """
         Main start.
         """
 
     @event("main:terminate")
-    def terminate(self, command: Command):
+    def terminate(self, command: Command) -> None:
         """
         Main terminate.
         """
 
     @event("main:version")
-    def version(self, *, silent: bool):
+    def version(self, *, silent: bool) -> None:
         """
         Main version.
         """

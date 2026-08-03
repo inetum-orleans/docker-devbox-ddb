@@ -3,6 +3,7 @@ import re
 import tempfile
 from collections.abc import Iterable
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -22,14 +23,14 @@ class YttAction(AbstractTemplateAction):
     def name(self) -> str:
         return "ytt:render"
 
-    def _build_template_finder(self):
+    def _build_template_finder(self) -> TemplateFinder:
         return TemplateFinder(
             [], [], config.data.get("ytt.includes"), config.data.get("ytt.excludes"), config.data.get("ytt.suffixes")
         )
 
     @staticmethod
-    def _escape_config(input_config: dict, *, with_config: bool = True):
-        new = {}
+    def _escape_config(input_config: dict[str, Any], *, with_config: bool = True) -> dict[str, Any]:
+        new: dict[str, Any] = {}
         keywords = config.data["ytt.keywords"]
         keywords_escape_format = config.data["ytt.keywords_escape_format"]
         for key, value in input_config.items():

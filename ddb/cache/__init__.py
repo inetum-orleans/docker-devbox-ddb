@@ -7,6 +7,21 @@ from ..registry import Registry
 from .cache import Cache
 from .shelve_cache import ShelveCache
 
+__all__ = [
+    "Cache",
+    "ShelveCache",
+    "caches",
+    "global_cache",
+    "global_cache_name",
+    "project_binary_cache_name",
+    "project_cache",
+    "project_cache_name",
+    "register_global_cache",
+    "register_project_cache",
+    "requests_cache",
+    "requests_cache_name",
+]
+
 caches: Registry[Cache] = Registry(Cache, "Cache")  # type: ignore[type-abstract]
 
 global_cache_name = "global"
@@ -16,7 +31,7 @@ project_cache_name = "project"
 project_binary_cache_name = "binary"
 
 
-def register_project_cache(cache_name):
+def register_project_cache(cache_name: str) -> Cache:
     """
     Creates a ShelveCache for current project, and register it with given name.
     """
@@ -36,7 +51,7 @@ def register_project_cache(cache_name):
     return cache
 
 
-def register_global_cache(cache_name):
+def register_global_cache(cache_name: str) -> Cache:
     """
     Creates a ShelveCache shared for all projects, and register it with given name.
     """

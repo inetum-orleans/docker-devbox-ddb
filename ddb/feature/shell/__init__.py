@@ -59,12 +59,12 @@ class ShellFeature(Feature):
 
     @property
     def phases(self) -> Iterable[Phase]:
-        def activate_parser(parser: ArgumentParser):
+        def activate_parser(parser: ArgumentParser) -> None:
             parser.add_argument(
                 "--force", action="store_true", help="Force activation when a project is already activated."
             )
 
-        def deactivate_parser(parser: ArgumentParser):
+        def deactivate_parser(parser: ArgumentParser) -> None:
             parser.add_argument(
                 "--force", action="store_true", help="Force deactivation when a project is already deactivated"
             )
@@ -100,7 +100,7 @@ class ShellFeature(Feature):
             ),
         )
 
-    def _configure_defaults(self, feature_config: Dotty):
+    def _configure_defaults(self, feature_config: Dotty) -> None:
         if not feature_config.get("shell"):
             comspec = os.environ.get("COMSPEC")
             shell = os.environ.get("SHELL")

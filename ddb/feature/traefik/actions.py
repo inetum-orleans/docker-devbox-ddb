@@ -1,8 +1,11 @@
 import re
+from collections.abc import Iterator
 from pathlib import Path
+from typing import Any
 
 from jinja2 import Template
 
+from ddb.action.action import EventBindings
 from ddb.config import config
 
 from ...action import Action, InitializableAction
@@ -21,8 +24,8 @@ def get_template(template: str) -> Template:
     :return:
     """
     if re.compile("^(https?|file)://").match(template):
-        return Template(FileUtils.get_file_content(template))
-    return Template(template)
+        return Template(FileUtils.get_file_content(template))  # type: ignore[no-any-return]
+    return Template(template)  # type: ignore[no-any-return]
 
 
 class TraefikInstalllCertsAction(Action):
@@ -31,7 +34,7 @@ class TraefikInstalllCertsAction(Action):
     """
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return events.certs.available
 
     @property
@@ -39,7 +42,7 @@ class TraefikInstalllCertsAction(Action):
         return "traefik:install-certs"
 
     @staticmethod
-    def execute(domain: str, private_key: str, certificate: str, *, wildcard: bool = False):
+    def execute(domain: str, private_key: str, certificate: str, *, wildcard: bool = False) -> None:
         """
         Execute action.
         """
@@ -76,7 +79,7 @@ class TraefikUninstalllCertsAction(Action):
     """
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return events.certs.removed
 
     @property
@@ -84,7 +87,7 @@ class TraefikUninstalllCertsAction(Action):
         return "traefik:uninstall-certs"
 
     @staticmethod
-    def execute(domain: str):
+    def execute(domain: str) -> None:
         """
         Execute action.
         """
@@ -114,32 +117,33 @@ class TraefikExtraServicesAction(InitializableAction):
     Generates extra services configuration to register any http/https URL inside the traefik reverse proxy.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.removal_cache_support = None  # type: RemovalCacheSupport
+        # Set by initialize(), before the first event binding runs.
+        self.removal_cache_support: RemovalCacheSupport = None  # type: ignore[assignment]
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return events.phase.configure
 
     @property
     def name(self) -> str:
         return "traefik:extra-services"
 
-    def initialize(self):
+    def initialize(self) -> None:
         self.removal_cache_support = RemovalCacheSupport("traefik.extra-services", {"generated-files", "certs-domains"})
 
-    def destroy(self):
+    def destroy(self) -> None:
         if self.removal_cache_support:
             self.removal_cache_support.close()
-            self.removal_cache_support = None
+            self.removal_cache_support = None  # type: ignore[assignment]
 
     @staticmethod
-    def get_extra_services():
+    def get_extra_services() -> Iterator[tuple[str, dict[str, Any], MigrationsDotty]]:
         """
         Get extra services defined in configuration.
         """
-        extra_services = config.data.get("traefik.extra_services")  # type: Dict[str, ExtraServiceSchema]
+        extra_services = config.data.get("traefik.extra_services")
         if extra_services:
             for id_, extra_service in extra_services.items():
                 extra_service_data, config_data = TraefikExtraServicesAction._prepare_extra_service_data(
@@ -147,7 +151,7 @@ class TraefikExtraServicesAction(InitializableAction):
                 )
                 yield id_, extra_service_data, config_data
 
-    def execute(self):
+    def execute(self) -> None:
         """
         Execute action.
         """
@@ -185,17 +189,15 @@ class TraefikExtraServicesAction(InitializableAction):
                 force_remove(value)
 
     @staticmethod
-    def _prepare_extra_service_data(extra_service, id_):
+    def _prepare_extra_service_data(extra_service: dict[str, Any], id_: str) -> tuple[dict[str, Any], MigrationsDotty]:
         data = MigrationsDotty(dict(config.data))
         extra_service_data = dict(extra_service)
         extra_service_data["id"] = id_
         data["_local"] = extra_service_data
-        if extra_service_data.get("domain"):
-            extra_service_data["domain"] = Template(extra_service_data.get("domain")).render(data)
-        if extra_service_data.get("rule"):
-            extra_service_data["rule"] = Template(extra_service_data.get("rule")).render(data)
-        if extra_service_data.get("url"):
-            extra_service_data["url"] = Template(extra_service_data.get("url")).render(data)
+        for templated_key in ("domain", "rule", "url"):
+            templated_value = extra_service_data.get(templated_key)
+            if templated_value:
+                extra_service_data[templated_key] = Template(templated_value).render(data)
 
         if extra_service["https"] is not None:
             extra_service_data["redirect_to_https"] = False

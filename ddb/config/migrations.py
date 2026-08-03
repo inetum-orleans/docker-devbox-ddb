@@ -1,5 +1,7 @@
 import contextlib
 from abc import ABC, abstractmethod
+from collections.abc import Callable, Sequence
+from typing import Any
 
 from dotty_dict import Dotty
 
@@ -15,7 +17,7 @@ class AbstractDeprecation(ABC):
     Abstract deprecation.
     """
 
-    def warn(self, source=None):
+    def warn(self, source: str | None = None) -> None:
         """
         Display deprecated warning.
         """
@@ -36,7 +38,7 @@ class AbstractMigration(AbstractDeprecation):
         """
 
     @abstractmethod
-    def migrate(self, config: Dotty):
+    def migrate(self, config: Dotty) -> None:
         """
         Apply changes on configuration to make it work with latest changes.
 
@@ -44,7 +46,7 @@ class AbstractMigration(AbstractDeprecation):
         """
 
     @abstractmethod
-    def get_new_value(self, config: Dotty):
+    def get_new_value(self, config: Dotty) -> Any:
         """
         Get property new value, regardless it's defined the new way or the old way.
 
@@ -53,7 +55,7 @@ class AbstractMigration(AbstractDeprecation):
         """
 
     @abstractmethod
-    def get_old_value(self, config: Dotty):
+    def get_old_value(self, config: Dotty) -> Any:
         """
         Get property old value, regardless it's defined the new way or the old way.
 
@@ -96,14 +98,14 @@ class PropertyMigration(AbstractPropertyMigration):
 
     def __init__(
         self,
-        old_config_key,
-        new_config_key,
-        transformer=None,
-        rollback_transformer=None,
-        since=None,
-        removed_in="a future major release",
-    ):
-        self._default_transformer = lambda value, config: value
+        old_config_key: str,
+        new_config_key: str,
+        transformer: Callable[[Any, Dotty], Any] | None = None,
+        rollback_transformer: Callable[[Any, Dotty], Any] | None = None,
+        since: str | None = None,
+        removed_in: str = "a future major release",
+    ) -> None:
+        self._default_transformer: Callable[[Any, Dotty], Any] = lambda value, config: value
         self._old_config_key = old_config_key
         self._new_config_key = new_config_key
         self.transformer = transformer if transformer else self._default_transformer
@@ -112,24 +114,24 @@ class PropertyMigration(AbstractPropertyMigration):
         self.removed_in = removed_in
 
     @property
-    def old_config_key(self):
+    def old_config_key(self) -> str:
         return self._old_config_key
 
     @property
-    def new_config_key(self):
+    def new_config_key(self) -> str:
         return self._new_config_key
 
     @property
-    def requires_value_migration(self):
+    def requires_value_migration(self) -> bool:
         return self.transformer != self._default_transformer
 
-    def verify(self, config: Dotty):
+    def verify(self, config: Dotty) -> bool:
         if self.old_config_key in config:
             self.warn()
             return False
         return True
 
-    def warn(self, source=None):
+    def warn(self, source: str | None = None) -> None:
         if not silent:
             since_message = f" since {self.since}" if self.since else ""
             source_message = f' (in "{source}").' if source else "."
@@ -145,20 +147,20 @@ class PropertyMigration(AbstractPropertyMigration):
                 _warns.add(message)
                 context.log.warning(message)
 
-    def migrate(self, config: Dotty):
+    def migrate(self, config: Dotty) -> None:
         old_value = config.pop(self.old_config_key)
         if old_value is not None:
             transformed_value = self.transformer(old_value, config)
             config[self.new_config_key] = transformed_value
 
-    def get_new_value(self, config: Dotty):
+    def get_new_value(self, config: Dotty) -> Any:
         if self.new_config_key in config:
             return config.get(self.new_config_key)
         if self.old_config_key in config:
             return self.transformer(config.get(self.old_config_key), config)
         raise KeyError
 
-    def get_old_value(self, config: Dotty):
+    def get_old_value(self, config: Dotty) -> Any:
         if self.new_config_key in config:
             return self.rollback_transformer(config.get(self.new_config_key), config)
         if self.old_config_key in config:
@@ -166,18 +168,19 @@ class PropertyMigration(AbstractPropertyMigration):
         raise KeyError
 
 
-class MigrationsDotty(Dotty):
+# dotty_dict ships no type information, so Dotty is seen as Any by mypy.
+class MigrationsDotty(Dotty):  # type: ignore[misc]
     """
     Dotty that supports migrations when requesting deprecated keys and displays deprecation warnings.
     """
 
-    def __init__(self, dictionary=None, namespace=""):
+    def __init__(self, dictionary: dict[str, Any] | None = None, namespace: str = "") -> None:
         if dictionary is None:
             dictionary = {}
         self.namespace = namespace
         super().__init__(dictionary)
 
-    def _build_deprecation_dict(self, item):
+    def _build_deprecation_dict(self, item: str) -> dict[str, Any]:
         migrations = get_migrations_from_old_config_key_startswith(item + ".")
         deprecation_dict = Dotty({})
 
@@ -187,7 +190,7 @@ class MigrationsDotty(Dotty):
 
         return dict(deprecation_dict)
 
-    def raw(self):
+    def raw(self) -> Dotty:
         """
         Build a new default Dotty instance using same data.
 
@@ -195,7 +198,7 @@ class MigrationsDotty(Dotty):
         """
         return Dotty(self._data)
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: str) -> Any:
         if isinstance(item, str):
             property_migration = get_migration_from_old_config_key(item)
             if property_migration:
@@ -271,12 +274,12 @@ _default_history = (
     ),
 )
 
-_history = None
+_history: Sequence["AbstractMigration"] = ()
 _history_from_old_config_key_dict: dict[str, "AbstractPropertyMigration"] = {}
 _history_from_new_config_key_dict: dict[str, "AbstractPropertyMigration"] = {}
 
 
-def get_history():
+def get_history() -> Sequence["AbstractMigration"]:
     """
     Get migrations history.
 
@@ -286,7 +289,7 @@ def get_history():
     return _history
 
 
-def set_history(history=_default_history):
+def set_history(history: Sequence["AbstractMigration"] = _default_history) -> None:
     """
     Set migrations history.
     """
@@ -328,7 +331,7 @@ def get_migrations_from_old_config_key_startswith(old_config_key_start: str) -> 
     """
     Get all migrations where old_config_key starts with given value.
     """
-    ret = set()
+    ret: set[AbstractPropertyMigration] = set()
     for migration in get_history():
         if (
             isinstance(migration, AbstractPropertyMigration)
@@ -339,7 +342,7 @@ def get_migrations_from_old_config_key_startswith(old_config_key_start: str) -> 
     return ret
 
 
-def migrate(config: Dotty):
+def migrate(config: Dotty) -> None:
     """
     Migrate all defined migrations in given config data.
     """

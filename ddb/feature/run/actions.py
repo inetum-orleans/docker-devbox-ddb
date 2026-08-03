@@ -1,5 +1,7 @@
 from collections.abc import Iterable
 
+from ddb.action.action import EventBindings
+
 from ...action import Action
 from ...action.action import EventBinding
 from ...binary import Binary, binaries
@@ -13,7 +15,7 @@ class RunAction(Action):
     """
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return (events.phase.run, EventBinding(events.run.run, self.run))
 
     @property
@@ -21,7 +23,7 @@ class RunAction(Action):
         return "run:run"
 
     @staticmethod
-    def execute():
+    def execute() -> None:
         """
         Execute the action defined by argument "name".
         """
@@ -30,7 +32,7 @@ class RunAction(Action):
             events.run.run(name=name)
 
     @staticmethod
-    def run(name: str, *args):
+    def run(name: str, *args: str) -> None:
         """
         Execute the action.
         """
@@ -49,7 +51,7 @@ class RunAction(Action):
             events.run.command([name, *args], system_path=True)
 
     @staticmethod
-    def select_binary(binary_set: Iterable[Binary], *args) -> Binary | None:
+    def select_binary(binary_set: Iterable[Binary], *args: str) -> Binary | None:
         """
         Select effective binary between many binaries.
         """

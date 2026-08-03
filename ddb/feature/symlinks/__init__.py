@@ -31,7 +31,7 @@ class SymlinksFeature(Feature):
     def actions(self) -> Iterable[Action]:
         return (SymlinksAction(),)
 
-    def _configure_defaults(self, feature_config: Dotty):
+    def _configure_defaults(self, feature_config: Dotty) -> None:
         suffixes = feature_config.get("suffixes")
         if not suffixes:
             try:

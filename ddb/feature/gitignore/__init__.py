@@ -31,11 +31,11 @@ class GitignoreFeature(Feature):
     def actions(self) -> Iterable[Action]:
         return (UpdateGitignoreAction(),)
 
-    def _configure_defaults(self, feature_config: Dotty):
+    def _configure_defaults(self, feature_config: Dotty) -> None:
         self._configure_defaults_disabled(feature_config)
 
     @staticmethod
-    def _configure_defaults_disabled(feature_config):
+    def _configure_defaults_disabled(feature_config: Dotty) -> None:
         if feature_config.get("disabled") is None:
             feature_config["disabled"] = False
             # Feature is disabled on non-dev environment.

@@ -3,6 +3,7 @@ import re
 from collections.abc import Iterable
 from importlib import import_module
 from pathlib import Path
+from typing import Any
 
 import yaml
 from _jsonnet import evaluate_file
@@ -39,7 +40,7 @@ class JsonnetAction(AbstractTemplateAction):
         evaluated = self._evaluate_jsonnet(template)
 
         multiple_file_output, multiple_file_dir = JsonnetAction._parse_multiple_header(template, target)
-        if multiple_file_output:
+        if multiple_file_output and multiple_file_dir is not None:
             for filename, content in json.loads(evaluated).items():
                 evaluated_target_path = str(Path(multiple_file_dir) / filename)
                 Path(evaluated_target_path).parent.mkdir(parents=True, exist_ok=True)
@@ -60,7 +61,7 @@ class JsonnetAction(AbstractTemplateAction):
             yield evaluated, target
 
     @staticmethod
-    def _do_postprocess(data):
+    def _do_postprocess(data: Any) -> bool:
         """
         Post process jsonnet output with python functions.
         """
@@ -116,7 +117,7 @@ class JsonnetAction(AbstractTemplateAction):
         return None
 
     @staticmethod
-    def _evaluate_jsonnet(template_path):
+    def _evaluate_jsonnet(template_path: str) -> str:
         data = config.data.copy()
 
         vars_config = flatten(data, stop_for_features=features.all())
@@ -130,15 +131,16 @@ class JsonnetAction(AbstractTemplateAction):
             for (k, v) in codes_config.items()
             if not isinstance(v, str)
         }
-        return evaluate_file(
+        evaluated: str = evaluate_file(
             template_path,
             ext_vars=ext_vars,
             ext_codes=ext_codes,
             jpathdir=str(Path(__file__).parent / "lib"),
         )
+        return evaluated
 
     @staticmethod
-    def _parse_multiple_header(template_path, target_path):
+    def _parse_multiple_header(template_path: str, target_path: str) -> tuple[bool, str | None]:
         multiple_file_output = False
         multiple_file_dir = None
         with Path(template_path).open(encoding="utf-8") as template:

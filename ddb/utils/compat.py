@@ -4,7 +4,7 @@ _windows_drive_letter_regex = re.compile(r"^([a-zA-Z]):")
 _windows_posix_drive_letter_regex = re.compile(r"^/([a-z])(/|$)")
 
 
-def path_as_posix_fast(path: str):
+def path_as_posix_fast(path: str) -> str:
     """
     Convert a local path to a posix path.
     """
@@ -12,7 +12,7 @@ def path_as_posix_fast(path: str):
     return replaced.replace("\\", "/")
 
 
-def posix_as_path_fast(posix_path: str):
+def posix_as_path_fast(posix_path: str) -> str:
     """
     Convert a posix path to a local path.
     """

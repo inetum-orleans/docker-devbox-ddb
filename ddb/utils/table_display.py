@@ -2,7 +2,7 @@ import math
 from collections.abc import Iterable
 
 
-def _get_content(content: str, line_length: int, *, centered: bool = True):
+def _get_content(content: str, line_length: int, *, centered: bool = True) -> str:
     left = " "
     right = (line_length - len(content) - 1) * " "
 
@@ -21,7 +21,7 @@ def _max_length(cells: Iterable[Iterable[str]]) -> int:
     return max_length
 
 
-def get_table_display(blocks: Iterable[Iterable[str]], *, centered: bool = True):
+def get_table_display(blocks: Iterable[Iterable[str]], *, centered: bool = True) -> str:
     """
     Convert the input data into a table with centered text.
 

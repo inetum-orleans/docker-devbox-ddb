@@ -14,18 +14,18 @@ class Phase(RegistryObject, ABC):
     Step into a lifecycle flow.
     """
 
-    def configure_parser(self, parser: ArgumentParser):
+    def configure_parser(self, parser: ArgumentParser) -> None:
         """
         Configure the argument parser.
         """
 
-    def execute(self):
+    def execute(self) -> None:
         """
         Execute the phase.
         """
 
     @property
-    def allow_unknown_args(self):
+    def allow_unknown_args(self) -> bool:
         """
         Check if this phase allow unkown args.
         """
@@ -45,21 +45,21 @@ class DefaultPhase(DefaultRegistryObject, Phase):
         *,
         run_once: bool = False,
         allow_unknown_args: bool = False,
-    ):
+    ) -> None:
         super().__init__(name, description)
         self.run_once = run_once
         self._parser = parser
         self._allow_unknown_args = allow_unknown_args
 
     @property
-    def allow_unknown_args(self):
+    def allow_unknown_args(self) -> bool:
         return self._allow_unknown_args
 
-    def configure_parser(self, parser: ArgumentParser):
+    def configure_parser(self, parser: ArgumentParser) -> None:
         if self._parser:
             self._parser(parser)
 
-    def execute(self):
+    def execute(self) -> None:
         cache = project_cache()
         runned_cache_key = "phase.runned." + self.name
         if self.run_once and cache.get(runned_cache_key):
@@ -69,7 +69,7 @@ class DefaultPhase(DefaultRegistryObject, Phase):
         cache.flush()
 
 
-def execute_phase(phase: Phase):
+def execute_phase(phase: Phase) -> None:
     """
     Execute a phase with context update.
     """

@@ -1,12 +1,15 @@
-from deepmerge import Merger
+from collections.abc import Callable
+from typing import Any
+
+from deepmerge.merger import Merger
 from deepmerge.strategy.dict import DictStrategies
 from deepmerge.strategy.fallback import FallbackStrategies
 from deepmerge.strategy.list import ListStrategies
 from deepmerge.strategy.type_conflict import TypeConflictStrategies
 
 
-def _type_conflict_strategy(config, path, base, nxt):
-    strategy = TypeConflictStrategies.strategy_override
+def _type_conflict_strategy(config: Merger, path: list[Any], base: Any, nxt: Any) -> Any:
+    strategy: Callable[..., Any] = TypeConflictStrategies.strategy_override
     if isinstance(nxt, dict):
         if "merge" in nxt and "value" in nxt:
             value = nxt["value"]
@@ -21,13 +24,13 @@ def _type_conflict_strategy(config, path, base, nxt):
     return strategy(config, path, base, nxt)
 
 
-def clean_merge_value_dicts(result):
+def clean_merge_value_dicts(result: Any) -> None:
     """
 
     :return:
     """
     if isinstance(result, dict):
-        updates = []
+        updates: list[tuple[str, Any]] = []
         for key, value in result.items():
             if isinstance(value, dict) and "merge" in value and "value" in value:
                 updates.append((key, value["value"]))
@@ -47,19 +50,19 @@ class ExtendedListStrategies(ListStrategies):
     """
 
     @staticmethod
-    def strategy_append_if_missing(config, path, base, nxt):
+    def strategy_append_if_missing(config: Merger, path: list[Any], base: list[Any], nxt: list[Any]) -> list[Any]:
         """Use the list nxt."""
         filtered_nxt = [item for item in nxt if item not in base]
         return ListStrategies.strategy_append(config, path, base, filtered_nxt)
 
     @staticmethod
-    def strategy_prepend_if_missing(config, path, base, nxt):
+    def strategy_prepend_if_missing(config: Merger, path: list[Any], base: list[Any], nxt: list[Any]) -> list[Any]:
         """Use the list nxt."""
         filtered_nxt = [item for item in nxt if item not in base]
         return ListStrategies.strategy_prepend(config, path, base, filtered_nxt)
 
     @staticmethod
-    def strategy_insert_if_missing(config, path, base, nxt):
+    def strategy_insert_if_missing(config: Merger, path: list[Any], base: list[Any], nxt: list[Any]) -> list[Any]:
         """Use the list nxt."""
         idx = nxt.pop(0)
         filtered_nxt = [item for item in nxt if item not in base]
@@ -71,7 +74,7 @@ class ExtendedListStrategies(ListStrategies):
         return ret
 
     @staticmethod
-    def strategy_insert(config, path, base, nxt):
+    def strategy_insert(config: Merger, path: list[Any], base: list[Any], nxt: list[Any]) -> list[Any]:
         """Use the list nxt."""
         idx = nxt.pop(0)
         ordered_nxt = list(nxt)
@@ -83,12 +86,12 @@ class ExtendedListStrategies(ListStrategies):
         return ret
 
 
-def merge_value_strategy_wrapper(strategy):
+def merge_value_strategy_wrapper(strategy: Callable[..., Any]) -> Callable[..., Any]:
     """
     Wrap the strategy to remove merge/value dicts if output still have ones.
     """
 
-    def wrapped_strategy(config, path, base, nxt):
+    def wrapped_strategy(config: Merger, path: list[Any], base: Any, nxt: Any) -> Any:
         result = strategy(config, path, base, nxt)
         clean_merge_value_dicts(result)
         return result

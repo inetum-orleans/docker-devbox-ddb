@@ -9,7 +9,7 @@ from ...utils.process import run
 from .schema import VersionSchema
 
 
-def is_git_repository():
+def is_git_repository() -> bool:
     """
     Check if git command line is available, and if a git repository index is available in current directory.
     """
@@ -20,7 +20,7 @@ def is_git_repository():
         return False
 
 
-def get_tag_from_vcs():
+def get_tag_from_vcs() -> str | None:
     """
     Get last tag from git index.
     """
@@ -32,7 +32,7 @@ def get_tag_from_vcs():
         raise
 
 
-def get_branch_from_vcs():
+def get_branch_from_vcs() -> str | None:
     """
     Get branch name from git index.
     """
@@ -80,7 +80,7 @@ def get_branch_from_vcs():
     return branch
 
 
-def get_version_from_vcs():
+def get_version_from_vcs() -> str | None:
     """
     Get version from git index.
     """
@@ -92,7 +92,7 @@ def get_version_from_vcs():
         raise
 
 
-def get_hash_from_vcs():
+def get_hash_from_vcs() -> str | None:
     """
     Get commit hash from git index.
     """
@@ -104,7 +104,7 @@ def get_hash_from_vcs():
         raise
 
 
-def get_short_hash_from_vcs():
+def get_short_hash_from_vcs() -> str | None:
     """
     Get commit short hash from git index.
     """
@@ -133,7 +133,7 @@ class VersionFeature(Feature):
     def schema(self) -> type[VersionSchema]:
         return VersionSchema
 
-    def _configure_defaults(self, feature_config: Dotty):
+    def _configure_defaults(self, feature_config: Dotty) -> None:
         if not is_git_repository():
             return
 

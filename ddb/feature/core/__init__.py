@@ -39,14 +39,14 @@ class NoProjectConfigurationError(FailFastError, ExpectedError):
     Error that should be raised when a project configuration file is required for the command.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             "No project configuration file found. "
             "Please create a ddb.yml file in your project directory. "
             "It can be empty."
         )
 
-    def log_error(self):
+    def log_error(self) -> None:
         context.log.error(str(self))
 
 
@@ -78,7 +78,7 @@ class CoreFeature(Feature):
 
     @property
     def phases(self) -> Iterable[Phase]:
-        def configure_parser(parser: ArgumentParser):
+        def configure_parser(parser: ArgumentParser) -> None:
             parser.add_argument(
                 "--eject", action="store_true", help="Eject the project using the current configuration"
             )
@@ -88,7 +88,7 @@ class CoreFeature(Feature):
                 help="Autofix supported deprecated warnings by modifying template sources.",
             )
 
-        def config_parser(parser: ArgumentParser):
+        def config_parser(parser: ArgumentParser) -> None:
             parser.add_argument("property", nargs="?", help="Property to read")
             parser.add_argument(
                 "--variables",
@@ -99,12 +99,12 @@ class CoreFeature(Feature):
             parser.add_argument("--full", action="store_true", help="Output full configuration")
             parser.add_argument("--files", action="store_true", help="Group by loaded configuration file")
 
-        def info_parser(parser: ArgumentParser):
+        def info_parser(parser: ArgumentParser) -> None:
             parser.add_argument(
                 "--type", action="append", help="Filter for a type of information between: bin, env, port and vhost"
             )
 
-        def selfupdate_parser(parser: ArgumentParser):
+        def selfupdate_parser(parser: ArgumentParser) -> None:
             parser.add_argument("--force", action="store_true", help="Force update")
 
         return (
@@ -119,7 +119,7 @@ class CoreFeature(Feature):
 
     @property
     def commands(self) -> Iterable[Command]:
-        def requires_project_config():
+        def requires_project_config() -> None:
             if not config.project_configuration_file:
                 error = NoProjectConfigurationError()
                 error.log_error()
@@ -141,7 +141,7 @@ class CoreFeature(Feature):
             LifecycleCommand("self-update", "Update ddb to latest version", "selfupdate"),
         )
 
-    def configure(self, *, bootstrap=False):
+    def configure(self, *, bootstrap: bool = False) -> None:
         super().configure(bootstrap=bootstrap)
         if bootstrap:
             return
@@ -149,7 +149,7 @@ class CoreFeature(Feature):
         self._apply_eject_configuration()
 
     @staticmethod
-    def _load_environment_configuration():
+    def _load_environment_configuration() -> None:
         """
         Loading enviromnent configuration file, if exists.
         """
@@ -175,7 +175,7 @@ class CoreFeature(Feature):
                 raise ConfigureSecondPassException()
 
     @staticmethod
-    def _apply_eject_configuration():
+    def _apply_eject_configuration() -> None:
         """
         Override some configuration that doesn't make sense without ddb.
 
@@ -187,7 +187,7 @@ class CoreFeature(Feature):
             config.data["core.path.user_home"] = "~"
             config.data["core.path.project_home"] = "."
 
-    def _configure_defaults(self, feature_config: Dotty):
+    def _configure_defaults(self, feature_config: Dotty) -> None:
         if not feature_config.get("project.name"):
             project_name = Path(config.paths.project_home).name
             feature_config["project.name"] = project_name
@@ -229,12 +229,12 @@ class CoreFeature(Feature):
             project_home=feature_config.get("path.project_home"),
         )
 
-    def _configure_release_asset_name_defaults(self, feature_config: Dotty):
+    def _configure_release_asset_name_defaults(self, feature_config: Dotty) -> None:
         if not feature_config.get("release_asset_name"):
             feature_config["release_asset_name"] = self._get_default_binary_remote_name()
 
     @staticmethod
-    def _get_default_binary_remote_name():
+    def _get_default_binary_remote_name() -> str | None:
         """
         Get default binary remote name, based on current platform.
         """

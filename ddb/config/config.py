@@ -1,9 +1,10 @@
 import os
 from argparse import Namespace
 from collections import namedtuple
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable, Sequence
 from copy import deepcopy
 from pathlib import Path
+from typing import Any, ClassVar
 
 import yaml
 
@@ -14,7 +15,7 @@ from ddb.utils.path import absolute_path
 ConfigPaths = namedtuple("ConfigPaths", ["ddb_home", "home", "user_home", "project_home"])
 
 
-def configuration_file(path: str, filenames: Iterable[str], extensions: Iterable[str]):
+def configuration_file(path: str, filenames: Iterable[str], extensions: Iterable[str]) -> str | None:
     """
     Find configuration file for given path and possible filename/extensions.
     """
@@ -27,7 +28,7 @@ def configuration_file(path: str, filenames: Iterable[str], extensions: Iterable
     return None
 
 
-def get_default_config_paths(env_prefix, filenames, extensions) -> ConfigPaths:
+def get_default_config_paths(env_prefix: str, filenames: Iterable[str], extensions: Iterable[str]) -> ConfigPaths:
     """
     Get configuration paths.
     """
@@ -61,22 +62,22 @@ class Config:
     path: ConfigPaths
 
     # Static default/overrides values for configuration, can be modified from code mainly for tests purpose
-    defaults = None
+    defaults: ClassVar[dict[str, Any] | None] = None
 
-    def overrides(config):  # noqa: N805 - extension point, replaced as a whole (Config.overrides = ...)
-        return config
+    # Extension point, replaced as a whole (Config.overrides = ...), and set to None to disable.
+    overrides: ClassVar[Callable[[dict[str, Any]], dict[str, Any]] | None] = staticmethod(lambda config: config)
 
     def __init__(
         self,
         paths: ConfigPaths | None = None,
-        env_prefix="DDB",
-        env_override_prefix="DDB_OVERRIDE",
-        filenames=("ddb", "ddb.local"),
-        extensions=("yml", "yaml"),
-        cwd=None,
-        args=None,
-        unknown_args=None,
-    ):
+        env_prefix: str = "DDB",
+        env_override_prefix: str = "DDB_OVERRIDE",
+        filenames: Sequence[str] = ("ddb", "ddb.local"),
+        extensions: Sequence[str] = ("yml", "yaml"),
+        cwd: str | None = None,
+        args: Namespace | None = None,
+        unknown_args: Sequence[str] | None = None,
+    ) -> None:
         self.env_prefix = env_prefix
         self.env_override_prefix = env_override_prefix
         self.filenames = filenames
@@ -89,13 +90,13 @@ class Config:
         self.unknown_args = unknown_args if unknown_args else []
         self.env_key = "env"
 
-    def reset(self, *args, **kwargs):
+    def reset(self, **kwargs: Any) -> None:
         """
         Reset the configuration object, while keeping configured paths.
         """
-        self.__init__(*args, paths=self.paths, **kwargs)
+        Config.__init__(self, paths=self.paths, **kwargs)
 
-    def clear(self):
+    def clear(self) -> None:
         """
         Remove all configuration data.
         """
@@ -103,14 +104,14 @@ class Config:
         self.env_additions.clear()
 
     @property
-    def project_configuration_file(self):
+    def project_configuration_file(self) -> str | None:
         """
         Retrieve the project configuration file.
         """
         return configuration_file(self.paths.project_home, self.filenames, self.extensions)
 
     @property
-    def project_cwd(self):
+    def project_cwd(self) -> str | None:
         """
         Retrieve the current working directory, relative to project_home.
 
@@ -121,7 +122,7 @@ class Config:
         return None
 
     @property
-    def eject(self):
+    def eject(self) -> bool:
         """
         Check if command line is running configure command with --eject flag.
 
@@ -130,16 +131,16 @@ class Config:
         return "command" in self.args and self.args.command == "configure" and "eject" in self.args and self.args.eject
 
     @property
-    def clear_cache(self):
+    def clear_cache(self) -> bool:
         """
         Should cache be cleared on load.
         """
         if "clear_cache" in self.args:
-            return self.args.clear_cache
+            return bool(self.args.clear_cache)
         return False
 
     @property
-    def files(self):
+    def files(self) -> list[str]:
         """
         Possible configuration files to load.
         """
@@ -156,7 +157,9 @@ class Config:
                     ret.append(file)
         return ret
 
-    def read(self, defaults=None, files=None):
+    def read(
+        self, defaults: dict[str, Any] | None = None, files: Iterable[str] | None = None
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
         """
         Read configuration data from files.
         """
@@ -175,12 +178,12 @@ class Config:
                     if file_data:
                         loaded_data = config_merger.merge(loaded_data, file_data)
 
-        if Config.overrides:
+        if Config.overrides is not None:
             Config.overrides(loaded_data)
 
         return self.apply_environ_overrides(loaded_data), found_files
 
-    def load_from_data(self, data: dict):
+    def load_from_data(self, data: dict[str, Any]) -> None:
         """
         Load configuration data from readen files.
         """
@@ -193,18 +196,18 @@ class Config:
                 for name, value in env.items():
                     os.environ[name] = value
 
-    def load(self, defaults=None, files=None):
+    def load(self, defaults: dict[str, Any] | None = None, files: Iterable[str] | None = None) -> None:
         """
         Load configuration data from files. Variable in 'env_key' key will be placed loaded as environment variables.
         """
-        defaults_to_apply = {} if Config.defaults is None else dict(Config.defaults)
+        defaults_to_apply: dict[str, Any] = {} if Config.defaults is None else dict(Config.defaults)
         if defaults:
             # Config.defaults should have the priority over given defaults.
             defaults_to_apply = config_merger.merge(defaults, defaults_to_apply)
         read_data, _ = self.read(defaults_to_apply, files)
         self.load_from_data(read_data)
 
-    def apply_environ_overrides(self, data, prefix=None):
+    def apply_environ_overrides(self, data: Any, prefix: str | None = None) -> Any:
         """
         Apply environment variables to configuration.
         """
@@ -212,7 +215,7 @@ class Config:
             prefix = self.env_override_prefix
         prefix = prefix.upper()
 
-        environ_value = os.environ.get(prefix)
+        environ_value: Any = os.environ.get(prefix)
         if environ_value:
             if environ_value.lower() == str(True):
                 environ_value = True

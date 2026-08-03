@@ -9,6 +9,7 @@ from collections.abc import Callable, Iterable, Sequence
 from gettext import gettext as _
 from importlib import import_module
 from pathlib import Path
+from typing import Any, TypeVar
 
 import verboselogs
 from colorlog import ColoredFormatter, default_log_colors
@@ -31,7 +32,7 @@ from ddb.command import commands
 from ddb.command.command import Command, execute_command
 from ddb.config import config
 from ddb.context import context
-from ddb.event import bus, events
+from ddb.event import bus, event_name, events
 from ddb.feature import Feature, features
 from ddb.feature.bootstrap import (
     append_available_feature,
@@ -48,15 +49,17 @@ from ddb.utils.path import absolute_path
 _watch_started_event = threading.Event()
 _watch_stop_event = threading.Event()
 
+R = TypeVar("R", bound=RegistryObject)
 
-def load_plugins():
+
+def load_plugins() -> None:
     """Load plugins."""
     for directory in [d for d in config.paths if d]:
         extension_directory = str(Path(directory) / ".ddb")
         if Path(extension_directory).exists():
             sys.path.append(absolute_path(extension_directory))
             for dirpath, _, files in os.walk(extension_directory):
-                module_name = os.path.relpath(dirpath, extension_directory).replace(os.sep, ".")
+                module_name: str | None = os.path.relpath(dirpath, extension_directory).replace(os.sep, ".")
                 if module_name == ".":
                     module_name = None
 
@@ -70,7 +73,7 @@ def load_plugins():
                         )
 
 
-def _load_plugins_module(module_name):
+def _load_plugins_module(module_name: str | None) -> None:
     if not module_name:
         return
     module = import_module(module_name)
@@ -85,7 +88,7 @@ def _load_plugins_module(module_name):
             append_available_feature(feature)
 
 
-def prepare_project_home():
+def prepare_project_home() -> None:
     """
     Set working directory to project home.
     """
@@ -94,7 +97,7 @@ def prepare_project_home():
         os.chdir(config.paths.project_home)
 
 
-def register_default_caches():
+def register_default_caches() -> None:
     """
     Register default caches.
     """
@@ -106,13 +109,13 @@ def register_default_caches():
 
 def register_objects(
     features_list: Iterable[Feature],
-    objects_getter: Callable[[Feature], Iterable[RegistryObject]],
-    registry: Registry[RegistryObject],
-):
+    objects_getter: Callable[[Feature], Iterable[R]],
+    registry: Registry[R],
+) -> None:
     """
     Register objects from features inside registry.
     """
-    all_objects: list[RegistryObject] = []
+    all_objects: list[R] = []
 
     for feature in features_list:
         objects = objects_getter(feature)
@@ -122,19 +125,19 @@ def register_objects(
         registry.register(obj)
 
 
-def preload_registered_features():
+def preload_registered_features() -> Iterable[Feature]:
     """
     Load phases and commands from all registered features.
     """
     load_bootstrap_config()
     all_features = features.all()
-    enabled_features = [f for f in all_features if not f.disabled]  # type: Iterable[Feature]
+    enabled_features = [f for f in all_features if not f.disabled]
     register_objects(enabled_features, lambda f: f.phases, phases)
     register_objects(enabled_features, lambda f: f.commands, commands)
     return enabled_features
 
 
-def load_registered_features(*, preload=True):
+def load_registered_features(*, preload: bool = True) -> Iterable[Feature]:
     """
     Load all registered features.
     """
@@ -158,7 +161,7 @@ def load_registered_features(*, preload=True):
 
     # migrations.compat(config.data)
 
-    enabled_features = [f for f in all_features if not f.disabled]  # type: Iterable[Feature]
+    enabled_features = [f for f in all_features if not f.disabled]
 
     if preload:
         register_objects(enabled_features, lambda f: f.phases, phases)
@@ -174,7 +177,7 @@ def load_registered_features(*, preload=True):
     return enabled_features
 
 
-def configure_logging(level: str | int = logging.INFO):
+def configure_logging(level: str | int = logging.INFO) -> None:
     """
     Configure context logger.
     """
@@ -192,7 +195,7 @@ def configure_logging(level: str | int = logging.INFO):
         Custom context logger formatter.
         """
 
-        def format(self, record):
+        def format(self, record: logging.LogRecord) -> str:
             record.simplename = record.name.rsplit(".", 1)[-1]
             return super().format(record)
 
@@ -205,18 +208,18 @@ def configure_logging(level: str | int = logging.INFO):
     logger.addHandler(handler)
 
 
-def handle_watch():
+def handle_watch() -> None:
     """
     Handle watch option.
     """
-    watch_supports = []  # type:List[Union[Action, WatchSupport]]
+    watch_supports: list[tuple[str, WatchSupport]] = []
     for action in actions.all():
         if isinstance(action, WatchSupport):
-            watch_supports.append(action)
+            watch_supports.append((action.name, action))
 
     if watch_supports:
-        for watch_support in watch_supports:
-            logging.getLogger("ddb.watch").info("Initializing %s watcher ...", watch_support.name)
+        for name, watch_support in watch_supports:
+            logging.getLogger("ddb.watch").info("Initializing %s watcher ...", name)
             watch_support.start_watching()
         _watch_started_event.set()
         try:
@@ -229,10 +232,10 @@ def handle_watch():
         finally:
             context.watching = False
         logging.getLogger("ddb.watch").warning("Terminating ...")
-        for watch_support in watch_supports:
+        for _, watch_support in watch_supports:
             watch_support.stop_watching()
 
-        for watch_support in watch_supports:
+        for _, watch_support in watch_supports:
             watch_support.join_watching()
     else:
         logging.getLogger("ddb.watch").warning("Watching is supported by none enabled features")
@@ -243,14 +246,14 @@ class ParseCommandLineException(Exception):
     Exception raised when an invalid command line is given.
     """
 
-    def __init__(self, opts: ArgumentParser, parsed_args: Namespace, unknown_args: list[str]):
+    def __init__(self, opts: ArgumentParser, parsed_args: Namespace, unknown_args: list[str]) -> None:
         super().__init__()
         self.opts = opts
         self.parsed_args = parsed_args
         self.unknown_args = unknown_args
 
 
-def parse_command_line(args: Sequence[str] | None = None):
+def parse_command_line(args: Sequence[str] | None = None) -> tuple[Command, Namespace, list[str]]:
     """
     Parse command line arguments, returning the command to execute, args and unknown args.
     """
@@ -338,7 +341,7 @@ def parse_command_line(args: Sequence[str] | None = None):
     return command, parsed_args, unknown_args
 
 
-def handle_command_line(command: Command):
+def handle_command_line(command: Command) -> None:
     """
     Execute the command and handle additional given arguments like watch mode.
     """
@@ -348,13 +351,13 @@ def handle_command_line(command: Command):
         handle_watch()
 
 
-def _as_event_binding(binding: Callable | str | EventBinding) -> EventBinding:
+def _as_event_binding(binding: Callable[..., Any] | str | EventBinding) -> EventBinding:
     """
     Normalize an event binding declaration. It supports name property added by @event decorator on events
     callable.
     """
     if callable(binding) and hasattr(binding, "name"):
-        binding = binding.name
+        binding = event_name(binding)
     if isinstance(binding, str):
         return EventBinding(binding)
     if isinstance(binding, EventBinding):
@@ -363,7 +366,9 @@ def _as_event_binding(binding: Callable | str | EventBinding) -> EventBinding:
     raise ValueError(msg)
 
 
-def _register_action_in_event_bus(action: Action, binding: Callable | str | EventBinding, *, fail_fast=False):
+def _register_action_in_event_bus(
+    action: Action, binding: Callable[..., Any] | str | EventBinding, *, fail_fast: bool = False
+) -> None:
     """
     Register a single event binding. It supports name property added by @event decorator on events callable.
     """
@@ -381,7 +386,7 @@ def _register_action_in_event_bus(action: Action, binding: Callable | str | Even
     )
 
 
-def register_actions_in_event_bus(*, fail_fast=False):
+def register_actions_in_event_bus(*, fail_fast: bool = False) -> None:
     """
     Register actions into event bus.
     """
@@ -398,8 +403,8 @@ def register_actions_in_event_bus(*, fail_fast=False):
 def main(
     args: Sequence[str] | None = None,
     *,
-    reset_disabled=False,
-):
+    reset_disabled: bool = False,
+) -> list[Exception]:
     """
     Load all features and handle command line.
     """
@@ -433,7 +438,7 @@ def main(
         prepare_project_home()
         register_default_caches()
 
-        def on_config_reloaded():
+        def on_config_reloaded() -> None:
             global _watch_started_event, _watch_stop_event
             _watch_stop_event.set()
             _watch_started_event = threading.Event()
@@ -449,7 +454,7 @@ def main(
 
             handle_command_line(command)
 
-        bus.on(events.config.reloaded.name, on_config_reloaded)
+        bus.on(event_name(events.config.reloaded), on_config_reloaded)
 
         events.main.start(command=command)
         handle_command_line(command)
@@ -473,21 +478,21 @@ def main(
             reset()
 
 
-def wait_watch_started(timeout: float | None = None):
+def wait_watch_started(timeout: float | None = None) -> bool:
     """
     Wait for watch mode to be started.
     """
     return _watch_started_event.wait(timeout)
 
 
-def stop_watch():
+def stop_watch() -> None:
     """
     Stop watch mode.
     """
     _watch_stop_event.set()
 
 
-def clear_caches():
+def clear_caches() -> None:
     """
     Clear all caches.
     """
@@ -496,7 +501,7 @@ def clear_caches():
         cache.flush()
 
 
-def reset():
+def reset() -> None:
     """
     Close all caches and reset registries to run main method again.
     """
@@ -516,7 +521,7 @@ def reset():
     reset_available_features()
 
 
-def console_script():  # pragma: no cover
+def console_script() -> None:  # pragma: no cover
     """
     Console script entrypoint.
     """

@@ -7,8 +7,8 @@ from ddb.feature.schema import FeatureSchema
 from ...config import config
 
 
-def _get_path_default():
-    _path_default = []
+def _get_path_default() -> list[str]:
+    _path_default: list[str] = []
 
     if config.paths.project_home:
         _path_default.append(".bin")

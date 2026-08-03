@@ -1,7 +1,7 @@
 import glob
 
 
-def found_with_glob(value):
+def found_with_glob(value: str) -> bool:
     """
     Check if at least one file match the given glob expression.
 

@@ -1,13 +1,14 @@
 from collections import defaultdict
+from typing import Any
 
 from ddb.feature.docker.lib.compose.config.types import ServicePort
 
 
-def apply_resolve_ports_conflicts(compose):
+def apply_resolve_ports_conflicts(compose: dict[str, Any]) -> dict[str, Any]:
     """
     Resolve ports conflicts in docker compose configuration.
     """
-    published = defaultdict(set)
+    published: defaultdict[str, set[int]] = defaultdict(set)
 
     if "services" in compose:
         for service in compose["services"].values():

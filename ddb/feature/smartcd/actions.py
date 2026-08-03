@@ -1,15 +1,14 @@
 import os
-from collections.abc import Callable, Iterable
 from subprocess import CalledProcessError
 
-from ddb.action.action import EventBinding, InitializableAction
+from ddb.action.action import EventBindings, InitializableAction
 from ddb.command import commands
 from ddb.event import events
 from ddb.utils.file import write_if_different
 from ddb.utils.process import run
 
 
-def is_smartcd_installed():
+def is_smartcd_installed() -> bool:
     """
     Run smartcd command to check if it"s installed.
     """
@@ -26,7 +25,7 @@ class SmartcdAction(InitializableAction):
     """
 
     @property
-    def event_bindings(self) -> Iterable[Callable | str | EventBinding] | Callable | str | EventBinding:
+    def event_bindings(self) -> EventBindings:
         return events.phase.configure
 
     @property
@@ -38,7 +37,7 @@ class SmartcdAction(InitializableAction):
         return os.name == "nt"
 
     @staticmethod
-    def execute():
+    def execute() -> None:
         """
         Write .bash_enter/.bash_leave files.
 
@@ -70,7 +69,7 @@ class WindowsProjectActivate(InitializableAction):
     """
 
     @property
-    def event_bindings(self) -> Iterable[Callable | str | EventBinding] | Callable | str | EventBinding:
+    def event_bindings(self) -> EventBindings:
         return events.phase.configure
 
     @property
@@ -82,7 +81,7 @@ class WindowsProjectActivate(InitializableAction):
         return os.name != "nt"
 
     @staticmethod
-    def execute():
+    def execute() -> None:
         """
         Write .bash_enter/.bash_leave files.
 

@@ -1,8 +1,9 @@
 import os
 import shutil
+from typing import Any
 
 from ddb.action import Action
-from ddb.action.action import EventBinding
+from ddb.action.action import EventBinding, EventBindings
 from ddb.config import config
 from ddb.event import events
 from ddb.utils.file import FileWalker, chmod
@@ -18,20 +19,20 @@ class PermissionsAction(Action):
         return "git:permissions"
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         specs = config.data.get("permissions.specs")
         compiled_specs = []
         if specs:
             for spec, mode in specs.items():
                 compiled_specs.append((FileWalker.re_compile_patterns(spec), mode))
 
-        def file_found_processor(file: str):
+        def file_found_processor(file: str) -> tuple[tuple[()], dict[str, Any]] | None:
             for spec, mode in compiled_specs:
                 if FileWalker.match_any_pattern(file, spec):
                     return (), {"file": file, "mode": mode}
             return None
 
-        def file_generated_processor(source: str | None, target: str):
+        def file_generated_processor(source: str | None, target: str) -> tuple[tuple[()], dict[str, Any]] | None:
             mode = file_found_processor(target)
             if mode is None and source is not None:
                 shutil.copymode(source, target)

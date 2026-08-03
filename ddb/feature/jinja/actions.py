@@ -2,6 +2,7 @@ import os
 import re
 from collections.abc import Iterable
 from pathlib import Path
+from typing import Any
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
@@ -28,18 +29,19 @@ class JinjaAction(AbstractTemplateAction):
     Render jinja templates based on filename suffixes.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.env = None  # type: Environment
-        self.context = None  # type: dict
-        self._rootpath = None  # type: str
-        self._migrationpath = None  # type: str
+        # All four are set by initialize(), before the first event binding runs.
+        self.env: Environment = None  # type: ignore[assignment]
+        self.context: dict[str, Any] = None  # type: ignore[assignment]
+        self._rootpath: str = None  # type: ignore[assignment]
+        self._migrationpath: str = None  # type: ignore[assignment]
 
     @property
     def name(self) -> str:
         return "jinja:render"
 
-    def _build_template_finder(self):
+    def _build_template_finder(self) -> TemplateFinder:
         return TemplateFinder(
             [],
             [],
@@ -48,13 +50,13 @@ class JinjaAction(AbstractTemplateAction):
             config.data.get("jinja.suffixes"),
         )
 
-    def initialize(self):
+    def initialize(self) -> None:
         super().initialize()
 
-        self._rootpath = self.template_finder.rootpath
+        self._rootpath = str(self.template_finder.rootpath)
         self._migrationpath = get_single_temporary_file_directory("ddb", "migration", "jinja")
 
-        effective_options = {
+        effective_options: dict[str, Any] = {
             "loader": FileSystemLoader([self._rootpath, self._migrationpath]),
             "undefined": StrictUndefined,
             "keep_trailing_newline": True,
@@ -124,26 +126,26 @@ class JinjaAction(AbstractTemplateAction):
             if dict_object_match:
                 property_contains = f".{dict_object_match.group(1)}"
 
-                for property_migration in migrations.get_history():
+                for migration in migrations.get_history():
                     if (
-                        isinstance(property_migration, AbstractPropertyMigration)
-                        and not property_migration.requires_value_migration
-                        and property_contains in property_migration.old_config_key
+                        isinstance(migration, AbstractPropertyMigration)
+                        and not migration.requires_value_migration
+                        and property_contains in migration.old_config_key
                     ):
-                        property_migration_set.add(property_migration)
+                        property_migration_set.add(migration)
 
         return property_migration_set
 
     def _apply_migration_set(
         self, template: str, original_template: str, property_migration_set: Iterable[AbstractPropertyMigration]
-    ):
+    ) -> str | None:
         with Path(template).open(encoding="utf-8") as template_file:
             altered = False
             altered_template_data = ""
             variable_content = ""
             in_variable = False
-            previous_lex_lineno = None
-            previous_lex_value = None
+            previous_lex_lineno: int | None = None
+            previous_lex_value: str | None = None
 
             for lex_lineno, lex_type, lex_value in self.env.lex(self.env.preprocess(template_file.read())):
                 lex_value = self._fix_lex_value(lex_value, lex_lineno, previous_lex_value, previous_lex_lineno)
@@ -175,7 +177,9 @@ class JinjaAction(AbstractTemplateAction):
         return altered_template_data if altered else None
 
     @staticmethod
-    def _replace_variable_content(variable_content, property_migration_set, original_template):
+    def _replace_variable_content(
+        variable_content: str, property_migration_set: Iterable[AbstractPropertyMigration], original_template: str
+    ) -> str:
         for property_migration in property_migration_set:
             if property_migration and not property_migration.requires_value_migration:
                 new_variable_content = variable_content.replace(
@@ -187,8 +191,10 @@ class JinjaAction(AbstractTemplateAction):
         return variable_content
 
     @staticmethod
-    def _fix_lex_value(lex_value, lex_lineno, previous_lex_value, previous_lex_lineno):
-        if previous_lex_lineno is not None and lex_lineno > previous_lex_lineno:
+    def _fix_lex_value(
+        lex_value: str, lex_lineno: int, previous_lex_value: str | None, previous_lex_lineno: int | None
+    ) -> str:
+        if previous_lex_value is not None and previous_lex_lineno is not None and lex_lineno > previous_lex_lineno:
             previous_eol_count = previous_lex_value.count("\n")
             lex_value = (lex_lineno - previous_lex_lineno - previous_eol_count) * "\n" + lex_value
         return lex_value

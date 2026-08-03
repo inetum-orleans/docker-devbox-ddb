@@ -1,8 +1,9 @@
 import contextlib
 import logging
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from subprocess import CalledProcessError
-from typing import Generic, TypeVar
+from typing import Any, Generic, TypeVar
 
 from ddb.action import Action, InitializableAction
 from ddb.config import config
@@ -23,7 +24,7 @@ class ExpectedError(Exception):
     A base exception that can display it's own message in logs.
     """
 
-    def log_error(self):
+    def log_error(self) -> None:
         """
         Log the error.
 
@@ -42,13 +43,13 @@ class EventBindingRunner(Generic[A], ABC):
     Runner for an event binding.
     """
 
-    def __init__(self, action: A, event_name: str, to_call=None):
+    def __init__(self, action: A, event_name: str, to_call: Callable[..., Any] | None = None) -> None:
         self.action = action
         self.event_name = event_name
         self.to_call = to_call if to_call else action.execute  # type: ignore[attr-defined]
 
     @abstractmethod
-    def run(self, *args, **kwargs):
+    def run(self, *args: Any, **kwargs: Any) -> bool | None:
         """
         Run the callable registered on this event binding.
         """
@@ -59,12 +60,20 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
     Runner for an action event binding.
     """
 
-    def __init__(self, action: A, event_name: str, to_call=None, event_processor=None, *, fail_fast=False):
+    def __init__(
+        self,
+        action: A,
+        event_name: str,
+        to_call: Callable[..., Any] | None = None,
+        event_processor: Callable[..., Any] | None = None,
+        *,
+        fail_fast: bool = False,
+    ) -> None:
         super().__init__(action, event_name, to_call)
         self.event_processor = event_processor
         self.fail_fast = fail_fast
 
-    def run(self, *args, **kwargs):
+    def run(self, *args: Any, **kwargs: Any) -> bool | None:
         if self.event_processor:
             resp = self.event_processor(*args, **kwargs)
             if resp is False or resp is None:
@@ -88,14 +97,14 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
             if context.stack:
                 context.stack.pop()
 
-    def _execute_action(self, *args, **kwargs):
+    def _execute_action(self, *args: Any, **kwargs: Any) -> None:
         """
         Execute the action.
         """
         self.to_call(*args, **kwargs)
 
     @staticmethod
-    def _handle_exception(exception: Exception):
+    def _handle_exception(exception: Exception) -> None:
         """
         Handle an exception occured in an action.
         """
@@ -123,7 +132,7 @@ class InitializableActionEventBindingRunner(ActionEventBindingRunner[Initializab
     Runner for an initializable action event binding.
     """
 
-    def run(self, *args, **kwargs):
+    def run(self, *args: Any, **kwargs: Any) -> bool | None:
         """
         Initialize if required and run.
         """

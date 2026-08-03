@@ -1,6 +1,7 @@
 from abc import ABC
 from collections.abc import Iterable
 from os import linesep
+from typing import Any
 
 from dotty_dict import Dotty, dotty
 from marshmallow import ValidationError
@@ -71,7 +72,7 @@ class Feature(RegistryObject, ABC):
         """
         return []
 
-    def configure(self, *, bootstrap=False):
+    def configure(self, *, bootstrap: bool = False) -> None:
         """
         Configure this feature.
         """
@@ -82,7 +83,7 @@ class Feature(RegistryObject, ABC):
             raise FeatureConfigurationValidationError(self, err) from err
         config.data[self.name] = valid_feature_config
 
-    def validate_feature_configuration(self, feature_config: Dotty, *, bootstrap=False):
+    def validate_feature_configuration(self, feature_config: Dotty, *, bootstrap: bool = False) -> Any:
         """
         Sanitize and validate using given schema part of the configuration.
         """
@@ -99,27 +100,27 @@ class Feature(RegistryObject, ABC):
             feature_config = schema.load(feature_config)
         return config.apply_environ_overrides(feature_config, config.env_override_prefix + "_" + self.name)
 
-    def _configure_defaults(self, feature_config: Dotty):
+    def _configure_defaults(self, feature_config: Dotty) -> None:
         """
         Override this method to load default values that may depend on the context.
         """
 
-    def before_load(self):
+    def before_load(self) -> None:
         """
         Invoked before this feature is loaded.
         """
 
-    def after_load(self):
+    def after_load(self) -> None:
         """
         Invoked after this feature is loaded.
         """
 
     @property
-    def disabled(self):
+    def disabled(self) -> bool:
         """
         Check if this feature is disabled.
         """
-        return config.data.get(self.name + ".disabled")
+        return bool(config.data.get(self.name + ".disabled"))
 
 
 class FeatureConfigurationError(Exception):
@@ -127,7 +128,7 @@ class FeatureConfigurationError(Exception):
     A generic feature configuration error.
     """
 
-    def __init__(self, feature: Feature, *additional_messages: str):
+    def __init__(self, feature: Feature, *additional_messages: str) -> None:
         message = 'Feature "' + feature.name + '" has invalid configuration.'
         for additional_message in additional_messages:
             message += linesep + " " * 2 + additional_message
@@ -139,7 +140,7 @@ class FeatureConfigurationAutoConfigureError(FeatureConfigurationError):
     Feature configuration error raised when something wrongs occurs during auto-configuration.
     """
 
-    def __init__(self, feature: Feature, setting_name: str, error: Exception | str | None = None):
+    def __init__(self, feature: Feature, setting_name: str, error: Exception | str | None = None) -> None:
         super().__init__(
             feature,
             setting_name
@@ -159,7 +160,7 @@ class FeatureConfigurationReadOnlyError(FeatureConfigurationError):
     Feature configuration error raised when a read-only property is defined in configuration files user.
     """
 
-    def __init__(self, feature: Feature, setting_name: str):
+    def __init__(self, feature: Feature, setting_name: str) -> None:
         super().__init__(
             feature,
             setting_name
@@ -178,8 +179,8 @@ class FeatureConfigurationValidationError(FeatureConfigurationError):
     Feature configuration error raised on validation error.
     """
 
-    def __init__(self, feature: Feature, validation_error: ValidationError):
-        additional_messages = []
+    def __init__(self, feature: Feature, validation_error: ValidationError) -> None:
+        additional_messages: list[str] = []
         messages = validation_error.messages
         if isinstance(messages, dict):
             for field, field_messages in messages.items():

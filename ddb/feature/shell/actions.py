@@ -3,12 +3,14 @@ import contextlib
 import json
 import os
 import shlex
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 import zgitignore
 from dictdiffer import diff
+
+from ddb.action.action import EventBindings
 
 from ...action import Action, actions
 from ...action.action import EventBinding
@@ -23,7 +25,7 @@ from .integrations import ShellIntegration
 _env_environ_backup = config.env_prefix + "_SHELL_ENVIRON_BACKUP"
 
 
-def get_shims_path(*, global_: bool = False):
+def get_shims_path(*, global_: bool = False) -> str | None:
     """
     Get local or global shims path.
 
@@ -52,22 +54,26 @@ def get_shims_path(*, global_: bool = False):
     return shim_directory
 
 
-def encode_environ_backup(environ_backup: dict) -> str:
+def encode_environ_backup(environ_backup: dict[str, str]) -> str:
     """
     Encode environ backup into a safe string.
     """
     return base64.b64encode(json.dumps(environ_backup).encode("utf-8")).decode("utf-8")
 
 
-def decode_environ_backup(encoded_environ_backup: str) -> dict:
+def decode_environ_backup(encoded_environ_backup: str) -> dict[str, str]:
     """
     Decode environ backup from safe string.
     """
-    return json.loads(base64.b64decode(encoded_environ_backup).decode("utf-8"))
+    decoded: dict[str, str] = json.loads(base64.b64decode(encoded_environ_backup).decode("utf-8"))
+    return decoded
 
 
 def apply_diff_to_shell(
-    shell: ShellIntegration, source_environment: dict, target_environment: dict, envignore=None
+    shell: ShellIntegration,
+    source_environment: Mapping[str, str],
+    target_environment: Mapping[str, str],
+    envignore: Iterable[str] | None = None,
 ) -> Iterable[str]:
     """
     Compute and apply environment diff for given shell, returning a list of shell instruction to run.
@@ -129,12 +135,12 @@ class CreateBinaryShim(Action):
     Create binary shim for each generated binary.
     """
 
-    def __init__(self, shell: ShellIntegration):
+    def __init__(self, shell: ShellIntegration) -> None:
         super().__init__()
         self.shell = shell
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return (
             events.binary.registered,
             events.binary.found,
@@ -151,9 +157,9 @@ class CreateBinaryShim(Action):
 
     @property
     def disabled(self) -> bool:
-        return config.data.get("shell.shell") != self.shell.name
+        return bool(config.data.get("shell.shell") != self.shell.name)
 
-    def remove(self, binary: Binary):
+    def remove(self, binary: Binary) -> None:
         """
         Remove binary shim.
         """
@@ -164,11 +170,14 @@ class CreateBinaryShim(Action):
             if removed:
                 events.file.deleted(removed)
 
-    def execute(self, binary: Binary):
+    def execute(self, binary: Binary) -> None:
         """
         Create binary shim.
         """
         shims_path = get_shims_path(global_=binary.global_)
+        if not shims_path:
+            return
+
         written, shim = self.shell.create_binary_shim(shims_path, binary.name, global_=binary.global_)
         if written:
             context.log.success("Shim created: %s", shim)
@@ -184,12 +193,12 @@ class CreateAliasShim(Action):
     Create alias shim for each alias.
     """
 
-    def __init__(self, shell: ShellIntegration):
+    def __init__(self, shell: ShellIntegration) -> None:
         super().__init__()
         self.shell = shell
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return events.phase.configure
 
     @property
@@ -202,9 +211,9 @@ class CreateAliasShim(Action):
 
     @property
     def disabled(self) -> bool:
-        return config.data.get("shell.shell") != self.shell.name
+        return bool(config.data.get("shell.shell") != self.shell.name)
 
-    def execute(self):
+    def execute(self) -> None:
         """
         Create binary shim.
         """
@@ -234,12 +243,12 @@ class ActivateAction(Action):
     Generates activation script.
     """
 
-    def __init__(self, shell: ShellIntegration):
+    def __init__(self, shell: ShellIntegration) -> None:
         super().__init__()
         self.shell = shell
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return "phase:activate"
 
     @property
@@ -252,17 +261,17 @@ class ActivateAction(Action):
 
     @property
     def disabled(self) -> bool:
-        return config.data.get("shell.shell") != self.shell.name
+        return bool(config.data.get("shell.shell") != self.shell.name)
 
     @property
     def order(self) -> int:
         return -256
 
-    def _deactivate(self):
+    def _deactivate(self) -> None:
         deactivate_action = actions.get("shell:" + self.shell.name + ":deactivate")
-        deactivate_action.execute()
+        deactivate_action.execute()  # type: ignore[attr-defined]
 
-    def execute(self):
+    def execute(self) -> None:
         """
         Execute action.
         """
@@ -328,12 +337,12 @@ class DeactivateAction(Action):
     Generations deactivation script.
     """
 
-    def __init__(self, shell: ShellIntegration):
+    def __init__(self, shell: ShellIntegration) -> None:
         super().__init__()
         self.shell = shell
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return "phase:deactivate"
 
     @property
@@ -346,9 +355,9 @@ class DeactivateAction(Action):
 
     @property
     def disabled(self) -> bool:
-        return config.data.get("shell.shell") != self.shell.name
+        return bool(config.data.get("shell.shell") != self.shell.name)
 
-    def execute(self):
+    def execute(self) -> None:
         """
         Execute action.
         """
@@ -410,7 +419,7 @@ class CheckAnotherProjectActivatedException(CheckActivatedException):
     """
 
 
-def check_activated(*, do_raise=False, do_log=False):
+def check_activated(*, do_raise: bool = False, do_log: bool = False) -> bool:
     """
     Check if project is activated in current shell.
 
@@ -449,12 +458,12 @@ class CheckActivatedAction(Action):
     Check if project is activated in current shell.
     """
 
-    def __init__(self, shell: ShellIntegration):
+    def __init__(self, shell: ShellIntegration) -> None:
         super().__init__()
         self.shell = shell
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return "phase:check-activated"
 
     @property
@@ -467,9 +476,9 @@ class CheckActivatedAction(Action):
 
     @property
     def disabled(self) -> bool:
-        return config.data.get("shell.shell") != self.shell.name
+        return bool(config.data.get("shell.shell") != self.shell.name)
 
-    def execute(self):
+    def execute(self) -> None:
         """
         Execute action.
         """
@@ -484,12 +493,12 @@ class CommandAction(Action):
     Display a requested command for it to be evaluated by the shell.
     """
 
-    def __init__(self, shell: ShellIntegration):
+    def __init__(self, shell: ShellIntegration) -> None:
         super().__init__()
         self.shell = shell
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return events.run.command
 
     @property
@@ -502,9 +511,9 @@ class CommandAction(Action):
 
     @property
     def disabled(self) -> bool:
-        return config.data.get("shell.shell") != self.shell.name
+        return bool(config.data.get("shell.shell") != self.shell.name)
 
-    def execute(self, command: Iterable[str], *, system_path: bool = False):
+    def execute(self, command: Iterable[str], *, system_path: bool = False) -> None:
         """
         Execute action.
         """

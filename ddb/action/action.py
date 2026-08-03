@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
 from pathlib import Path
+from typing import Any, TypeAlias
 
 from ddb.cache import caches, register_project_cache
 from ddb.config import config
 from ddb.context import context
-from ddb.event import events
+from ddb.event import event_name, events
 from ddb.registry import RegistryObject
 from ddb.utils.file import TemplateFinder, copy_if_different, force_remove, write_if_different
 from ddb.utils.path import absolute_path
@@ -24,11 +25,18 @@ class EventBinding:
     If processor returns a 2-tuple, it will use those as *args, **kwargs to invoke the method.
     """
 
-    def __init__(self, event: Callable | str, call: Callable | None = None, processor: Callable | None = None):
-        # Events declared with the @event decorator carry their name as an attribute.
-        self.event: str = event if isinstance(event, str) else event.name  # type: ignore[attr-defined]
+    def __init__(
+        self,
+        event: Callable[..., Any] | str,
+        call: Callable[..., Any] | None = None,
+        processor: Callable[..., Any] | None = None,
+    ) -> None:
+        self.event: str = event if isinstance(event, str) else event_name(event)
         self.call = call
         self.processor = processor
+
+
+EventBindings: TypeAlias = "Iterable[Callable[..., Any] | str | EventBinding] | Callable[..., Any] | str | EventBinding"
 
 
 class Action(RegistryObject, ABC):
@@ -38,7 +46,7 @@ class Action(RegistryObject, ABC):
 
     @property
     @abstractmethod
-    def event_bindings(self) -> Iterable[Callable | str | EventBinding] | Callable | str | EventBinding:
+    def event_bindings(self) -> EventBindings:
         """
         The event bindings that should trigger the action.
 
@@ -71,15 +79,15 @@ class InitializableAction(Action, ABC):
     An action supporting an initialize singleton method.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.initialized = False
 
-    def initialize(self):
+    def initialize(self) -> None:
         """
         Initialize method, invoked before first event binding execution.
         """
 
-    def destroy(self):
+    def destroy(self) -> None:
         """
         Destroy method, invoked on shutdown.
         """
@@ -91,19 +99,19 @@ class WatchSupport(ABC):
     """
 
     @abstractmethod
-    def start_watching(self):
+    def start_watching(self) -> None:
         """
         Start watching.
         """
 
     @abstractmethod
-    def stop_watching(self):
+    def stop_watching(self) -> None:
         """
         Stop watching.
         """
 
     @abstractmethod
-    def join_watching(self):
+    def join_watching(self) -> None:
         """
         Join watching.
         """
@@ -114,13 +122,14 @@ class AbstractTemplateAction(InitializableAction, ABC):
     Abstract action to render templates based on filename suffixes, supporting incoming events from file feature.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.template_finder = None  # type: TemplateFinder
+        # Set by initialize(), before the first event binding runs.
+        self.template_finder: TemplateFinder = None  # type: ignore[assignment]
         register_project_cache(self._cache_key)
 
     @property
-    def _cache_key(self):
+    def _cache_key(self) -> str:
         """
         Cache holding the rendered data of all targets.
         When a template is deleted, target file will remove only if content is still the same than the generated one,
@@ -129,26 +138,26 @@ class AbstractTemplateAction(InitializableAction, ABC):
         return "template.target." + self.__class__.__name__
 
     @property
-    def event_bindings(self):
-        def file_found_processor(file: str):
+    def event_bindings(self) -> EventBindings:
+        def file_found_processor(file: str) -> tuple[tuple[()], dict[str, str]] | None:
             template = file
             target = self.template_finder.get_target(template)
             if target:
                 return (), {"template": template, "target": target}
             return None
 
-        def file_delete_processor(file: str):
+        def file_delete_processor(file: str) -> tuple[tuple[()], dict[str, str]] | None:
             template = file
             target = self.template_finder.get_target(template)
             if target and not self._target_is_modified(template, target):
                 return (), {"template": template, "target": target}
             return None
 
-        def file_generated_processor(source: str, target: str):
+        def file_generated_processor(source: str, target: str) -> tuple[tuple[()], dict[str, str]] | None:
             template = target
-            target = self.template_finder.get_target(template)
-            if target:
-                return (), {"template": template, "target": target}
+            generated_target = self.template_finder.get_target(template)
+            if generated_target:
+                return (), {"template": template, "target": generated_target}
             return None
 
         return (
@@ -157,10 +166,10 @@ class AbstractTemplateAction(InitializableAction, ABC):
             EventBinding("file:generated", processor=file_generated_processor),
         )
 
-    def initialize(self):
+    def initialize(self) -> None:
         self.template_finder = self._build_template_finder()
 
-    def delete(self, template: str, target: str):
+    def delete(self, template: str, target: str) -> None:
         """
         Delete a rendered template.
         """
@@ -170,7 +179,9 @@ class AbstractTemplateAction(InitializableAction, ABC):
             caches.get(self._cache_key).pop(target)
             events.file.deleted(target)
 
-    def execute(self, template: str, target: str, migrate_retries_count=0, original_template=None):
+    def execute(
+        self, template: str, target: str, migrate_retries_count: int = 0, original_template: str | None = None
+    ) -> None:
         """
         Render a template.
         """
@@ -226,7 +237,7 @@ class AbstractTemplateAction(InitializableAction, ABC):
         read_encoding = None if is_bynary else "utf-8"
         with Path(target).open(mode="rb" if is_bynary else "r", encoding=read_encoding) as read_file:
             existing_data = read_file.read()
-        return existing_data != rendered
+        return bool(existing_data != rendered)
 
     @abstractmethod
     def _build_template_finder(self) -> TemplateFinder:

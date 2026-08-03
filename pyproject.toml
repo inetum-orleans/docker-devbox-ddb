@@ -170,6 +170,7 @@ select = [
     "FA",   # flake8-future-annotations
     "PT",   # flake8-pytest-style
     "RUF",  # ruff-specific rules
+    "ANN",  # flake8-annotations
     "ARG",  # flake8-unused-arguments
     "D",    # pydocstyle
     "S",    # flake8-bandit
@@ -218,6 +219,9 @@ ignore = [
     "ARG002",
     "ARG004",
     "ARG005",
+    # The configuration layer genuinely passes Any around: dotty dicts, deepmerge
+    # strategies and cache entries hold arbitrary user configuration.
+    "ANN401",
     # Messages passed straight to raise read better than a variable per exception.
     "TRY003",
     # Raising inside try is how the config and action pipelines report failures they
@@ -251,8 +255,9 @@ max-complexity = 15
 # Tests assert on full command lines, patch with plain functions rather than mock
 # return values, and check raised messages with `str(excinfo.value)` after the block.
 # Test classes and helpers document themselves through their names and patch with
-# lambdas.
-"tests/**" = ["ARG", "D", "DTZ", "E501", "N802", "PT008", "PT011", "PT012", "S", "TRY"]
+# lambdas. Annotating test functions and pytest fixtures brings nothing: they are never
+# called from other code.
+"tests/**" = ["ANN", "ARG", "D", "DTZ", "E501", "N802", "PT008", "PT011", "PT012", "S", "TRY"]
 
 [tool.pytest.ini_options]
 addopts = "-s --ignore=build --ignore=docs --docker-compose-remove-volumes"
@@ -267,9 +272,14 @@ exclude_lines = ["pragma: no cover"]
 
 [tool.mypy]
 files = ["ddb"]
+strict = true
 ignore_missing_imports = true
+# Vendored code, kept as close as possible to its upstream source.
+exclude = ["ddb/feature/docker/lib/", "ddb/utils/simpleeval\\.py"]
 
 [[tool.mypy.overrides]]
-# Vendored code, kept as close as possible to its upstream source.
+# follow_imports keeps the untyped signatures of the vendored code excluded above from
+# leaking into the modules that call it.
 module = ["ddb.utils.simpleeval", "ddb.feature.docker.lib.*"]
 ignore_errors = true
+follow_imports = "skip"

@@ -1,6 +1,9 @@
 from pathlib import Path
+from typing import Any
 
 import cfssl as cfssl_client
+
+from ddb.action.action import EventBindings
 
 from ...action import Action
 from ...config import config
@@ -16,7 +19,7 @@ class GenerateCertAction(Action):
     """
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return events.certs.generate
 
     @property
@@ -24,7 +27,7 @@ class GenerateCertAction(Action):
         return "certs:generate"
 
     @staticmethod
-    def execute(domain, *, wildcard=True):
+    def execute(domain: str, *, wildcard: bool = True) -> None:
         """
         Generate a certificate.
         """
@@ -32,7 +35,7 @@ class GenerateCertAction(Action):
             GenerateCertAction.generate_cfssl(domain, wildcard=wildcard)
 
     @staticmethod
-    def generate_cfssl(domain, *, wildcard=True):
+    def generate_cfssl(domain: str, *, wildcard: bool = True) -> None:
         """
         Generate domain certificate with CFSSL.
         """
@@ -57,8 +60,6 @@ class GenerateCertAction(Action):
             generated = writer.write_files(
                 response,
                 domain,
-                None,
-                None,
                 config.data["certs.cfssl.writer"],
                 config.data["certs.destination"],
                 append_ca_certificate=config.data["certs.cfssl.append_ca_certificate"],
@@ -89,7 +90,7 @@ class RemoveCertAction(Action):
     """
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return events.certs.remove
 
     @property
@@ -97,7 +98,7 @@ class RemoveCertAction(Action):
         return "certs:remove"
 
     @staticmethod
-    def execute(domain):
+    def execute(domain: str) -> None:
         """
         Remove certificate.
         """
@@ -105,7 +106,7 @@ class RemoveCertAction(Action):
             events.certs.removed(domain=domain)
 
     @staticmethod
-    def remove_cfssl(domain):
+    def remove_cfssl(domain: str) -> bool:
         """
         Remove domain certificate generated with CFSSL.
         """
@@ -133,7 +134,7 @@ class GenerateSignerCertificateAction(Action):
     """
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return events.certs.generated
 
     @property
@@ -142,10 +143,10 @@ class GenerateSignerCertificateAction(Action):
 
     @property
     def disabled(self) -> bool:
-        return config.data.get("certs.type") != "cfssl"
+        return bool(config.data.get("certs.type") != "cfssl")
 
     @staticmethod
-    def execute(*args, **kwargs):
+    def execute(*args: Any, **kwargs: Any) -> None:
         """
         Generate certificate with CFSSL.
         """
@@ -166,8 +167,6 @@ class GenerateSignerCertificateAction(Action):
             generated = writer.write_files(
                 response,
                 output,
-                None,
-                None,
                 config.data["certs.cfssl.writer"],
                 config.data["certs.destination"],
                 append_ca_certificate=False,

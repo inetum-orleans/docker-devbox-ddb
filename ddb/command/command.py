@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from argparse import ArgumentParser
+from argparse import ArgumentParser, _SubParsersAction
 from collections.abc import Callable
 from typing import Any
 
@@ -16,30 +16,30 @@ class Command(RegistryObject, ABC):
 
     @property
     @abstractmethod
-    def allow_unknown_args(self):
+    def allow_unknown_args(self) -> bool:
         """
         Check if this command allow unknown args.
         """
 
     @property
     @abstractmethod
-    def avoid_stdout(self):
+    def avoid_stdout(self) -> bool:
         """
         Should this command avoid stdout spoiling.
         """
 
     @abstractmethod
-    def execute(self):
+    def execute(self) -> None:
         """
         Execute the command.
         """
 
-    def configure_parser(self, parser: ArgumentParser):
+    def configure_parser(self, parser: ArgumentParser) -> None:
         """
         Configure the argument parser.
         """
 
-    def add_parser(self, subparsers):
+    def add_parser(self, subparsers: "_SubParsersAction[ArgumentParser]") -> ArgumentParser:
         """
         Add command parser into given subparsers.
         """
@@ -57,10 +57,10 @@ class DefaultCommand(DefaultRegistryObject, Command):
         description: str | None = None,
         parent: Command | str | None = None,
         *,
-        allow_unknown_args=False,
+        allow_unknown_args: bool = False,
         before_execute: Callable[[], Any] | None = None,
-        avoid_stdout=False,
-    ):
+        avoid_stdout: bool = False,
+    ) -> None:
         super().__init__(name, description)
         self.before_execute = before_execute
         self._parent = parent
@@ -68,11 +68,11 @@ class DefaultCommand(DefaultRegistryObject, Command):
         self._avoid_stdout = avoid_stdout
 
     @property
-    def allow_unknown_args(self):
+    def allow_unknown_args(self) -> bool:
         return self._allow_unknown_args
 
     @property
-    def avoid_stdout(self):
+    def avoid_stdout(self) -> bool:
         return self._avoid_stdout
 
     @property
@@ -94,7 +94,7 @@ class DefaultCommand(DefaultRegistryObject, Command):
             raise ValueError
         return command
 
-    def execute(self):
+    def execute(self) -> None:
         """
         Execute the command.
         """
@@ -118,8 +118,8 @@ class LifecycleCommand(DefaultCommand):
         *lifecycle: str | Phase,
         parent: Command | str | None = None,
         before_execute: Callable[[], Any] | None = None,
-        avoid_stdout=False,
-    ):
+        avoid_stdout: bool = False,
+    ) -> None:
         super().__init__(name, description, parent=parent, before_execute=before_execute, avoid_stdout=avoid_stdout)
         self._lifecycle: list[Phase] = [
             phases.get(phase) if not isinstance(phase, Phase) else phase for phase in lifecycle
@@ -128,12 +128,12 @@ class LifecycleCommand(DefaultCommand):
             if phase.allow_unknown_args:
                 self._allow_unknown_args = True
 
-    def configure_parser(self, parser: ArgumentParser):
+    def configure_parser(self, parser: ArgumentParser) -> None:
         super().configure_parser(parser)
         for phase in self._lifecycle:
             phase.configure_parser(parser)
 
-    def execute(self):
+    def execute(self) -> None:
         super().execute()
         for phase in self._lifecycle:
             execute_phase(phase)
@@ -144,14 +144,14 @@ class LifecycleWithoutHelpCommand(LifecycleCommand):
     A LifecycleCommand that doesn't add --help option to it's parser.
     """
 
-    def add_parser(self, subparsers):
+    def add_parser(self, subparsers: "_SubParsersAction[ArgumentParser]") -> ArgumentParser:
         """
         Add command parser into given subparsers.
         """
         return subparsers.add_parser(self.name, help=self.description, add_help=False)
 
 
-def execute_command(command: Command):
+def execute_command(command: Command) -> None:
     """
     Execute a command with context update.
     """

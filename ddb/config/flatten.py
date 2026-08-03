@@ -1,5 +1,5 @@
-from collections.abc import Iterable
-from typing import TYPE_CHECKING
+from collections.abc import Callable, Iterable
+from typing import TYPE_CHECKING, Any
 
 from dotty_dict import Dotty
 from marshmallow import Schema
@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from ddb.feature import Feature
 
 
-def _get_stop_fields_from_schema(schema: Schema, stack, ret):
+def _get_stop_fields_from_schema(schema: Schema, stack: list[str], ret: list[tuple[str, ...]]) -> None:
     for field_name, field in schema.fields.items():
         stack.append(field_name)
         if isinstance(field, Dict):
@@ -21,9 +21,9 @@ def _get_stop_fields_from_schema(schema: Schema, stack, ret):
         stack.pop()
 
 
-def _get_stop_fields(features: Iterable["Feature"]):
-    ret: list[str] = []
-    stack = []
+def _get_stop_fields(features: Iterable["Feature"]) -> list[tuple[str, ...]]:
+    ret: list[tuple[str, ...]] = []
+    stack: list[str] = []
     for feature in features:
         stack.append(feature.name)
         _get_stop_fields_from_schema(feature.schema(), stack, ret)
@@ -32,7 +32,7 @@ def _get_stop_fields(features: Iterable["Feature"]):
     return ret
 
 
-def to_environ(data: Dotty | dict, env_prefix) -> dict:
+def to_environ(data: Dotty | dict[str, Any], env_prefix: str) -> dict[str, str]:
     """
     Export configuration to environment dict.
     """
@@ -40,16 +40,16 @@ def to_environ(data: Dotty | dict, env_prefix) -> dict:
 
 
 def flatten(
-    data: Dotty | dict,
-    prefix=None,
-    sep=".",
-    array_index_format="[%s]",
-    key_transformer=None,
-    value_transformer=None,
+    data: Dotty | dict[str, Any],
+    prefix: str | None = None,
+    sep: str = ".",
+    array_index_format: str = "[%s]",
+    key_transformer: Callable[[str], str] | None = None,
+    value_transformer: Callable[[Any], Any] | None = None,
     *,
-    keep_primitive_list=False,
-    stop_for_features=None,
-) -> dict:
+    keep_primitive_list: bool = False,
+    stop_for_features: Iterable["Feature"] | None = None,
+) -> dict[str, Any]:
     """
     Export configuration to a flat dict.
     """
@@ -68,17 +68,17 @@ def flatten(
 
 
 def _flatten(
-    prefix=None,
-    sep=".",
-    array_index_format="[%s]",
-    key_transformer=None,
-    value_transformer=None,
+    prefix: str | None = None,
+    sep: str = ".",
+    array_index_format: str = "[%s]",
+    key_transformer: Callable[[str], str] | None = None,
+    value_transformer: Callable[[Any], Any] | None = None,
     *,
-    keep_primitive_list=False,
-    stop_for=(),
-    data=None,
-    output=None,
-) -> dict:
+    keep_primitive_list: bool = False,
+    stop_for: tuple[str, ...] = (),
+    data: Any = None,
+    output: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     if output is None:
         output = {}
 
@@ -86,12 +86,12 @@ def _flatten(
         prefix = ""
     if key_transformer is None:
 
-        def key_transformer(x):
+        def key_transformer(x: str) -> str:
             return x
 
     if value_transformer is None:
 
-        def value_transformer(x):
+        def value_transformer(x: Any) -> Any:
             return x
 
     stop_recursion = False

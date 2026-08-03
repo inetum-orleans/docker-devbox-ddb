@@ -1,15 +1,29 @@
 import os
 import pathlib
+from collections.abc import Iterable, Iterator
+from typing import NamedTuple
 
 import zgitignore
 
-from ddb.action.action import EventBinding, InitializableAction
+from ddb.action.action import EventBinding, EventBindings, InitializableAction
 from ddb.cache import caches, register_project_cache
 from ddb.config import config
 from ddb.context import context
 from ddb.event import events
 from ddb.utils.file import force_remove
 from ddb.utils.path import absolute_path
+
+
+class IgnoredEntry(NamedTuple):
+    """
+    A file matched by a .gitignore, with the content of that .gitignore split around the ddb block.
+    """
+
+    relative_file: str
+    gitignore: str
+    block_lines: list[str]
+    before_lines: list[str]
+    after_lines: list[str]
 
 
 class UpdateGitignoreAction(InitializableAction):
@@ -22,30 +36,29 @@ class UpdateGitignoreAction(InitializableAction):
         return "git:update-gitignore"
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return (
             events.file.generated,
             EventBinding(events.file.deleted, self.remove),
             EventBinding(events.phase.configure, self.enforced),
         )
 
-    def initialize(self):
+    def initialize(self) -> None:
         register_project_cache("gitignore")
 
-    def destroy(self):
+    def destroy(self) -> None:
         if caches.has("gitignore"):
             caches.unregister("gitignore", callback=lambda c: c.close())
 
     @staticmethod
-    def execute(target: str, source: str | None = None):
+    def execute(target: str, source: str | None = None) -> None:
         """
         Execute action.
         """
         if not UpdateGitignoreAction._check_file_in_project(target):
             return
 
-        ignored, _, _, _, _, _ = UpdateGitignoreAction._check_file_ignored(target)
-        if ignored:
+        if UpdateGitignoreAction._find_ignored_entry(target):
             return
 
         try:
@@ -67,7 +80,7 @@ class UpdateGitignoreAction(InitializableAction):
             context.log.success("%s added to %s", relative_target, gitignore)
 
     @staticmethod
-    def enforced():
+    def enforced() -> None:
         """
         Handle the list of enforced actions.
         """
@@ -88,43 +101,43 @@ class UpdateGitignoreAction(InitializableAction):
         cache.flush()
 
     @staticmethod
-    def remove(file: str):
+    def remove(file: str) -> None:
         """
         Remove an ignored file.
 
         :param file:
         :return:
         """
-        ignored, target_file, gitignore, block_lines, before_lines, after_lines = (
-            UpdateGitignoreAction._check_file_ignored(file)
-        )
-        if not ignored:
+        entry = UpdateGitignoreAction._find_ignored_entry(file)
+        if not entry:
             return
 
         # Removal of the target_file to the block and sort the whole block.
-        if target_file in block_lines:
-            block_lines.remove(target_file)
+        if entry.relative_file in entry.block_lines:
+            entry.block_lines.remove(entry.relative_file)
 
-            UpdateGitignoreAction._sanitize_block(block_lines, before_lines, after_lines)
-            UpdateGitignoreAction._write_gitignore_content(gitignore, before_lines + block_lines + after_lines)
+            UpdateGitignoreAction._sanitize_block(entry.block_lines, entry.before_lines, entry.after_lines)
+            UpdateGitignoreAction._write_gitignore_content(
+                entry.gitignore, entry.before_lines + entry.block_lines + entry.after_lines
+            )
 
-            context.log.warning("%s removed from %s", file, gitignore)
+            context.log.warning("%s removed from %s", file, entry.gitignore)
 
     @staticmethod
-    def _check_file_in_project(target):
+    def _check_file_in_project(target: str) -> bool:
         target_path = os.path.realpath(target)
         cwd = os.path.realpath(".")
         return target_path.startswith(cwd)
 
     @staticmethod
-    def _get_relative_path(target: str, gitignore: str, *, first_slash: bool = True):
+    def _get_relative_path(target: str, gitignore: str, *, first_slash: bool = True) -> str:
         relpath = pathlib.Path(os.path.relpath(target, pathlib.Path(gitignore).parent)).as_posix()
         if first_slash:
             return "/" + relpath
         return relpath
 
     @staticmethod
-    def _find_gitignores(target: str):
+    def _find_gitignores(target: str) -> Iterator[str]:
         """
         Find writable .gitignore files, walking directories up to project home.
         """
@@ -139,9 +152,9 @@ class UpdateGitignoreAction(InitializableAction):
                 yield gitignore
 
     @staticmethod
-    def _check_file_ignored(file: str, gitignores=None):
+    def _find_ignored_entry(file: str, gitignores: Iterable[str] | None = None) -> IgnoredEntry | None:
         """
-        Check if a file is ignored, going throw all provided gitignore files.
+        Find the first .gitignore ignoring the given file, going throw all provided gitignore files.
 
         :param file:
         :param gitignores:
@@ -155,7 +168,7 @@ class UpdateGitignoreAction(InitializableAction):
 
             gitignore_content = before_lines + block_lines + after_lines
 
-            inversed_gitignore_content = []
+            inversed_gitignore_content: list[str] = []
             for pattern in gitignore_content:
                 if pattern.startswith("!"):
                     inversed_gitignore_content.append(pattern[1:])
@@ -165,11 +178,11 @@ class UpdateGitignoreAction(InitializableAction):
             zgitignore_helper = zgitignore.ZgitIgnore(gitignore_content)
             inversed_zgitignore_helper = zgitignore.ZgitIgnore(inversed_gitignore_content)
             if zgitignore_helper.is_ignored(relative_file) or inversed_zgitignore_helper.is_ignored(relative_file):
-                return True, relative_file, gitignore, block_lines, before_lines, after_lines
-        return False, None, None, None, None, None
+                return IgnoredEntry(relative_file, gitignore, block_lines, before_lines, after_lines)
+        return None
 
     @staticmethod
-    def _get_block_limit(*, start: bool):
+    def _get_block_limit(*, start: bool) -> str:
         """
         Generate the gitignore block limit.
 
@@ -183,7 +196,7 @@ class UpdateGitignoreAction(InitializableAction):
         return f"###< {markers[0]} ###"
 
     @staticmethod
-    def _is_block_limit(line: str, *, start: bool | None = None):
+    def _is_block_limit(line: str, *, start: bool | None = None) -> bool:
         """
         Check if line match a block limit.
 
@@ -203,7 +216,7 @@ class UpdateGitignoreAction(InitializableAction):
         return False
 
     @staticmethod
-    def _write_gitignore_content(gitignore: str, content: list[str]):
+    def _write_gitignore_content(gitignore: str, content: list[str]) -> None:
         if [line for line in content if line]:
             with pathlib.Path(gitignore).open("w", encoding="utf-8") as gitignore_file:
                 for lineno, line in enumerate(content):
@@ -214,7 +227,7 @@ class UpdateGitignoreAction(InitializableAction):
             force_remove(gitignore)
 
     @staticmethod
-    def _split_block_lines(gitignore_file_content: str):
+    def _split_block_lines(gitignore_file_content: str) -> tuple[list[str], list[str], list[str]]:
         started = False
         ended = False
         before_lines = []
@@ -235,7 +248,7 @@ class UpdateGitignoreAction(InitializableAction):
         return content_lines, before_lines, after_lines
 
     @staticmethod
-    def _read_and_split_gitignore_file(gitignore_file: str):
+    def _read_and_split_gitignore_file(gitignore_file: str) -> tuple[list[str], list[str], list[str]]:
         if pathlib.Path(gitignore_file).exists():
             with pathlib.Path(gitignore_file).open("r+", encoding="utf-8") as gitignore_fp:
                 return UpdateGitignoreAction._split_block_lines(gitignore_fp.read())
@@ -243,7 +256,7 @@ class UpdateGitignoreAction(InitializableAction):
             return [], [], []
 
     @staticmethod
-    def _sanitize_block(block_lines, before_lines, after_lines):
+    def _sanitize_block(block_lines: list[str], before_lines: list[str], after_lines: list[str]) -> None:
         block_lines = [line for line in block_lines if line]
         block_lines.sort()
 

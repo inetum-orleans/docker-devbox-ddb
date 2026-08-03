@@ -10,6 +10,8 @@ from ..schema import FeatureSchema
 from .actions import TraefikExtraServicesAction, TraefikInstalllCertsAction, TraefikUninstalllCertsAction
 from .schema import TraefikSchema
 
+__all__ = ["TraefikExtraServicesAction", "TraefikFeature"]
+
 
 class TraefikFeature(Feature):
     """
@@ -37,7 +39,7 @@ class TraefikFeature(Feature):
             # TODO: Add action to install custom traefik configuration
         )
 
-    def _configure_defaults(self, feature_config: Dotty):
+    def _configure_defaults(self, feature_config: Dotty) -> None:
         certs_directory = feature_config.get("certs_directory")
         if not certs_directory and config.paths.home:
             certs_directory = str(Path(config.paths.home) / "certs")
