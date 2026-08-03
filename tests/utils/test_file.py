@@ -30,6 +30,12 @@ class TestFileWalker:
         assert fw.is_source_filtered("blabla/node_modules/subdirectory/file") is True
         assert fw.is_source_filtered("blabla/another/subdirectory/file") is False
 
+    def test_includes_are_compiled_as_glob_patterns(self):
+        fw = FileWalker(["*.txt", "*.md"], [], [], [], [], ".")
+        assert fw._is_included("readme.txt", *fw.includes) is True
+        assert fw._is_included("readme.md", *fw.includes) is True
+        assert fw._is_included("readme.rst", *fw.includes) is False
+
 
 class TestFileUtils:
     def test_get_file_content(self, data_dir: str, project_loader):

@@ -139,7 +139,7 @@ class FileUtils:
         """
         if url.startswith("file://"):
             return FileUtils._get_local_file_content(url)
-        return requests.get(url).text
+        return requests.get(url, timeout=30).text
 
     @staticmethod
     def _get_local_file_content(file_path: str) -> str:
@@ -185,7 +185,7 @@ class FileWalker:
         excludes = self._braceexpand(excludes)
         include_files = self._braceexpand(include_files)
         exclude_files = self._braceexpand(exclude_files)
-        self.includes = [FileWalker.re_compile_patterns(includes)] if includes else []
+        self.includes = [FileWalker.re_compile_patterns(*includes)] if includes else []
         self.excludes = [re.compile(build_or_pattern([fnmatch.translate(x) for x in excludes]))] if excludes else []
         self.include_files = (
             [re.compile(build_or_pattern([fnmatch.translate(x) for x in include_files]))] if include_files else []
@@ -293,7 +293,7 @@ class FileWalker:
         return os.path.join(parent, child) if parent != "." else child
 
     @staticmethod
-    def re_compile_patterns(*patterns: list[str]):
+    def re_compile_patterns(*patterns: str):
         """
         Compile a list of string containing patterns to regexp
         """
@@ -367,7 +367,7 @@ class TemplateFinder(FileWalker):
         return target
 
     @staticmethod
-    def _get_target_and_suffix(template_candidate: str, suffixes: list[str]) -> tuple[str, str] | None:
+    def _get_target_and_suffix(template_candidate: str, suffixes: list[str]) -> tuple[str, str] | tuple[None, None]:
         basename, ext = os.path.splitext(template_candidate)
         if ext in suffixes:
             return basename, ext
