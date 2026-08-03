@@ -265,6 +265,9 @@ jobs:
       - name: Binary
         run: uv run --no-sync pyinstaller --dist ./dist ddb.spec
 
+      - name: Smoke test
+        run: ./.build/smoke-test.sh ./dist/ddb
+
       - uses: actions/upload-artifact@v4
         with:
           name: ddb-bin-linux
@@ -311,6 +314,13 @@ jobs:
           docker cp "$id:/usr/local/bin/ddb" ./dist/ddb
           docker rm -v $id
 
+      # Run inside the alpine image: the musl binary is not meant to run on the ubuntu runner. The runtime
+      # image is bare, so it gets the shell and git ddb expects from any developer machine.
+      - name: Smoke test
+        run: |
+          docker run --rm --entrypoint sh -e SHELL=/bin/bash -v "$PWD/.build:/build" ddb-builder-alpine -c \
+            'apk add --no-cache bash git && /build/smoke-test.sh /usr/local/bin/ddb'
+
       - uses: actions/upload-artifact@v4
         with:
           name: ddb-bin-alpine
@@ -349,6 +359,9 @@ jobs:
       - name: Binary
         run: uv run --no-sync pyinstaller --dist .\dist ddb.spec
 
+      - name: Smoke test
+        run: .\.build\smoke-test.ps1 .\dist\ddb.exe
+
       - uses: actions/upload-artifact@v4
         with:
           name: ddb-bin-windows
@@ -386,6 +399,9 @@ jobs:
 
       - name: Binary
         run: uv run --no-sync pyinstaller --dist ./dist ddb.spec
+
+      - name: Smoke test
+        run: ./.build/smoke-test.sh ./dist/ddb
 
       - uses: actions/upload-artifact@v4
         with:
