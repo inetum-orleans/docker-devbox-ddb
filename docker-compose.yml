@@ -1,9 +1,33 @@
 services:
   cfssl:
-    image: gficentreouest/alpine-cfssl
-    environment:
-      - CFSSL_CSR=csr_intermediate_ca.json
-      - CFSSL_CONFIG=ca_intermediate_config.json
-      - DB_DISABLED=1
+    # The certs and traefik integration tests sign their certificates against this server.
+    # cfssl/cfssl is the upstream image, published for amd64 and arm64, and pinned so the
+    # suite does not depend on whatever happens to be cached locally.
+    image: cfssl/cfssl:v1.6.5
+    # The CA is generated on startup and kept in the container: the tests only need it to
+    # sign, and writing it here keeps the service independent from the directory compose
+    # happens to run from.
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        cat > /tmp/csr_ca.json <<'JSON'
+        {
+          "CN": "Docker Devbox Intermediate CA",
+          "key": {"algo": "ecdsa", "size": 256},
+          "ca": {"expiry": "42720h"}
+        }
+        JSON
+        cat > /tmp/ca_config.json <<'JSON'
+        {
+          "signing": {
+            "profiles": {"CA": {"usages": ["cert sign"], "expiry": "8760h"}},
+            "default": {"usages": ["digital signature"], "expiry": "8760h"}
+          }
+        }
+        JSON
+        cfssl gencert -initca /tmp/csr_ca.json | cfssljson -bare /tmp/ca
+        exec cfssl serve -address=0.0.0.0 -port=8888 \
+          -ca=/tmp/ca.pem -ca-key=/tmp/ca-key.pem -config=/tmp/ca_config.json
     ports:
-      - 80
+      - 8888
