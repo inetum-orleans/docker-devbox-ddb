@@ -170,6 +170,19 @@ def copy_from_files(f):
     Path(tmp.name).rename(f)
 
 
+def rewrite_watched(f, content):
+    """
+    Replace a watched file in a single step.
+
+    Rewriting it in place opens a window where the watcher reads the truncated file, and a template that fails to
+    render aborts the whole watch run.
+    """
+    with NamedTemporaryFile("w", delete=False) as tmp:
+        tmp.write(content)
+
+    Path(tmp.name).replace(f)
+
+
 class TestWatchFixuid:
     @pytest.mark.parametrize("watch", [True, False])
     def test_watch_fixuid_order_1(self, project_loader, watch):
@@ -324,8 +337,7 @@ class TestWatchConfig:
                 ddb_yml_content = f.read()
 
             ddb_yml_content = ddb_yml_content.replace("foo", "bar")
-            with Path("ddb.yml").open("w") as f:
-                f.write(ddb_yml_content)
+            rewrite_watched("ddb.yml", ddb_yml_content)
 
             time.sleep(5)
 
@@ -369,8 +381,7 @@ class TestWatchCerts:
             ddb_yml_content = ddb_yml_content.replace(
                 'ddb.Image("httpd")', 'ddb.Image("httpd") + ddb.VirtualHost("80", "watch-certs.test", "httpd")'
             )
-            with Path("docker-compose.yml.jsonnet").open("w") as f:
-                f.write(ddb_yml_content)
+            rewrite_watched("docker-compose.yml.jsonnet", ddb_yml_content)
 
             if not watch:
                 main_runner()
@@ -405,8 +416,7 @@ class TestWatchCerts:
                 'ddb.Image("httpd") + ddb.VirtualHost("80", "watch-certs.test", "httpd")', 'ddb.Image("httpd")'
             )
 
-            with Path("docker-compose.yml.jsonnet").open("w") as f:
-                f.write(ddb_yml_content)
+            rewrite_watched("docker-compose.yml.jsonnet", ddb_yml_content)
 
             if not watch:
                 main_runner()
