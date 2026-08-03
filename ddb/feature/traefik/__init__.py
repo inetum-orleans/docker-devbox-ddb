@@ -8,7 +8,7 @@ from ...config import config
 from ..feature import Feature, FeatureConfigurationAutoConfigureError
 from ..schema import FeatureSchema
 from .actions import TraefikExtraServicesAction, TraefikInstalllCertsAction, TraefikUninstalllCertsAction
-from .schema import TraefikSchema
+from .schema import EXTRA_SERVICES_CONFIG_TEMPLATES, TraefikSchema
 
 __all__ = ["TraefikExtraServicesAction", "TraefikFeature"]
 
@@ -40,6 +40,10 @@ class TraefikFeature(Feature):
         )
 
     def _configure_defaults(self, feature_config: Dotty) -> None:
+        if not feature_config.get("extra_services_config_template"):
+            template = EXTRA_SERVICES_CONFIG_TEMPLATES[feature_config["version"]]
+            feature_config["extra_services_config_template"] = template
+
         certs_directory = feature_config.get("certs_directory")
         if not certs_directory and config.paths.home:
             certs_directory = str(Path(config.paths.home) / "certs")

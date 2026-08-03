@@ -1,4 +1,11 @@
+from contextlib import contextmanager
+from http import HTTPStatus
 from pathlib import Path
+
+import docker
+import pytest
+import requests
+from waiting import wait
 
 from ddb.__main__ import load_registered_features
 from ddb.config import config
@@ -110,6 +117,26 @@ class TestTraefikFeature:
                     expected = expected.replace(replace, files.get(file).get("replaces").get(replace))
             assert expected == Path(generated).read_text()
 
+    @pytest.mark.parametrize(
+        ("version", "expected_matcher"),
+        [(2, "PathPrefix(`/prefix{regex:$$|/.*}`)"), (3, "PathRegexp(`^/prefix($|/.*)`)")],
+    )
+    def test_path_prefix_matcher_follows_version(self, project_loader, version, expected_matcher):
+        project_loader("path-prefix-routing", before_load_config=lambda: _write_traefik_version(version))
+
+        features.register(CoreFeature())
+        features.register(TraefikFeature())
+        features.register(DockerFeature())
+        features.register(JsonnetFeature())
+        load_registered_features()
+
+        action = TraefikExtraServicesAction()
+        action.initialize()
+        action.execute()
+
+        generated = Path(config.data["traefik"]["config_directory"]) / "rule.project.test.extra-service.prefixed.toml"
+        assert expected_matcher in generated.read_text()
+
     def test_extra_services_template(self, project_loader):
         project_loader("extra-services-template")
 
@@ -205,3 +232,84 @@ class TestTraefikFeature:
         )
 
         assert secured_toml_expected.read_text() == Path(secured_toml).read_text()
+
+        path_prefix_toml = Path(
+            str(
+                Path(config.data["traefik"]["config_directory"]) / "secured.project.test.extra-service.path_prefix.toml"
+            )
+        )
+        path_prefix_toml_expected = Path(
+            str(
+                Path(config.data["traefik"]["config_directory"])
+                / "secured.project.test.extra-service.path_prefix.expected.toml"
+            )
+        )
+
+        assert path_prefix_toml_expected.read_text() == path_prefix_toml.read_text()
+
+
+@pytest.mark.docker
+class TestTraefikGeneratedRouting:
+    """
+    Check the generated routers against the traefik version they target.
+    """
+
+    @pytest.mark.parametrize(("version", "image"), [(2, "traefik:v2.11"), (3, "traefik:v3")])
+    def test_path_prefix_is_routed(self, project_loader, version, image):
+        project_loader("path-prefix-routing", before_load_config=lambda: _write_traefik_version(version))
+
+        features.register(CoreFeature())
+        features.register(TraefikFeature())
+        features.register(DockerFeature())
+        features.register(JsonnetFeature())
+        load_registered_features()
+
+        action = TraefikExtraServicesAction()
+        action.initialize()
+        action.execute()
+
+        config_directory = Path(config.data["traefik"]["config_directory"])
+        (config_directory / "traefik.toml").write_text(
+            '[entryPoints.http]\n  address = ":8000"\n[providers.file]\n  directory = "/dynamic"\n'
+        )
+
+        with _traefik_container(image, config_directory) as base_url:
+            assert _status(base_url, "/prefix") == HTTPStatus.BAD_GATEWAY
+            assert _status(base_url, "/prefix/sub") == HTTPStatus.BAD_GATEWAY
+            assert _status(base_url, "/prefixed") == HTTPStatus.NOT_FOUND
+            assert _status(base_url, "/other") == HTTPStatus.NOT_FOUND
+
+
+def _write_traefik_version(version: int):
+    ddb_yml = Path("project") / "ddb.yml"
+    ddb_yml.write_text(f"traefik:\n  version: {version}\n" + ddb_yml.read_text().replace("traefik:\n", "", 1))
+
+
+@contextmanager
+def _traefik_container(image: str, config_directory: Path):
+    client = docker.from_env()
+    container = client.containers.run(
+        image,
+        detach=True,
+        remove=True,
+        ports={"8000/tcp": None},
+        volumes={
+            str(config_directory / "traefik.toml"): {"bind": "/etc/traefik/traefik.toml", "mode": "ro"},
+            str(config_directory): {"bind": "/dynamic", "mode": "ro"},
+        },
+    )
+    try:
+        container.reload()
+        port = container.ports["8000/tcp"][0]["HostPort"]
+        base_url = f"http://127.0.0.1:{port}"
+        wait(lambda: _status(base_url, "/") is not None, timeout_seconds=30)
+        yield base_url
+    finally:
+        container.stop(timeout=1)
+
+
+def _status(base_url: str, path: str):
+    try:
+        return requests.get(f"{base_url}{path}", headers={"Host": "prefixed.test"}, timeout=2).status_code
+    except requests.RequestException:
+        return None
