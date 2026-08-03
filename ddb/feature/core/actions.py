@@ -6,7 +6,6 @@ from datetime import UTC, datetime
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Any
-from urllib.error import HTTPError
 
 import requests
 import yaml
@@ -47,7 +46,7 @@ def get_latest_release(github_repository: str) -> tuple[str | None, str | None]:
         if version and version.startswith("v"):
             version = version[1:]
         return version, tag_name
-    except HTTPError:
+    except requests.HTTPError:
         return None, None
 
 
