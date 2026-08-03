@@ -1,9 +1,10 @@
 import os
 import re
+import socket
 from collections.abc import Iterable
 from typing import ClassVar
 
-import netifaces
+import psutil
 from dotty_dict import Dotty
 
 from ...action import Action
@@ -64,16 +65,13 @@ class DockerFeature(Feature):
         try:
             if not ip_address:
                 interface = feature_config.get("interface")
-                try:
-                    docker_if = netifaces.ifaddresses(interface)
-                except ValueError as err:
+                docker_if = psutil.net_if_addrs().get(interface)
+                if docker_if is None:
                     raise FeatureConfigurationAutoConfigureError(
                         self, "ip", "Invalid network interface: " + interface
-                    ) from err
-                if docker_if and netifaces.AF_INET in docker_if:
-                    docker_af_inet = docker_if[netifaces.AF_INET][0]
-                    ip_address = docker_af_inet["addr"]
-                else:
+                    )
+                ip_address = next((addr.address for addr in docker_if if addr.family == socket.AF_INET), None)
+                if not ip_address:
                     raise FeatureConfigurationAutoConfigureError(
                         self, "ip", "Can't get ip address from network interface configuration: " + interface
                     )

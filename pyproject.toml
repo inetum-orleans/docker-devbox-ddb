@@ -53,11 +53,13 @@ dependencies = [
     "jsonnet>=0.22",
     "marshmallow",
     "marshmallow-union",
-    "netifaces",
     "ordered-set",
     "paramiko",
     "patch",
     "progress",
+    # Replaces netifaces (unmaintained since 2021, no longer compiles with recent
+    # compilers) for network interface lookup; ships wheels everywhere.
+    "psutil",
     "python-on-whales",
     "python-slugify",
     "PyYAML",
