@@ -10,31 +10,35 @@ standalone binaries (PyInstaller). User documentation lives in `docs/` and is pu
 
 ## Development commands
 
+Dependencies, virtualenv and interpreters are managed by [uv](https://docs.astral.sh/uv/); everything runs through
+`uv run`, so the versions used are the ones locked in `uv.lock`.
+
 ```bash
-pip install -e .[dev]          # install with dev dependencies
-pytest                         # run the whole test suite
-pytest -m "not docker"         # skip tests that need a docker engine
-pytest --cov=ddb               # with coverage (what CI runs)
-pytest tests/feature/gitignore/test_gitignore.py::TestUpdateGitIgnoreAction::test_empty_project_with_core  # single test
-pylint ddb                     # lint, blocking in CI
-tox                            # run pylint + pytest on py38..py312
-make git-pre-push              # pylint + pytest
+uv sync                        # create .venv from uv.lock (dev group)
+uv run pytest                  # run the whole test suite
+uv run pytest -m "not docker"  # skip tests that need a docker engine
+uv run pytest --cov=ddb        # with coverage (what CI runs)
+uv run pytest tests/feature/gitignore/test_gitignore.py::TestUpdateGitIgnoreAction::test_empty_project_with_core  # single test
+uv run ruff check              # lint, blocking in CI
+uv run ruff format             # format
+uv run pre-commit run --all-files   # the full quality gate, as CI runs it
+uv run tox                     # run the suite on py311..py314
+uv run pyinstaller --dist ./dist ddb.spec  # build the standalone binary
 make doc-watch                 # serve docs on http://localhost:8000 via docker
-pyinstaller --dist ./dist ddb.spec  # build the standalone binary
 ```
 
-The [ytt](https://get-ytt.io/) binary must be in `PATH` for the ytt feature tests to pass. On Windows, run the CLI with
-`python -m ddb` instead of `ddb`.
+The [ytt](https://carvel.dev/ytt/) binary must be in `PATH` for the ytt feature tests to pass. On Windows, run the CLI
+with `python -m ddb` instead of `ddb`.
 
-Run tests from a project virtualenv on a supported interpreter (3.8 → 3.12), never from a system-wide `pytest`: a
-recent pytest refuses the `[pytest]` section kept in `setup.cfg` and aborts before collecting anything, while the dev
-dependencies pin the working `pytest==7.4.4`. The virtualenv also needs `setuptools<81`, because
-`ddb/feature/bootstrap.py` imports `pkg_resources` to discover `ddb_features` entry points and newer setuptools no
-longer ships it.
+Supported interpreters are 3.11 → 3.14. `ddb/utils/simpleeval.py`, `ddb/feature/docker/lib` and
+`pytest_docker_compose` are vendored copies excluded from ruff, so leave their formatting alone.
 
-Commits must follow [conventional commits](https://www.conventionalcommits.org/) — commitlint rejects invalid messages
-in CI, and `cz commit` (commitizen) helps write them. `ddb/__version__.py` is bumped by python-semantic-release on
-push to `master`; never edit the version by hand. Day-to-day work happens on `develop`.
+Commits must follow [conventional commits](https://www.conventionalcommits.org/) — commitizen (`uv run cz check`)
+rejects invalid messages in CI, and `uv run cz commit` helps write them. `ddb/__version__.py` is bumped by
+python-semantic-release on push to `master`; never edit the version by hand. Day-to-day work happens on `develop`.
+
+Integration tests spin up a cfssl container. If a run is interrupted, leftover `*-cfssl-1` containers make later runs
+fail with `ContainersAlreadyExist` — remove them before re-running.
 
 ## Architecture
 
@@ -109,8 +113,8 @@ instance to `_default_available_features` in `ddb/feature/bootstrap.py`, add `do
 
 ## Code conventions
 
-- `pylint ddb` must pass with the repo `pylintrc` — docstrings are required on classes, functions and methods
-  (only module docstrings are exempt).
-- Code must remain compatible with Python 3.8 (CI matrix is 3.8 → 3.12).
+- `ruff check` and `ruff format` must pass; the rule set, the 120-column limit and the justified per-file exceptions
+  live in `pyproject.toml`. Docstrings on classes, functions and methods remain the house style.
+- Code must remain compatible with Python 3.11 (CI matrix is 3.11 → 3.14).
 - Cross-platform behaviour (Linux, Windows, macOS/alpine binaries) is expected; prefer helpers from `ddb/utils/`
   (`file.py`, `process.py`, `compat.py`) over raw `os`/`subprocess` calls where one exists.

@@ -44,108 +44,61 @@ Any pull request containing invalid commit messages will be rejected.
 Your can use commitizen to help create commit with valid messages.
 
 ```bash
-cz commit
+uv run cz commit
 ```
 
-## Configure development environment (Windows)
+## Configure development environment
+
+Dependencies and virtualenvs are managed with [uv](https://docs.astral.sh/uv/), which also downloads the
+python interpreter when needed. ddb supports python 3.11 to 3.14.
 
 - Clone this repository and cd into it
 
-You should use [pyenv-win](https://github.com/pyenv-win/pyenv-win) to install and manage your python versions on
-Windows.
-
-- Install python 3.11.x
+- Install dependencies (creates `.venv` from `uv.lock`)
 
 ```bash
-pyenv install 3.11.9
-pyenv local 3.11.9
-pyenv rehash
-python --version  # Python 3.11.9
-```
-
-- Create virtualenv
-
-```bash
-python -m venv %USERPROFILE%\.pyenv\pyenv-win\versions\3.11.9-ddb
-pyenv local 3.11.9-ddb
-pyenv rehash
-python --version  # Python 3.11.9
-```
-
-- Install dependencies
-
-```bash
-pip install -e .[dev]
+uv sync
 ```
 
 - Enable pre-commit hooks
 
-``bash pre-commit install
-``
-
-- Download [ytt](https://get-ytt.io/) binary and make it available in PATH
-
-- Check development version is available in your virtualenv
-
+```bash
+uv run pre-commit install
 ```
-# On windows, use `python -m ddb` instead of ddb only
-python -m ddb --version  # Should display a version ending with .dev0
+
+- Download [ytt](https://carvel.dev/ytt/) binary and make it available in PATH
+
+- Check development version is available
+
+```bash
+uv run ddb --version
 ```
 
 - Run tests with pytest
 
 ```bash
-pytest
+uv run pytest
 ```
 
-## Configure development environment (Linux)
-
-You should use [pyenv](https://github.com/pyenv/pyenv) to install and manage your python versions on Linux.
-
-- Clone this repository and cd into it
-
-- Install python 3.11.x
+- Run the quality gate (ruff check and format, as in CI)
 
 ```bash
-pyenv install 3.11.9
-pyenv local 3.11.9
-python --version  # Python 3.11.9
+uv run pre-commit run --all-files
 ```
 
-- Create virtualenv
+- Run the test suite against every supported python version
 
 ```bash
-pyenv virtualenv 3.11.9 3.11.9-ddb
-pyenv local 3.11.9-ddb
-python --version  # Python 3.11.9
-```
-
-- Install dependencies
-
-```bash
-pip install -e .[dev]
-```
-
-- Enable pre-commit hooks
-
-``bash pre-commit install
-``
-
-- Download [ytt](https://get-ytt.io/) binary and make it available in PATH
-
-- Check development version is available in your virtualenv
-
-```bash
-ddb --version  # Should display a version ending with .dev0
-```
-
-- Run tests with pytest
-
-```
-pytest
+uv run tox
 ```
 
 ## Build and release process
 
-The release process is automated through Github Actions and 
+The release process is automated through Github Actions and
 [semantic-release](https://python-semantic-release.readthedocs.io/en/latest/), triggered when pushing to `master`.
+
+The standalone binary can be built locally with pyinstaller.
+
+```bash
+uv run pyinstaller --dist ./dist ddb.spec
+```
