@@ -258,7 +258,9 @@ class TestDockerFeature:
         )
         assert (
             npm_conditions.command("run serve")
-            == (docker_compose_bin + " -f ./docker-compose.yml run --rm --workdir=/app/. node").split()
+            == (
+                docker_compose_bin + f" -f {local_path('.', 'docker-compose.yml')} run --rm --workdir=/app/. node"
+            ).split()
         )
 
         mysql_set = binaries.get("mysql")
@@ -268,7 +270,8 @@ class TestDockerFeature:
             mysql.command()
             == (
                 docker_compose_bin
-                + " -f ./docker-compose.yml run --rm --workdir=/app/. db mysql -hdb -uproject-management-tool -pproject-management-tool"
+                + f" -f {local_path('.', 'docker-compose.yml')} run --rm --workdir=/app/. db mysql"
+                + " -hdb -uproject-management-tool -pproject-management-tool"
             ).split()
         )
 

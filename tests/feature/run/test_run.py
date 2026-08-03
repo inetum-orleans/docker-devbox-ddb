@@ -152,6 +152,7 @@ class TestRunFeature:
             "service\n"
         )
 
+    @pytest.mark.docker
     def test_run_docker_binary_exe(self, project_loader, capsys: CaptureFixture):
         project_loader("exe")
 

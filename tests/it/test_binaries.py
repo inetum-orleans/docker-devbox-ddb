@@ -52,6 +52,7 @@ class TestBinaries:
             + f" -f {local_path('.', 'docker-compose.yml')} run --rm --workdir=/workdir/. -e TEST db psql"
         )
 
+    @pytest.mark.docker
     def test_docker_binaries_exe(self, project_loader, capsys: CaptureFixture):
         project_loader("docker_exe")
 
