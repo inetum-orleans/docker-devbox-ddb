@@ -298,8 +298,7 @@ class SimpleEval(object):  # pylint: disable=too-few-public-methods
             ast.Assign: self._eval_assign,
             ast.AugAssign: self._eval_aug_assign,
             ast.Import: self._eval_import,
-            ast.Num: self._eval_num,
-            ast.Str: self._eval_str,
+            ast.Constant: self._eval_constant,
             ast.Name: self._eval_name,
             ast.UnaryOp: self._eval_unaryop,
             ast.BinOp: self._eval_binop,
@@ -310,22 +309,10 @@ class SimpleEval(object):  # pylint: disable=too-few-public-methods
             ast.keyword: self._eval_keyword,
             ast.Subscript: self._eval_subscript,
             ast.Attribute: self._eval_attribute,
-            ast.Index: self._eval_index,
             ast.Slice: self._eval_slice,
+            ast.JoinedStr: self._eval_joinedstr,  # f-string
+            ast.FormattedValue: self._eval_formattedvalue,  # formatted value in f-string
         }
-
-        # py3k stuff:
-        if hasattr(ast, 'NameConstant'):
-            self.nodes[ast.NameConstant] = self._eval_constant
-
-        # py3.6, f-strings
-        if hasattr(ast, 'JoinedStr'):
-            self.nodes[ast.JoinedStr] = self._eval_joinedstr  # f-string
-            self.nodes[ast.FormattedValue] = self._eval_formattedvalue  # formatted value in f-string
-
-        # py3.8 uses ast.Constant instead of ast.Num, ast.Str, ast.NameConstant
-        if hasattr(ast, 'Constant'):
-            self.nodes[ast.Constant] = self._eval_constant
 
         # Defaults:
 
@@ -374,18 +361,6 @@ class SimpleEval(object):  # pylint: disable=too-few-public-methods
     def _eval_import(self, node):
         raise FeatureNotAvailable("Sorry, 'import' is not allowed.")
         return self._eval(node.value)
-
-    @staticmethod
-    def _eval_num(node):
-        return node.n
-
-    @staticmethod
-    def _eval_str(node):
-        if len(node.s) > MAX_STRING_LENGTH:
-            raise IterableTooLong("String Literal in statement is too long!"
-                                  " ({0}, when {1} is max)".format(
-                                      len(node.s), MAX_STRING_LENGTH))
-        return node.s
 
     @staticmethod
     def _eval_constant(node):
@@ -512,9 +487,6 @@ class SimpleEval(object):  # pylint: disable=too-few-public-methods
 
         # If it is neither, raise an exception
         raise AttributeDoesNotExist(node.attr, self.expr)
-
-    def _eval_index(self, node):
-        return self._eval(node.value)
 
     def _eval_slice(self, node):
         lower = upper = step = None

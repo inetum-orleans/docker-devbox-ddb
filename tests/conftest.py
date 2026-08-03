@@ -15,8 +15,6 @@ from verboselogs import SPAM
 
 from .utilstest import init_config_paths
 
-pytest_plugins = ["docker_compose"]
-
 
 @pytest.fixture(scope="module")
 def global_data_dir(request: FixtureRequest) -> str:
