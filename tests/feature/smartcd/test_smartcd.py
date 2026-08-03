@@ -1,4 +1,5 @@
 from pathlib import Path
+from subprocess import CalledProcessError
 
 import pytest
 from pytest_mock import MockerFixture
@@ -8,6 +9,20 @@ from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.shell import ShellFeature
 from ddb.feature.smartcd import SmartcdAction, SmartcdFeature, WindowsProjectActivate
+from ddb.feature.smartcd.actions import is_smartcd_installed
+
+
+class TestIsSmartcdInstalled:
+    def test_smartcd_help_succeeds(self, mocker: MockerFixture):
+        run = mocker.patch("ddb.feature.smartcd.actions.run", return_value=b"")
+
+        assert is_smartcd_installed()
+        run.assert_called_once_with("bash", "-ic", "smartcd", "--help")
+
+    def test_smartcd_help_fails(self, mocker: MockerFixture):
+        mocker.patch("ddb.feature.smartcd.actions.run", side_effect=CalledProcessError(127, "bash"))
+
+        assert not is_smartcd_installed()
 
 
 @pytest.mark.skipif("os.name == 'nt'")
@@ -92,8 +107,12 @@ class TestSmartcdAction:
         assert not Path(".bash_leave").exists()
 
 
-@pytest.mark.skipif("os.name != 'nt'")
 class TestWindowsProjectActivate:
+    """
+    The action itself only writes files, so it is exercised on every platform even though it is only enabled on
+    windows.
+    """
+
     def test_empty_project_without_core(self, project_loader):
         project_loader("empty")
 
@@ -139,6 +158,7 @@ class TestWindowsProjectActivate:
         with Path("ddb_deactivate.bat").open() as f:
             assert "set command=(ddb deactivate)" in f.read()
 
+    @pytest.mark.skipif("os.name != 'nt'")
     def test_empty_project_main(self, project_loader):
         project_loader("empty")
 
