@@ -1,5 +1,6 @@
 import subprocess
 
+import pytest
 from pytest_mock import MockerFixture
 
 from ddb.config import config
@@ -10,6 +11,17 @@ def _completed(stdout: bytes) -> subprocess.CompletedProcess:
     return subprocess.CompletedProcess(args=[], returncode=0, stdout=stdout)
 
 
+@pytest.fixture
+def _posix(mocker: MockerFixture):
+    mocker.patch("ddb.utils.process.os.name", "posix")
+
+
+@pytest.fixture
+def _windows(mocker: MockerFixture):
+    mocker.patch("ddb.utils.process.os.name", "nt")
+
+
+@pytest.mark.usefixtures("_posix")
 class TestEffectiveCommand:
     def test_executable_and_args_are_kept_as_is(self):
         assert effective_command("git", "rev-parse", "HEAD") == ["git", "rev-parse", "HEAD"]
@@ -37,18 +49,19 @@ class TestEffectiveCommand:
 
         assert effective_command("git", "status") == ["git", "-c", "core.autocrlf=false", "status", "--quiet"]
 
-    def test_exe_extension_is_added_on_windows(self, mocker: MockerFixture):
-        mocker.patch("ddb.utils.process.os.name", "nt")
 
+@pytest.mark.usefixtures("_windows")
+class TestEffectiveCommandOnWindows:
+    def test_exe_extension_is_added(self):
         assert effective_command("git", "status") == ["git.exe", "status"]
 
-    def test_exe_extension_is_not_duplicated_on_windows(self, mocker: MockerFixture):
-        mocker.patch("ddb.utils.process.os.name", "nt")
+    def test_exe_extension_is_not_duplicated(self):
         config.data["core.process.git.bin"] = "git.exe"
 
         assert effective_command("git", "status") == ["git.exe", "status"]
 
 
+@pytest.mark.usefixtures("_posix")
 class TestRun:
     def test_stdout_is_returned(self, mocker: MockerFixture):
         subprocess_run = mocker.patch("subprocess.run", return_value=_completed(b"some output"))
@@ -56,14 +69,15 @@ class TestRun:
         assert run("git", "status") == b"some output"
         subprocess_run.assert_called_once_with(["git", "status"], check=True, capture_output=True)
 
-    def test_windows_ansi_reset_suffix_is_dropped(self, mocker: MockerFixture):
-        mocker.patch("ddb.utils.process.os.name", "nt")
+
+@pytest.mark.usefixtures("_windows")
+class TestRunOnWindows:
+    def test_ansi_reset_suffix_is_dropped(self, mocker: MockerFixture):
         mocker.patch("subprocess.run", return_value=_completed(b"some output\x1b[0m\r\n"))
 
         assert run("git.exe", "status") == b"some output"
 
-    def test_windows_stdout_is_kept_when_there_is_no_ansi_reset_suffix(self, mocker: MockerFixture):
-        mocker.patch("ddb.utils.process.os.name", "nt")
+    def test_stdout_is_kept_when_there_is_no_ansi_reset_suffix(self, mocker: MockerFixture):
         mocker.patch("subprocess.run", return_value=_completed(b"some output"))
 
         assert run("git.exe", "status") == b"some output"
