@@ -281,8 +281,7 @@ class TestTraefikGeneratedRouting:
 
 
 def _write_traefik_version(version: int):
-    ddb_yml = Path("project") / "ddb.yml"
-    ddb_yml.write_text(f"traefik:\n  version: {version}\n" + ddb_yml.read_text().replace("traefik:\n", "", 1))
+    (Path("project") / "ddb.local.yml").write_text(f"traefik:\n  version: {version}\n")
 
 
 @contextmanager
