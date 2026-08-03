@@ -15,6 +15,7 @@ from ddb.feature.docker.binaries import DockerBinary
 from ddb.feature.docker.utils import DockerComposeControl
 from ddb.feature.run import RunAction, RunFeature
 from ddb.feature.shell import ShellFeature
+from tests.utilstest import local_path
 
 docker_compose_bin = "docker compose" if os.name != "nt" else "docker.exe compose"
 
@@ -93,7 +94,10 @@ class TestRunFeature:
 
         read = capsys.readouterr()
 
-        assert read.out == docker_compose_bin + " -f ./docker-compose.yml run --rm --workdir=/app/. service\n"
+        assert (
+            read.out
+            == docker_compose_bin + f" -f {local_path('.', 'docker-compose.yml')} run --rm --workdir=/app/. service\n"
+        )
 
     def test_run_docker_binary_workdir(self, project_loader, capsys: CaptureFixture):
         project_loader("empty")
@@ -113,7 +117,11 @@ class TestRunFeature:
 
         read = capsys.readouterr()
 
-        assert read.out == docker_compose_bin + " -f ../docker-compose.yml run --rm --workdir=/app/sub service\n"
+        assert (
+            read.out
+            == docker_compose_bin
+            + f" -f {local_path('..', 'docker-compose.yml')} run --rm --workdir=/app/sub service\n"
+        )
 
     def test_run_docker_binary_workdir_outside(self, project_loader, capsys: CaptureFixture):
         project_loader("outside")

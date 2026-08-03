@@ -47,6 +47,7 @@ class TestFixuidFeature:
             "from-php-root-user",
         ],
     )
+    @pytest.mark.docker
     def test_fixuid(self, project_loader, project):
         project_loader(project)
         register_default_caches()
@@ -76,6 +77,7 @@ class TestFixuidFeature:
             image = client.images.build(path="docker")
             assert image
 
+    @pytest.mark.docker
     def test_from_mysql_fixuid_removed(self, project_loader):
         project_loader("from-mysql-fixuid-removed")
         register_default_caches()
@@ -150,6 +152,7 @@ class TestFixuidFeature:
 
         assert (Path("docker") / "fixuid.tar.gz").exists()
 
+    @pytest.mark.docker
     def test_fixuid_manual_install(self, project_loader):
         project_loader("fixuid-manual-install")
         register_default_caches()

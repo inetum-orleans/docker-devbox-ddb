@@ -6,6 +6,13 @@ from pytest_mock import MockerFixture
 
 from ddb import __version__
 from ddb.__main__ import main
+from ddb.feature.core import CoreFeature
+
+# The asset ddb downloads depends on the platform it runs on.
+release_asset_name = CoreFeature._get_default_binary_remote_name()
+release_asset_url = (
+    f"https://github.com/inetum-orleans/docker-devbox-ddb/releases/download/v1.10.0/{release_asset_name}"
+)
 
 
 class TestCore:
@@ -54,7 +61,7 @@ class TestCore:
         mocker.patch("ddb.feature.core.actions.get_latest_release", lambda *args, **kwargs: ("1.10.0", "v1.10.0"))
         mocker.patch("ddb.feature.core.actions.get_current_version", lambda *args, **kwargs: "1.9.2")
         responses.get(
-            "https://github.com/inetum-orleans/docker-devbox-ddb/releases/download/v1.10.0/ddb-linux",
+            release_asset_url,
             status=200,
             body=b"binary data",
             headers={
@@ -82,7 +89,7 @@ class TestCore:
         mocker.patch("ddb.feature.core.actions.get_latest_release", lambda *args, **kwargs: ("1.10.0", "v1.10.0"))
         mocker.patch("ddb.feature.core.actions.get_current_version", lambda *args, **kwargs: "1.9.2")
         responses.get(
-            "https://github.com/inetum-orleans/docker-devbox-ddb/releases/download/v1.10.0/ddb-linux",
+            release_asset_url,
             status=200,
             body=b"binary data",
             headers={
@@ -110,7 +117,7 @@ class TestCore:
         mocker.patch("ddb.feature.core.actions.get_latest_release", lambda *args, **kwargs: ("1.10.0", "v1.10.0"))
         mocker.patch("ddb.feature.core.actions.get_current_version", lambda *args, **kwargs: "1.10.0")
         responses.get(
-            "https://github.com/inetum-orleans/docker-devbox-ddb/releases/download/v1.10.0/ddb-linux",
+            release_asset_url,
             status=200,
             body=b"binary data",
             headers={

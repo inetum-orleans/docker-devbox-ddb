@@ -20,12 +20,13 @@ from ddb.feature.docker.binaries import DockerBinary
 from ddb.feature.docker.lib.compose.config.types import ServicePort
 from ddb.feature.docker.utils import DockerComposeControl, get_mapped_path
 from ddb.feature.traefik import TraefikFeature
-from tests.utilstest import setup_cfssl
+from tests.utilstest import local_path, setup_cfssl
 
 docker_compose_bin = "docker compose" if os.name != "nt" else "docker.exe compose"
 
 
 class TestDockerComposeControl:
+    @pytest.mark.docker
     def test_basic_manipulations(self, project_loader):
         project_loader("control")
 
@@ -220,21 +221,21 @@ class TestDockerFeature:
             npm_simple.command()
             == (
                 docker_compose_bin
-                + " -f ./docker-compose.yml run --rm --workdir=/app/. --label traefik.enable=false node"
+                + f" -f {local_path('.', 'docker-compose.yml')} run --rm --workdir=/app/. --label traefik.enable=false node"
             ).split()
         )
         assert (
             npm_simple.command("serve")
             == (
                 docker_compose_bin
-                + " -f ./docker-compose.yml run --rm --workdir=/app/. --label traefik.enable=false node"
+                + f" -f {local_path('.', 'docker-compose.yml')} run --rm --workdir=/app/. --label traefik.enable=false node"
             ).split()
         )
         assert (
             npm_simple.command("run serve")
             == (
                 docker_compose_bin
-                + " -f ./docker-compose.yml run --rm --workdir=/app/. --label traefik.enable=false node"
+                + f" -f {local_path('.', 'docker-compose.yml')} run --rm --workdir=/app/. --label traefik.enable=false node"
             ).split()
         )
 
@@ -245,14 +246,14 @@ class TestDockerFeature:
             npm_conditions.command()
             == (
                 docker_compose_bin
-                + " -f ./docker-compose.yml run --rm --workdir=/app/. --label traefik.enable=false node"
+                + f" -f {local_path('.', 'docker-compose.yml')} run --rm --workdir=/app/. --label traefik.enable=false node"
             ).split()
         )
         assert (
             npm_conditions.command("serve")
             == (
                 docker_compose_bin
-                + " -f ./docker-compose.yml run --rm --workdir=/app/. --label traefik.enable=false node"
+                + f" -f {local_path('.', 'docker-compose.yml')} run --rm --workdir=/app/. --label traefik.enable=false node"
             ).split()
         )
         assert (

@@ -7,6 +7,7 @@ from _pytest.capture import CaptureFixture
 
 from ddb.__main__ import main, reset
 from ddb.config import Config, config
+from tests.utilstest import local_path
 
 docker_compose_bin = "docker compose" if os.name != "nt" else "docker.exe compose"
 bin_ext = ".bat" if os.name == "nt" else ""
@@ -26,7 +27,8 @@ class TestBinaries:
 
         output = capsys.readouterr()
         assert (
-            output.out.strip() == docker_compose_bin + " -f ./docker-compose.yml run --rm --workdir=/workdir/. db psql"
+            output.out.strip()
+            == docker_compose_bin + f" -f {local_path('.', 'docker-compose.yml')} run --rm --workdir=/workdir/. db psql"
         )
 
     def test_docker_binaries_with_custom_options(self, project_loader, capsys: CaptureFixture):
@@ -46,7 +48,8 @@ class TestBinaries:
 
         assert (
             output.out.strip()
-            == docker_compose_bin + " -f ./docker-compose.yml run --rm --workdir=/workdir/. -e TEST db psql"
+            == docker_compose_bin
+            + f" -f {local_path('.', 'docker-compose.yml')} run --rm --workdir=/workdir/. -e TEST db psql"
         )
 
     def test_docker_binaries_exe(self, project_loader, capsys: CaptureFixture):
@@ -78,7 +81,7 @@ class TestBinaries:
         assert (
             output.out.strip()
             == docker_compose_bin
-            + " -f ./docker-compose.yml run --rm --workdir=/workdir/. --entrypoint=/custom/ep db psql"
+            + f" -f {local_path('.', 'docker-compose.yml')} run --rm --workdir=/workdir/. --entrypoint=/custom/ep db psql"
         )
 
     def test_docker_binaries_global(self, project_loader, capsys: CaptureFixture):
@@ -95,7 +98,8 @@ class TestBinaries:
 
         output = capsys.readouterr()
         assert (
-            output.out.strip() == docker_compose_bin + " -f ./docker-compose.yml run --rm --workdir=/workdir/. db psql"
+            output.out.strip()
+            == docker_compose_bin + f" -f {local_path('.', 'docker-compose.yml')} run --rm --workdir=/workdir/. db psql"
         )
 
     def test_docker_binaries_global_default(self, project_loader, capsys: CaptureFixture):
@@ -112,7 +116,8 @@ class TestBinaries:
 
         output = capsys.readouterr()
         assert (
-            output.out.strip() == docker_compose_bin + " -f ./docker-compose.yml run --rm --workdir=/workdir/. db psql"
+            output.out.strip()
+            == docker_compose_bin + f" -f {local_path('.', 'docker-compose.yml')} run --rm --workdir=/workdir/. db psql"
         )
 
     def test_docker_binaries_with_clear_cache(self, project_loader, capsys: CaptureFixture):

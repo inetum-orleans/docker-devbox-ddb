@@ -11,6 +11,14 @@ from ddb.feature.bootstrap import bootstrap_features_configuration
 from ddb.feature.gitignore import UpdateGitignoreAction
 
 
+def local_path(*parts: str) -> str:
+    """
+    Join path parts with the local separator, the way ddb builds the paths it prints.
+    """
+    # PTH118: the point is to build the exact string ddb prints, including a leading "./".
+    return os.sep.join(parts)  # noqa: PTH118
+
+
 def load_config(data_dir: str | None = None, name: str | None = None):
     init_config_paths(data_dir, name)
 

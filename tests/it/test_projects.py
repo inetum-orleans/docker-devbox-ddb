@@ -1,9 +1,12 @@
 from pathlib import Path
 
+import pytest
+
 from ddb.__main__ import main
 
 
 class TestSymfonyVuejs:
+    @pytest.mark.docker
     def test_activate(self, project_loader):
         project_loader("symfony-vuejs")
 

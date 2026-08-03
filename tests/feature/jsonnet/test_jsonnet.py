@@ -556,6 +556,9 @@ class TestJsonnetAction:
             expected_data = expected_data.replace("%uid%", str(config.data.get("docker.user.uid")))
             expected_data = expected_data.replace("%gid%", str(config.data.get("docker.user.gid")))
             expected_data = expected_data.replace("%docker.debug.host%", str(config.data.get("docker.debug.host")))
+            expected_data = expected_data.replace(
+                "%mount_directory%", str(config.data.get("jsonnet.docker.mount.directory"))
+            )
 
             expected = yaml.load(expected_data, yaml.SafeLoader)
 
