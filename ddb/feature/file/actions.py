@@ -1,6 +1,7 @@
 import logging
 import os
 from collections.abc import Callable
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
@@ -109,15 +110,23 @@ class ObserverHandler(FileSystemEventHandler):
             context.mark_as_unprocessed(file)
             func(file=file)
 
+    def emit_found_if_still_there(self, file: str) -> None:
+        """
+        Emit a found event, unless the file is already gone.
+
+        macOS coalesces the events it queues, so a file deleted right after it was written
+        is still reported as created or modified.
+        """
+        if Path(file).exists():
+            self.emit_if_not_filtered(events.file.found, file)
+
     def on_modified(self, event: FileSystemEvent) -> None:
         if not event.is_directory:
-            source = os.path.relpath(event.src_path)
-            self.emit_if_not_filtered(events.file.found, source)
+            self.emit_found_if_still_there(os.path.relpath(event.src_path))
 
     def on_created(self, event: FileSystemEvent) -> None:
         if not event.is_directory:
-            source = os.path.relpath(event.src_path)
-            self.emit_if_not_filtered(events.file.found, source)
+            self.emit_found_if_still_there(os.path.relpath(event.src_path))
 
     def on_deleted(self, event: FileSystemEvent) -> None:
         if not event.is_directory:
@@ -128,5 +137,5 @@ class ObserverHandler(FileSystemEventHandler):
         if not event.is_directory:
             source = os.path.relpath(event.src_path)
             destination = os.path.relpath(event.dest_path)
-            self.emit_if_not_filtered(events.file.found, destination)
+            self.emit_found_if_still_there(destination)
             self.emit_if_not_filtered(events.file.deleted, source)
