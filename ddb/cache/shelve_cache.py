@@ -62,7 +62,6 @@ class ShelveCache(Cache):
     def flush(self):
         self._shelf.sync()
 
-    # Shelve pickles ddb's own cache entries, written and read back locally.
     def get(self, key: str, default=None):
         try:
             return self._shelf.get(key, default)

@@ -551,7 +551,7 @@ class CheckForUpdateAction(InitializableAction):
         if not command.avoid_stdout and config.data.get("core.check_updates"):
             cache = caches.get("core.check_for_update.version")
             last_check = cache.get("last_check", None)
-            today = datetime.now(UTC).date()
+            today = datetime.now(UTC).astimezone().date()
 
             if last_check is None or last_check < today:
                 github_repository = config.data.get("core.github_repository")
