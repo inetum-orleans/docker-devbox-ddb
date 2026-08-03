@@ -12,7 +12,7 @@ from ddb.utils.process import effective_command
 from ddb.utils.simpleeval import simple_eval
 
 
-class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attributes
+class DockerBinary(AbstractBinary):
     """
     Binary to run docker compose command.
     """
@@ -145,7 +145,7 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
             return False
         return not self.condition and other.condition
 
-    def __eq__(self, other):  # pylint:disable=too-many-return-statements
+    def __eq__(self, other):
         """
         Check if given binary is the same as the current one
         :param binary:

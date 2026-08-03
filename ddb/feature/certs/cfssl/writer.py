@@ -60,7 +60,6 @@ def write_files(
     :param destination:
     :param client:
     """
-    # pylint: disable=too-many-locals,too-many-branches
     if not conf:
         conf = {}
 

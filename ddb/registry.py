@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar
 from ordered_set import OrderedSet
 
 if TYPE_CHECKING:
-    from ddb.cache import Cache  # pylint:disable=cyclic-import
+    from ddb.cache import Cache
 
 
 class RegistryObject(ABC):
@@ -48,7 +48,7 @@ class DefaultRegistryObject(RegistryObject):
         return self._description if self._description else super().description
 
 
-T = TypeVar("T")  # pylint:disable=invalid-name
+T = TypeVar("T")
 
 
 class Registry(Generic[T]):
@@ -227,5 +227,5 @@ class RegistryOrderedSet(Registry):
     def _has_obj_impl(self, dict_value: OrderedSet[T], obj) -> bool:
         return obj in dict_value
 
-    def get(self, name: str) -> OrderedSet[T]:  # pylint:disable=useless-super-delegation
+    def get(self, name: str) -> OrderedSet[T]:
         return super().get(name)

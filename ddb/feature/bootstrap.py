@@ -120,7 +120,7 @@ def reset_available_features():
     """
     Reset available features to default list.
     """
-    global _available_features  # pylint:disable=global-statement
+    global _available_features
     _available_features = list(_default_available_features)
 
 
@@ -128,7 +128,7 @@ def append_available_feature(feature):
     """
     Append a feature to available features list.
     """
-    global _available_features  # pylint:disable=global-statement,global-variable-not-assigned
+    global _available_features
     _available_features.append(feature)
 
 

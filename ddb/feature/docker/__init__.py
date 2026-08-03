@@ -91,7 +91,7 @@ class DockerFeature(Feature):
             name = feature_config.get("user.name")
             if name:
                 try:
-                    import pwd  # pylint:disable=import-outside-toplevel
+                    import pwd
 
                     struct_passwd = pwd.getpwnam(name)
                     if uid is None:
@@ -108,7 +108,7 @@ class DockerFeature(Feature):
             group = feature_config.get("user.group")
             if group:
                 try:
-                    import grp  # pylint:disable=import-outside-toplevel
+                    import grp
 
                     struct_group = grp.getgrnam(group)
                     gid = struct_group.gr_id
@@ -123,7 +123,7 @@ class DockerFeature(Feature):
         uid = feature_config.get("user.uid")
         if uid is None:
             try:
-                uid = os.getuid()  # pylint:disable=no-member
+                uid = os.getuid()
             except AttributeError:
                 uid = 1000
             feature_config["user.uid"] = uid
@@ -131,7 +131,7 @@ class DockerFeature(Feature):
         gid = feature_config.get("user.gid")
         if gid is None:
             try:
-                gid = os.getgid()  # pylint:disable=no-member
+                gid = os.getgid()
             except AttributeError:
                 gid = 1000
             feature_config["user.gid"] = gid

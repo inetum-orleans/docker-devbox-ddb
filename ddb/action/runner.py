@@ -9,7 +9,7 @@ from ddb.config import config
 from ddb.context import context
 from ddb.context.context import ContextStackItem
 
-A = TypeVar("A", bound=Action)  # pylint:disable=invalid-name
+A = TypeVar("A", bound=Action)
 
 
 class FailFastError(Exception):
@@ -34,9 +34,6 @@ class ExpectedError(Exception):
             else context.log.error
         )
         log_error(str(self))
-
-
-# pylint:disable=too-few-public-methods
 
 
 class EventBindingRunner(Generic[A], ABC):
@@ -66,7 +63,7 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
         self.event_processor = event_processor
         self.fail_fast = fail_fast
 
-    def run(self, *args, **kwargs):  # pylint:disable=missing-function-docstring
+    def run(self, *args, **kwargs):
         if self.event_processor:
             resp = self.event_processor(*args, **kwargs)
             if resp is False or resp is None:
@@ -81,7 +78,7 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
 
             self._execute_action(*args, **kwargs)
             return True
-        except Exception as exception:  # pylint:disable=broad-except
+        except Exception as exception:
             self._handle_exception(exception)
             if self.fail_fast or isinstance(exception, FailFastError):
                 raise

@@ -41,7 +41,7 @@ class DockerComposeControl:
         self.docker_command = shlex.split(docker_command)
         self.docker_compose_command = shlex.split(docker_compose_command)
 
-    def up(self, name: str | None = None):  # pylint:disable=invalid-name
+    def up(self, name: str | None = None):
         """
         Execute docker-compose up -d
         :param name: the name of a specific service to up

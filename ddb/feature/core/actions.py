@@ -43,7 +43,7 @@ def get_latest_release(github_repository: str):
         if version and version.startswith("v"):
             version = version[1:]
         return version, tag_name
-    except HTTPError:  # pylint:disable=bare-except
+    except HTTPError:
         return None, None
 
 
@@ -493,7 +493,7 @@ class ReloadConfigAction(Action):
                     feature.configure()
                 context.log.info("Configuration has been reloaded.")
                 events.config.reloaded()
-            except Exception as exc:  # pylint:disable=broad-except
+            except Exception as exc:
                 context.log.warning("Configuration has fail to reload: %s", str(exc))
 
 
@@ -669,7 +669,7 @@ class SelfUpdateAction(Action):
                     progress_bar = IncrementalBar("Downloading", max=content_length, suffix="%(percent)d%%")
 
                 for chunk in response.iter_content(32 * 1024):
-                    progress_bar.next(len(chunk))  # pylint:disable=not-callable
+                    progress_bar.next(len(chunk))
                     tmp.write(chunk)
                 tmp.flush()
 

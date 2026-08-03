@@ -64,7 +64,7 @@ class Action(RegistryObject, ABC):
         return False
 
 
-class InitializableAction(Action, ABC):  # pylint:disable=abstract-method
+class InitializableAction(Action, ABC):
     """
     An action supporting an initialize singleton method.
     """
@@ -107,7 +107,7 @@ class WatchSupport(ABC):
         """
 
 
-class AbstractTemplateAction(InitializableAction, ABC):  # pylint:disable=abstract-method
+class AbstractTemplateAction(InitializableAction, ABC):
     """
     Abstract action to render templates based on filename suffixes, supporting incoming events from file feature.
     """
@@ -199,7 +199,7 @@ class AbstractTemplateAction(InitializableAction, ABC):  # pylint:disable=abstra
 
                 if written or rendered is True or config.eject:
                     events.file.generated(source=original_template, target=destination)
-        except Exception as render_error:  # pylint:disable=broad-except
+        except Exception as render_error:
             if migrate_retries_count > 50:
                 raise render_error
             try:

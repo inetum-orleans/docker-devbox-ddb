@@ -2,7 +2,6 @@ from collections.abc import Iterable
 
 from ddb.binary import Binary as BinaryType
 
-# pylint:disable=redefined-outer-name
 from ..command import Command
 from . import event
 

@@ -69,7 +69,7 @@ class JsonnetFeature(Feature):
             name = feature_config.get("docker.user.name")
             if name:
                 try:
-                    import pwd  # pylint:disable=import-outside-toplevel
+                    import pwd
 
                     struct_passwd = pwd.getpwnam(name)
                     if uid is None:
@@ -86,7 +86,7 @@ class JsonnetFeature(Feature):
             group = feature_config.get("docker.user.group")
             if group:
                 try:
-                    import grp  # pylint:disable=import-outside-toplevel
+                    import grp
 
                     struct_group = grp.getgrnam(group)
                     gid = struct_group.gr_id
@@ -102,7 +102,7 @@ class JsonnetFeature(Feature):
         group_to_gid = feature_config.get("docker.user.group_to_gid")
 
         try:
-            import pwd  # pylint:disable=import-outside-toplevel
+            import pwd
 
             struct_passwds = pwd.getpwall()
             for struct_passwd in struct_passwds:
@@ -114,7 +114,7 @@ class JsonnetFeature(Feature):
             pass
 
         try:
-            import grp  # pylint:disable=import-outside-toplevel
+            import grp
 
             struct_groups = grp.getgrall()
             for struct_group in struct_groups:
@@ -128,7 +128,7 @@ class JsonnetFeature(Feature):
         uid = feature_config.get("docker.user.uid", config.data.get("docker.user.uid"))
         if uid is None:
             try:
-                uid = os.getuid()  # pylint:disable=no-member
+                uid = os.getuid()
             except AttributeError:
                 uid = 1000
             feature_config["docker.user.uid"] = uid
@@ -136,7 +136,7 @@ class JsonnetFeature(Feature):
         gid = feature_config.get("docker.user.gid", config.data.get("docker.user.gid"))
         if gid is None:
             try:
-                gid = os.getgid()  # pylint:disable=no-member
+                gid = os.getgid()
             except AttributeError:
                 gid = 1000
             feature_config["docker.user.gid"] = gid

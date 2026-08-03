@@ -7,7 +7,6 @@ from ..config import config
 from .cache import Cache
 
 # Easy fix for https://github.com/inetum-orleans/docker-devbox-ddb/issues/49
-# pylint:disable=protected-access
 _dbm_names = dbm._names = ["dbm.gnu", "dbm.ndbm", "dbm.dumb"]
 if "dbm.dumb" in _dbm_names:
     # Let's make dbm.dumb the preferred implementation
@@ -37,11 +36,11 @@ class ShelveCache(Cache):
             self._delete_files(self.basename)
         try:
             self._shelf = shelve.open(self.basename)
-        except Exception as open_error:  # pylint:disable=broad-except
+        except Exception as open_error:
             if self._delete_files(self.basename):
                 try:
                     self._shelf = shelve.open(self.basename)
-                except Exception as fallback_error:  # pylint:disable=broad-except
+                except Exception as fallback_error:
                     raise open_error from fallback_error
             else:
                 raise open_error

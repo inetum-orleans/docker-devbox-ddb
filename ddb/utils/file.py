@@ -155,14 +155,12 @@ class FileUtils:
             return file.read().decode("utf-8")
 
 
-# pylint:disable=too-many-instance-attributes
 class FileWalker:
     """
     Walk files inside project directory.
     TODO: Add a excludes_from_gitignore option to automatically exclude files based on gitignore behavior.
     """
 
-    # pylint:disable=too-many-arguments
     def __init__(
         self,
         includes: list[str] | None,
@@ -407,7 +405,6 @@ class SingleTemporaryFile:
         if "delete" in kwargs:
             kwargs.pop("delete")
 
-        # pylint:disable=consider-using-with
         self.named_temporary_file = NamedTemporaryFile(dir=self.tempdir, delete=False, **kwargs)
 
     def __enter__(self):

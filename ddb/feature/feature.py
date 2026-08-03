@@ -16,7 +16,7 @@ from ..service import Service
 from .schema import FeatureSchema
 
 
-class Feature(RegistryObject, ABC):  # pylint:disable=abstract-method
+class Feature(RegistryObject, ABC):
     """
     A feature provides phases, commands, binaries, actions and services. It can be configured with a key matching it's
     name in the configuration, and it's configuration should match a given schema.

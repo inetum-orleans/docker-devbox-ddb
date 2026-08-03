@@ -380,14 +380,14 @@ def register_actions_in_event_bus(fail_fast=False):
 
 
 def main(
-    args: Sequence[str] | None = None,  # pylint:disable=too-many-statements
+    args: Sequence[str] | None = None,
     reset_disabled=False,
     before_handle_command_line=None,
 ):
     """
     Load all features and handle command line
     """
-    global _watch_started_event, _watch_stop_event  # pylint:disable=global-statement
+    global _watch_started_event, _watch_stop_event
     _watch_started_event = threading.Event()
     _watch_stop_event = threading.Event()
     initial_cwd = os.getcwd()
@@ -418,7 +418,7 @@ def main(
         register_default_caches()
 
         def on_config_reloaded():
-            global _watch_started_event, _watch_stop_event  # pylint:disable=global-statement
+            global _watch_started_event, _watch_stop_event
             _watch_stop_event.set()
             _watch_started_event = threading.Event()
             _watch_stop_event = threading.Event()
@@ -433,7 +433,7 @@ def main(
 
             handle_command_line(command)
 
-        bus.on(events.config.reloaded.name, on_config_reloaded)  # pylint:disable=no-member
+        bus.on(events.config.reloaded.name, on_config_reloaded)
 
         events.main.start(command=command)
         handle_command_line(command)
@@ -443,10 +443,10 @@ def main(
         return context.exceptions
     except ExpectedError as exception:
         return [exception]
-    except Exception as exception:  # pylint:disable=broad-except
+    except Exception as exception:
         try:
             clear_caches()
-        except Exception as clear_cache_exception:  # pylint:disable=broad-except
+        except Exception as clear_cache_exception:
             logging.getLogger("ddb").exception(
                 "An error has occured while clearing caches", exc_info=clear_cache_exception
             )

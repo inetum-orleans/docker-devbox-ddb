@@ -92,7 +92,6 @@ well:
 """
 
 # We need latest changes to be released before moving this back into setup.py proper dependency.
-# pylint: skip-file
 
 import ast
 import operator as op
@@ -150,7 +149,6 @@ class FunctionNotDefined(InvalidExpression):
         setattr(self, 'func_name', func_name)  # bypass 2to3 confusion.
         self.expression = expression
 
-        # pylint: disable=bad-super-call
         super(InvalidExpression, self).__init__(self.message)
 
 
@@ -163,7 +161,6 @@ class NameNotDefined(InvalidExpression):
             name, expression)
         self.expression = expression
 
-        # pylint: disable=bad-super-call
         super(InvalidExpression, self).__init__(self.message)
 
 
@@ -209,7 +206,7 @@ def random_int(top):
     return int(random() * top)
 
 
-def safe_power(a, b):  # pylint: disable=invalid-name
+def safe_power(a, b):
     """ a limited exponent/to-the-power-of function, for safety reasons """
 
     if abs(a) > MAX_POWER or abs(b) > MAX_POWER:
@@ -218,7 +215,7 @@ def safe_power(a, b):  # pylint: disable=invalid-name
     return a ** b
 
 
-def safe_mult(a, b):  # pylint: disable=invalid-name
+def safe_mult(a, b):
     """ limit the number of times an iterable can be repeated... """
 
     if hasattr(a, '__len__') and b * len(a) > MAX_STRING_LENGTH:
@@ -229,7 +226,7 @@ def safe_mult(a, b):  # pylint: disable=invalid-name
     return a * b
 
 
-def safe_add(a, b):  # pylint: disable=invalid-name
+def safe_add(a, b):
     """ iterable length limit again """
 
     if hasattr(a, '__len__') and hasattr(b, '__len__'):
@@ -269,7 +266,7 @@ ATTR_INDEX_FALLBACK = True
 # And the actual evaluator:
 
 
-class SimpleEval(object):  # pylint: disable=too-few-public-methods
+class SimpleEval(object):
     """ A very simple expression parser.
         >>> s = SimpleEval()
         >>> s.eval("20 + 30 - ( 10 * 5)")

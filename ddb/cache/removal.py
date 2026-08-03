@@ -3,7 +3,7 @@ from collections import defaultdict
 from ddb.cache import caches, register_project_cache
 
 
-class RemovalCacheSupport:  # pylint:disable=too-many-instance-attributes
+class RemovalCacheSupport:
     """
     Handle a cache to support removal of previously generated resources when they are not linked to the current
     configuration anymore.

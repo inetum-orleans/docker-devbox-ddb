@@ -15,7 +15,6 @@
     How fun, isn't it?
 """
 
-# pylint: skip-file
 
 import os
 import time

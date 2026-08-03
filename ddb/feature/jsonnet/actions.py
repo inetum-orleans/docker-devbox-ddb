@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from importlib import import_module
 
 import yaml
-from _jsonnet import evaluate_file  # pylint: disable=no-name-in-module
+from _jsonnet import evaluate_file
 
 from ddb.action.action import AbstractTemplateAction
 from ddb.config import config, migrations

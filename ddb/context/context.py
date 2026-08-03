@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from dotty_dict import Dotty
 
 if TYPE_CHECKING:
-    from ..action import Action  # pylint:disable=cyclic-import
+    from ..action import Action
 
 
 class ContextStackItem:
@@ -34,7 +34,7 @@ class ContextStackItem:
         return f"{self.event_name} => {type(self.action).__name__}.{self.to_call.__name__}({parameters_repr})"
 
 
-class Context:  # pylint:disable=too-many-instance-attributes
+class Context:
     """
     Execution context.
     """

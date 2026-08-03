@@ -9,7 +9,7 @@ from ddb.event import bus
 from ddb.registry import DefaultRegistryObject, RegistryObject
 
 
-class Phase(RegistryObject, ABC):  # pylint:disable=abstract-method
+class Phase(RegistryObject, ABC):
     """
     Step into a lifecycle flow.
     """

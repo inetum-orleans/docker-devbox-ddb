@@ -13,10 +13,10 @@ def _type_conflict_strategy(config, path, base, nxt):
             merge = nxt["merge"]
             if isinstance(merge, str):
                 if isinstance(value, list) and isinstance(base, list):
-                    strategy = ExtendedListStrategies._expand_strategy(merge)  # pylint:disable=protected-access
+                    strategy = ExtendedListStrategies._expand_strategy(merge)
                     nxt = value
                 elif isinstance(value, dict) and isinstance(base, dict):
-                    strategy = DictStrategies._expand_strategy(merge)  # pylint:disable=protected-access
+                    strategy = DictStrategies._expand_strategy(merge)
                     nxt = value
     return strategy(config, path, base, nxt)
 

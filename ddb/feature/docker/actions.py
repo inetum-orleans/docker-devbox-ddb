@@ -129,7 +129,7 @@ class EmitDockerComposeConfigAction(Action):
         for cert_domain in cert_domains:
             self._cert_domains_cache.set(cert_domain, None)
 
-    def _build_event_data(self, docker_compose_config, labels, service, service_name):  # pylint:disable=too-many-locals
+    def _build_event_data(self, docker_compose_config, labels, service, service_name):
         parsed_values = {}
         for key, value in labels.items():
             match = self.key_re.match(key)
@@ -348,7 +348,6 @@ class LocalVolumesAction(Action):
             if uid != config.data.get("docker.user.uid") and gid != config.data.get("docker.user.gid"):
                 context.log.warning("Invalid owner detected for %s", relative_path)
                 try:
-                    # pylint:disable=no-member
                     os.chown(relative_path, config.data.get("docker.user.uid"), config.data.get("docker.user.gid"))
                     context.log.info("Owner has been fixed for %s", relative_path)
                 except OSError:

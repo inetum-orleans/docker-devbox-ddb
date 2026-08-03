@@ -70,5 +70,5 @@ class CookiecutterAction(Action):
                         pset = patch.fromfile(patch_file)
                         pset.apply(root=output_dir)
                         context.log.success("Patch %s applied in %s", patch_file, output_dir)
-                    except Exception as exc:  # pylint:disable=broad-except
+                    except Exception as exc:
                         context.log.error("Patch %s has failed to be applied in %s: %s", patch_file, output_dir, exc)

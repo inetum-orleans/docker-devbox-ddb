@@ -86,7 +86,7 @@ class DefaultCommand(DefaultRegistryObject, Command):
             return self._parent
 
         # Inline import because of recursive imports if declared in module
-        from ..command import commands  # pylint:disable=import-outside-toplevel,cyclic-import
+        from ..command import commands
 
         command = commands.get(self._parent)
         if not command:

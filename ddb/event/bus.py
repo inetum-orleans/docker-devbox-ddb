@@ -12,7 +12,7 @@ class Bus:
     _named_listeners: ClassVar[dict[str, list[Callable]]] = {}
     _listeners: ClassVar[list[Callable]] = []
 
-    def on(self, event_name: str | None, listener: Callable):  # pylint:disable=invalid-name
+    def on(self, event_name: str | None, listener: Callable):
         """
         Register a listener on given event name.
         """

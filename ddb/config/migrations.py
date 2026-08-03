@@ -276,7 +276,7 @@ def get_history():
     Get migrations history.
     :return:
     """
-    global _history  # pylint:disable=global-statement,global-variable-not-assigned
+    global _history
     return _history
 
 
@@ -284,7 +284,7 @@ def set_history(history=_default_history):
     """
     Set migrations history.
     """
-    global _history, _history_from_old_config_key_dict, _history_from_new_config_key_dict  # pylint:disable=global-statement
+    global _history, _history_from_old_config_key_dict, _history_from_new_config_key_dict
     _history = history
 
     _history_from_old_config_key_dict = {
@@ -337,7 +337,7 @@ def migrate(config: Dotty):
     """
     Migrate all defined migrations in given config data.
     """
-    global silent  # pylint:disable=global-statement
+    global silent
     old_silent = silent
     try:
         silent = True

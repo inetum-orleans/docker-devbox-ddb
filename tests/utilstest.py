@@ -95,7 +95,7 @@ def expect_gitignore(gitignore: str, *expected_lines: str):
 
 def get_user_uid_gid(username):
     try:
-        import pwd  # pylint:disable=import-outside-toplevel
+        import pwd
 
         user = pwd.getpwnam(username)
         return user.pw_uid, user.pw_gid
@@ -105,7 +105,7 @@ def get_user_uid_gid(username):
 
 def get_group_gid(groupname):
     try:
-        import grp  # pylint:disable=import-outside-toplevel
+        import grp
 
         try:
             group = grp.getgrnam(groupname)
@@ -113,7 +113,7 @@ def get_group_gid(groupname):
         except KeyError:
             pass
 
-        import pwd  # pylint:disable=import-outside-toplevel
+        import pwd
 
         user = pwd.getpwnam(groupname)
         return user.pw_gid

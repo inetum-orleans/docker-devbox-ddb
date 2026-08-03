@@ -9,7 +9,7 @@ def apply_resolve_ports_conflicts(compose):
     """
     published = defaultdict(set)
 
-    if "services" in compose:  # pylint:disable=too-many-nested-blocks
+    if "services" in compose:
         for service in compose["services"].values():
             if "ports" in service:
                 service_ports = service["ports"]
