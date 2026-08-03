@@ -11,7 +11,7 @@ from ddb.utils.file import chmod
 
 class FixFilePermissionsAction(Action):
     """
-    Update file access permissions based on git index
+    Update file access permissions based on git index.
     """
 
     @property
@@ -28,7 +28,8 @@ class FixFilePermissionsAction(Action):
 
     def execute(self):
         """
-        Execute the action
+        Execute the action.
+
         :return:
         """
         try:
@@ -39,7 +40,8 @@ class FixFilePermissionsAction(Action):
 
     def process_repository(self, repo: Repo):
         """
-        Process a repository
+        Process a repository.
+
         :param repo: the repository to process
         :return:
         """
@@ -55,7 +57,8 @@ class FixFilePermissionsAction(Action):
     @staticmethod
     def update_mode(path, git_mode):
         """
-        Update the chmod of the file
+        Update the chmod of the file.
+
         :param path: the path to the file
         :param git_mode: the chmod to apply
         :return:
@@ -81,7 +84,8 @@ class FixFilePermissionsAction(Action):
     @staticmethod
     def get_current_chmod(path: str) -> str:
         """
-        Retrieve the current chmod for the given path
+        Retrieve the current chmod for the given path.
+
         :param path: the path to check
         :return:
         """

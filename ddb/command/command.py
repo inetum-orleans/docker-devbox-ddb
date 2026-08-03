@@ -25,7 +25,7 @@ class Command(RegistryObject, ABC):
     @abstractmethod
     def avoid_stdout(self):
         """
-        Should this command avoid stdout spoiling
+        Should this command avoid stdout spoiling.
         """
 
     @abstractmethod
@@ -77,7 +77,7 @@ class DefaultCommand(DefaultRegistryObject, Command):
     @property
     def parent(self) -> Command | None:
         """
-        Parent command
+        Parent command.
         """
         if not self._parent:
             return None
@@ -107,7 +107,7 @@ class DefaultCommand(DefaultRegistryObject, Command):
 class LifecycleCommand(DefaultCommand):
     """
     A command that will emit events based on lifecycle phases.
-    Triggered events are named "phase:<phase.name>"
+    Triggered events are named "phase:<phase.name>".
     """
 
     def __init__(
@@ -154,7 +154,6 @@ def execute_command(command: Command):
     """
     Execute a command with context update.
     """
-
     context.command = command
     try:
         command.execute()

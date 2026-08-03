@@ -49,7 +49,7 @@ class FileWalkAction(InitializableAction, WatchSupport):
 
     def execute(self):
         """
-        Execute action
+        Execute action.
         """
         cache = caches.get("file")
         found_files = set()
@@ -86,7 +86,7 @@ class FileWalkAction(InitializableAction, WatchSupport):
 
 class ObserverHandler(FileSystemEventHandler):
     """
-    File watcher handler
+    File watcher handler.
     """
 
     def __init__(self, action: FileWalkAction):
@@ -94,7 +94,7 @@ class ObserverHandler(FileSystemEventHandler):
 
     def emit_if_not_filtered(self, func, file):
         """
-        Emit given event if file is not filtered by file_walker
+        Emit given event if file is not filtered by file_walker.
         """
         if not file.endswith("~") and not self.action.file_walker.is_source_filtered(file):
             logging.getLogger("ddb.watch").debug("%s", file)

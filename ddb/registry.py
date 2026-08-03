@@ -124,7 +124,7 @@ class Registry(Generic[T]):
 
     def unregister(self, name, obj: T | None = None, callback: Callable[[T], Any] | None = None) -> bool:
         """
-        Unregister an object instance
+        Unregister an object instance.
         """
         if name not in self._objects_dict:
             raise ValueError(self._type_name + ' name "' + name + '" is not registered')
@@ -174,6 +174,7 @@ class Registry(Generic[T]):
     def close(self):
         """
         Close this registry, closing the underlying cache if defined and then removing all objects instances.
+
         :return:
         """
         if self._cache:

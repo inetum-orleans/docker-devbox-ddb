@@ -13,7 +13,7 @@ from ddb.utils.file import force_remove
 
 class UpdateGitignoreAction(InitializableAction):
     """
-    Append generated files to .gitignore
+    Append generated files to .gitignore.
     """
 
     @property
@@ -38,7 +38,7 @@ class UpdateGitignoreAction(InitializableAction):
     @staticmethod
     def execute(target: str, source: str | None = None):
         """
-        Execute action
+        Execute action.
         """
         if not UpdateGitignoreAction._check_file_in_project(target):
             return
@@ -68,7 +68,7 @@ class UpdateGitignoreAction(InitializableAction):
     @staticmethod
     def enforced():
         """
-        Handle the list of enforced actions
+        Handle the list of enforced actions.
         """
         files = config.data.get("gitignore.enforce")
         cache = caches.get("gitignore")
@@ -89,7 +89,8 @@ class UpdateGitignoreAction(InitializableAction):
     @staticmethod
     def remove(file: str):
         """
-        Remove an ignored file
+        Remove an ignored file.
+
         :param file:
         :return:
         """
@@ -139,7 +140,8 @@ class UpdateGitignoreAction(InitializableAction):
     @staticmethod
     def _check_file_ignored(file: str, gitignores=None):
         """
-        Check if a file is ignored, going throw all provided gitignore files
+        Check if a file is ignored, going throw all provided gitignore files.
+
         :param file:
         :param gitignores:
         :return:
@@ -168,7 +170,8 @@ class UpdateGitignoreAction(InitializableAction):
     @staticmethod
     def _get_block_limit(start: bool):
         """
-        Generate the gitignore block limit
+        Generate the gitignore block limit.
+
         :param start: if it is the start of the block or not
         :return:
         """
@@ -182,6 +185,7 @@ class UpdateGitignoreAction(InitializableAction):
     def _is_block_limit(line: str, start: bool | None = None):
         """
         Check if line match a block limit.
+
         :param line: line to check
         :param start: if it is the start of the block or not
         :return:
@@ -216,7 +220,7 @@ class UpdateGitignoreAction(InitializableAction):
         content_lines = []
         after_lines = []
         for line in gitignore_file_content.split("\n"):
-            if UpdateGitignoreAction._is_block_limit(line, False):
+            if UpdateGitignoreAction._is_block_limit(line, start=False):
                 ended = True
             if not started and not ended:
                 before_lines.append(line)
@@ -224,7 +228,7 @@ class UpdateGitignoreAction(InitializableAction):
                 content_lines.append(line)
             elif started and ended:
                 after_lines.append(line)
-            if UpdateGitignoreAction._is_block_limit(line, True):
+            if UpdateGitignoreAction._is_block_limit(line, start=True):
                 started = True
 
         return content_lines, before_lines, after_lines

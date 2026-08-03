@@ -33,7 +33,7 @@ class YttAction(AbstractTemplateAction):
         keywords_escape_format = config.data["ytt.keywords_escape_format"]
         for key, value in input_config.items():
             if isinstance(value, dict):
-                value = YttAction._escape_config(value, False)
+                value = YttAction._escape_config(value, with_config=False)
             if key in keywords:
                 escaped_k = keywords_escape_format % (key,)
                 if escaped_k not in value.keys():

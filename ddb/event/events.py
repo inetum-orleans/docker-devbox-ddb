@@ -15,6 +15,7 @@ class File:
     def deleted(self, file: str):
         """
         When a file is deleted.
+
         :param file:
         """
 
@@ -22,6 +23,7 @@ class File:
     def found(self, file: str):
         """
         When a file is found.
+
         :param file:
         """
 
@@ -29,6 +31,7 @@ class File:
     def generated(self, source: str | None, target: str):
         """
         When a file is generated.
+
         :param source:
         :param target:
         """
@@ -43,6 +46,7 @@ class Certs:
     def generate(self, domain: str, wildcard=True):
         """
         Ask to generate a certificate.
+
         :param domain:
         :param wildcard:
         """
@@ -51,6 +55,7 @@ class Certs:
     def remove(self, domain: str):
         """
         Ask to remove a certificate.
+
         :param domain:
         """
 
@@ -58,6 +63,7 @@ class Certs:
     def generated(self, domain: str, wildcard: bool, private_key: bytes | str, certificate: bytes | str):
         """
         When a certificate is generated.
+
         :param domain:
         :param wildcard:
         :param private_key:
@@ -68,6 +74,7 @@ class Certs:
     def removed(self, domain: str):
         """
         When a certificate is removed.
+
         :param domain:
         """
 
@@ -75,6 +82,7 @@ class Certs:
     def available(self, domain: str, wildcard: bool, private_key: bytes | str, certificate: bytes | str):
         """
         When a certificate is available.
+
         :param domain:
         :param wildcard:
         :param private_key:
@@ -92,6 +100,7 @@ class Binary:
     def unregistered(self, binary: BinaryType):
         """
         When a binary as been unregistered.
+
         :param binary:
         :return:
         """
@@ -100,6 +109,7 @@ class Binary:
     def registered(self, binary: BinaryType):
         """
         When a binary has been registered.
+
         :param binary:
         :return:
         """
@@ -108,6 +118,7 @@ class Binary:
     def found(self, binary: BinaryType):
         """
         When a binary has been found.
+
         :param binary:
         """
 
@@ -121,6 +132,7 @@ class Run:
     def run(self, name: str):
         """
         When a command has been runned.
+
         :param name:
         """
 
@@ -128,6 +140,7 @@ class Run:
     def command(self, command: Iterable[str], system_path: bool = False):
         """
         When a command request should be handled.
+
         :param command:
         :param system_path:
         """
@@ -142,6 +155,7 @@ class Docker:
     def docker_compose_config(self, docker_compose_config: dict):
         """
         When a docker compose configuration has been read.
+
         :param docker_compose_config:
         """
 
@@ -149,6 +163,7 @@ class Docker:
     def docker_compose_before_events(self, docker_compose_config: dict):
         """
         Before docker compose to emit events.
+
         :param docker_compose_config:
         """
 
@@ -156,6 +171,7 @@ class Docker:
     def docker_compose_after_events(self, docker_compose_config: dict):
         """
         After docker compose has emitted events.
+
         :param docker_compose_config:
         """
 
@@ -174,7 +190,7 @@ class Docker:
         docker_compose_service=None,
     ):
         """
-        Ask a binary to be generated from docker compose service
+        Ask a binary to be generated from docker compose service.
         """
 
 
@@ -186,49 +202,49 @@ class Phase:
     @event("phase:init")
     def init(self):
         """
-        Init phase
+        Init phase.
         """
 
     @event("phase:configure")
     def configure(self):
         """
-        Configure phase
+        Configure phase.
         """
 
     @event("phase:download")
     def download(self):
         """
-        Download phase
+        Download phase.
         """
 
     @event("phase:features")
     def features(self):
         """
-        Features phase
+        Features phase.
         """
 
     @event("phase:info")
     def info(self):
         """
-        Features phase
+        Features phase.
         """
 
     @event("phase:config")
     def config(self):
         """
-        Config phase
+        Config phase.
         """
 
     @event("phase:run")
     def run(self):
         """
-        Run phase
+        Run phase.
         """
 
     @event("phase:selfupdate")
     def selfupdate(self):
         """
-        Selfupdate phase
+        Selfupdate phase.
         """
 
 
@@ -240,7 +256,7 @@ class Config:
     @event("config:reloaded")
     def reloaded(self):
         """
-        Config has been reloaded
+        Config has been reloaded.
         """
 
 
@@ -252,19 +268,19 @@ class Main:
     @event("main:start")
     def start(self, command: Command):
         """
-        Main start
+        Main start.
         """
 
     @event("main:terminate")
     def terminate(self, command: Command):
         """
-        Main terminate
+        Main terminate.
         """
 
     @event("main:version")
     def version(self, silent: bool):
         """
-        Main version
+        Main version.
         """
 
 

@@ -11,7 +11,7 @@ from .schema import VersionSchema
 
 def is_git_repository():
     """
-    Check if git command line is available, and if a git repository index is available in current directory
+    Check if git command line is available, and if a git repository index is available in current directory.
     """
     try:
         run("git", "rev-parse", "--git-dir")
@@ -22,7 +22,7 @@ def is_git_repository():
 
 def get_tag_from_vcs():
     """
-    Get last tag from git index
+    Get last tag from git index.
     """
     try:
         return run("git", "describe", "--tags", "--abbrev=0").decode("utf-8").strip()
@@ -34,7 +34,7 @@ def get_tag_from_vcs():
 
 def get_branch_from_vcs():
     """
-    Get branch name from git index
+    Get branch name from git index.
     """
     try:
         branch = run("git", "rev-parse", "--abbrev-ref", "HEAD").decode("utf-8").strip()
@@ -82,7 +82,7 @@ def get_branch_from_vcs():
 
 def get_version_from_vcs():
     """
-    Get version from git index
+    Get version from git index.
     """
     try:
         return run("git", "describe", "--tags").decode("utf-8").strip()
@@ -94,7 +94,7 @@ def get_version_from_vcs():
 
 def get_hash_from_vcs():
     """
-    Get commit hash from git index
+    Get commit hash from git index.
     """
     try:
         return run("git", "rev-parse", "HEAD").decode("utf-8").strip()
@@ -106,7 +106,7 @@ def get_hash_from_vcs():
 
 def get_short_hash_from_vcs():
     """
-    Get commit short hash from git index
+    Get commit short hash from git index.
     """
     try:
         return run("git", "log", "--pretty=format:%h", "-n", "1").decode("utf-8").strip()

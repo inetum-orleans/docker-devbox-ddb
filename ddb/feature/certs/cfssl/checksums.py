@@ -1,5 +1,5 @@
 """
-Checksums module
+Checksums module.
 """
 
 import hashlib
@@ -9,7 +9,8 @@ from .crypto import convert_pem_to_der
 
 def validate_checksums(response):
     """
-    Validate checksums from certificate request response
+    Validate checksums from certificate request response.
+
     :param response:
     :return:
     """
@@ -24,7 +25,8 @@ def validate_checksums(response):
 
 def validate_checksum(part, content, sums_item, content_is_der=False):
     """
-    Validate a checksum from certificate sums and content
+    Validate a checksum from certificate sums and content.
+
     :param part:
     :param content:
     :param sums_item:
@@ -38,6 +40,7 @@ def validate_checksum(part, content, sums_item, content_is_der=False):
 def validate_checksum_algo(part, content, algo, checksum, content_is_der=False):
     """
     Validate a checksum using content, algo and checksum.
+
     :param part:
     :param content:
     :param algo:

@@ -5,7 +5,7 @@ from ddb.feature.schema import FeatureSchema
 
 class UserSchema(Schema):
     """
-    User schema
+    User schema.
     """
 
     uid = fields.Integer(required=True, dump_default=None)  # default is set in feature _configure_defaults

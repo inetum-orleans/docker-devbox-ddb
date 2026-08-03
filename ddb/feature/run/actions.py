@@ -9,7 +9,7 @@ from ...event import events
 
 class RunAction(Action):
     """
-    Run a binary
+    Run a binary.
     """
 
     @property
@@ -32,7 +32,7 @@ class RunAction(Action):
     @staticmethod
     def run(name: str, *args):
         """
-        Execute the action
+        Execute the action.
         """
         if not args:
             args = tuple(config.unknown_args)
@@ -44,9 +44,9 @@ class RunAction(Action):
 
         if binary:
             binary.before_run()
-            events.run.command(binary.command(*args), False)
+            events.run.command(binary.command(*args), system_path=False)
         else:
-            events.run.command([name, *args], True)
+            events.run.command([name, *args], system_path=True)
 
     @staticmethod
     def select_binary(binary_set: Iterable[Binary], *args) -> Binary | None:

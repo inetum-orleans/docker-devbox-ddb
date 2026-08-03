@@ -26,7 +26,6 @@ def clean_merge_value_dicts(result):
 
     :return:
     """
-
     if isinstance(result, dict):
         updates = []
         for key, value in result.items():
@@ -44,24 +43,24 @@ def clean_merge_value_dicts(result):
 
 class ExtendedListStrategies(ListStrategies):
     """
-    Custom list strategies
+    Custom list strategies.
     """
 
     @staticmethod
     def strategy_append_if_missing(config, path, base, nxt):
-        """use the list nxt."""
+        """Use the list nxt."""
         filtered_nxt = [item for item in nxt if item not in base]
         return ListStrategies.strategy_append(config, path, base, filtered_nxt)
 
     @staticmethod
     def strategy_prepend_if_missing(config, path, base, nxt):
-        """use the list nxt."""
+        """Use the list nxt."""
         filtered_nxt = [item for item in nxt if item not in base]
         return ListStrategies.strategy_prepend(config, path, base, filtered_nxt)
 
     @staticmethod
     def strategy_insert_if_missing(config, path, base, nxt):
-        """use the list nxt."""
+        """Use the list nxt."""
         idx = nxt.pop(0)
         filtered_nxt = [item for item in nxt if item not in base]
         if idx >= 0:
@@ -73,7 +72,7 @@ class ExtendedListStrategies(ListStrategies):
 
     @staticmethod
     def strategy_insert(config, path, base, nxt):
-        """use the list nxt."""
+        """Use the list nxt."""
         idx = nxt.pop(0)
         ordered_nxt = list(nxt)
         if idx >= 0:

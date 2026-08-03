@@ -7,8 +7,9 @@ bus = Bus()
 
 def event(event_name):
     """
-    A decorator for event definition
-    :param event_name: name of the event
+    A decorator for event definition.
+
+    :param event_name: name of the event.
     """
 
     def decorator(function):

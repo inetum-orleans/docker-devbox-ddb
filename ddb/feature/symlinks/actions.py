@@ -27,7 +27,7 @@ class SymlinksAction(AbstractTemplateAction):
 
     def _render_template(self, template: str, target: str) -> Iterable[tuple[str | bytes | bool, str]]:
         """
-        Create a symbolic link
+        Create a symbolic link.
         """
         reltemplate = os.path.relpath(template, os.path.dirname(target))
 

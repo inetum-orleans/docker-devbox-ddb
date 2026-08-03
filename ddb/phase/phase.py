@@ -64,7 +64,7 @@ class DefaultPhase(DefaultRegistryObject, Phase):
         if self.run_once and cache.get(runned_cache_key):
             return
         bus.emit("phase:" + self.name)
-        cache.set(runned_cache_key, True)
+        cache.set(runned_cache_key, True)  # noqa: FBT003 - stored value, not a flag
         cache.flush()
 
 

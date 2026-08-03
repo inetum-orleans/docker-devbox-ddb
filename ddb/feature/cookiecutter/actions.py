@@ -26,7 +26,7 @@ class CookiecutterAction(Action):
 
     def execute(self):
         """
-        Execute action
+        Execute action.
         """
         config_parameters = "cookiecutters_dir", "replay_dir", "default_context"
 

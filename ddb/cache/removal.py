@@ -22,7 +22,7 @@ class RemovalCacheSupport:
 
     def prepare(self):
         """
-        This should be called before processing extra-services configuration.
+        Snapshot the current entries, before processing extra-services configuration.
         """
         cache = caches.get(self.cache_name)
 
@@ -43,7 +43,7 @@ class RemovalCacheSupport:
 
     def get_removed(self):
         """
-        This should be called after processing. Generates (key, value) to remove.
+        Generate the (key, value) entries to remove, after processing.
         """
         cache = caches.get(self.cache_name)
 

@@ -31,7 +31,8 @@ class CustomDockerfileParser(DockerfileParser):
         """
         Determine the final instruction_type instruction, if any, in the final build stage.
         instruction_types from earlier stages are ignored.
-        :return: value of final stage instruction_type instruction
+
+        :return: value of final stage instruction_type instruction.
         """
         last_instruction = None
         for insndesc in self.structure:
@@ -46,7 +47,8 @@ class CustomDockerfileParser(DockerfileParser):
         """
         Determine the final ENTRYPOINT instruction, if any, in the final build stage.
         ENTRYPOINTs from earlier stages are ignored.
-        :return: value of final stage ENTRYPOINT instruction
+
+        :return: value of final stage ENTRYPOINT instruction.
         """
         last_instruction = self.get_last_instruction("ENTRYPOINT")
         return last_instruction["value"] if last_instruction else None
@@ -54,7 +56,7 @@ class CustomDockerfileParser(DockerfileParser):
     @entrypoint.setter
     def entrypoint(self, value):
         """
-        setter for final 'ENTRYPOINT' instruction in final build stage
+        Setter for final 'ENTRYPOINT' instruction in final build stage.
         """
         entrypoint = None
         for insndesc in self.structure:
@@ -80,7 +82,8 @@ class CustomDockerfileParser(DockerfileParser):
         """
         Determine the final CMD instruction, if any, in the final build stage.
         CMDs from earlier stages are ignored.
-        :return: value of final stage CMD instruction
+
+        :return: value of final stage CMD instruction.
         """
         value = None
         for insndesc in self.structure:
@@ -93,7 +96,7 @@ class CustomDockerfileParser(DockerfileParser):
     @cmd.setter
     def cmd(self, value):
         """
-        setter for final 'CMD' instruction in final build stage
+        Setter for final 'CMD' instruction in final build stage.
 
         """
         cmd = None
@@ -118,7 +121,7 @@ class CustomDockerfileParser(DockerfileParser):
 class FixuidDockerComposeAction(Action):
     """
     Automate fixuid configuration for docker compose services where fixuid.yml configuration file is available in
-    build context
+    build context.
     """
 
     def __init__(self):
@@ -191,7 +194,7 @@ class FixuidDockerComposeAction(Action):
 
     def apply_fixuid(self, service: BuildServiceDef):
         """
-        Apply fixuid to given service
+        Apply fixuid to given service.
         """
         dockerfile_path = os.path.join(service.context, service.dockerfile)
         if os.path.exists(dockerfile_path):
@@ -205,7 +208,7 @@ class FixuidDockerComposeAction(Action):
 
     def remove_fixuid(self, service: BuildServiceDef):
         """
-        Remove fixuid from given service
+        Remove fixuid from given service.
         """
         dockerfile_path = os.path.join(service.context, service.dockerfile)
         if os.path.exists(dockerfile_path):
@@ -355,7 +358,7 @@ class FixuidDockerComposeAction(Action):
 
     def execute(self, docker_compose_config: dict):
         """
-        Execute action
+        Execute action.
         """
         self.docker_compose_config = docker_compose_config
 
@@ -364,7 +367,7 @@ class FixuidDockerComposeAction(Action):
 
     def find_fixuid_service(self, dockerfile_filepath: str, include_missing_fixuid=False):
         """
-        Find related fixuid service from dockerfile filepath
+        Find related fixuid service from dockerfile filepath.
         """
         for service in self.get_fixuid_services(include_missing_fixuid):
             if os.path.abspath(os.path.join(service.context, service.dockerfile)) == os.path.abspath(

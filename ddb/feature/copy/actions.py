@@ -33,7 +33,7 @@ def copy_from_url(source, destination, filename=None):
 
 def get_dispatch_directories(dispatch):
     """
-    Get dispatch directories from dispatch glob
+    Get dispatch directories from dispatch glob.
     """
     dispatch_directories = []
     if dispatch:
@@ -70,7 +70,7 @@ class CopyAction(Action):
     @staticmethod
     def execute():
         """
-        Execute action
+        Execute action.
         """
         specs = config.data.get("copy.specs")
         if not specs:

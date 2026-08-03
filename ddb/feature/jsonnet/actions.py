@@ -34,7 +34,7 @@ class JsonnetAction(AbstractTemplateAction):
 
     def _render_template(self, template: str, target: str) -> Iterable[tuple[str | bytes | bool, str]]:
         """
-        Render jsonnet template
+        Render jsonnet template.
         """
         evaluated = self._evaluate_jsonnet(template)
 

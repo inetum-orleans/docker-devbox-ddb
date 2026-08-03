@@ -30,21 +30,24 @@ class AbstractMigration(AbstractDeprecation):
     def verify(self, config: Dotty) -> bool:
         """
         Verify the given configuration with this migration.
+
         :param config: loaded configuration
-        :return: True if migration should be applied, else otherwise
+        :return: True if migration should be applied, else otherwise.
         """
 
     @abstractmethod
     def migrate(self, config: Dotty):
         """
         Apply changes on configuration to make it work with latest changes.
-        :param config: loaded configuration
+
+        :param config: loaded configuration.
         """
 
     @abstractmethod
     def get_new_value(self, config: Dotty):
         """
         Get property new value, regardless it's defined the new way or the old way.
+
         :param config: loaded configuration
         :raise KeyError: If no value is found in config.
         """
@@ -53,6 +56,7 @@ class AbstractMigration(AbstractDeprecation):
     def get_old_value(self, config: Dotty):
         """
         Get property old value, regardless it's defined the new way or the old way.
+
         :param config: loaded configuration
         :raise KeyError: If no value is found in config.
         """
@@ -67,14 +71,14 @@ class AbstractPropertyMigration(AbstractMigration):
     @abstractmethod
     def old_config_key(self) -> str:
         """
-        Old property configuration key
+        Old property configuration key.
         """
 
     @property
     @abstractmethod
     def new_config_key(self) -> str:
         """
-        New property configuration key
+        New property configuration key.
         """
 
     @property
@@ -186,6 +190,7 @@ class MigrationsDotty(Dotty):
     def raw(self):
         """
         Build a new default Dotty instance using same data.
+
         :return:
         """
         return Dotty(self._data)
@@ -274,6 +279,7 @@ _history_from_new_config_key_dict: dict[str, "AbstractPropertyMigration"] = {}
 def get_history():
     """
     Get migrations history.
+
     :return:
     """
     global _history
@@ -320,7 +326,7 @@ def get_migration_from_new_config_key(new_config_key: str) -> AbstractPropertyMi
 
 def get_migrations_from_old_config_key_startswith(old_config_key_start: str) -> set[AbstractPropertyMigration]:
     """
-    Get all migrations where old_config_key starts with given value
+    Get all migrations where old_config_key starts with given value.
     """
     ret = set()
     for migration in get_history():

@@ -48,7 +48,7 @@ _watch_stop_event = threading.Event()
 
 
 def load_plugins():
-    """Load plugins"""
+    """Load plugins."""
     for directory in [d for d in config.paths if d]:
         extension_directory = os.path.join(directory, ".ddb")
         if os.path.exists(extension_directory):
@@ -205,7 +205,7 @@ def configure_logging(level: str | int = logging.INFO):
 
 def handle_watch():
     """
-    Handle watch option
+    Handle watch option.
     """
     watch_supports = []  # type:List[Union[Action, WatchSupport]]
     for action in actions.all():
@@ -338,7 +338,7 @@ def parse_command_line(args: Sequence[str] | None = None):
 
 def handle_command_line(command: Command):
     """
-    Execute the command and handle additional given arguments like watch mode
+    Execute the command and handle additional given arguments like watch mode.
     """
     execute_command(command)
 
@@ -396,10 +396,9 @@ def register_actions_in_event_bus(fail_fast=False):
 def main(
     args: Sequence[str] | None = None,
     reset_disabled=False,
-    before_handle_command_line=None,
 ):
     """
-    Load all features and handle command line
+    Load all features and handle command line.
     """
     global _watch_started_event, _watch_stop_event
     _watch_started_event = threading.Event()
@@ -421,7 +420,7 @@ def main(
                 exc.opts.print_help()
                 raise
 
-        load_registered_features(False)
+        load_registered_features(preload=False)
         register_actions_in_event_bus(config.args.fail_fast)
 
         if config.args.version:
@@ -487,7 +486,7 @@ def stop_watch():
 
 def clear_caches():
     """
-    Clear all caches
+    Clear all caches.
     """
     for cache in caches.all():
         cache.clear()
@@ -496,7 +495,7 @@ def clear_caches():
 
 def reset():
     """
-    Close all caches and reset registries to run main method again
+    Close all caches and reset registries to run main method again.
     """
     bus.clear()
 
@@ -516,7 +515,7 @@ def reset():
 
 def console_script():  # pragma: no cover
     """
-    Console script entrypoint
+    Console script entrypoint.
     """
     try:
         exceptions = main()

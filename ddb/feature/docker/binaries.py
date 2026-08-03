@@ -44,7 +44,7 @@ class DockerBinary(AbstractBinary):
     @staticmethod
     def simple_eval_options(*args):
         """
-        Retrieve the simple_eval options
+        Retrieve the simple_eval options.
         """
         return {
             "functions": {},
@@ -103,7 +103,8 @@ class DockerBinary(AbstractBinary):
 
     def add_options_to_params(self, params, options, condition, *args):
         """
-        Add options to params if condition is fulfilled
+        Add options to params if condition is fulfilled.
+
         :param params: the list of parameters
         :param options: options to add
         :param condition: the condition to fulfilled
@@ -133,7 +134,7 @@ class DockerBinary(AbstractBinary):
 
     def __lt__(self, other):
         """
-        This is used to order binaries in run feature action.
+        Order binaries in run feature action.
         """
         if not isinstance(other, DockerBinary):
             return True
@@ -141,7 +142,7 @@ class DockerBinary(AbstractBinary):
 
     def __gt__(self, other):
         """
-        This is used to order binaries in run feature action.
+        Order binaries in run feature action.
         """
         if not isinstance(other, DockerBinary):
             return False
@@ -149,9 +150,10 @@ class DockerBinary(AbstractBinary):
 
     def __eq__(self, other):
         """
-        Check if given binary is the same as the current one
+        Check if given binary is the same as the current one.
+
         :param binary:
-        :return: True or False depending on it's the same or not
+        :return: True or False depending on it's the same or not.
         """
         if not super().__eq__(other):
             return False

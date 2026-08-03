@@ -12,6 +12,7 @@ from ddb.utils.process import run
 def get_mapped_path(path: str):
     """
     Get docker mapped path, using `docker.path_mapping` configuration.
+
     :param path:
     :return:
     """
@@ -28,7 +29,7 @@ def get_mapped_path(path: str):
 
 class DockerComposeControl:
     """
-    A set of tools to manipulate docker using docker and docker-compose system commands
+    A set of tools to manipulate docker using docker and docker-compose system commands.
     """
 
     def __init__(self):
@@ -44,7 +45,8 @@ class DockerComposeControl:
 
     def up(self, name: str | None = None):
         """
-        Execute docker-compose up -d
+        Execute docker-compose up -d.
+
         :param name: the name of a specific service to up
         :raise DockerComposeYamlMissingException: in case of missing docker-compose.yml in folder
         :return:
@@ -58,7 +60,8 @@ class DockerComposeControl:
 
     def stop(self, name: str):
         """
-        Execute docker-compose stop
+        Execute docker-compose stop.
+
         :param name: the name of a specific service to stop
         :raise DockerComposeYamlMissingException: in case of missing docker-compose.yml in folder
         :return:
@@ -72,7 +75,8 @@ class DockerComposeControl:
 
     def start(self, name: str):
         """
-        Execute docker-compose start
+        Execute docker-compose start.
+
         :param name: the name of a specific service to start
         :raise DockerComposeYamlMissingException: in case of missing docker-compose.yml in folder
         :return:
@@ -86,7 +90,8 @@ class DockerComposeControl:
 
     def down(self):
         """
-        Execute docker-compose down
+        Execute docker-compose down.
+
         :param name: the name of a specific service to stop
         :raise DockerComposeYamlMissingException: in case of missing docker-compose.yml in folder
         :return:
@@ -98,6 +103,7 @@ class DockerComposeControl:
     def is_up(self, name: str):
         """
         Check if the given service is up.
+
         :param name: The name of the container to check
         :raise DockerComposeYamlMissingException: in case of missing docker-compose.yml in folder
         :return:
@@ -118,6 +124,7 @@ class DockerComposeControl:
     def config(self, parse=True):
         """
         Get the docker-compose.yml configuration content.
+
         :raise DockerComposeYamlMissingException: in case of missing docker-compose.yml
         :return:
         """

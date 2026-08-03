@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 class Cache(ABC):
     """
-    Cache interface
+    Cache interface.
     """
 
     def __init__(self, namespace: str):
@@ -12,25 +12,25 @@ class Cache(ABC):
     @abstractmethod
     def get(self, key: str, default=None):
         """
-        Get a cache entry value
+        Get a cache entry value.
         """
 
     @abstractmethod
     def keys(self):
         """
-        Get all cache keys
+        Get all cache keys.
         """
 
     @abstractmethod
     def set(self, key: str, data):
         """
-        Set a cache entry value
+        Set a cache entry value.
         """
 
     @abstractmethod
     def pop(self, key: str):
         """
-        Remove a cache entry
+        Remove a cache entry.
         """
 
     @abstractmethod

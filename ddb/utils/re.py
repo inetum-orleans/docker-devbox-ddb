@@ -1,6 +1,7 @@
 def build_or_pattern(patterns):
     """
-    Build a or pattern string from a list of possible patterns
+    Build a or pattern string from a list of possible patterns.
+
     :param patterns:
     :type patterns:
     :param name:

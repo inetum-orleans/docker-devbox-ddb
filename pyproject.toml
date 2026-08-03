@@ -164,12 +164,15 @@ select = [
     "FA",   # flake8-future-annotations
     "PT",   # flake8-pytest-style
     "RUF",  # ruff-specific rules
+    "ARG",  # flake8-unused-arguments
+    "D",    # pydocstyle
     "S",    # flake8-bandit
     "EM",   # flake8-errmsg
     "TRY",  # tryceratops
     "N",    # pep8-naming
     "C90",  # mccabe complexity
     "DTZ",  # flake8-datetimez
+    "FBT003",  # boolean positional value in call
     "LOG",  # flake8-logging
     "G",    # flake8-logging-format
 ]
@@ -188,6 +191,26 @@ ignore = [
     # Exception classes predate this rule and are part of the public API; renaming
     # them to a `Error` suffix would be a breaking change.
     "N818",
+    # Docstrings are written across several lines with the summary below the opening
+    # quotes, which is the house style throughout the codebase.
+    "D200",
+    "D205",
+    "D212",
+    # Modules, packages, magic methods, __init__ and overridden methods inherit their
+    # documentation from the class or the interface they implement.
+    "D100",
+    "D102",
+    "D104",
+    "D105",
+    "D107",
+    # Imperative mood is not worth rewording existing summaries for.
+    "D401",
+    # Event processors, binary implementations and merge strategies must match the
+    # signature of the interface they implement, unused parameters included.
+    "ARG001",
+    "ARG002",
+    "ARG004",
+    "ARG005",
     # Messages passed straight to raise read better than a variable per exception.
     "TRY003",
     # Raising inside try is how the config and action pipelines report failures they
@@ -198,9 +221,12 @@ ignore = [
     "TRY300",
 ]
 
+[tool.ruff.lint.flake8-unused-arguments]
+ignore-variadic-names = true
+
 [tool.ruff.lint.mccabe]
-# Current worst offender, so complexity cannot grow; lower it as functions get split.
-max-complexity = 20
+# Tightest threshold the codebase currently passes.
+max-complexity = 15
 
 [tool.ruff.lint.per-file-ignores]
 # Shelve caches and rendered templates own file handles that outlive the call.
@@ -217,7 +243,9 @@ max-complexity = 20
 "ddb/feature/traefik/schema.py" = ["E501"]
 # Tests assert on full command lines, patch with plain functions rather than mock
 # return values, and check raised messages with `str(excinfo.value)` after the block.
-"tests/**" = ["E501", "N802", "PT008", "PT011", "PT012", "S", "TRY", "DTZ"]
+# Test classes and helpers document themselves through their names, patch with
+# lambdas, and pass flags positionally to the functions under test.
+"tests/**" = ["ARG", "D", "DTZ", "E501", "FBT003", "N802", "PT008", "PT011", "PT012", "S", "TRY"]
 
 [tool.pytest.ini_options]
 addopts = "-s --ignore=build --ignore=docs --docker-compose-remove-volumes"

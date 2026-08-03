@@ -15,7 +15,8 @@ from ...utils.file import FileUtils, copy_if_different, force_remove, write_if_d
 
 def get_template(template: str) -> Template:
     """
-    Retrieve the template object base on the input template string
+    Retrieve the template object base on the input template string.
+
     :param template: the template
     :return:
     """
@@ -40,7 +41,7 @@ class TraefikInstalllCertsAction(Action):
     @staticmethod
     def execute(domain: str, private_key: str, certificate: str, wildcard: bool = False):
         """
-        Execute action
+        Execute action.
         """
         certs_directory = config.data.get("traefik.certs_directory")
         mapped_certs_directory = config.data.get("traefik.mapped_certs_directory")
@@ -85,7 +86,7 @@ class TraefikUninstalllCertsAction(Action):
     @staticmethod
     def execute(domain: str):
         """
-        Execute action
+        Execute action.
         """
         config_directory = config.data.get("traefik.config_directory")
         config_target = os.path.join(config_directory, f"{domain}.ssl.toml")
@@ -136,7 +137,7 @@ class TraefikExtraServicesAction(InitializableAction):
     @staticmethod
     def get_extra_services():
         """
-        Get extra services defined in configuration
+        Get extra services defined in configuration.
         """
         extra_services = config.data.get("traefik.extra_services")  # type: Dict[str, ExtraServiceSchema]
         if extra_services:
@@ -148,7 +149,7 @@ class TraefikExtraServicesAction(InitializableAction):
 
     def execute(self):
         """
-        Execute action
+        Execute action.
         """
         self.removal_cache_support.prepare()
 

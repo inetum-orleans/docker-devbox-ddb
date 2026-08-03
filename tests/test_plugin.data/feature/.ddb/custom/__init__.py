@@ -8,7 +8,7 @@ from .actions import CustomAction
 
 class CustomFeature(Feature):
     """
-    Custom Feature
+    Custom Feature.
     """
 
     @property

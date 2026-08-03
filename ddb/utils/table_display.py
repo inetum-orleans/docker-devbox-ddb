@@ -23,7 +23,8 @@ def _max_length(cells: Iterable[Iterable[str]]) -> int:
 
 def get_table_display(blocks: Iterable[Iterable[str]], centered: bool = True):
     """
-    Convert the input data into a table with centered text
+    Convert the input data into a table with centered text.
+
     :param blocks: the blocks of the table. A block is an iterable of rows.
     :param centered: if the cell content is centered or not
     :return:

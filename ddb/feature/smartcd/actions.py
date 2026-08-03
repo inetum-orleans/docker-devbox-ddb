@@ -13,7 +13,6 @@ def is_smartcd_installed():
     """
     Run smartcd command to check if it"s installed.
     """
-
     try:
         run("bash", "-ic", "smartcd", "--help")
         return True
@@ -23,7 +22,7 @@ def is_smartcd_installed():
 
 class SmartcdAction(InitializableAction):
     """
-    Generate bash_enter/bash_leave files if smartcd is installed
+    Generate bash_enter/bash_leave files if smartcd is installed.
     """
 
     @property
@@ -42,6 +41,7 @@ class SmartcdAction(InitializableAction):
     def execute():
         """
         Write .bash_enter/.bash_leave files.
+
         :return:
         """
         if not commands.has("activate") and not commands.has("deactivate"):
@@ -64,7 +64,8 @@ class SmartcdAction(InitializableAction):
 
 class WindowsProjectActivate(InitializableAction):
     """
-    Generate ddb_activate.bat/ddb_deactivate.bat for windows environement
+    Generate ddb_activate.bat/ddb_deactivate.bat for windows environement.
+
     TODO find and activate something equivalent to smartcd but for windows ?
     """
 
@@ -84,6 +85,7 @@ class WindowsProjectActivate(InitializableAction):
     def execute():
         """
         Write .bash_enter/.bash_leave files.
+
         :return:
         """
         if not commands.has("activate") and not commands.has("deactivate"):

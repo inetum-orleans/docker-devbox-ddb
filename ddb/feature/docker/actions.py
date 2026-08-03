@@ -57,7 +57,7 @@ class EmitDockerComposeConfigAction(Action):
 
     def execute(self):
         """
-        Execute action
+        Execute action.
         """
         if not os.path.exists("docker-compose.yml"):
             return
@@ -83,6 +83,7 @@ class EmitDockerComposeConfigAction(Action):
         def on_available(domain: str, wildcard: bool, private_key: bytes | str, certificate: bytes | str):
             """
             When a certificate is available.
+
             :param domain:
             :param wildcard:
             :param private_key:
@@ -259,7 +260,7 @@ class DockerComposeBinaryAction(InitializableAction):
         docker_compose_service=None,
     ):
         """
-        Execute action
+        Execute action.
         """
         if name is None and docker_compose_service:
             name = docker_compose_service
@@ -294,7 +295,9 @@ class DockerComposeBinaryAction(InitializableAction):
 
 class LocalVolumesAction(Action):
     """
-    This should avoid issues where docker creates local volume mount points as root:root.
+    Create local volume mount points with the user account.
+
+    Docker would otherwise create them as root:root when starting the stack.
     We can create those folder before starting the stack with the user account.
     """
 
@@ -308,7 +311,7 @@ class LocalVolumesAction(Action):
 
     def execute(self, docker_compose_config: dict):
         """
-        Execute action
+        Execute action.
         """
         if "services" not in docker_compose_config:
             return
@@ -436,7 +439,7 @@ class LocalVolumesAction(Action):
 
 class DockerDisplayInfoAction(Action):
     """
-    Retrieve exposed ports and vhosts from docker-compose config and display them to the user
+    Retrieve exposed ports and vhosts from docker-compose config and display them to the user.
     """
 
     def __init__(self):
@@ -453,7 +456,7 @@ class DockerDisplayInfoAction(Action):
 
     def execute(self):
         """
-        Execute action
+        Execute action.
         """
         if not os.path.exists("docker-compose.yml"):
             return
@@ -491,9 +494,10 @@ class DockerDisplayInfoAction(Action):
     @staticmethod
     def _retrieve_environment_data(service_config: Dotty) -> dict[str, str]:
         """
-        Retrieve environment data
+        Retrieve environment data.
+
         :param service_config: the service configuration
-        :return: a dict containing environment variables
+        :return: a dict containing environment variables.
         """
         environments = service_config.get("environment")
         if not environments:
@@ -504,9 +508,10 @@ class DockerDisplayInfoAction(Action):
     @staticmethod
     def _retrieve_service_ports(service_config: Dotty) -> list[ServicePort]:
         """
-        Retrieve services ports data
+        Retrieve services ports data.
+
         :param service_config: the service configuration
-        :return: a list of service port
+        :return: a list of service port.
         """
         ports = service_config.get("ports")
         if not ports:
@@ -530,9 +535,10 @@ class DockerDisplayInfoAction(Action):
     @staticmethod
     def _retrieve_binaries_data(service_config: Dotty) -> list[str]:
         """
-        Retrieve binaries data
+        Retrieve binaries data.
+
         :param service_config: the service configuration
-        :return: a list containing binaries
+        :return: a list containing binaries.
         """
         labels = service_config.get("labels")
         if not labels:
@@ -555,9 +561,10 @@ class DockerDisplayInfoAction(Action):
     @staticmethod
     def _retrieve_vhosts_data(service_config: Dotty) -> list[str]:
         """
-        Retrieve vhosts data
+        Retrieve vhosts data.
+
         :param service_config: the service configuration
-        :return: a list containing vhosts data
+        :return: a list containing vhosts data.
         """
         labels = service_config.get("labels")
         if not labels:
@@ -594,15 +601,15 @@ class DockerDisplayInfoAction(Action):
         vhosts: list[str],
     ):
         """
-        Process the data and render it to the user
+        Process the data and render it to the user.
+
         :param service_name: the service name
         :param environments: the service environment data to display
         :param ports: the service ports data to display
         :param docker_binaries: the list of docker binaries
         :param vhosts: the list of vhosts
-        :return: a dict containing useful labels data
+        :return: a dict containing useful labels data.
         """
-
         header_block = [f"{service_name}"]
         blocks = [header_block]
 
@@ -634,7 +641,7 @@ class DockerDisplayInfoAction(Action):
             blocks.append(tmp_content)
 
         if blocks != [header_block]:
-            return get_table_display(blocks, False)
+            return get_table_display(blocks, centered=False)
         return ""
 
     @staticmethod
@@ -646,4 +653,4 @@ class DockerDisplayInfoAction(Action):
             domain = extra_service_data.get("rule")
 
         blocks = [[id_ + " (extra)"], [domain + " --> " + extra_service_data.get("url")]]
-        return get_table_display(blocks, False)
+        return get_table_display(blocks, centered=False)

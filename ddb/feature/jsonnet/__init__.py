@@ -173,7 +173,7 @@ class JsonnetFeature(Feature):
     @staticmethod
     def _configure_defaults_compose_project_name(feature_config):
         """
-        See https://github.com/docker/compose/blob/440c94ea7a7e62b3de50722120ca34c4e818205a/compose/cli/command.py#L181
+        See https://github.com/docker/compose/blob/440c94ea7a7e62b3de50722120ca34c4e818205a/compose/cli/command.py#L181.
         """
         compose_project_name = feature_config.get("docker.compose.project_name")
         if compose_project_name is None:

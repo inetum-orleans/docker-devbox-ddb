@@ -25,6 +25,7 @@ _env_environ_backup = config.env_prefix + "_SHELL_ENVIRON_BACKUP"
 def get_shims_path(global_: bool = False):
     """
     Get local or global shims path.
+
     :param global_:
     :return:
     """
@@ -96,7 +97,7 @@ def apply_diff_to_shell(
 
 def add_to_system_path(shell: ShellIntegration, paths: Iterable[str]) -> Iterable[str]:
     """
-    Add given path to system PATH environment variable
+    Add given path to system PATH environment variable.
     """
     system_path = os.environ.get("PATH", "")
     for path in paths:
@@ -110,7 +111,7 @@ def add_to_system_path(shell: ShellIntegration, paths: Iterable[str]) -> Iterabl
 
 def remove_from_system_path(shell: ShellIntegration, paths: Iterable[str]) -> Iterable[str]:
     """
-    Remove given path to system PATH environment variable
+    Remove given path to system PATH environment variable.
     """
     system_path = os.environ.get("PATH", "")
     for path in paths:
@@ -124,7 +125,7 @@ def remove_from_system_path(shell: ShellIntegration, paths: Iterable[str]) -> It
 
 class CreateBinaryShim(Action):
     """
-    Create binary shim for each generated binary
+    Create binary shim for each generated binary.
     """
 
     def __init__(self, shell: ShellIntegration):
@@ -153,7 +154,7 @@ class CreateBinaryShim(Action):
 
     def remove(self, binary: Binary):
         """
-        Remove binary shim
+        Remove binary shim.
         """
         directories = config.data.get("shell.path.directories")
         if not binaries.has(binary.name):
@@ -164,7 +165,7 @@ class CreateBinaryShim(Action):
 
     def execute(self, binary: Binary):
         """
-        Create binary shim
+        Create binary shim.
         """
         shims_path = get_shims_path(binary.global_)
         written, shim = self.shell.create_binary_shim(shims_path, binary.name, binary.global_)
@@ -179,7 +180,7 @@ class CreateBinaryShim(Action):
 
 class CreateAliasShim(Action):
     """
-    Create alias shim for each alias
+    Create alias shim for each alias.
     """
 
     def __init__(self, shell: ShellIntegration):
@@ -204,7 +205,7 @@ class CreateAliasShim(Action):
 
     def execute(self):
         """
-        Create binary shim
+        Create binary shim.
         """
         aliases = config.data.get("shell.aliases")
         global_aliases = frozenset(config.data.get("shell.global_aliases"))
@@ -229,7 +230,7 @@ class CreateAliasShim(Action):
 
 class ActivateAction(Action):
     """
-    Generates activation script
+    Generates activation script.
     """
 
     def __init__(self, shell: ShellIntegration):
@@ -262,7 +263,7 @@ class ActivateAction(Action):
 
     def execute(self):
         """
-        Execute action
+        Execute action.
         """
         try:
             check_activated("force" not in config.args or not config.args.force)
@@ -323,7 +324,7 @@ class ActivateAction(Action):
 
 class DeactivateAction(Action):
     """
-    Generations deactivation script
+    Generations deactivation script.
     """
 
     def __init__(self, shell: ShellIntegration):
@@ -348,7 +349,7 @@ class DeactivateAction(Action):
 
     def execute(self):
         """
-        Execute action
+        Execute action.
         """
         with contextlib.suppress(CheckAnotherProjectActivatedException):
             check_activated("force" not in config.args or not config.args.force)
@@ -386,31 +387,32 @@ class DeactivateAction(Action):
 
 class CheckActivatedException(Exception):
     """
-    Exception for activated check
+    Exception for activated check.
     """
 
 
 class CheckIsActivatedException(CheckActivatedException):
     """
-    Exception for activated check
+    Exception for activated check.
     """
 
 
 class CheckIsNotActivatedException(CheckActivatedException):
     """
-    Exception for activated check
+    Exception for activated check.
     """
 
 
 class CheckAnotherProjectActivatedException(CheckActivatedException):
     """
-    Exception for activated check
+    Exception for activated check.
     """
 
 
 def check_activated(do_raise=False, do_log=False):
     """
     Check if project is activated in current shell.
+
     :return:
     """
     project_home_key = config.env_prefix + "_PROJECT_HOME"
@@ -443,7 +445,7 @@ def check_activated(do_raise=False, do_log=False):
 
 class CheckActivatedAction(Action):
     """
-    Check if project is activated in current shell
+    Check if project is activated in current shell.
     """
 
     def __init__(self, shell: ShellIntegration):
@@ -468,17 +470,17 @@ class CheckActivatedAction(Action):
 
     def execute(self):
         """
-        Execute action
+        Execute action.
         """
         try:
-            check_activated(True, True)
+            check_activated(do_raise=True, do_log=True)
         except CheckActivatedException as exc:
             context.exceptions.append(exc)
 
 
 class CommandAction(Action):
     """
-    Display a requested command for it to be evaluated by the shell
+    Display a requested command for it to be evaluated by the shell.
     """
 
     def __init__(self, shell: ShellIntegration):
@@ -503,7 +505,7 @@ class CommandAction(Action):
 
     def execute(self, command: Iterable[str], system_path: bool = False):
         """
-        Execute action
+        Execute action.
         """
         if not system_path:
             print(self.shell.generate_cmdline(command))
@@ -532,9 +534,9 @@ class CommandAction(Action):
                 or_generated = False
                 for instruction in add_to_system_path(self.shell, path_additions):
                     if not or_generated:
-                        print(self.shell.generate_or_operator(True), file=file)
+                        print(self.shell.generate_or_operator(new_line=True), file=file)
                     else:
-                        print(self.shell.generate_and_operator(True), file=file)
+                        print(self.shell.generate_and_operator(new_line=True), file=file)
                     print(instruction, end="", file=file)
 
             print(file=file)

@@ -31,9 +31,10 @@ from .. import features
 
 def get_latest_release(github_repository: str):
     """
-    Retrieve latest release version and tag_name from GitHub API
+    Retrieve latest release version and tag_name from GitHub API.
+
     :param github_repository github repository to check
-    :return: Version from tag_name retrieved from GitHub API
+    :return: Version from tag_name retrieved from GitHub API.
     """
     response = requests.get(f"https://api.github.com/repos/{github_repository}/releases/latest", timeout=30)
     try:
@@ -49,7 +50,8 @@ def get_latest_release(github_repository: str):
 
 def get_current_version():
     """
-    Get the current version
+    Get the current version.
+
     :return:
     """
     return __version__
@@ -58,6 +60,7 @@ def get_current_version():
 def print_version(github_repository, silent=False):
     """
     Print the version and informations.
+
     :return:
     """
     if silent:
@@ -96,7 +99,7 @@ _version_re = re.compile(
 def coerce_version(version):
     """
     Convert an incomplete version string into a semver-compatible VersionInfo
-    object
+    object.
 
     * Tries to detect a "basic" version string (``major.minor.patch``).
     * If not enough components can be found, missing components are
@@ -122,6 +125,7 @@ def coerce_version(version):
 def is_version_greater(reference, version):
     """
     Check if version is greater than reference.
+
     :param reference:
     :param version:
     :return:
@@ -132,6 +136,7 @@ def is_version_greater(reference, version):
 def is_version_greater_or_equal(reference, version):
     """
     Check if version is greater or equal than reference.
+
     :param reference:
     :param version:
     :return:
@@ -192,6 +197,7 @@ def _build_update_tip():
 def is_binary():
     """
     Check if current process is binary.
+
     :return:
     """
     return getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS")
@@ -199,7 +205,8 @@ def is_binary():
 
 def get_local_binary_path():
     """
-    Get the binary path
+    Get the binary path.
+
     :return:
     """
     context.log.debug("sys.argv[0]: %s", sys.argv[0])
@@ -240,7 +247,8 @@ def get_local_binary_path():
 
 def get_binary_destination_path(binary_path: str):
     """
-    Get binary path destination
+    Get binary path destination.
+
     :param binary_path:
     :return:
     """
@@ -255,7 +263,7 @@ def get_binary_destination_path(binary_path: str):
 
 class FeaturesAction(Action):
     """
-    Display all features
+    Display all features.
     """
 
     @property
@@ -269,7 +277,7 @@ class FeaturesAction(Action):
     @staticmethod
     def execute():
         """
-        Execute action
+        Execute action.
         """
         enabled_features = [f for f in features.all() if not f.disabled]
 
@@ -279,7 +287,7 @@ class FeaturesAction(Action):
 
 class ConfigAction(Action):
     """
-    Dump configuration
+    Dump configuration.
     """
 
     @property
@@ -293,7 +301,7 @@ class ConfigAction(Action):
     @staticmethod
     def execute():
         """
-        Execute action
+        Execute action.
         """
         configuration, configuration_files = ConfigAction._get_configuration_files(config.args.full, config.args.files)
 
@@ -314,7 +322,9 @@ class ConfigAction(Action):
             config.args.property, configuration, configuration_files
         )
         if configuration is None and not config.args.full:
-            configuration, configuration_files = ConfigAction._get_configuration_files(True, config.args.files)
+            configuration, configuration_files = ConfigAction._get_configuration_files(
+                full=True, files=config.args.files
+            )
 
             configuration, configuration_files = ConfigAction._get_configurations_for_prop(
                 config.args.property, configuration, configuration_files
@@ -422,7 +432,7 @@ class ConfigAction(Action):
 
 class EjectAction(Action):
     """
-    Dump configuration
+    Dump configuration.
     """
 
     @property
@@ -451,7 +461,7 @@ class EjectAction(Action):
     @staticmethod
     def delete_generated_source(source: str | None, target: str):
         """
-        Execute action
+        Execute action.
         """
         if source:
             force_remove(source)
@@ -484,7 +494,7 @@ class ReloadConfigAction(Action):
     @staticmethod
     def execute(file: str):
         """
-        Execute action
+        Execute action.
         """
         if context.watching:
             data, _ = config.read()
@@ -517,7 +527,8 @@ class VersionAction(Action):
     @staticmethod
     def execute(silent: bool):
         """
-        Check for updates
+        Check for updates.
+
         :param command command name
         :return:
         """
@@ -544,7 +555,8 @@ class CheckForUpdateAction(InitializableAction):
     @staticmethod
     def execute(command: Command):
         """
-        Check for updates
+        Check for updates.
+
         :param command command name
         :return:
         """
@@ -555,7 +567,7 @@ class CheckForUpdateAction(InitializableAction):
 
             if last_check is None or last_check < today:
                 github_repository = config.data.get("core.github_repository")
-                check_for_update(github_repository, True, True)
+                check_for_update(github_repository, output=True, details=True)
 
             cache.set("last_check", today)
 
@@ -585,7 +597,8 @@ class CheckRequiredVersion(Action):
     @staticmethod
     def execute(command: Command):
         """
-        Check for updates
+        Check for updates.
+
         :param command command name
         :return:
         """
@@ -619,7 +632,7 @@ class SelfUpdateAction(Action):
 
     def execute(self):
         """
-        Execute action
+        Execute action.
         """
         github_repository = config.data.get("core.github_repository")
 
@@ -631,7 +644,7 @@ class SelfUpdateAction(Action):
             )
             return
 
-        last_release, tag_name = check_for_update(github_repository, True)
+        last_release, tag_name = check_for_update(github_repository, output=True)
         if not last_release:
             print("ddb is already up to date.")
             if "force" not in config.args or not config.args.force:
@@ -643,7 +656,8 @@ class SelfUpdateAction(Action):
     @staticmethod
     def self_update_binary(github_repository, tag_name):
         """
-        Self update the ddb binary
+        Self update the ddb binary.
+
         :param github_repository:
         :param tag_name:
         :return:

@@ -16,7 +16,7 @@ ConfigPaths = namedtuple("ConfigPaths", ["ddb_home", "home", "user_home", "proje
 
 def configuration_file(path: str, filenames: Iterable[str], extensions: Iterable[str]):
     """
-    Find configuration file for given path and possible filename/extensions
+    Find configuration file for given path and possible filename/extensions.
     """
     if path:
         for basename in filenames:
@@ -29,7 +29,7 @@ def configuration_file(path: str, filenames: Iterable[str], extensions: Iterable
 
 def get_default_config_paths(env_prefix, filenames, extensions) -> ConfigPaths:
     """
-    Get configuration paths
+    Get configuration paths.
     """
     project_home = os.environ.get(env_prefix + "_PROJECT_HOME")
     if not project_home:
@@ -53,7 +53,7 @@ def get_default_config_paths(env_prefix, filenames, extensions) -> ConfigPaths:
 
 class Config:
     """
-    Configuration
+    Configuration.
     """
 
     # Set by the core feature from the effective configuration, which may override
@@ -113,6 +113,7 @@ class Config:
     def project_cwd(self):
         """
         Retrieve the current working directory, relative to project_home.
+
         :return:
         """
         if self.paths.project_home and self.cwd:
@@ -123,6 +124,7 @@ class Config:
     def eject(self):
         """
         Check if command line is running configure command with --eject flag.
+
         :return:
         """
         return "command" in self.args and self.args.command == "configure" and "eject" in self.args and self.args.eject
@@ -130,7 +132,7 @@ class Config:
     @property
     def clear_cache(self):
         """
-        Should cache be cleared on load
+        Should cache be cleared on load.
         """
         if "clear_cache" in self.args:
             return self.args.clear_cache

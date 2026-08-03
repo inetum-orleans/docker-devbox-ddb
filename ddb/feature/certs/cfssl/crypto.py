@@ -1,5 +1,5 @@
 """
-Crypto module
+Crypto module.
 """
 
 from cryptography import x509
@@ -15,13 +15,14 @@ class CryptoException(Exception):
 
 def convert_pem_to_der(part, content):
     """
-    Converts a PEM certificate, csr or crl to DER
+    Converts a PEM certificate, csr or crl to DER.
+
     :param part: type of object to convert
     :type part: byte[]
     :param content: PEM data as a ASCII string
     :type content: str
     :return: DER Encoded object
-    :rtype: byte[]
+    :rtype: byte[].
     """
     if part == "certificate":
         cert = x509.load_pem_x509_certificate(content, default_backend())

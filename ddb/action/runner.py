@@ -25,7 +25,8 @@ class ExpectedError(Exception):
 
     def log_error(self):
         """
-        Log the error
+        Log the error.
+
         :return:
         """
         log_error = (
@@ -89,7 +90,7 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
 
     def _execute_action(self, *args, **kwargs):
         """
-        Execute the action
+        Execute the action.
         """
         self.to_call(*args, **kwargs)
 
@@ -119,12 +120,12 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
 
 class InitializableActionEventBindingRunner(ActionEventBindingRunner[InitializableAction]):
     """
-    Runner for an initializable action event binding
+    Runner for an initializable action event binding.
     """
 
     def run(self, *args, **kwargs):
         """
-        Initialize if required and run
+        Initialize if required and run.
         """
         if not self.action.initialized:
             self.action.initialize()

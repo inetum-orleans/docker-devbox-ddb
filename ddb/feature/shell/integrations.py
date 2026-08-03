@@ -43,21 +43,23 @@ class ShellIntegration(ABC):
     def remove_binary_shim(self, shims_path: str, name: str) -> str | None:
         """
         Delete a binary shim for this shell.
-        @return removed filepath
+        @return removed filepath.
         """
 
     @abstractmethod
     def create_binary_shim(self, shims_path: str, name: str, global_: bool) -> tuple[bool, str]:
         """
         Add a binary shim for this shell.
-        :return created filepath
+
+        :return created filepath.
         """
 
     @abstractmethod
     def create_alias_binary_shim(self, shims_path: str, binary: Binary) -> tuple[bool, str]:
         """
         Add a alias binary shim for this shell.
-        :return created filepath
+
+        :return created filepath.
         """
 
     @abstractmethod
@@ -92,20 +94,20 @@ class ShellIntegration(ABC):
 
     def header(self) -> Iterable[str]:
         """
-        Returns header of script
+        Returns header of script.
         """
         yield from ()
 
     def footer(self) -> Iterable[str]:
         """
-        Returns footer of script
+        Returns footer of script.
         """
         yield from ()
 
     @property
     def temporary_file_kwargs(self) -> dict[str, Any]:
         """
-        Additional options for temporary file
+        Additional options for temporary file.
         """
         return {}
 
@@ -173,7 +175,8 @@ class BashShellIntegration(ShellIntegration):
     @staticmethod
     def _write_shim(shims_path: str, shim_name: str, shim_type: str, lines: Iterable[str]) -> tuple[bool, str]:
         """
-        Generate the shim file
+        Generate the shim file.
+
         :return:
         """
         os.makedirs(shims_path, exist_ok=True)
@@ -208,7 +211,7 @@ class BashShellIntegration(ShellIntegration):
 
 class CmdShellIntegration(ShellIntegration):
     """
-    Windows cmd integration
+    Windows cmd integration.
     """
 
     def __init__(self):
@@ -283,7 +286,8 @@ class CmdShellIntegration(ShellIntegration):
     @staticmethod
     def _write_shim(shims_path: str, shim_name: str, shim_type: str, lines: Iterable[str]) -> tuple[bool, str]:
         """
-        Generate the shim file
+        Generate the shim file.
+
         :return:
         """
         os.makedirs(shims_path, exist_ok=True)

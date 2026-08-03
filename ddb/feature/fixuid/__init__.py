@@ -9,7 +9,7 @@ from .schema import FixuidSchema
 
 class FixuidFeature(Feature):
     """
-    Auto-configure fixuid from docker-compose.yml services (https://github.com/boxboat/fixuid)
+    Auto-configure fixuid from docker-compose.yml services (https://github.com/boxboat/fixuid).
     """
 
     @property

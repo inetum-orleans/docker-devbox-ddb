@@ -8,7 +8,7 @@ from ddb.feature.schema import FeatureSchema
 
 class CookiecutterOptions(Schema):
     """
-    Cookiecutter options
+    Cookiecutter options.
     """
 
     no_input = fields.Boolean(allow_none=True, dump_default=None)
@@ -20,7 +20,7 @@ class CookiecutterOptions(Schema):
 
 class TemplateSchema(CookiecutterOptions):
     """
-    Template schema
+    Template schema.
     """
 
     template = fields.String(required=True)

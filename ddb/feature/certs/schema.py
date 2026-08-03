@@ -5,7 +5,7 @@ from ddb.feature.schema import FeatureSchema
 
 class CfsslCertificateRequest(Schema):
     """
-    CFSSL certificate request schema
+    CFSSL certificate request schema.
     """
 
     org_name = fields.String()  # The full legal name of the organization. Do not abbreviate.
@@ -17,7 +17,7 @@ class CfsslCertificateRequest(Schema):
 
 class CfsslServerSchema(Schema):
     """
-    Cfssl server schema
+    Cfssl server schema.
     """
 
     host = fields.String(required=True, dump_default="localhost")
@@ -28,7 +28,7 @@ class CfsslServerSchema(Schema):
 
 class CfsslWriterFilenamesSchema(Schema):
     """
-    CFSSL writer filenames schema
+    CFSSL writer filenames schema.
     """
 
     private_key = fields.String(required=True, dump_default="%s.key")
@@ -40,7 +40,7 @@ class CfsslWriterFilenamesSchema(Schema):
 
 class CfsslWriterSchema(Schema):
     """
-    CFSSL writer schema
+    CFSSL writer schema.
     """
 
     filenames = fields.Nested(CfsslWriterFilenamesSchema(), required=True, dump_default=CfsslWriterFilenamesSchema())
@@ -48,7 +48,7 @@ class CfsslWriterSchema(Schema):
 
 class CfsslSchema(Schema):
     """
-    Debug schema
+    Debug schema.
     """
 
     server = fields.Nested(CfsslServerSchema(), required=True, dump_default=CfsslServerSchema())

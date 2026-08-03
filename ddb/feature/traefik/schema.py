@@ -5,7 +5,7 @@ from ddb.feature.schema import FeatureSchema
 
 class ExtraServiceSchema(Schema):
     """
-    Extra Service
+    Extra Service.
     """
 
     https = fields.Bool(required=False, allow_none=True, dump_default=None)

@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 class ContextStackItem:
     """
-    A stack item inside context
+    A stack item inside context.
     """
 
     def __init__(self, event_name: str, action: "Action", to_call: Callable, args: list, kwargs: dict):
@@ -72,7 +72,7 @@ class Context:
     @property
     def to_call(self) -> Callable | None:
         """
-        Current callable in stack
+        Current callable in stack.
         """
         return self.stack[-1].to_call if self.stack else None
 

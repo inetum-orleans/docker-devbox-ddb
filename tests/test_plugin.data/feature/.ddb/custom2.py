@@ -7,7 +7,7 @@ from ddb.feature import Feature
 
 class Custom2Feature(Feature):
     """
-    Custom Feature
+    Custom Feature.
     """
 
     @property

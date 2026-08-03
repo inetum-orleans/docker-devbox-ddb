@@ -10,7 +10,7 @@ from ddb.utils.file import FileWalker, chmod
 
 class PermissionsAction(Action):
     """
-    Update file access permissions based on git index
+    Update file access permissions based on git index.
     """
 
     @property

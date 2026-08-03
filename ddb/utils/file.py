@@ -16,7 +16,7 @@ from ddb.utils.re import build_or_pattern
 
 def has_same_content(filename1: str, filename2: str, read_mode="rb") -> bool:
     """
-    Check if the content of two files are same
+    Check if the content of two files are same.
     """
     with open(filename1, mode=read_mode) as file1, open(filename2, mode=read_mode) as file2:
         return file1.read() == file2.read()
@@ -113,7 +113,7 @@ def force_remove(file: str, silent=False):
 
 def chmod(file: str, mode: str, logging=True):
     """
-    Apply given mode to file
+    Apply given mode to file.
     """
     new_mode, old_mode = chmod_monkey.to_mode(file, mode, return_old_mode=True)
     if old_mode != new_mode:
@@ -127,13 +127,14 @@ def chmod(file: str, mode: str, logging=True):
 
 class FileUtils:
     """
-    Some file management functions
+    Some file management functions.
     """
 
     @staticmethod
     def get_file_content(url: str) -> str:
         """
-        Get the content of the file
+        Get the content of the file.
+
         :param url: the path to the file (https? or file)
         :return:
         """
@@ -144,7 +145,8 @@ class FileUtils:
     @staticmethod
     def _get_local_file_content(file_path: str) -> str:
         """
-        Get the content of the file
+        Get the content of the file.
+
         :param file_path: the path to the file (absolute or relative)
         :return:
         """
@@ -206,7 +208,6 @@ class FileWalker:
         """
         Yields over a tuple (template, target) with found templates.
         """
-
         for source in self._walk(str(self.rootpath), recursive=self.recursive):
             yield from self._do_yield(source)
 
@@ -236,7 +237,7 @@ class FileWalker:
 
     def is_source_filtered(self, candidate: str):
         """
-        Check if a source path is filtered out by includes/excludes
+        Check if a source path is filtered out by includes/excludes.
         """
         return (
             not self._is_included(candidate, *self.include_files)
@@ -295,14 +296,14 @@ class FileWalker:
     @staticmethod
     def re_compile_patterns(*patterns: str):
         """
-        Compile a list of string containing patterns to regexp
+        Compile a list of string containing patterns to regexp.
         """
         return re.compile(build_or_pattern([fnmatch.translate(pattern) for pattern in patterns]))
 
     @staticmethod
     def match_any_pattern(candidate: str, *patterns: re.Pattern):
         """
-        Check if a string match at least one of provided compiled pattern
+        Check if a string match at least one of provided compiled pattern.
         """
         candidate = FileWalker._as_posix_fast(candidate)
         for pattern in patterns:

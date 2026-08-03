@@ -106,7 +106,7 @@ def _prepare_dependencies_data(entrypoint_features):
 
 def _check_missing_dependencies(entrypoint_features, required_dependencies):
     """
-    Check missing required dependencies
+    Check missing required dependencies.
     """
     for name, feat_required_dependencies in required_dependencies.items():
         for required_dependency in feat_required_dependencies:
@@ -135,6 +135,7 @@ def append_available_feature(feature):
 def bootstrap_register_features():
     """
     Register all features in order.
+
     :return:
     """
     config.load()
@@ -147,6 +148,7 @@ def bootstrap_register_features():
 def bootstrap_features_configuration():
     """
     Preconfigure features with default bootstrap configuration.
+
     :return:
     """
     filenames, extensions = config.filenames, config.extensions

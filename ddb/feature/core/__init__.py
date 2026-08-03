@@ -177,7 +177,8 @@ class CoreFeature(Feature):
     @staticmethod
     def _apply_eject_configuration():
         """
-        Override some configuration that doesn't make sense without ddb
+        Override some configuration that doesn't make sense without ddb.
+
         :return:
         """
         if config.eject:

@@ -80,31 +80,31 @@ class InitializableAction(Action, ABC):
 
     def destroy(self):
         """
-        destroy method, invoked on shutdown.
+        Destroy method, invoked on shutdown.
         """
 
 
 class WatchSupport(ABC):
     """
-    Watch support
+    Watch support.
     """
 
     @abstractmethod
     def start_watching(self):
         """
-        Start watching
+        Start watching.
         """
 
     @abstractmethod
     def stop_watching(self):
         """
-        Stop watching
+        Stop watching.
         """
 
     @abstractmethod
     def join_watching(self):
         """
-        Join watching
+        Join watching.
         """
 
 
@@ -121,7 +121,7 @@ class AbstractTemplateAction(InitializableAction, ABC):
     @property
     def _cache_key(self):
         """
-        This cache is used to store the rendered data of all targets.
+        Cache holding the rendered data of all targets.
         When a template is deleted, target file will remove only if content is still the same than the generated one,
         thanks to this cache.
         """
@@ -161,7 +161,7 @@ class AbstractTemplateAction(InitializableAction, ABC):
 
     def delete(self, template: str, target: str):
         """
-        Delete a rendered template
+        Delete a rendered template.
         """
         if os.path.exists(target):
             force_remove(target)
@@ -171,7 +171,7 @@ class AbstractTemplateAction(InitializableAction, ABC):
 
     def execute(self, template: str, target: str, migrate_retries_count=0, original_template=None):
         """
-        Render a template
+        Render a template.
         """
         if os.path.abspath(os.path.join(os.getcwd(), target)) in config.files:
             # Never write a file that match ddb configuration file
@@ -244,6 +244,7 @@ class AbstractTemplateAction(InitializableAction, ABC):
     ) -> str | None:
         """
         Try to automatically migrate this template in a temporary file when an error occurs.
+
         :return a temporary filepath to render again, if template has been fixed.
         """
         return None

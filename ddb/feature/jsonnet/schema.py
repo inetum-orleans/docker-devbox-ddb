@@ -6,7 +6,7 @@ from ddb.feature.schema import DisableableSchema, FeatureSchema
 
 class RegistrySchema(Schema):
     """
-    Registry schema
+    Registry schema.
     """
 
     name = fields.String(required=False, allow_none=True, dump_default=None)
@@ -15,7 +15,7 @@ class RegistrySchema(Schema):
 
 class BuildContextSchema(Schema):
     """
-    Build context schema
+    Build context schema.
     """
 
     base_directory = fields.String(required=True, dump_default=".docker")
@@ -24,7 +24,7 @@ class BuildContextSchema(Schema):
 
 class BuildSchema(DisableableSchema):
     """
-    Build schema
+    Build schema.
     """
 
     cache_from_image = fields.Boolean(required=True, dump_default=False)
@@ -39,7 +39,7 @@ class BuildSchema(DisableableSchema):
 
 class BinarySchema(DisableableSchema):
     """
-    Binary schema
+    Binary schema.
     """
 
     global_ = fields.Boolean(data_key="global", attribute="global", required=False, allow_none=True, dump_default=None)
@@ -47,7 +47,7 @@ class BinarySchema(DisableableSchema):
 
 class VirtualhostSchema(DisableableSchema):  # Replacement for docker.reverse-proxy schema
     """
-    VirtualHost schema
+    VirtualHost schema.
     """
 
     type = fields.String(required=True, dump_default="traefik")
@@ -60,7 +60,7 @@ class VirtualhostSchema(DisableableSchema):  # Replacement for docker.reverse-pr
 
 class XDebugSchema(DisableableSchema):
     """
-    XDebug schema
+    XDebug schema.
     """
 
     host = fields.String(
@@ -75,7 +75,7 @@ class XDebugSchema(DisableableSchema):
 
 class ServiceSchema(DisableableSchema):
     """
-    Service schema
+    Service schema.
     """
 
     init = fields.Boolean(required=False, dump_default=True)
@@ -84,7 +84,7 @@ class ServiceSchema(DisableableSchema):
 
 class ExposeSchema(DisableableSchema):
     """
-    Expose schema
+    Expose schema.
     """
 
     port_prefix = fields.Integer(required=False)  # default is set in feature _configure_defaults
@@ -92,7 +92,7 @@ class ExposeSchema(DisableableSchema):
 
 class MountSchema(DisableableSchema):
     """
-    Mount schema
+    Mount schema.
     """
 
     directory = fields.String(required=False, allow_none=True, dump_default=None)
@@ -103,7 +103,7 @@ class MountSchema(DisableableSchema):
 
 class UserSchema(DisableableSchema):
     """
-    User schema
+    User schema.
     """
 
     uid = fields.Integer(required=True, dump_default=None)  # default is set in feature _configure_defaults
@@ -120,7 +120,7 @@ class UserSchema(DisableableSchema):
 
 class ComposeSchema(Schema):
     """
-    Docker compose schema
+    Docker compose schema.
     """
 
     project_name = fields.String(required=True, dump_default=None)  # default is set in feature _configure_defaults
@@ -139,7 +139,7 @@ class NetworksSchema(Schema):
 
 class DockerSchema(Schema):
     """
-    Docker schema
+    Docker schema.
     """
 
     compose = fields.Nested(ComposeSchema(), dump_default=ComposeSchema())

@@ -26,7 +26,7 @@ class GenerateCertAction(Action):
     @staticmethod
     def execute(domain, wildcard=True):
         """
-        Generate a certificate
+        Generate a certificate.
         """
         if config.data.get("certs.type") == "cfssl":
             GenerateCertAction.generate_cfssl(domain, wildcard)
@@ -100,7 +100,7 @@ class RemoveCertAction(Action):
     @staticmethod
     def execute(domain):
         """
-        Remove certificate
+        Remove certificate.
         """
         if RemoveCertAction.remove_cfssl(domain):
             events.certs.removed(domain=domain)
@@ -172,9 +172,9 @@ class GenerateSignerCertificateAction(Action):
                 None,
                 config.data["certs.cfssl.writer"],
                 config.data["certs.destination"],
-                False,
-                client,
-                False,
+                append_ca_certificate=False,
+                client=client,
+                verify_checksum=False,
             )
 
             context.log.success("Signer TLS certificate generated")
