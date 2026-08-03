@@ -17,17 +17,19 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
     Binary to run docker compose command.
     """
 
-    def __init__(self,
-                 name: str,
-                 docker_compose_service: str,
-                 workdir: str | None = None,
-                 options: str | None = None,
-                 options_condition: str | None = None,
-                 condition: str | None = None,
-                 args: str | None = None,
-                 exe: bool = False,
-                 entrypoint: str | None = None,
-                 global_: bool = False):
+    def __init__(
+        self,
+        name: str,
+        docker_compose_service: str,
+        workdir: str | None = None,
+        options: str | None = None,
+        options_condition: str | None = None,
+        condition: str | None = None,
+        args: str | None = None,
+        exe: bool = False,
+        entrypoint: str | None = None,
+        global_: bool = False,
+    ):
         super().__init__(name)
         self.docker_compose_service = docker_compose_service
         self.workdir = workdir
@@ -51,8 +53,8 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
                 "argv": args,
                 "config": config,
                 "cwd": path_as_posix_fast(config.cwd) if config.cwd else None,
-                "project_cwd": path_as_posix_fast(config.project_cwd) if config.project_cwd else None
-            }
+                "project_cwd": path_as_posix_fast(config.project_cwd) if config.project_cwd else None,
+            },
         }
 
     def command(self, *args) -> Iterable[str]:
@@ -62,10 +64,11 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
         project_relpath = os.path.relpath(config.paths.project_home, config.cwd if config.cwd else os.getcwd())
 
         if real_cwd.startswith(real_project_home):
-            params = ["exec"] if hasattr(self, "exe") and self.exe else [
-                "-f", os.path.join(project_relpath, "docker-compose.yml"),
-                "run", "--rm"
-            ]
+            params = (
+                ["exec"]
+                if hasattr(self, "exe") and self.exe
+                else ["-f", os.path.join(project_relpath, "docker-compose.yml"), "run", "--rm"]
+            )
 
             if self.workdir:
                 relpath = os.path.relpath(cwd, config.paths.project_home)
@@ -82,8 +85,8 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
         if self.entrypoint:
             params.append(f"--entrypoint={self.entrypoint}")
 
-        if os.environ.get('DDB_RUN_OPTS'):
-            params.extend([shlex.quote(param) for param in shlex.split(os.environ.get('DDB_RUN_OPTS'))])
+        if os.environ.get("DDB_RUN_OPTS"):
+            params.extend([shlex.quote(param) for param in shlex.split(os.environ.get("DDB_RUN_OPTS"))])
 
         self.add_options_to_params(params, self.options, self.options_condition, *args)
 
@@ -91,9 +94,9 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
         if self.args:
             params.extend([shlex.quote(param) for param in shlex.split(self.args)])
 
-        docker_compose_command = config.data.get('docker.docker_compose_command')
+        docker_compose_command = config.data.get("docker.docker_compose_command")
         if not docker_compose_command:
-            raise ConfigurationError('DockerBinary requires docker feature configuration')
+            raise ConfigurationError("DockerBinary requires docker feature configuration")
         return effective_command(*shlex.split(docker_compose_command), *params)
 
     def add_options_to_params(self, params, options, condition, *args):
@@ -169,12 +172,16 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
         return self.entrypoint == other.entrypoint
 
     def __hash__(self):
-        return hash((super().__hash__(),
-                     self.docker_compose_service,
-                     self.workdir,
-                     self.options,
-                     self.options_condition,
-                     self.condition,
-                     self.args,
-                     self.exe,
-                     self.entrypoint))
+        return hash(
+            (
+                super().__hash__(),
+                self.docker_compose_service,
+                self.workdir,
+                self.options,
+                self.options_condition,
+                self.condition,
+                self.args,
+                self.exe,
+                self.entrypoint,
+            )
+        )

@@ -11,7 +11,7 @@ import yaml
 from ddb.config.merger import config_merger
 from ddb.config.migrations import MigrationsDotty
 
-ConfigPaths = namedtuple('ConfigPaths', ['ddb_home', 'home', 'user_home', 'project_home'])
+ConfigPaths = namedtuple("ConfigPaths", ["ddb_home", "home", "user_home", "project_home"])
 
 
 def configuration_file(path: str, filenames: Iterable[str], extensions: Iterable[str]):
@@ -21,7 +21,7 @@ def configuration_file(path: str, filenames: Iterable[str], extensions: Iterable
     if path:
         for basename in filenames:
             for ext in extensions:
-                file = os.path.join(path, basename + '.' + ext)
+                file = os.path.join(path, basename + "." + ext)
                 if exists(file):
                     return file
     return None
@@ -31,8 +31,8 @@ def get_default_config_paths(env_prefix, filenames, extensions) -> ConfigPaths:
     """
     Get configuration paths
     """
-    if os.environ.get(env_prefix + '_PROJECT_HOME'):
-        project_home = os.environ.get(env_prefix + '_PROJECT_HOME')
+    if os.environ.get(env_prefix + "_PROJECT_HOME"):
+        project_home = os.environ.get(env_prefix + "_PROJECT_HOME")
     else:
         project_home_candidate = os.getcwd()
         while not configuration_file(project_home_candidate, filenames, extensions):
@@ -45,9 +45,9 @@ def get_default_config_paths(env_prefix, filenames, extensions) -> ConfigPaths:
 
     project_home = os.path.abspath(project_home)
 
-    user_home = os.environ.get(env_prefix + '_USER_HOME', str(Path.home()))
-    home = os.environ.get(env_prefix + '_HOME', os.path.join(user_home, '.docker-devbox'))
-    ddb_home = os.environ.get(env_prefix + '_DDB_HOME', os.path.join(home, 'ddb'))
+    user_home = os.environ.get(env_prefix + "_USER_HOME", str(Path.home()))
+    home = os.environ.get(env_prefix + "_HOME", os.path.join(user_home, ".docker-devbox"))
+    ddb_home = os.environ.get(env_prefix + "_DDB_HOME", os.path.join(home, "ddb"))
 
     return ConfigPaths(ddb_home=ddb_home, home=home, user_home=user_home, project_home=project_home)
 
@@ -56,20 +56,24 @@ class Config:  # pylint:disable=too-many-instance-attributes
     """
     Configuration
     """
+
     # Static default/overrides values for configuration, can be modified from code mainly for tests purpose
     defaults = None
+
     def overrides(config):
         return config
 
-    def __init__(self,
-                 paths: ConfigPaths | None = None,
-                 env_prefix='DDB',
-                 env_override_prefix='DDB_OVERRIDE',
-                 filenames=('ddb', 'ddb.local'),
-                 extensions=('yml', 'yaml'),
-                 cwd=None,
-                 args=None,
-                 unknown_args=None):
+    def __init__(
+        self,
+        paths: ConfigPaths | None = None,
+        env_prefix="DDB",
+        env_override_prefix="DDB_OVERRIDE",
+        filenames=("ddb", "ddb.local"),
+        extensions=("yml", "yaml"),
+        cwd=None,
+        args=None,
+        unknown_args=None,
+    ):
         self.env_prefix = env_prefix
         self.env_override_prefix = env_override_prefix
         self.filenames = filenames
@@ -80,7 +84,7 @@ class Config:  # pylint:disable=too-many-instance-attributes
         self.cwd = cwd
         self.args = args if args else Namespace()
         self.unknown_args = unknown_args if unknown_args else []
-        self.env_key = 'env'
+        self.env_key = "env"
 
     def reset(self, *args, **kwargs):
         """
@@ -118,15 +122,14 @@ class Config:  # pylint:disable=too-many-instance-attributes
         Check if command line is running configure command with --eject flag.
         :return:
         """
-        return 'command' in self.args and self.args.command == 'configure' and \
-               'eject' in self.args and self.args.eject
+        return "command" in self.args and self.args.command == "configure" and "eject" in self.args and self.args.eject
 
     @property
     def clear_cache(self):
         """
         Should cache be cleared on load
         """
-        if 'clear_cache' in self.args:
+        if "clear_cache" in self.args:
             return self.args.clear_cache
         return False
 
@@ -141,10 +144,10 @@ class Config:  # pylint:disable=too-many-instance-attributes
                 continue
             for basename in self.filenames:
                 for ext in self.extensions:
-                    if basename.endswith('.' + ext) and os.path.exists(os.path.join(path, basename)):
+                    if basename.endswith("." + ext) and os.path.exists(os.path.join(path, basename)):
                         file = os.path.join(path, basename)
                     else:
-                        file = os.path.join(path, basename + '.' + ext)
+                        file = os.path.join(path, basename + "." + ext)
                     ret.append(file)
         return ret
 
@@ -161,7 +164,7 @@ class Config:  # pylint:disable=too-many-instance-attributes
 
         for file in files:
             if exists(file):
-                with open(file, 'rb') as stream:
+                with open(file, "rb") as stream:
                     file_data = yaml.safe_load(stream)
                     found_files[file] = self.apply_environ_overrides(deepcopy(file_data))
                     if file_data:
@@ -182,7 +185,7 @@ class Config:  # pylint:disable=too-many-instance-attributes
         if self.env_key in self.data:
             env = self.data.pop(self.env_key)
             if env:
-                for (name, value) in env.items():
+                for name, value in env.items():
                     os.environ[name] = value
 
     def load(self, defaults=None, files=None):
@@ -217,7 +220,7 @@ class Config:  # pylint:disable=too-many-instance-attributes
             return environ_value
 
         if isinstance(data, dict):
-            for (name, value) in data.items():
+            for name, value in data.items():
                 key_prefix = prefix + "_" + name
                 key_prefix = key_prefix.upper()
 

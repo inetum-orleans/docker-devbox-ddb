@@ -30,29 +30,27 @@ class SymlinksFeature(Feature):
 
     @property
     def actions(self) -> Iterable[Action]:
-        return (
-            SymlinksAction(),
-        )
+        return (SymlinksAction(),)
 
     def _configure_defaults(self, feature_config: Dotty):
-        suffixes = feature_config.get('suffixes')
+        suffixes = feature_config.get("suffixes")
         if not suffixes:
             try:
                 env_available = config.data["core.env.available"]
             except KeyError as err:
-                raise FeatureConfigurationError(self,
-                                                "core.env.available or symlinks.suffixes should be defined.") \
-                    from err
+                raise FeatureConfigurationError(
+                    self, "core.env.available or symlinks.suffixes should be defined."
+                ) from err
 
             available_suffixes = ["." + env for env in env_available]
 
             env_current = config.data.get("core.env.current")
             current_suffix = available_suffixes[-1] if not env_current else "." + env_current
 
-            suffixes = available_suffixes[available_suffixes.index(current_suffix):]
+            suffixes = available_suffixes[available_suffixes.index(current_suffix) :]
             feature_config["suffixes"] = suffixes
 
-        includes = feature_config.get('includes')
+        includes = feature_config.get("includes")
         if includes is None:
             includes = FileWalker.build_default_includes_from_suffixes(suffixes)
             feature_config["includes"] = includes

@@ -37,12 +37,14 @@ class DefaultPhase(DefaultRegistryObject, Phase):
     Default implementation for a phase.
     """
 
-    def __init__(self,
-                 name: str,
-                 description: str | None = None,
-                 parser: Callable[[ArgumentParser], Any] | None = None,
-                 run_once: bool = False,
-                 allow_unknown_args: bool = False):
+    def __init__(
+        self,
+        name: str,
+        description: str | None = None,
+        parser: Callable[[ArgumentParser], Any] | None = None,
+        run_once: bool = False,
+        allow_unknown_args: bool = False,
+    ):
         super().__init__(name, description)
         self.run_once = run_once
         self._parser = parser

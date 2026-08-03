@@ -7,6 +7,7 @@ class JinjaSchema(FeatureSchema):
     """
     Jinja schema.
     """
+
     suffixes = fields.List(fields.String(), dump_default=[".jinja"])
     extensions = fields.List(fields.String(), dump_default=[".*", ""])
     includes = fields.List(fields.String())  # default is build automatically from suffixes value

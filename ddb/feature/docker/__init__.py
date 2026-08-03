@@ -43,7 +43,7 @@ class DockerFeature(Feature):
             EmitDockerComposeConfigAction(),
             DockerComposeBinaryAction(),
             LocalVolumesAction(),
-            DockerDisplayInfoAction()
+            DockerDisplayInfoAction(),
         )
 
     def _configure_defaults(self, feature_config: Dotty):
@@ -53,9 +53,9 @@ class DockerFeature(Feature):
         self._configure_defaults_path_mapping(feature_config)
 
     def _configure_defaults_ip(self, feature_config):
-        ip_address = feature_config.get('ip')
+        ip_address = feature_config.get("ip")
         if not ip_address:
-            docker_host = os.environ.get('DOCKER_HOST')
+            docker_host = os.environ.get("DOCKER_HOST")
             if docker_host:
                 ip_match = re.match(r"(?:.*?)://(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}).*", docker_host)
                 if ip_match:
@@ -63,53 +63,56 @@ class DockerFeature(Feature):
 
         try:
             if not ip_address:
-                interface = feature_config.get('interface')
+                interface = feature_config.get("interface")
                 try:
                     docker_if = netifaces.ifaddresses(interface)
                 except ValueError as err:
-                    raise FeatureConfigurationAutoConfigureError(self, 'ip',
-                                                                 "Invalid network interface: " + interface) from err
+                    raise FeatureConfigurationAutoConfigureError(
+                        self, "ip", "Invalid network interface: " + interface
+                    ) from err
                 if docker_if and netifaces.AF_INET in docker_if:
                     docker_af_inet = docker_if[netifaces.AF_INET][0]
-                    ip_address = docker_af_inet['addr']
+                    ip_address = docker_af_inet["addr"]
                 else:
-                    raise FeatureConfigurationAutoConfigureError(self, 'ip',
-                                                                 "Can't get ip address "
-                                                                 "from network interface configuration: " + interface)
+                    raise FeatureConfigurationAutoConfigureError(
+                        self, "ip", "Can't get ip address from network interface configuration: " + interface
+                    )
         except FeatureConfigurationAutoConfigureError:
-            ip_address = '127.0.0.1'
+            ip_address = "127.0.0.1"
 
-        feature_config['ip'] = ip_address
+        feature_config["ip"] = ip_address
 
     @staticmethod
     def _configure_defaults_user_from_name_and_group(feature_config):
-        uid = feature_config.get('user.uid')
-        gid = feature_config.get('user.gid')
+        uid = feature_config.get("user.uid")
+        gid = feature_config.get("user.gid")
 
         if uid is None or gid is None:
-            name = feature_config.get('user.name')
+            name = feature_config.get("user.name")
             if name:
                 try:
                     import pwd  # pylint:disable=import-outside-toplevel
+
                     struct_passwd = pwd.getpwnam(name)
                     if uid is None:
                         uid = struct_passwd.pw_uid
-                        feature_config['user.uid'] = uid
+                        feature_config["user.uid"] = uid
                     if gid is None:
                         gid = struct_passwd.pw_gid
-                        feature_config['user.gid'] = gid
+                        feature_config["user.gid"] = gid
                 except ImportError:
                     pass
                 except KeyError:
                     pass
 
-            group = feature_config.get('user.group')
+            group = feature_config.get("user.group")
             if group:
                 try:
                     import grp  # pylint:disable=import-outside-toplevel
+
                     struct_group = grp.getgrnam(group)
                     gid = struct_group.gr_id
-                    feature_config['user.gid'] = gid
+                    feature_config["user.gid"] = gid
                 except ImportError:
                     pass
                 except KeyError:
@@ -117,21 +120,21 @@ class DockerFeature(Feature):
 
     @staticmethod
     def _configure_defaults_user(feature_config):
-        uid = feature_config.get('user.uid')
+        uid = feature_config.get("user.uid")
         if uid is None:
             try:
                 uid = os.getuid()  # pylint:disable=no-member
             except AttributeError:
                 uid = 1000
-            feature_config['user.uid'] = uid
+            feature_config["user.uid"] = uid
 
-        gid = feature_config.get('user.gid')
+        gid = feature_config.get("user.gid")
         if gid is None:
             try:
                 gid = os.getgid()  # pylint:disable=no-member
             except AttributeError:
                 gid = 1000
-            feature_config['user.gid'] = gid
+            feature_config["user.gid"] = gid
 
     @staticmethod
     def _configure_defaults_path_mapping(feature_config):
@@ -143,15 +146,15 @@ class DockerFeature(Feature):
 
         https://github.com/docker/compose/blob/f1059d75edf76e8856469108997c15bb46a41777/compose/config/types.py#L123-L132
         """
-        path_mapping = feature_config.get('path_mapping')
+        path_mapping = feature_config.get("path_mapping")
         if path_mapping is None:
             path_mapping = {}
-        if config.data.get('core.os') == 'nt':
-            for key in ('core.path.project_home', 'core.path.ddb_home', 'core.path.user_home', 'core.path.home'):
+        if config.data.get("core.os") == "nt":
+            for key in ("core.path.project_home", "core.path.ddb_home", "core.path.user_home", "core.path.home"):
                 raw = config.data.get(key)
                 if raw:
                     path_mapping[raw] = path_as_posix_fast(raw)
         sorted_path_mapping = {}
         for k in sorted(path_mapping, key=len, reverse=True):
             sorted_path_mapping[k] = path_mapping[k]
-        feature_config['path_mapping'] = sorted_path_mapping
+        feature_config["path_mapping"] = sorted_path_mapping

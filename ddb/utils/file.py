@@ -14,7 +14,7 @@ from ddb.context import context
 from ddb.utils.re import build_or_pattern
 
 
-def has_same_content(filename1: str, filename2: str, read_mode='rb') -> bool:
+def has_same_content(filename1: str, filename2: str, read_mode="rb") -> bool:
     """
     Check if the content of two files are same
     """
@@ -22,13 +22,13 @@ def has_same_content(filename1: str, filename2: str, read_mode='rb') -> bool:
         return file1.read() == file2.read()
 
 
-def write_if_different(file, data, read_mode='r', write_mode='w', log_source=None, readonly=True, **kwargs) -> bool:
+def write_if_different(file, data, read_mode="r", write_mode="w", log_source=None, readonly=True, **kwargs) -> bool:
     """
     Write the file if existing data is different than given data.
     """
     try:
-        read_encoding = "utf-8" if 'b' not in read_mode else None  # TODO: make default encoding configurable
-        write_encoding = "utf-8" if 'b' not in write_mode else None
+        read_encoding = "utf-8" if "b" not in read_mode else None  # TODO: make default encoding configurable
+        write_encoding = "utf-8" if "b" not in write_mode else None
 
         if os.path.exists(file):
             try:
@@ -45,7 +45,7 @@ def write_if_different(file, data, read_mode='r', write_mode='w', log_source=Non
             return False
 
         if not os.access(file, os.W_OK) and os.path.isfile(file):
-            chmod(file, '+w', logging=False)
+            chmod(file, "+w", logging=False)
         with open(file, mode=write_mode, encoding=write_encoding, **kwargs) as write_file:
             write_file.write(data)
 
@@ -54,16 +54,16 @@ def write_if_different(file, data, read_mode='r', write_mode='w', log_source=Non
         return True
     finally:
         if readonly and os.path.isfile(file):
-            chmod(file, '+r', logging=False)
+            chmod(file, "+r", logging=False)
 
 
-def copy_if_different(source, target, read_mode='r', write_mode='w', log=False, readonly=True, **kwargs) -> bool:
+def copy_if_different(source, target, read_mode="r", write_mode="w", log=False, readonly=True, **kwargs) -> bool:
     """
     Copy source to target if existing source data is different than target data.
     """
     try:
-        read_encoding = "utf-8" if 'b' not in read_mode else None  # TODO: make default encoding configurable
-        write_encoding = "utf-8" if 'b' not in write_mode else None
+        read_encoding = "utf-8" if "b" not in read_mode else None  # TODO: make default encoding configurable
+        write_encoding = "utf-8" if "b" not in write_mode else None
 
         if os.path.exists(source):
             with open(source, mode=read_mode, encoding=read_encoding, **kwargs) as read_file:
@@ -83,7 +83,7 @@ def copy_if_different(source, target, read_mode='r', write_mode='w', log=False, 
             return False
 
         if not os.access(target, os.W_OK) and os.path.exists(target):
-            chmod(target, '+w')
+            chmod(target, "+w")
         with open(target, mode=write_mode, encoding=write_encoding, **kwargs) as write_file:
             write_file.write(source_data)
 
@@ -93,7 +93,7 @@ def copy_if_different(source, target, read_mode='r', write_mode='w', log=False, 
         return True
     finally:
         if readonly and os.path.isfile(target):
-            chmod(target, '+r', logging=False)
+            chmod(target, "+r", logging=False)
 
 
 def force_remove(file: str, silent=False):
@@ -104,7 +104,7 @@ def force_remove(file: str, silent=False):
         os.remove(file)
     except PermissionError:
         # On windows, removing a readonly file raise this error.
-        chmod(file, '+w', logging=False)
+        chmod(file, "+w", logging=False)
         os.remove(file)
     except FileNotFoundError:
         if not silent:
@@ -137,7 +137,7 @@ class FileUtils:
         :param url: the path to the file (https? or file)
         :return:
         """
-        if url.startswith('file://'):
+        if url.startswith("file://"):
             return FileUtils._get_local_file_content(url)
         return requests.get(url).text
 
@@ -148,10 +148,10 @@ class FileUtils:
         :param file_path: the path to the file (absolute or relative)
         :return:
         """
-        file_path = file_path.replace('file://', '')
+        file_path = file_path.replace("file://", "")
         if not os.path.isabs(file_path):
             file_path = os.path.join(config.path.project_home, file_path)
-        with open(file_path, 'rb') as file:
+        with open(file_path, "rb") as file:
             return file.read().decode("utf-8")
 
 
@@ -163,16 +163,18 @@ class FileWalker:
     """
 
     # pylint:disable=too-many-arguments
-    def __init__(self,
-                 includes: list[str] | None,
-                 excludes: list[str] | None,
-                 include_files: list[str] | None,
-                 exclude_files: list[str] | None,
-                 suffixes: list[str] | None,
-                 rootpath: Path | str | None = None,
-                 recursive=True,
-                 skip_processed_sources=True,
-                 skip_processed_targets=True):
+    def __init__(
+        self,
+        includes: list[str] | None,
+        excludes: list[str] | None,
+        include_files: list[str] | None,
+        exclude_files: list[str] | None,
+        suffixes: list[str] | None,
+        rootpath: Path | str | None = None,
+        recursive=True,
+        skip_processed_sources=True,
+        skip_processed_targets=True,
+    ):
         if includes is None:
             includes = []
         if excludes is None:
@@ -186,13 +188,13 @@ class FileWalker:
         include_files = self._braceexpand(include_files)
         exclude_files = self._braceexpand(exclude_files)
         self.includes = [FileWalker.re_compile_patterns(includes)] if includes else []
-        self.excludes = [
-            re.compile(
-                build_or_pattern([fnmatch.translate(x) for x in excludes]))] if excludes else []
-        self.include_files = [
-            re.compile(build_or_pattern([fnmatch.translate(x) for x in include_files]))] if include_files else []
-        self.exclude_files = [
-            re.compile(build_or_pattern([fnmatch.translate(x) for x in exclude_files]))] if exclude_files else []
+        self.excludes = [re.compile(build_or_pattern([fnmatch.translate(x) for x in excludes]))] if excludes else []
+        self.include_files = (
+            [re.compile(build_or_pattern([fnmatch.translate(x) for x in include_files]))] if include_files else []
+        )
+        self.exclude_files = (
+            [re.compile(build_or_pattern([fnmatch.translate(x) for x in exclude_files]))] if exclude_files else []
+        )
         self.suffixes = suffixes if suffixes is not None else []
         if not rootpath:
             rootpath = os.path.relpath(config.paths.project_home)
@@ -215,20 +217,20 @@ class FileWalker:
 
     def _walk(self, path, recursive=True):
         for root, dirs, files in os.walk(path):
-            context.log.debug('%s', root)
+            context.log.debug("%s", root)
             for dirs_item in list(dirs):
                 dirpath = FileWalker._join(root, dirs_item)
-                if self._is_included(dirpath, *self.includes) and \
-                        not self._is_excluded(dirpath, *self.excludes):
+                if self._is_included(dirpath, *self.includes) and not self._is_excluded(dirpath, *self.excludes):
                     yield dirpath
                 else:
-                    context.log.debug('%s [ignored]', dirpath)
+                    context.log.debug("%s [ignored]", dirpath)
                     dirs.remove(dirs_item)
 
             for files_item in list(files):
                 filepath = FileWalker._join(root, files_item)
-                if self._is_included(filepath, *self.include_files) and \
-                        not self._is_excluded(filepath, *self.exclude_files):
+                if self._is_included(filepath, *self.include_files) and not self._is_excluded(
+                    filepath, *self.exclude_files
+                ):
                     yield filepath
 
             if not recursive:
@@ -238,9 +240,11 @@ class FileWalker:
         """
         Check if a source path is filtered out by includes/excludes
         """
-        return not self._is_included(candidate, *self.include_files) or \
-               self._is_excluded(candidate, *self.exclude_files) or \
-               self._has_ancestor_excluded(Path(candidate), *self.excludes)
+        return (
+            not self._is_included(candidate, *self.include_files)
+            or self._is_excluded(candidate, *self.exclude_files)
+            or self._has_ancestor_excluded(Path(candidate), *self.excludes)
+        )
 
     @staticmethod
     def _braceexpand(expressions):
@@ -275,20 +279,20 @@ class FileWalker:
 
     @staticmethod
     def _path_alternatives_for_pattern_match(path: str):
-        if path[0:2] == './':
+        if path[0:2] == "./":
             yield path[2:]
             yield path
         else:
             yield path
-            yield './' + path
+            yield "./" + path
 
     @staticmethod
     def _as_posix_fast(path: str):
-        return path.replace('\\', '/')
+        return path.replace("\\", "/")
 
     @staticmethod
     def _join(parent: str, child: str):
-        return os.path.join(parent, child) if parent != '.' else child
+        return os.path.join(parent, child) if parent != "." else child
 
     @staticmethod
     def re_compile_patterns(*patterns: list[str]):
@@ -317,7 +321,7 @@ class FileWalker:
         extensions_pattern = "{" + ",".join(extensions) + "}" if extensions else ""
 
         if len(suffixes) > 1:
-            joined_suffixes = ','.join(suffixes)
+            joined_suffixes = ",".join(suffixes)
             return ["*{" + joined_suffixes + "}" + extensions_pattern]
         if len(suffixes) > 0:
             return ["*" + suffixes[0] + extensions_pattern]
@@ -357,8 +361,9 @@ class TemplateFinder(FileWalker):
             if target in context.processed_targets:
                 previous_source = context.processed_targets[target]
                 _, previous_suffix = self._get_target_and_suffix(previous_source, self.suffixes)
-                if previous_suffix not in self.suffixes or \
-                        self.suffixes.index(previous_suffix) <= self.suffixes.index(suffix):
+                if previous_suffix not in self.suffixes or self.suffixes.index(previous_suffix) <= self.suffixes.index(
+                    suffix
+                ):
                     return None
 
         return target
@@ -375,7 +380,7 @@ class TemplateFinder(FileWalker):
 
         for suffix in suffixes:
             if basename.endswith(suffix):
-                return template_candidate[:len(basename) - len(suffix)] + ext, suffix
+                return template_candidate[: len(basename) - len(suffix)] + ext, suffix
 
         return None, None
 

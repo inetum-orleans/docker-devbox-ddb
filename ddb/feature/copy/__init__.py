@@ -27,6 +27,4 @@ class CopyFeature(Feature):
 
     @property
     def actions(self) -> Iterable[Action]:
-        return (
-            CopyAction(),
-        )
+        return (CopyAction(),)

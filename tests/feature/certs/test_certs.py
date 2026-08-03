@@ -48,10 +48,10 @@ class TestCertsFeature:
         assert os.path.exists(os.path.join(".certs", "testing.test.key"))
 
         with open(os.path.join(".certs", "testing.test.crt")) as crt_file:
-            assert 'CERTIFICATE' in crt_file.read()
+            assert "CERTIFICATE" in crt_file.read()
 
         with open(os.path.join(".certs", "testing.test.key")) as key_file:
-            assert 'PRIVATE KEY' in key_file.read()
+            assert "PRIVATE KEY" in key_file.read()
 
         remove_action = RemoveCertAction()
         remove_action.execute(domain="testing.test")

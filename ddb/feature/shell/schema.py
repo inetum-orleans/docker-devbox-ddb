@@ -27,6 +27,7 @@ class PathSchema(Schema):
     """
     Shell schema.
     """
+
     directories = fields.List(fields.String(), required=False, dump_default=_get_path_default)
     prepend = fields.Boolean(dump_default=True)
 
@@ -35,10 +36,11 @@ class ShellSchema(FeatureSchema):
     """
     Shell schema.
     """
+
     shell = fields.String(required=True)
     path = fields.Nested(PathSchema, required=True, dump_default=PathSchema())
-    envignore = fields.List(fields.String(), required=False, dump_default=[
-        "PYENV_*", "_", "PS1", "PS2", "PS3", "PS4", "PWD"
-    ])
+    envignore = fields.List(
+        fields.String(), required=False, dump_default=["PYENV_*", "_", "PS1", "PS2", "PS3", "PS4", "PWD"]
+    )
     aliases = fields.Dict(required=False, dump_default={})
     global_aliases = fields.List(fields.String(), required=False, dump_default=[])

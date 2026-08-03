@@ -27,8 +27,4 @@ class CertsFeature(Feature):
 
     @property
     def actions(self) -> Iterable[Action]:
-        return (
-            GenerateCertAction(),
-            RemoveCertAction(),
-            GenerateSignerCertificateAction()
-        )
+        return (GenerateCertAction(), RemoveCertAction(), GenerateSignerCertificateAction())

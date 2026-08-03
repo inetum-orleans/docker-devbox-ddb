@@ -13,10 +13,9 @@ class TestSymfonyVuejs:
 
         assert os.path.exists("docker-compose.override.yml")
 
-        assert sorted(os.listdir(".docker/php/.ca-certificates")) == \
-               sorted(("GFI_Informatique_Orléans_Root_CA.crt",
-                       "some-cert.crt",
-                       "fwca.annuaire.groupe.local.crt"))
+        assert sorted(os.listdir(".docker/php/.ca-certificates")) == sorted(
+            ("GFI_Informatique_Orléans_Root_CA.crt", "some-cert.crt", "fwca.annuaire.groupe.local.crt")
+        )
 
         assert os.path.exists(os.path.join(".docker", "db", "Dockerfile"))
         assert os.path.exists(os.path.join(".docker", "php", "Dockerfile"))

@@ -7,4 +7,5 @@ class PermissionsSchema(FeatureSchema):
     """
     Permissions Schema
     """
+
     specs = fields.Dict(fields.String(required=True), fields.String(required=True), allow_none=True, dump_default=None)

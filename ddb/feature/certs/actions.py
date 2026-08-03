@@ -28,7 +28,7 @@ class GenerateCertAction(Action):
         """
         Generate a certificate
         """
-        if config.data.get('certs.type') == 'cfssl':
+        if config.data.get("certs.type") == "cfssl":
             GenerateCertAction.generate_cfssl(domain, wildcard)
 
     @staticmethod
@@ -36,11 +36,11 @@ class GenerateCertAction(Action):
         """
         Generate domain certificate with CFSSL.
         """
-        certificate_path, private_key_path = writer.get_certs_path(domain,
-                                                                   config.data['certs.cfssl.writer'],
-                                                                   config.data['certs.destination'])
+        certificate_path, private_key_path = writer.get_certs_path(
+            domain, config.data["certs.cfssl.writer"], config.data["certs.destination"]
+        )
         if not os.path.exists(certificate_path) or not os.path.exists(private_key_path):
-            client_config = config.data.get('certs.cfssl.server')
+            client_config = config.data.get("certs.cfssl.server")
 
             client = cfssl_client.CFSSL(**client_config)
 
@@ -51,33 +51,37 @@ class GenerateCertAction(Action):
             response = client.new_cert(certificate_request)
             checksums.validate_checksums(response)
 
-            destination = config.data['certs.destination']
+            destination = config.data["certs.destination"]
             if not os.path.isdir(destination):
                 os.makedirs(destination)
 
-            generated = writer.write_files(response,
-                                           domain,
-                                           None,
-                                           None,
-                                           config.data['certs.cfssl.writer'],
-                                           config.data['certs.destination'],
-                                           config.data['certs.cfssl.append_ca_certificate'],
-                                           client,
-                                           config.data['certs.cfssl.verify_checksum'])
+            generated = writer.write_files(
+                response,
+                domain,
+                None,
+                None,
+                config.data["certs.cfssl.writer"],
+                config.data["certs.destination"],
+                config.data["certs.cfssl.append_ca_certificate"],
+                client,
+                config.data["certs.cfssl.verify_checksum"],
+            )
 
             context.log.success("TLS certificate generated for domain %s", domain)
 
             for generated_file in generated.values():
                 events.file.generated(source=None, target=generated_file)
 
-            private_key_path, certificate_path = generated['private_key'], generated['certificate']
-            events.certs.generated(domain=domain, wildcard=wildcard, private_key=certificate_path,
-                                   certificate=private_key_path)
+            private_key_path, certificate_path = generated["private_key"], generated["certificate"]
+            events.certs.generated(
+                domain=domain, wildcard=wildcard, private_key=certificate_path, certificate=private_key_path
+            )
         else:
             context.log.notice("TLS certificate exists for domain %s", domain)
 
-        events.certs.available(domain=domain, wildcard=wildcard, private_key=private_key_path,
-                               certificate=certificate_path)
+        events.certs.available(
+            domain=domain, wildcard=wildcard, private_key=private_key_path, certificate=certificate_path
+        )
 
 
 class RemoveCertAction(Action):
@@ -106,9 +110,9 @@ class RemoveCertAction(Action):
         """
         Remove domain certificate generated with CFSSL.
         """
-        certificate_path, private_key_path = writer.get_certs_path(domain,
-                                                                   config.data['certs.cfssl.writer'],
-                                                                   config.data['certs.destination'])
+        certificate_path, private_key_path = writer.get_certs_path(
+            domain, config.data["certs.cfssl.writer"], config.data["certs.destination"]
+        )
 
         removed = False
         if os.path.exists(certificate_path):
@@ -139,7 +143,7 @@ class GenerateSignerCertificateAction(Action):
 
     @property
     def disabled(self) -> bool:
-        return config.data.get('certs.type') != 'cfssl'
+        return config.data.get("certs.type") != "cfssl"
 
     @staticmethod
     def execute(*args, **kwargs):
@@ -147,29 +151,31 @@ class GenerateSignerCertificateAction(Action):
         Generate certificate with CFSSL.
         """
         output = ".signer"
-        certificate_path, _ = writer.get_certs_path(output,
-                                                    config.data['certs.cfssl.writer'],
-                                                    config.data['certs.destination'])
+        certificate_path, _ = writer.get_certs_path(
+            output, config.data["certs.cfssl.writer"], config.data["certs.destination"]
+        )
 
         if not os.path.exists(certificate_path):
-            client_config = config.data.get('certs.cfssl.server')
+            client_config = config.data.get("certs.cfssl.server")
 
             client = cfssl_client.CFSSL(**client_config)
-            response = client.info('')
+            response = client.info("")
 
-            destination = config.data['certs.destination']
+            destination = config.data["certs.destination"]
             if not os.path.isdir(destination):
                 os.makedirs(destination)
 
-            generated = writer.write_files(response,
-                                           output,
-                                           None,
-                                           None,
-                                           config.data['certs.cfssl.writer'],
-                                           config.data['certs.destination'],
-                                           False,
-                                           client,
-                                           False)
+            generated = writer.write_files(
+                response,
+                output,
+                None,
+                None,
+                config.data["certs.cfssl.writer"],
+                config.data["certs.destination"],
+                False,
+                client,
+                False,
+            )
 
             context.log.success("Signer TLS certificate generated")
 
@@ -178,10 +184,12 @@ class GenerateSignerCertificateAction(Action):
         else:
             context.log.notice("Signer TLS certificate exists")
 
-        signer_destinations = config.data['certs.signer_destinations']
+        signer_destinations = config.data["certs.signer_destinations"]
         if signer_destinations:
-            certificate = os.path.join(config.data['certs.destination'],
-                                       output + config.data['certs.cfssl.writer']['filenames']['certificate'] % '')
+            certificate = os.path.join(
+                config.data["certs.destination"],
+                output + config.data["certs.cfssl.writer"]["filenames"]["certificate"] % "",
+            )
 
             for signer_destination in signer_destinations:
                 dirname = os.path.dirname(signer_destination)

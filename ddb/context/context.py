@@ -13,7 +13,7 @@ class ContextStackItem:
     A stack item inside context
     """
 
-    def __init__(self, event_name: str, action: 'Action', to_call: Callable, args: list, kwargs: dict):
+    def __init__(self, event_name: str, action: "Action", to_call: Callable, args: list, kwargs: dict):
         self.event_name = event_name
         self.action = action
         self.to_call = to_call
@@ -22,10 +22,10 @@ class ContextStackItem:
 
     @staticmethod
     def _build_parameters_repr(*args, **kwargs):
-        parameters_repr = ', '.join(map(str, args))
+        parameters_repr = ", ".join(map(str, args))
         for key, value in sorted(kwargs.items()):
             if parameters_repr:
-                parameters_repr += ', '
+                parameters_repr += ", "
             parameters_repr += key + "=" + str(value)
         return parameters_repr
 
@@ -63,7 +63,7 @@ class Context:  # pylint:disable=too-many-instance-attributes
         return self.stack[-1].event_name if self.stack else None
 
     @property
-    def action(self) -> 'Action':
+    def action(self) -> "Action":
         """
         Current action in stack.
         """

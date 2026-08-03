@@ -14,10 +14,7 @@ class RunAction(Action):
 
     @property
     def event_bindings(self):
-        return (
-            events.phase.run,
-            EventBinding(events.run.run, self.run)
-        )
+        return (events.phase.run, EventBinding(events.run.run, self.run))
 
     @property
     def name(self) -> str:

@@ -27,6 +27,4 @@ class PermissionsFeature(Feature):
 
     @property
     def actions(self) -> Iterable[Action]:
-        return (
-            PermissionsAction(),
-        )
+        return (PermissionsAction(),)

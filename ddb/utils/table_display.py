@@ -3,12 +3,12 @@ from collections.abc import Iterable
 
 
 def _get_content(content: str, line_length: int, centered: bool = True):
-    left = ' '
-    right = (line_length - len(content) - 1) * ' '
+    left = " "
+    right = (line_length - len(content) - 1) * " "
 
     if centered:
-        left = math.floor((line_length - len(content)) / 2) * ' '
-        right = math.ceil((line_length - len(content)) / 2) * ' '
+        left = math.floor((line_length - len(content)) / 2) * " "
+        right = math.ceil((line_length - len(content)) / 2) * " "
 
     return left + content + right
 
@@ -32,9 +32,9 @@ def get_table_display(blocks: Iterable[Iterable[str]], centered: bool = True):
 
     content = []
     for block in blocks:
-        content.append('+' + (line_length * '-') + '+')
+        content.append("+" + (line_length * "-") + "+")
         for row in block:
-            content.append('|' + _get_content(row, line_length, centered) + '|')
+            content.append("|" + _get_content(row, line_length, centered) + "|")
     if content:
-        content.append('+' + (line_length * '-') + '+')
-    return '\n'.join(content)
+        content.append("+" + (line_length * "-") + "+")
+    return "\n".join(content)

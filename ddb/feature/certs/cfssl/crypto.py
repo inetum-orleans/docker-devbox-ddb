@@ -23,10 +23,10 @@ def convert_pem_to_der(part, content):
     :return: DER Encoded object
     :rtype: byte[]
     """
-    if part == 'certificate':
+    if part == "certificate":
         cert = x509.load_pem_x509_certificate(content, default_backend())
         return cert.public_bytes(serialization.Encoding.DER)
-    if part == 'certificate_request':
+    if part == "certificate_request":
         csr = x509.load_pem_x509_csr(content, default_backend())
         return csr.public_bytes(serialization.Encoding.DER)
-    raise CryptoException(f'Unknown object type: {part}')
+    raise CryptoException(f"Unknown object type: {part}")

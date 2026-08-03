@@ -15,10 +15,10 @@ def build_or_pattern(patterns):
     or_pattern = []
     for pattern in patterns:
         if or_pattern:
-            or_pattern.append('|')
+            or_pattern.append("|")
         else:
-            or_pattern.append('(?:')
+            or_pattern.append("(?:")
         or_pattern.append(pattern)
     if or_pattern:
-        or_pattern.append(')')
-    return ''.join(or_pattern)
+        or_pattern.append(")")
+    return "".join(or_pattern)

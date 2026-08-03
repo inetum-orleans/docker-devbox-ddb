@@ -8,7 +8,7 @@ from ddb.__main__ import main, reset
 from ddb.config import Config, config
 
 docker_compose_bin = "docker compose" if os.name != "nt" else "docker.exe compose"
-bin_ext = '.bat' if os.name == "nt" else ''
+bin_ext = ".bat" if os.name == "nt" else ""
 
 
 class TestBinaries:
@@ -21,10 +21,12 @@ class TestBinaries:
         exceptions = main(["run", "psql"])
         assert not exceptions
 
-        assert os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql' + bin_ext))
+        assert os.path.exists(os.path.join(os.getcwd(), ".bin", "psql" + bin_ext))
 
         output = capsys.readouterr()
-        assert output.out.strip() == docker_compose_bin + " -f ./docker-compose.yml run --rm --workdir=/workdir/. db psql"
+        assert (
+            output.out.strip() == docker_compose_bin + " -f ./docker-compose.yml run --rm --workdir=/workdir/. db psql"
+        )
 
     def test_docker_binaries_with_custom_options(self, project_loader, capsys: CaptureFixture):
         project_loader("docker")
@@ -32,16 +34,19 @@ class TestBinaries:
         exceptions = main(["configure"])
         assert not exceptions
 
-        os.environ['DDB_RUN_OPTS'] = "-e TEST"
+        os.environ["DDB_RUN_OPTS"] = "-e TEST"
 
         exceptions = main(["run", "psql"])
         assert not exceptions
 
-        assert os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql' + bin_ext))
+        assert os.path.exists(os.path.join(os.getcwd(), ".bin", "psql" + bin_ext))
 
         output = capsys.readouterr()
 
-        assert output.out.strip() == docker_compose_bin + " -f ./docker-compose.yml run --rm --workdir=/workdir/. -e TEST db psql"
+        assert (
+            output.out.strip()
+            == docker_compose_bin + " -f ./docker-compose.yml run --rm --workdir=/workdir/. -e TEST db psql"
+        )
 
     def test_docker_binaries_exe(self, project_loader, capsys: CaptureFixture):
         project_loader("docker_exe")
@@ -52,7 +57,7 @@ class TestBinaries:
         exceptions = main(["run", "psql"])
         assert not exceptions
 
-        assert os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql' + bin_ext))
+        assert os.path.exists(os.path.join(os.getcwd(), ".bin", "psql" + bin_ext))
 
         output = capsys.readouterr()
         assert output.out.strip() == docker_compose_bin + " exec --workdir=/workdir/. db psql"
@@ -66,10 +71,14 @@ class TestBinaries:
         exceptions = main(["run", "psql"])
         assert not exceptions
 
-        assert os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql' + bin_ext))
+        assert os.path.exists(os.path.join(os.getcwd(), ".bin", "psql" + bin_ext))
 
         output = capsys.readouterr()
-        assert output.out.strip() == docker_compose_bin + " -f ./docker-compose.yml run --rm --workdir=/workdir/. --entrypoint=/custom/ep db psql"
+        assert (
+            output.out.strip()
+            == docker_compose_bin
+            + " -f ./docker-compose.yml run --rm --workdir=/workdir/. --entrypoint=/custom/ep db psql"
+        )
 
     def test_docker_binaries_global(self, project_loader, capsys: CaptureFixture):
         project_loader("docker_global")
@@ -80,11 +89,13 @@ class TestBinaries:
         exceptions = main(["run", "psql"])
         assert not exceptions
 
-        assert not os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql' + bin_ext))
-        assert os.path.exists(os.path.join(os.getcwd(), '..', 'home', '.bin', 'psql' + bin_ext))
+        assert not os.path.exists(os.path.join(os.getcwd(), ".bin", "psql" + bin_ext))
+        assert os.path.exists(os.path.join(os.getcwd(), "..", "home", ".bin", "psql" + bin_ext))
 
         output = capsys.readouterr()
-        assert output.out.strip() == docker_compose_bin + " -f ./docker-compose.yml run --rm --workdir=/workdir/. db psql"
+        assert (
+            output.out.strip() == docker_compose_bin + " -f ./docker-compose.yml run --rm --workdir=/workdir/. db psql"
+        )
 
     def test_docker_binaries_global_default(self, project_loader, capsys: CaptureFixture):
         project_loader("docker_global_default")
@@ -95,11 +106,13 @@ class TestBinaries:
         exceptions = main(["run", "psql"])
         assert not exceptions
 
-        assert not os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql' + bin_ext))
-        assert os.path.exists(os.path.join(os.getcwd(), '..', 'home', '.bin', 'psql' + bin_ext))
+        assert not os.path.exists(os.path.join(os.getcwd(), ".bin", "psql" + bin_ext))
+        assert os.path.exists(os.path.join(os.getcwd(), "..", "home", ".bin", "psql" + bin_ext))
 
         output = capsys.readouterr()
-        assert output.out.strip() == docker_compose_bin + " -f ./docker-compose.yml run --rm --workdir=/workdir/. db psql"
+        assert (
+            output.out.strip() == docker_compose_bin + " -f ./docker-compose.yml run --rm --workdir=/workdir/. db psql"
+        )
 
     def test_docker_binaries_with_clear_cache(self, project_loader, capsys: CaptureFixture):
         project_loader("docker")
@@ -109,7 +122,7 @@ class TestBinaries:
         exceptions = main(["run", "psql"])
         assert not exceptions
 
-        assert os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql' + bin_ext))
+        assert os.path.exists(os.path.join(os.getcwd(), ".bin", "psql" + bin_ext))
 
     def test_docker_binaries_removed(self, project_loader, capsys: CaptureFixture):
         Config.defaults = None
@@ -123,9 +136,9 @@ class TestBinaries:
         exceptions = main(["run", "psql"])
         assert not exceptions
 
-        assert os.path.exists(os.path.join(os.getcwd(), '.bin', 'psql' + bin_ext))
+        assert os.path.exists(os.path.join(os.getcwd(), ".bin", "psql" + bin_ext))
 
-        copy(os.path.join("..", "replacement", "docker-compose.yml.jsonnet"), 'docker-compose.yml.jsonnet')
+        copy(os.path.join("..", "replacement", "docker-compose.yml.jsonnet"), "docker-compose.yml.jsonnet")
 
         main(["configure"])
 
@@ -138,8 +151,7 @@ class TestBinaries:
         assert str(exceptions[0]) == 'Binary name "psql" is not registered'
 
     @pytest.mark.parametrize(
-        ("relative_cwd", "expected"),
-        [('node10', 'node10'), ('node12', 'node12'), (None, 'node14')]
+        ("relative_cwd", "expected"), [("node10", "node10"), ("node12", "node12"), (None, "node14")]
     )
     def test_docker_binaries_condition(self, relative_cwd, expected, project_loader, capsys: CaptureFixture):
         project_loader("docker_condition")

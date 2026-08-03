@@ -26,25 +26,27 @@ from .traefik import TraefikFeature
 from .version import VersionFeature
 from .ytt import YttFeature
 
-_default_available_features = [CertsFeature(),
-                               CopyFeature(),
-                               CookiecutterFeature(),
-                               CoreFeature(),
-                               DockerFeature(),
-                               FileFeature(),
-                               FixuidFeature(),
-                               GitFeature(),
-                               GitignoreFeature(),
-                               JinjaFeature(),
-                               JsonnetFeature(),
-                               PermissionsFeature(),
-                               RunFeature(),
-                               SmartcdFeature(),
-                               ShellFeature(),
-                               SymlinksFeature(),
-                               TraefikFeature(),
-                               VersionFeature(),
-                               YttFeature()]
+_default_available_features = [
+    CertsFeature(),
+    CopyFeature(),
+    CookiecutterFeature(),
+    CoreFeature(),
+    DockerFeature(),
+    FileFeature(),
+    FixuidFeature(),
+    GitFeature(),
+    GitignoreFeature(),
+    JinjaFeature(),
+    JsonnetFeature(),
+    PermissionsFeature(),
+    RunFeature(),
+    SmartcdFeature(),
+    ShellFeature(),
+    SymlinksFeature(),
+    TraefikFeature(),
+    VersionFeature(),
+    YttFeature(),
+]
 
 _available_features = list(_default_available_features)
 
@@ -59,14 +61,14 @@ def get_sorted_features(available_features: Iterable[Feature] | None = None):
         available_features = _available_features
 
     entrypoint_features = {f.name: f for f in available_features}
-    for entry_point in entry_points(group='ddb_features'):
+    for entry_point in entry_points(group="ddb_features"):
         feature = entry_point.load()()
         entrypoint_features[feature.name] = feature
 
     required_dependencies, toposort_data = _prepare_dependencies_data(entrypoint_features)
     _check_missing_dependencies(entrypoint_features, required_dependencies)
 
-    dependencies = config.data.get('dependencies')
+    dependencies = config.data.get("dependencies")
     if dependencies:
         for feat, feat_dependencies in dependencies.items():
             if feat not in toposort_data:
@@ -91,10 +93,10 @@ def _prepare_dependencies_data(entrypoint_features):
         feat_required_dependencies = []
         dependencies = set()
         for dependency_item in feat.dependencies:
-            if not dependency_item.endswith('[optional]'):
+            if not dependency_item.endswith("[optional]"):
                 feat_required_dependencies.append(dependency_item)
             else:
-                dependency_item = dependency_item[0:len(dependency_item) - len('[optional]')]
+                dependency_item = dependency_item[0 : len(dependency_item) - len("[optional]")]
             dependencies.add(dependency_item)
 
         toposort_data[name] = dependencies
@@ -109,8 +111,9 @@ def _check_missing_dependencies(entrypoint_features, required_dependencies):
     for name, feat_required_dependencies in required_dependencies.items():
         for required_dependency in feat_required_dependencies:
             if required_dependency not in entrypoint_features.keys():
-                raise ValueError("A required dependency is missing for " +
-                                 name + " feature (" + required_dependency + ")")
+                raise ValueError(
+                    "A required dependency is missing for " + name + " feature (" + required_dependency + ")"
+                )
 
 
 def reset_available_features():

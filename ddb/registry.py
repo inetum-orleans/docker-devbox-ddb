@@ -48,7 +48,7 @@ class DefaultRegistryObject(RegistryObject):
         return self._description if self._description else super().description
 
 
-T = TypeVar('T')  # pylint:disable=invalid-name
+T = TypeVar("T")  # pylint:disable=invalid-name
 
 
 class Registry(Generic[T]):
@@ -63,7 +63,7 @@ class Registry(Generic[T]):
         self._objects_dict = {}
         self._cache = None
 
-    def set_cache(self, cache: 'Cache'):
+    def set_cache(self, cache: "Cache"):
         """
         Set a cache provider, and register cached entries into registry.
         """
@@ -90,15 +90,13 @@ class Registry(Generic[T]):
         name = name if name else self._default_name(obj)
 
         if not isinstance(obj, self._clazz):
-            raise ValueError(self._type_name + " name \"" +
-                             name + "\" should be an instance of " +
-                             self._clazz.__name__)
+            raise ValueError(self._type_name + ' name "' + name + '" should be an instance of ' + self._clazz.__name__)
 
         return self._register_impl(name, obj)
 
     def _register_impl(self, name: str, obj: T):
         if name in self._objects_dict:
-            raise ValueError(self._type_name + " name \"" + name + "\" is already registered")
+            raise ValueError(self._type_name + ' name "' + name + '" is already registered')
 
         self._objects_dict[name] = obj
         self._objects.append(obj)
@@ -126,7 +124,7 @@ class Registry(Generic[T]):
         Unregister an object instance
         """
         if name not in self._objects_dict:
-            raise ValueError(self._type_name + " name \"" + name + "\" is not registered")
+            raise ValueError(self._type_name + ' name "' + name + '" is not registered')
 
         return self._unregister_impl(name, obj, callback)
 
@@ -150,7 +148,7 @@ class Registry(Generic[T]):
         Get an object instance from it's unique name.
         """
         if name not in self._objects_dict:
-            raise ValueError(self._type_name + " name \"" + name + "\" is not registered")
+            raise ValueError(self._type_name + ' name "' + name + '" is not registered')
         return self._objects_dict[name]
 
     def all(self) -> tuple[T]:
@@ -183,6 +181,7 @@ class RegistryOrderedSet(Registry):
     """
     Container for registered objects. Objects set can be retrieved with their unique name.
     """
+
     def __init__(self, clazz: ClassVar[T], type_name="Object"):
         super().__init__(clazz, type_name)
         self._objects_dict = defaultdict(OrderedSet)
@@ -194,7 +193,7 @@ class RegistryOrderedSet(Registry):
     def _register_impl(self, name: str, obj: T):
         items = self._objects_dict[name]
         if obj in items:
-            raise ValueError("This " + self._type_name + " is already registered for name \"" + name + "\"")
+            raise ValueError("This " + self._type_name + ' is already registered for name "' + name + '"')
         items.add(obj)
         self._objects.append(obj)
 

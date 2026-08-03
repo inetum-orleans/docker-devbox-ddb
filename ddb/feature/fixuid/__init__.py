@@ -27,6 +27,4 @@ class FixuidFeature(Feature):
 
     @property
     def actions(self) -> Iterable[Action]:
-        return (
-            FixuidDockerComposeAction(),
-        )
+        return (FixuidDockerComposeAction(),)

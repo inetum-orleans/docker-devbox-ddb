@@ -8,11 +8,11 @@ from .cache import Cache
 
 # Easy fix for https://github.com/inetum-orleans/docker-devbox-ddb/issues/49
 # pylint:disable=protected-access
-_dbm_names = dbm._names = ['dbm.gnu', 'dbm.ndbm', 'dbm.dumb']
-if 'dbm.dumb' in _dbm_names:
+_dbm_names = dbm._names = ["dbm.gnu", "dbm.ndbm", "dbm.dumb"]
+if "dbm.dumb" in _dbm_names:
     # Let's make dbm.dumb the preferred implementation
-    _dbm_names.remove('dbm.dumb')
-    _dbm_names.insert(0, 'dbm.dumb')
+    _dbm_names.remove("dbm.dumb")
+    _dbm_names.insert(0, "dbm.dumb")
     dbm._names = _dbm_names
 
 

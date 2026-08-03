@@ -10,9 +10,7 @@ def run(executable: str, *args: str):
     Run executable using core.process configuration, replacing bin with configured one, appending and prepending args.
     """
     command_list = effective_command(executable, *args)
-    process = subprocess.run(command_list,
-                             check=True,
-                             capture_output=True)
+    process = subprocess.run(command_list, check=True, capture_output=True)
     if os.name == "nt":
         # On windows, there's ANSI code after output that has to be dropped...
         try:
@@ -35,7 +33,7 @@ def effective_command(executable: str, *args: str) -> list[str]:
     prepend_args = config.data.get(f"core.process.{executable}.prepend", [])
     append_args = config.data.get(f"core.process.{executable}.append", [])
 
-    if os.name == 'nt' and not configured_executable.endswith('.exe'):
+    if os.name == "nt" and not configured_executable.endswith(".exe"):
         configured_executable = f"{configured_executable}.exe"
 
     if isinstance(prepend_args, str):

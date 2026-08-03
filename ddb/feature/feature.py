@@ -100,7 +100,6 @@ class Feature(RegistryObject, ABC):  # pylint:disable=abstract-method
             feature_config = schema.load(feature_config)
         return config.apply_environ_overrides(feature_config, config.env_override_prefix + "_" + self.name)
 
-
     def _configure_defaults(self, feature_config: Dotty):
         """
         Override this method to load default values that may depend on the context.
@@ -121,7 +120,7 @@ class Feature(RegistryObject, ABC):  # pylint:disable=abstract-method
         """
         Check if this feature is disabled.
         """
-        return config.data.get(self.name + '.disabled')
+        return config.data.get(self.name + ".disabled")
 
 
 class FeatureConfigurationError(Exception):
@@ -130,7 +129,7 @@ class FeatureConfigurationError(Exception):
     """
 
     def __init__(self, feature: Feature, *additional_messages: str):
-        message = "Feature \"" + feature.name + "\" has invalid configuration."
+        message = 'Feature "' + feature.name + '" has invalid configuration.'
         for additional_message in additional_messages:
             message += linesep + " " * 2 + additional_message
         super().__init__(message)
@@ -142,10 +141,18 @@ class FeatureConfigurationAutoConfigureError(FeatureConfigurationError):
     """
 
     def __init__(self, feature: Feature, setting_name: str | None = None, error: Exception | str | None = None):
-        super().__init__(feature,
-                         setting_name + ": " + "auto-configuration has failed" +
-                         (" (" + str(error) + "). " if error else ". ") +
-                         "Please configure " + feature.name + "." + setting_name + " manually.")
+        super().__init__(
+            feature,
+            setting_name
+            + ": "
+            + "auto-configuration has failed"
+            + (" (" + str(error) + "). " if error else ". ")
+            + "Please configure "
+            + feature.name
+            + "."
+            + setting_name
+            + " manually.",
+        )
 
 
 class FeatureConfigurationReadOnlyError(FeatureConfigurationError):
@@ -154,11 +161,17 @@ class FeatureConfigurationReadOnlyError(FeatureConfigurationError):
     """
 
     def __init__(self, feature: Feature, setting_name: str | None = None):
-        super().__init__(feature,
-                         setting_name + ": " + "auto-configuration has failed" +
-                         feature.name + "." + setting_name + " is a read-only property computed from other properties "
-                                                             "and should not be defined in configuration files.")
-
+        super().__init__(
+            feature,
+            setting_name
+            + ": "
+            + "auto-configuration has failed"
+            + feature.name
+            + "."
+            + setting_name
+            + " is a read-only property computed from other properties "
+            "and should not be defined in configuration files.",
+        )
 
 
 class FeatureConfigurationValidationError(FeatureConfigurationError):
@@ -168,7 +181,7 @@ class FeatureConfigurationValidationError(FeatureConfigurationError):
 
     def __init__(self, feature: Feature, validation_error: ValidationError = None):
         additional_messages = []
-        for (field, field_messages) in validation_error.messages.items():
+        for field, field_messages in validation_error.messages.items():
             for field_message in field_messages:
                 additional_messages.append(f"{field}: {field_message}")
         super().__init__(feature, *additional_messages)

@@ -120,7 +120,7 @@ class BashShellIntegration(ShellIntegration):
 
     @staticmethod
     def _sanitize_key(key):
-        return slugify(key, regex_pattern=r'[^-a-zA-Z0-9_]+', separator="_").upper()
+        return slugify(key, regex_pattern=r"[^-a-zA-Z0-9_]+", separator="_").upper()
 
     def set_environment_variable(self, key, value):
         yield "export " + self._sanitize_key(key) + "=" + shlex.quote(value)
@@ -129,7 +129,7 @@ class BashShellIntegration(ShellIntegration):
         yield "unset " + self._sanitize_key(key)
 
     def remove_self_script(self, script_path: str) -> Iterable[str]:
-        yield f'rm -- {shlex.quote(script_path)}'
+        yield f"rm -- {shlex.quote(script_path)}"
 
     def remove_binary_shim(self, shims_path: str, name: str) -> str | None:
         shim = os.path.join(shims_path, name)
@@ -145,28 +145,30 @@ class BashShellIntegration(ShellIntegration):
                 self.set_environment_variable(config.env_prefix + "_PROJECT_HOME", config.paths.project_home)
             )
 
-            compose_ignore_orphans_variable = next(
-                self.set_environment_variable("COMPOSE_IGNORE_ORPHANS", "1")
-            )
+            compose_ignore_orphans_variable = next(self.set_environment_variable("COMPOSE_IGNORE_ORPHANS", "1"))
 
             command.extend(
-                ("$(ddb deactivate --force)",
-                 f"{ddb_project_home_variable}",
-                 f"{compose_ignore_orphans_variable}",
-                 "$(ddb activate --force)")
+                (
+                    "$(ddb deactivate --force)",
+                    f"{ddb_project_home_variable}",
+                    f"{compose_ignore_orphans_variable}",
+                    "$(ddb activate --force)",
+                )
             )
 
         command.extend(
-            ('shim=$(mktemp -p /tmp ddb.run.XXXXXXXXXX)',
-             'echo "rm $shim">>"$shim"',
-             f'echo $(ddb run {name} \"$@\") \'\"$@\"\'>>"$shim"',
-             'source "$shim"')
+            (
+                "shim=$(mktemp -p /tmp ddb.run.XXXXXXXXXX)",
+                'echo "rm $shim">>"$shim"',
+                f'echo $(ddb run {name} "$@") \'"$@"\'>>"$shim"',
+                'source "$shim"',
+            )
         )
 
-        return self._write_shim(shims_path, name, 'binary', command)
+        return self._write_shim(shims_path, name, "binary", command)
 
     def create_alias_binary_shim(self, shims_path: str, binary: Binary) -> tuple[bool, str]:
-        return self._write_shim(shims_path, binary.name, 'alias', [' '.join(binary.command()) + ' "$@"'])
+        return self._write_shim(shims_path, binary.name, "alias", [" ".join(binary.command()) + ' "$@"'])
 
     @staticmethod
     def _write_shim(shims_path: str, shim_name: str, shim_type: str, lines: Iterable[str]) -> tuple[bool, str]:
@@ -180,16 +182,16 @@ class BashShellIntegration(ShellIntegration):
         all_lines = ["#!/usr/bin/env bash", "# ddb:shim:" + shim_type]
         all_lines.extend(lines)
 
-        content = '\n'.join(all_lines) + "\n"
+        content = "\n".join(all_lines) + "\n"
 
         written = write_if_different(shim, content, newline="\n")
 
-        chmod(shim, '+x', logging=False)
+        chmod(shim, "+x", logging=False)
         return written, shim
 
     @property
     def temporary_file_kwargs(self) -> dict[str, Any]:
-        return {"encoding": "utf-8", "newline": '\n'}
+        return {"encoding": "utf-8", "newline": "\n"}
 
     def evaluate_script(self, script_filepath) -> Iterable[str]:
         yield f". {script_filepath}"
@@ -214,11 +216,11 @@ class CmdShellIntegration(ShellIntegration):
 
     @staticmethod
     def _sanitize_key(key):
-        return slugify(key, regex_pattern=r'[^-a-zA-Z0-9_]+', separator="_").upper()
+        return slugify(key, regex_pattern=r"[^-a-zA-Z0-9_]+", separator="_").upper()
 
     def set_environment_variable(self, key, value):
         # TODO: Maybe use subprocess.list2cmdline for Windows ?
-        yield "set " + self._sanitize_key(key) + "=" + value.replace('\n', '!NL! ^\n')
+        yield "set " + self._sanitize_key(key) + "=" + value.replace("\n", "!NL! ^\n")
 
     def remove_environment_variable(self, key):
         yield "set " + self._sanitize_key(key) + "="
@@ -228,7 +230,7 @@ class CmdShellIntegration(ShellIntegration):
         yield f'start /b "" cmd /c del "{script_path}"&exit /b'
 
     def remove_binary_shim(self, shims_path: str, name: str) -> str | None:
-        shim = os.path.join(shims_path, name + '.bat')
+        shim = os.path.join(shims_path, name + ".bat")
         if not os.path.isfile(shim):
             return None
         force_remove(shim)
@@ -238,41 +240,45 @@ class CmdShellIntegration(ShellIntegration):
         commands = []
         if global_:
             commands.extend(
-                ("set command=(ddb deactivate --force)",
-                 "%command%>cmd.txt",
-                 "set /p execution=<cmd.txt",
-                 "del cmd.txt",
-                 "%execution%")
+                (
+                    "set command=(ddb deactivate --force)",
+                    "%command%>cmd.txt",
+                    "set /p execution=<cmd.txt",
+                    "del cmd.txt",
+                    "%execution%",
+                )
             )
 
-            commands.append(next(
-                self.set_environment_variable(config.env_prefix + "_PROJECT_HOME", config.paths.project_home)
-            ))
+            commands.append(
+                next(self.set_environment_variable(config.env_prefix + "_PROJECT_HOME", config.paths.project_home))
+            )
 
-            commands.append(next(
-                self.set_environment_variable("COMPOSE_IGNORE_ORPHANS", "1")
-            ))
+            commands.append(next(self.set_environment_variable("COMPOSE_IGNORE_ORPHANS", "1")))
 
             commands.extend(
-                ("set command=(ddb activate --force)",
-                 "%command%>cmd.txt",
-                 "set /p execution=<cmd.txt",
-                 "del cmd.txt",
-                 "%execution%")
+                (
+                    "set command=(ddb activate --force)",
+                    "%command%>cmd.txt",
+                    "set /p execution=<cmd.txt",
+                    "del cmd.txt",
+                    "%execution%",
+                )
             )
 
         commands.extend(
-            (f"set command=(ddb run {name} \"%*\")",
-             "%command%>cmd.txt",
-             "set /p execution=<cmd.txt",
-             "del cmd.txt",
-             "%execution% \"%*\"")
+            (
+                f'set command=(ddb run {name} "%*")',
+                "%command%>cmd.txt",
+                "set /p execution=<cmd.txt",
+                "del cmd.txt",
+                '%execution% "%*"',
+            )
         )
 
-        return self._write_shim(shims_path, name, 'binary', commands)
+        return self._write_shim(shims_path, name, "binary", commands)
 
     def create_alias_binary_shim(self, shims_path: str, binary: Binary):
-        return self._write_shim(shims_path, binary.name, 'alias', [' '.join(binary.command())])
+        return self._write_shim(shims_path, binary.name, "alias", [" ".join(binary.command())])
 
     @staticmethod
     def _write_shim(shims_path: str, shim_name: str, shim_type: str, lines: Iterable[str]) -> tuple[bool, str]:
@@ -281,16 +287,16 @@ class CmdShellIntegration(ShellIntegration):
         :return:
         """
         os.makedirs(shims_path, exist_ok=True)
-        shim = os.path.join(os.path.normpath(shims_path), shim_name + '.bat')
+        shim = os.path.join(os.path.normpath(shims_path), shim_name + ".bat")
 
         all_lines = ["@echo off", "REM ddb:shim:" + shim_type, "SHIFT"]
         all_lines.extend(lines)
 
-        content = '\n'.join(all_lines) + "\n"
+        content = "\n".join(all_lines) + "\n"
 
         written = write_if_different(shim, content, newline="\n")
 
-        chmod(shim, '+x', logging=False)
+        chmod(shim, "+x", logging=False)
         return written, shim
 
     def evaluate_script(self, script_filepath) -> Iterable[str]:

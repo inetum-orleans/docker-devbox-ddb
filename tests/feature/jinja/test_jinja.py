@@ -48,11 +48,11 @@ class TestJinjaAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('foo.yml')
-        with open('foo.yml') as f:
+        assert os.path.exists("foo.yml")
+        with open("foo.yml") as f:
             foo = f.read()
 
-        assert foo == 'env: dev'
+        assert foo == "env: dev"
 
     def test_project2(self, project_loader):
         project_loader("project2")
@@ -67,11 +67,11 @@ class TestJinjaAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('foo.yml')
-        with open('foo.yml') as f:
+        assert os.path.exists("foo.yml")
+        with open("foo.yml") as f:
             foo = f.read()
 
-        assert foo == 'env: dev\nincluded: True'
+        assert foo == "env: dev\nincluded: True"
 
         assert not os.path.exists(os.path.join("partial", "_partial.yml"))
         assert not os.path.exists(os.path.join("partial", "partial.yml"))
@@ -89,11 +89,11 @@ class TestJinjaAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('.foo.yml')
-        with open('.foo.yml') as f:
+        assert os.path.exists(".foo.yml")
+        with open(".foo.yml") as f:
             foo = f.read()
 
-        assert foo == 'env: dev'
+        assert foo == "env: dev"
 
     def test_project4(self, project_loader):
         project_loader("project4")
@@ -108,11 +108,11 @@ class TestJinjaAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('foo')
-        with open('foo') as f:
+        assert os.path.exists("foo")
+        with open("foo") as f:
             foo = f.read()
 
-        assert foo == 'env=dev'
+        assert foo == "env=dev"
 
     def test_project5(self, project_loader):
         project_loader("project5")
@@ -127,16 +127,16 @@ class TestJinjaAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('foo')
-        with open('foo') as f:
+        assert os.path.exists("foo")
+        with open("foo") as f:
             foo = f.read()
-        assert foo == 'env=dev'
+        assert foo == "env=dev"
 
-        assert os.path.exists('foo.yml')
-        with open('foo.yml') as f:
+        assert os.path.exists("foo.yml")
+        with open("foo.yml") as f:
             foo = f.read()
 
-        assert foo == 'env: dev'
+        assert foo == "env: dev"
 
     def test_project_keep_trailing_lines_false(self, project_loader):
         project_loader("trailing-newline")
@@ -147,17 +147,17 @@ class TestJinjaAction:
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        config.data['jinja.options'] = {"keep_trailing_newline": False}
+        config.data["jinja.options"] = {"keep_trailing_newline": False}
 
         action = FileWalkAction()
         action.initialize()
         action.execute()
 
-        assert os.path.exists('foo.yml')
-        with open('foo.yml') as f:
+        assert os.path.exists("foo.yml")
+        with open("foo.yml") as f:
             foo = f.read()
 
-        assert foo == 'test: trailing'
+        assert foo == "test: trailing"
 
     def test_project_keep_trailing_lines_default(self, project_loader):
         project_loader("trailing-newline")
@@ -172,11 +172,11 @@ class TestJinjaAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('foo.yml')
-        with open('foo.yml') as f:
+        assert os.path.exists("foo.yml")
+        with open("foo.yml") as f:
             foo = f.read()
 
-        assert foo == 'test: trailing\n'
+        assert foo == "test: trailing\n"
 
     def test_project_keep_trailing_lines_true(self, project_loader):
         project_loader("trailing-newline")
@@ -187,17 +187,17 @@ class TestJinjaAction:
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        config.data['jinja.options'] = {"keep_trailing_newline": True}
+        config.data["jinja.options"] = {"keep_trailing_newline": True}
 
         action = FileWalkAction()
         action.initialize()
         action.execute()
 
-        assert os.path.exists('foo.yml')
-        with open('foo.yml') as f:
+        assert os.path.exists("foo.yml")
+        with open("foo.yml") as f:
             foo = f.read()
 
-        assert foo == 'test: trailing\n'
+        assert foo == "test: trailing\n"
 
 
 class TestJinjaAutofix:
@@ -210,10 +210,8 @@ class TestJinjaAutofix:
         config.args.autofix = True
 
         history = (
-            PropertyMigration("old_property",
-                              "new_property", since="v1.1.0"),
-            PropertyMigration("some.deep.old.property",
-                              "some.another.new.property", since="v1.1.0"),
+            PropertyMigration("old_property", "new_property", since="v1.1.0"),
+            PropertyMigration("some.deep.old.property", "some.another.new.property", since="v1.1.0"),
         )
 
         migrations.set_history(history)
@@ -227,19 +225,19 @@ class TestJinjaAutofix:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('config.properties')
-        with open('config.properties') as f:
+        assert os.path.exists("config.properties")
+        with open("config.properties") as f:
             rendered = f.read()
 
-        with open('config.expected.properties') as f:
+        with open("config.expected.properties") as f:
             expected = f.read()
 
         assert rendered == expected
 
-        with open('config.properties.jinja') as f:
+        with open("config.properties.jinja") as f:
             source = f.read()
 
-        with open('config.properties.autofix') as f:
+        with open("config.properties.autofix") as f:
             fixed = f.read()
 
         assert source == fixed
@@ -248,10 +246,8 @@ class TestJinjaAutofix:
         project_loader("autofix_eol")
 
         history = (
-            PropertyMigration("docker.compose.network_name",
-                              "jsonnet.docker.compose.network_name", since="v1.6.0"),
-            PropertyMigration("docker.port_prefix",
-                              "jsonnet.docker.expose.port_prefix", since="v1.6.0"),
+            PropertyMigration("docker.compose.network_name", "jsonnet.docker.compose.network_name", since="v1.6.0"),
+            PropertyMigration("docker.port_prefix", "jsonnet.docker.expose.port_prefix", since="v1.6.0"),
         )
 
         migrations.set_history(history)
@@ -265,10 +261,10 @@ class TestJinjaAutofix:
         action.initialize()
         action.execute()
 
-        with open('docker-compose.properties') as f:
+        with open("docker-compose.properties") as f:
             rendered = f.read()
 
-        with open('docker-compose.expected.properties') as f:
+        with open("docker-compose.expected.properties") as f:
             expected = f.read()
 
         assert rendered == expected
@@ -279,10 +275,8 @@ class TestJinjaAutofix:
         config.args.autofix = True
 
         history = (
-            PropertyMigration("docker.compose.network_name",
-                              "jsonnet.docker.compose.network_name", since="v1.6.0"),
-            PropertyMigration("docker.port_prefix",
-                              "jsonnet.docker.expose.port_prefix", since="v1.6.0"),
+            PropertyMigration("docker.compose.network_name", "jsonnet.docker.compose.network_name", since="v1.6.0"),
+            PropertyMigration("docker.port_prefix", "jsonnet.docker.expose.port_prefix", since="v1.6.0"),
         )
 
         migrations.set_history(history)
@@ -296,18 +290,18 @@ class TestJinjaAutofix:
         action.initialize()
         action.execute()
 
-        with open('msmtprc') as f:
+        with open("msmtprc") as f:
             rendered = f.read()
 
-        with open('msmtprc.expected') as f:
+        with open("msmtprc.expected") as f:
             expected = f.read()
 
         assert rendered == expected
 
-        with open('msmtprc.jinja') as f:
+        with open("msmtprc.jinja") as f:
             template = f.read()
 
-        with open('msmtprc.autofix') as f:
+        with open("msmtprc.autofix") as f:
             autofix = f.read()
 
         assert autofix == template

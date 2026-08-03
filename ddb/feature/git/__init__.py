@@ -27,6 +27,4 @@ class GitFeature(Feature):
 
     @property
     def actions(self) -> Iterable[Action]:
-        return (
-            FixFilePermissionsAction(),
-        )
+        return (FixFilePermissionsAction(),)

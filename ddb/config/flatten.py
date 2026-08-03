@@ -21,7 +21,7 @@ def _get_stop_fields_from_schema(schema: Schema, stack, ret):
         stack.pop()
 
 
-def _get_stop_fields(features: Iterable['Feature']):
+def _get_stop_fields(features: Iterable["Feature"]):
     ret = []
     stack = []
     for feature in features:
@@ -36,37 +36,59 @@ def to_environ(data: Dotty | dict, env_prefix) -> dict:
     """
     Export configuration to environment dict.
     """
-    return _flatten(env_prefix, "_", "_%s_",
-                    lambda x: str.upper(x).replace('-', '_'),
-                    str,
-                    data=dict(data))
+    return _flatten(env_prefix, "_", "_%s_", lambda x: str.upper(x).replace("-", "_"), str, data=dict(data))
 
 
-def flatten(data: Dotty | dict, prefix=None, sep=".", array_index_format="[%s]",
-            key_transformer=None, value_transformer=None, keep_primitive_list=False,
-            stop_for_features=None) -> dict:
+def flatten(
+    data: Dotty | dict,
+    prefix=None,
+    sep=".",
+    array_index_format="[%s]",
+    key_transformer=None,
+    value_transformer=None,
+    keep_primitive_list=False,
+    stop_for_features=None,
+) -> dict:
     """
     Export configuration to a flat dict.
     """
     stop_for = tuple(map(sep.join, _get_stop_fields(stop_for_features))) if stop_for_features is not None else ()
 
-    return _flatten(prefix, sep, array_index_format,
-                    key_transformer, value_transformer,
-                    keep_primitive_list, stop_for, data=dict(data))
+    return _flatten(
+        prefix,
+        sep,
+        array_index_format,
+        key_transformer,
+        value_transformer,
+        keep_primitive_list,
+        stop_for,
+        data=dict(data),
+    )
 
 
-def _flatten(prefix=None, sep=".", array_index_format="[%s]",
-             key_transformer=None, value_transformer=None, keep_primitive_list=False,
-             stop_for=(), data=None, output=None) -> dict:
+def _flatten(
+    prefix=None,
+    sep=".",
+    array_index_format="[%s]",
+    key_transformer=None,
+    value_transformer=None,
+    keep_primitive_list=False,
+    stop_for=(),
+    data=None,
+    output=None,
+) -> dict:
     if output is None:
         output = {}
 
     if prefix is None:
         prefix = ""
     if key_transformer is None:
+
         def key_transformer(x):
             return x
+
     if value_transformer is None:
+
         def value_transformer(x):
             return x
 
@@ -75,26 +97,43 @@ def _flatten(prefix=None, sep=".", array_index_format="[%s]",
         stop_recursion = True
 
     if not stop_recursion and isinstance(data, dict):
-        for (name, value) in data.items():
+        for name, value in data.items():
             key_prefix = (prefix + sep if prefix else "") + key_transformer(name)
             key_prefix = key_transformer(key_prefix)
 
-            _flatten(key_prefix, sep, array_index_format,
-                     key_transformer, value_transformer, keep_primitive_list,
-                     stop_for, value, output)
+            _flatten(
+                key_prefix,
+                sep,
+                array_index_format,
+                key_transformer,
+                value_transformer,
+                keep_primitive_list,
+                stop_for,
+                value,
+                output,
+            )
 
     elif not stop_recursion and isinstance(data, list):
-        if keep_primitive_list and (not data or
-                                    not set(filter(lambda x: x not in (int, float, bool, str), set(map(type, data))))):
+        if keep_primitive_list and (
+            not data or not set(filter(lambda x: x not in (int, float, bool, str), set(map(type, data))))
+        ):
             output[prefix] = value_transformer(data)
         else:
             for i, value in enumerate(data):
                 replace_prefix = (prefix if prefix else "") + (array_index_format % str(i))
                 replace_prefix = key_transformer(replace_prefix)
 
-                _flatten(replace_prefix, sep, array_index_format,
-                         key_transformer, value_transformer, keep_primitive_list,
-                         stop_for, value, output)
+                _flatten(
+                    replace_prefix,
+                    sep,
+                    array_index_format,
+                    key_transformer,
+                    value_transformer,
+                    keep_primitive_list,
+                    stop_for,
+                    value,
+                    output,
+                )
     else:
         output[prefix] = value_transformer(data)
 

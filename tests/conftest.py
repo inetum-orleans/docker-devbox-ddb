@@ -31,8 +31,9 @@ def data_dir(global_data_dir: str, request: FixtureRequest) -> str:
 
 
 @pytest.fixture
-def project_loader(data_dir: str, tmp_path_factory: TempPathFactory, request: FixtureRequest) -> Callable[
-    [str | None], Config]:
+def project_loader(
+    data_dir: str, tmp_path_factory: TempPathFactory, request: FixtureRequest
+) -> Callable[[str | None], Config]:
     def load(name: str | None = None, before_load_config=None, config_provider=init_config_paths):
         root_dir = os.path.join(data_dir, name) if name else data_dir
 
@@ -47,7 +48,7 @@ def project_loader(data_dir: str, tmp_path_factory: TempPathFactory, request: Fi
         os.chdir(str(conf.paths.project_home))
 
         if os.path.exists("repo.zip"):
-            with zipfile.ZipFile("repo.zip", 'r') as zip_ref:
+            with zipfile.ZipFile("repo.zip", "r") as zip_ref:
                 zip_ref.extractall(".")
 
         return conf
@@ -60,30 +61,30 @@ def configure(mocker: MockerFixture):
     original_environ = dict(os.environ)
     cwd = os.getcwd()
 
-    Config.defaults = {'defaults': {'fail_fast': True}}
+    Config.defaults = {"defaults": {"fail_fast": True}}
 
     def overrides(config):
-        if 'core' not in config:
-            config['core'] = {}
-        config.get('core')['check_updates'] = False
+        if "core" not in config:
+            config["core"] = {}
+        config.get("core")["check_updates"] = False
 
     Config.overrides = overrides
 
     try:
-        os.environ.pop('DDB_OVERRIDE_CORE_DOMAIN_EXT', None)
-        if os.name == 'nt' and 'COMSPEC' not in os.environ:
-            os.environ['COMSPEC'] = r'C:\Windows\System32\cmd.exe'
-        if os.name != 'nt' and 'SHELL' not in os.environ:
-            os.environ['SHELL'] = '/bin/bash'
-        if os.name == 'nt':
-            os.environ['DDB_OVERRIDE_DOCKER_USER_UID'] = '1000'
-            os.environ['DDB_OVERRIDE_DOCKER_USER_GID'] = '1000'
-            os.environ['DDB_OVERRIDE_DOCKER_IP'] = '127.0.0.1'
+        os.environ.pop("DDB_OVERRIDE_CORE_DOMAIN_EXT", None)
+        if os.name == "nt" and "COMSPEC" not in os.environ:
+            os.environ["COMSPEC"] = r"C:\Windows\System32\cmd.exe"
+        if os.name != "nt" and "SHELL" not in os.environ:
+            os.environ["SHELL"] = "/bin/bash"
+        if os.name == "nt":
+            os.environ["DDB_OVERRIDE_DOCKER_USER_UID"] = "1000"
+            os.environ["DDB_OVERRIDE_DOCKER_USER_GID"] = "1000"
+            os.environ["DDB_OVERRIDE_DOCKER_IP"] = "127.0.0.1"
 
         configure_logging(SPAM)
 
-        mocker.patch('ddb.feature.smartcd.actions.is_smartcd_installed', lambda: False)
-        mocker.patch('ddb.feature.version.is_git_repository', lambda: False)
+        mocker.patch("ddb.feature.smartcd.actions.is_smartcd_installed", lambda: False)
+        mocker.patch("ddb.feature.version.is_git_repository", lambda: False)
 
         yield
     finally:
@@ -99,7 +100,7 @@ def pytest_configure(config):
 
     https://stackoverflow.com/questions/30938780/how-can-i-show-verbose-py-test-diffs-without-verbose-test-progress
     """
-    terminal = config.pluginmanager.getplugin('terminal')
+    terminal = config.pluginmanager.getplugin("terminal")
 
     class QuietReporter(terminal.TerminalReporter):
         @property

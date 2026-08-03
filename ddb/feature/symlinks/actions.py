@@ -17,11 +17,13 @@ class SymlinksAction(AbstractTemplateAction):
         return "symlinks:create"
 
     def _build_template_finder(self) -> TemplateFinder:
-        return TemplateFinder([],
-                              [],
-                              config.data.get("symlinks.includes"),
-                              config.data.get("symlinks.excludes"),
-                              config.data.get("symlinks.suffixes"))
+        return TemplateFinder(
+            [],
+            [],
+            config.data.get("symlinks.includes"),
+            config.data.get("symlinks.excludes"),
+            config.data.get("symlinks.suffixes"),
+        )
 
     def _render_template(self, template: str, target: str) -> Iterable[tuple[str | bytes | bool, str]]:
         """

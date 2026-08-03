@@ -34,21 +34,12 @@ class RunFeature(Feature):
         def run_parser(parser: ArgumentParser):
             parser.add_argument("name", help="Binary name to run")
 
-        return (
-            DefaultPhase("run", "Display command to run project binary",
-                         run_parser,
-                         allow_unknown_args=True),
-        )
+        return (DefaultPhase("run", "Display command to run project binary", run_parser, allow_unknown_args=True),)
 
     @property
     def commands(self) -> Iterable[Command]:
-        return (
-            LifecycleWithoutHelpCommand("run", "Display command to run project binary",
-                                        "run", avoid_stdout=True),
-        )
+        return (LifecycleWithoutHelpCommand("run", "Display command to run project binary", "run", avoid_stdout=True),)
 
     @property
     def actions(self) -> Iterable[Action]:
-        return (
-            RunAction(),
-        )
+        return (RunAction(),)

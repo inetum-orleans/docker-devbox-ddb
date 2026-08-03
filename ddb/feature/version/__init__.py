@@ -47,8 +47,7 @@ def get_branch_from_vcs():
     if branch == "HEAD":
         # CI checkout a commit hash, making the HEAD detached.
         try:
-            refs = run("git", "for-each-ref", "--format=%(refname:short)", "refs/heads") \
-                .decode("utf-8").strip()
+            refs = run("git", "for-each-ref", "--format=%(refname:short)", "refs/heads").decode("utf-8").strip()
 
             if refs:
                 refs_split = refs.splitlines()
@@ -61,16 +60,19 @@ def get_branch_from_vcs():
 
         # CI may not checkout branches locally, so try with remote origin
         try:
-            remote = 'origin'
-            refs = run("git", "for-each-ref", "--format=%(refname:short)", "refs/remotes/" + remote) \
-                .decode("utf-8").strip()
+            remote = "origin"
+            refs = (
+                run("git", "for-each-ref", "--format=%(refname:short)", "refs/remotes/" + remote)
+                .decode("utf-8")
+                .strip()
+            )
 
             if refs:
                 refs_split = refs.splitlines()
                 if refs_split:
                     value = refs_split[0]
-                    if value.startswith(remote + '/'):
-                        return value[len(remote + 'origin/'):]
+                    if value.startswith(remote + "/"):
+                        return value[len(remote + "origin/") :]
         except CalledProcessError as exc:
             if exc.returncode == 128:
                 return branch

@@ -9,7 +9,7 @@ from ddb.config import config
 from ddb.context import context
 from ddb.context.context import ContextStackItem
 
-A = TypeVar('A', bound=Action)  # pylint:disable=invalid-name
+A = TypeVar("A", bound=Action)  # pylint:disable=invalid-name
 
 
 class FailFastError(Exception):
@@ -28,9 +28,11 @@ class ExpectedError(Exception):
         Log the error
         :return:
         """
-        log_error = context.log.exception if \
-            context.log.isEnabledFor(logging.DEBUG) or config.args.exceptions \
+        log_error = (
+            context.log.exception
+            if context.log.isEnabledFor(logging.DEBUG) or config.args.exceptions
             else context.log.error
+        )
         log_error(str(self))
 
 
@@ -100,15 +102,15 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
         Handle an exception occured in an action.
         """
         context.exceptions.append(exception)
-        log_error = context.log.exception if \
-            context.log.isEnabledFor(logging.DEBUG) or config.args.exceptions \
+        log_error = (
+            context.log.exception
+            if context.log.isEnabledFor(logging.DEBUG) or config.args.exceptions
             else context.log.error
+        )
         if isinstance(exception, ExpectedError):
             exception.log_error()
         else:
-            log_error("An unexpected error has occured %s: %s",
-                      context.stack,
-                      str(exception).strip())
+            log_error("An unexpected error has occured %s: %s", context.stack, str(exception).strip())
         if isinstance(exception, CalledProcessError):
             if exception.stderr:
                 for err_line in exception.stderr.decode("utf-8").splitlines():

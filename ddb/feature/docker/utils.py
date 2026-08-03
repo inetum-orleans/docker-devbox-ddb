@@ -15,15 +15,14 @@ def get_mapped_path(path: str):
     :param path:
     :return:
     """
-    path_mapping = config.data.get('docker.path_mapping')
+    path_mapping = config.data.get("docker.path_mapping")
     fixed_path = None
     fixed_source_path = None
     if path_mapping:
         for source_path, target_path in path_mapping.items():
-            if path.startswith(source_path) and \
-                    (not fixed_source_path or len(source_path) > len(fixed_source_path)):
+            if path.startswith(source_path) and (not fixed_source_path or len(source_path) > len(fixed_source_path)):
                 fixed_source_path = source_path
-                fixed_path = target_path + path[len(source_path):]
+                fixed_path = target_path + path[len(source_path) :]
     return fixed_path if fixed_path else path
 
 
@@ -37,7 +36,7 @@ class DockerComposeControl:
         docker_compose_command = config.data.get("docker.docker_compose_command")
 
         if not docker_command or not docker_compose_command:
-            raise ConfigurationError('DockerComposeControl requires docker feature configuration')
+            raise ConfigurationError("DockerComposeControl requires docker feature configuration")
 
         self.docker_command = shlex.split(docker_command)
         self.docker_compose_command = shlex.split(docker_compose_command)
@@ -107,12 +106,12 @@ class DockerComposeControl:
         try:
             container_id = run(*self.docker_compose_command, "ps", "-q", name).decode("utf-8").rstrip()
         except CalledProcessError as err:
-            if b'no such service' in err.stderr:
+            if b"no such service" in err.stderr:
                 return False
             raise
         if len(container_id) == 0:
             return False
-        containers = run(*self.docker_command, 'ps', '-q', '--no-trunc').decode("utf-8").rstrip().split('\n')
+        containers = run(*self.docker_command, "ps", "-q", "--no-trunc").decode("utf-8").rstrip().split("\n")
         return container_id in containers
 
     def config(self, parse=True):

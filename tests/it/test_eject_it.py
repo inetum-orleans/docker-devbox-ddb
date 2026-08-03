@@ -39,13 +39,14 @@ class TestEject:
         assert not os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
         assert not expect_gitignore(".gitignore", "/.docker/db/Dockerfile")
 
-        with open('docker-compose.yml') as dc_file:
+        with open("docker-compose.yml") as dc_file:
             actual = yaml.load(dc_file, yaml.SafeLoader)
 
-        with open('../expected/docker-compose.yml') as expected_dc_file:
+        with open("../expected/docker-compose.yml") as expected_dc_file:
             expected_data = expected_dc_file.read()
-            expected_data = expected_data.replace("%network_name%",
-                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
+            expected_data = expected_data.replace(
+                "%network_name%", str(config.data.get("jsonnet.docker.compose.network_name"))
+            )
             expected = yaml.load(expected_data, yaml.SafeLoader)
 
         assert actual == expected
@@ -80,13 +81,14 @@ class TestEject:
         assert not os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
         assert not expect_gitignore(".gitignore", "/.docker/db/Dockerfile")
 
-        with open('docker-compose.yml') as dc_file:
+        with open("docker-compose.yml") as dc_file:
             actual = yaml.load(dc_file, yaml.SafeLoader)
 
-        with open('../expected/docker-compose.yml') as expected_dc_file:
+        with open("../expected/docker-compose.yml") as expected_dc_file:
             expected_data = expected_dc_file.read()
-            expected_data = expected_data.replace("%network_name%",
-                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
+            expected_data = expected_data.replace(
+                "%network_name%", str(config.data.get("jsonnet.docker.compose.network_name"))
+            )
             expected = yaml.load(expected_data, yaml.SafeLoader)
 
         assert actual == expected
@@ -109,8 +111,8 @@ class TestEject:
         assert os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
         assert expect_gitignore(".gitignore", "/.docker/db/Dockerfile")
 
-        os.environ['DDB_OVERRIDE_JSONNET_DOCKER_VIRTUALHOST_DISABLED'] = "1"
-        os.environ['DDB_OVERRIDE_JSONNET_DOCKER_BINARY_DISABLED'] = "True"
+        os.environ["DDB_OVERRIDE_JSONNET_DOCKER_VIRTUALHOST_DISABLED"] = "1"
+        os.environ["DDB_OVERRIDE_JSONNET_DOCKER_BINARY_DISABLED"] = "True"
         main(["configure", "--eject"], reset_disabled=True)
 
         assert os.path.exists("docker-compose.yml")
@@ -123,13 +125,14 @@ class TestEject:
         assert not os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
         assert not expect_gitignore(".gitignore", "/.docker/db/Dockerfile")
 
-        with open('docker-compose.yml') as dc_file:
+        with open("docker-compose.yml") as dc_file:
             actual = yaml.load(dc_file, yaml.SafeLoader)
 
-        with open('../expected/docker-compose.jsonnet.disabled.yml') as expected_dc_file:
+        with open("../expected/docker-compose.jsonnet.disabled.yml") as expected_dc_file:
             expected_data = expected_dc_file.read()
-            expected_data = expected_data.replace("%network_name%",
-                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
+            expected_data = expected_data.replace(
+                "%network_name%", str(config.data.get("jsonnet.docker.compose.network_name"))
+            )
             expected = yaml.load(expected_data, yaml.SafeLoader)
 
         assert actual == expected

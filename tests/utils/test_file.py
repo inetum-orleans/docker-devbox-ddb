@@ -37,21 +37,16 @@ class TestFileUtils:
         features.register(CoreFeature())
         load_registered_features()
 
-        url = 'https://raw.githubusercontent.com/inetum-orleans/docker-devbox-ddb/b4f11276a37a4e4b1142f6b54b3d0763ccf5639e/ddb/__init__.py'
-        path = 'test_file_content.txt'
+        url = "https://raw.githubusercontent.com/inetum-orleans/docker-devbox-ddb/b4f11276a37a4e4b1142f6b54b3d0763ccf5639e/ddb/__init__.py"
+        path = "test_file_content.txt"
 
-        expected_file_content = '\n'.join([
-            '# -*- coding: utf-8 -*-',
-            '',
-            'from .__version__ import __version__',
-            ''
-        ])
+        expected_file_content = "\n".join(["# -*- coding: utf-8 -*-", "", "from .__version__ import __version__", ""])
 
         url_content = FileUtils.get_file_content(url)
         assert expected_file_content == url_content
 
-        url_content = FileUtils.get_file_content('file://' + os.path.join(config.path.project_home, path))
-        assert url_content == 'this is a file for test_file_content'
+        url_content = FileUtils.get_file_content("file://" + os.path.join(config.path.project_home, path))
+        assert url_content == "this is a file for test_file_content"
 
-        url_content = FileUtils.get_file_content('file://' + path)
-        assert url_content == 'this is a file for test_file_content'
+        url_content = FileUtils.get_file_content("file://" + path)
+        assert url_content == "this is a file for test_file_content"

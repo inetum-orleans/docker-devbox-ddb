@@ -51,8 +51,15 @@ class DefaultCommand(DefaultRegistryObject, Command):
     A command is available in the program usage and can perform some action on the system.
     """
 
-    def __init__(self, name: str, description: str | None = None, parent: Command | str | None = None,
-                 allow_unknown_args=False, before_execute: Callable[[], Any] | None = None, avoid_stdout=False):
+    def __init__(
+        self,
+        name: str,
+        description: str | None = None,
+        parent: Command | str | None = None,
+        allow_unknown_args=False,
+        before_execute: Callable[[], Any] | None = None,
+        avoid_stdout=False,
+    ):
         super().__init__(name, description)
         self.before_execute = before_execute
         self._parent = parent
@@ -80,6 +87,7 @@ class DefaultCommand(DefaultRegistryObject, Command):
 
         # Inline import because of recursive imports if declared in module
         from ..command import commands  # pylint:disable=import-outside-toplevel,cyclic-import
+
         command = commands.get(self._parent)
         if not command:
             raise ValueError
@@ -102,9 +110,15 @@ class LifecycleCommand(DefaultCommand):
     Triggered events are named "phase:<phase.name>"
     """
 
-    def __init__(self, name: str, description: str | None, *lifecycle: str | Phase,
-                 parent: Command | str | None = None, before_execute: Callable[[], Any] | None = None,
-                 avoid_stdout=False):
+    def __init__(
+        self,
+        name: str,
+        description: str | None,
+        *lifecycle: str | Phase,
+        parent: Command | str | None = None,
+        before_execute: Callable[[], Any] | None = None,
+        avoid_stdout=False,
+    ):
         super().__init__(name, description, parent, before_execute=before_execute, avoid_stdout=avoid_stdout)
         self._lifecycle = [phases.get(phase) if not isinstance(phase, Phase) else phase for phase in lifecycle]  # type: Iterable[Phase]
         for phase in self._lifecycle:

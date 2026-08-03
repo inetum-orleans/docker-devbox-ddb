@@ -41,9 +41,11 @@ class NoProjectConfigurationError(FailFastError, ExpectedError):
     """
 
     def __init__(self):
-        super().__init__("No project configuration file found. "
-                         "Please create a ddb.yml file in your project directory. "
-                         "It can be empty.")
+        super().__init__(
+            "No project configuration file found. "
+            "Please create a ddb.yml file in your project directory. "
+            "It can be empty."
+        )
 
     def log_error(self):
         context.log.error(str(self))
@@ -72,32 +74,36 @@ class CoreFeature(Feature):
             SelfUpdateAction(),
             CheckForUpdateAction(),
             VersionAction(),
-            CheckRequiredVersion()
+            CheckRequiredVersion(),
         )
 
     @property
     def phases(self) -> Iterable[Phase]:
         def configure_parser(parser: ArgumentParser):
-            parser.add_argument("--eject", action="store_true",
-                                help="Eject the project using the current configuration")
-            parser.add_argument("--autofix", action="store_true",
-                                help="Autofix supported deprecated warnings by modifying template sources.")
+            parser.add_argument(
+                "--eject", action="store_true", help="Eject the project using the current configuration"
+            )
+            parser.add_argument(
+                "--autofix",
+                action="store_true",
+                help="Autofix supported deprecated warnings by modifying template sources.",
+            )
 
         def config_parser(parser: ArgumentParser):
-            parser.add_argument("property", nargs='?',
-                                help="Property to read")
-            parser.add_argument("--variables", action="store_true",
-                                help="Output as a flat list of variables available in template engines")
-            parser.add_argument("--value", action="store_true",
-                                help="Output value of given property")
-            parser.add_argument("--full", action="store_true",
-                                help="Output full configuration")
-            parser.add_argument("--files", action="store_true",
-                                help="Group by loaded configuration file")
+            parser.add_argument("property", nargs="?", help="Property to read")
+            parser.add_argument(
+                "--variables",
+                action="store_true",
+                help="Output as a flat list of variables available in template engines",
+            )
+            parser.add_argument("--value", action="store_true", help="Output value of given property")
+            parser.add_argument("--full", action="store_true", help="Output full configuration")
+            parser.add_argument("--files", action="store_true", help="Group by loaded configuration file")
 
         def info_parser(parser: ArgumentParser):
-            parser.add_argument("--type", action="append",
-                                help="Filter for a type of information between: bin, env, port and vhost")
+            parser.add_argument(
+                "--type", action="append", help="Filter for a type of information between: bin, env, port and vhost"
+            )
 
         def selfupdate_parser(parser: ArgumentParser):
             parser.add_argument("--force", action="store_true", help="Force update")
@@ -109,7 +115,7 @@ class CoreFeature(Feature):
             DefaultPhase("features", "Display enabled features"),
             DefaultPhase("config", "Display effective configuration", config_parser),
             DefaultPhase("info", "Display useful information", info_parser),
-            DefaultPhase("selfupdate", "Update ddb binary with latest version", parser=selfupdate_parser)
+            DefaultPhase("selfupdate", "Update ddb binary with latest version", parser=selfupdate_parser),
         )
 
     @property
@@ -121,28 +127,19 @@ class CoreFeature(Feature):
                 raise error
 
         return (
-            LifecycleCommand("init", "Initialize the environment",
-                             "init", avoid_stdout=True),
-
-            LifecycleCommand("configure", "Configure the environment",
-                             "configure",
-                             parent="init",
-                             before_execute=requires_project_config),
-
-            LifecycleCommand("download", "Download files from remote sources",
-                             "download"),
-
-            LifecycleCommand("features", "List enabled features",
-                             "features"),
-
-            LifecycleCommand("config", "Display effective configuration",
-                             "config"),
-
-            LifecycleCommand("info", "Display useful information",
-                             "info"),
-
-            LifecycleCommand("self-update", "Update ddb to latest version",
-                             "selfupdate"),
+            LifecycleCommand("init", "Initialize the environment", "init", avoid_stdout=True),
+            LifecycleCommand(
+                "configure",
+                "Configure the environment",
+                "configure",
+                parent="init",
+                before_execute=requires_project_config,
+            ),
+            LifecycleCommand("download", "Download files from remote sources", "download"),
+            LifecycleCommand("features", "List enabled features", "features"),
+            LifecycleCommand("config", "Display effective configuration", "config"),
+            LifecycleCommand("info", "Display useful information", "info"),
+            LifecycleCommand("self-update", "Update ddb to latest version", "selfupdate"),
         )
 
     def configure(self, bootstrap=False):
@@ -157,17 +154,17 @@ class CoreFeature(Feature):
         """
         Loading enviromnent configuration file, if exists.
         """
-        current = config.data.get('core.env.current')
+        current = config.data.get("core.env.current")
 
         if config.filenames:
             filenames = list(config.filenames)
             original_filenames = list(config.filenames)
 
-            current_env_filename = filenames[0] + '.' + current
+            current_env_filename = filenames[0] + "." + current
             if current_env_filename not in filenames:
                 filenames.insert(len(filenames) - 1, current_env_filename)
 
-            extra = config.data.get('core.configuration.extra')
+            extra = config.data.get("core.configuration.extra")
             if extra:
                 for extra_item in extra:
                     if extra_item not in filenames:
@@ -185,64 +182,68 @@ class CoreFeature(Feature):
         :return:
         """
         if config.eject:
-            config.data['core.path.ddb_home'] = '.ddb-home'
-            config.data['core.path.home'] = '.docker-devbox-home'
-            config.data['core.path.user_home'] = '~'
-            config.data['core.path.project_home'] = '.'
+            config.data["core.path.ddb_home"] = ".ddb-home"
+            config.data["core.path.home"] = ".docker-devbox-home"
+            config.data["core.path.user_home"] = "~"
+            config.data["core.path.project_home"] = "."
 
     def _configure_defaults(self, feature_config: Dotty):
-        if not feature_config.get('project.name'):
+        if not feature_config.get("project.name"):
             project_name = os.path.basename(config.paths.project_home)
-            feature_config['project.name'] = project_name
+            feature_config["project.name"] = project_name
 
-        if not feature_config.get('domain.sub'):
-            feature_config['domain.sub'] = feature_config['project.name'].replace("_", "-").replace(" ", "-")
+        if not feature_config.get("domain.sub"):
+            feature_config["domain.sub"] = feature_config["project.name"].replace("_", "-").replace(" ", "-")
 
-        if feature_config.get('domain.value'):
-            raise FeatureConfigurationReadOnlyError(self, 'domain.value')
-        feature_config['domain.value'] = '.'.join((feature_config['domain.sub'], feature_config['domain.ext']))
+        if feature_config.get("domain.value"):
+            raise FeatureConfigurationReadOnlyError(self, "domain.value")
+        feature_config["domain.value"] = ".".join((feature_config["domain.sub"], feature_config["domain.ext"]))
 
-        if not feature_config.get('env.current') and feature_config.get('env.available'):
-            feature_config['env.current'] = feature_config['env.available'][-1]
+        if not feature_config.get("env.current") and feature_config.get("env.available"):
+            feature_config["env.current"] = feature_config["env.available"][-1]
 
-        if not feature_config.get('env.current') or \
-                feature_config.get('env.current') not in feature_config['env.available']:
-            raise FeatureConfigurationAutoConfigureError(self, 'env.current')
+        if (
+            not feature_config.get("env.current")
+            or feature_config.get("env.current") not in feature_config["env.available"]
+        ):
+            raise FeatureConfigurationAutoConfigureError(self, "env.current")
 
-        if not feature_config.get('path.project_home') and config.paths.project_home:
-            feature_config['path.project_home'] = config.paths.project_home
+        if not feature_config.get("path.project_home") and config.paths.project_home:
+            feature_config["path.project_home"] = config.paths.project_home
 
-        if not feature_config.get('path.home') and config.paths.home:
-            feature_config['path.home'] = config.paths.home
+        if not feature_config.get("path.home") and config.paths.home:
+            feature_config["path.home"] = config.paths.home
 
-        if not feature_config.get('path.user_home') and config.paths.user_home:
-            feature_config['path.user_home'] = config.paths.user_home
+        if not feature_config.get("path.user_home") and config.paths.user_home:
+            feature_config["path.user_home"] = config.paths.user_home
 
-        if not feature_config.get('path.ddb_home') and config.paths.ddb_home:
-            feature_config['path.ddb_home'] = config.paths.ddb_home
+        if not feature_config.get("path.ddb_home") and config.paths.ddb_home:
+            feature_config["path.ddb_home"] = config.paths.ddb_home
 
         self._configure_release_asset_name_defaults(feature_config)
 
-        config.path = ConfigPaths(ddb_home=feature_config.get('path.ddb_home'),
-                                  home=feature_config.get('path.home'),
-                                  user_home=feature_config.get('path.user_home'),
-                                  project_home=feature_config.get('path.project_home'))
+        config.path = ConfigPaths(
+            ddb_home=feature_config.get("path.ddb_home"),
+            home=feature_config.get("path.home"),
+            user_home=feature_config.get("path.user_home"),
+            project_home=feature_config.get("path.project_home"),
+        )
 
     def _configure_release_asset_name_defaults(self, feature_config: Dotty):
-        if not feature_config.get('release_asset_name'):
-            feature_config['release_asset_name'] = self._get_default_binary_remote_name()
+        if not feature_config.get("release_asset_name"):
+            feature_config["release_asset_name"] = self._get_default_binary_remote_name()
 
     @staticmethod
     def _get_default_binary_remote_name():
         """
         Get default binary remote name, based on current platform.
         """
-        if platform.system() == 'Windows':
-            return 'ddb-windows.exe'
-        if platform.system() == 'Darwin':
-            return 'ddb-macos'
-        if platform.system() == 'Linux':
-            if distro.id() == 'alpine':
-                return 'ddb-alpine'
-            return 'ddb-linux'
+        if platform.system() == "Windows":
+            return "ddb-windows.exe"
+        if platform.system() == "Darwin":
+            return "ddb-macos"
+        if platform.system() == "Linux":
+            if distro.id() == "alpine":
+                return "ddb-alpine"
+            return "ddb-linux"
         return None

@@ -135,14 +135,13 @@ class TestRunFeature:
         cwd = config.cwd if config.cwd else os.getcwd()
         real_cwd = os.path.realpath(cwd)
 
-        assert read.out == docker_compose_bin + \
-               " -f " + \
-               os.path.join("..", "project", "docker-compose.yml") + \
-               " " \
-               "run --rm " \
-               f"--volume={real_cwd}:/app " \
-               "--workdir=/app " \
-               "service\n"
+        assert (
+            read.out == docker_compose_bin + " -f " + os.path.join("..", "project", "docker-compose.yml") + " "
+            "run --rm "
+            f"--volume={real_cwd}:/app "
+            "--workdir=/app "
+            "service\n"
+        )
 
     def test_run_docker_binary_exe(self, project_loader, capsys: CaptureFixture):
         project_loader("exe")
@@ -154,15 +153,12 @@ class TestRunFeature:
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        binaries.register(DockerBinary("echo",
-                                       docker_compose_service="web",
-                                       args="echo",
-                                       exe=True))
+        binaries.register(DockerBinary("echo", docker_compose_service="web", args="echo", exe=True))
 
         control = DockerComposeControl()
 
-        control.stop('web')
-        assert not control.is_up('web')
+        control.stop("web")
+        assert not control.is_up("web")
 
         action = RunAction()
         action.run("echo")
@@ -171,7 +167,7 @@ class TestRunFeature:
 
         assert read.out == docker_compose_bin + " exec web echo\n"
 
-        assert control.is_up('web')
+        assert control.is_up("web")
 
     def test_run_binary_condition(self, project_loader, capsys: CaptureFixture):
         project_loader("empty")

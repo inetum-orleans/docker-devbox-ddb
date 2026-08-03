@@ -14,12 +14,12 @@ class TestDockerImageTag:
     def test_image_tag_from_git_tag_jsonnet(self, project_loader, mocker: MockerFixture):
         Config.defaults = None
 
-        mocker.patch('ddb.feature.version.is_git_repository', is_git_repository)
+        mocker.patch("ddb.feature.version.is_git_repository", is_git_repository)
 
         project_loader("image_tag_from_git_tag")
 
         if os.path.exists("repo.zip"):
-            with zipfile.ZipFile("repo.zip", 'r') as zip_ref:
+            with zipfile.ZipFile("repo.zip", "r") as zip_ref:
                 zip_ref.extractall(".")
 
         main(["configure"])
@@ -28,38 +28,38 @@ class TestDockerImageTag:
 
         with open("docker-compose.yml") as f:
             docker_compose = yaml.load(f, yaml.SafeLoader)
-            assert Dotty(docker_compose).get('services.node.image') == 'some-registry/node:some-tag'
+            assert Dotty(docker_compose).get("services.node.image") == "some-registry/node:some-tag"
 
     def test_image_tag_from_git_branch_jsonnet(self, project_loader, mocker: MockerFixture):
         Config.defaults = None
 
-        mocker.patch('ddb.feature.version.is_git_repository', is_git_repository)
+        mocker.patch("ddb.feature.version.is_git_repository", is_git_repository)
 
         project_loader("image_tag_from_git_branch")
 
         if os.path.exists("repo.zip"):
-            with zipfile.ZipFile("repo.zip", 'r') as zip_ref:
+            with zipfile.ZipFile("repo.zip", "r") as zip_ref:
                 zip_ref.extractall(".")
 
         main(["configure"])
 
         with open("docker-compose.yml") as f:
             docker_compose = yaml.load(f, yaml.SafeLoader)
-            assert Dotty(docker_compose).get('services.node.image') == 'some-registry/node:some-branch'
+            assert Dotty(docker_compose).get("services.node.image") == "some-registry/node:some-branch"
 
     def test_image_tag_from_git_disabled_jsonnet(self, project_loader, mocker: MockerFixture):
         Config.defaults = None
 
-        mocker.patch('ddb.feature.version.is_git_repository', is_git_repository)
+        mocker.patch("ddb.feature.version.is_git_repository", is_git_repository)
 
         project_loader("image_tag_from_git_disabled")
 
         if os.path.exists("repo.zip"):
-            with zipfile.ZipFile("repo.zip", 'r') as zip_ref:
+            with zipfile.ZipFile("repo.zip", "r") as zip_ref:
                 zip_ref.extractall(".")
 
         main(["configure"])
 
         with open("docker-compose.yml") as f:
             docker_compose = yaml.load(f, yaml.SafeLoader)
-            assert Dotty(docker_compose).get('services.node.image') == 'some-registry/node'
+            assert Dotty(docker_compose).get("services.node.image") == "some-registry/node"

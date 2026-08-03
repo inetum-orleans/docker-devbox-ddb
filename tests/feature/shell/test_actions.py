@@ -52,14 +52,15 @@ class ActivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, encoding='utf-8') as file:
+        with open(filepath, encoding="utf-8") as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
         env = dict(export_match)
 
         assert sorted(env.keys()) == sorted(
-            ["DDB_PROJECT_HOME", "DDB_SHELL_ENVIRON_BACKUP", *list(self.additional_environment_variable.keys())])
+            ["DDB_PROJECT_HOME", "DDB_SHELL_ENVIRON_BACKUP", *list(self.additional_environment_variable.keys())]
+        )
 
         assert "DDB_SHELL_ENVIRON_BACKUP" in env
         assert env["DDB_SHELL_ENVIRON_BACKUP"]
@@ -76,14 +77,21 @@ class ActivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, encoding='utf-8') as file:
+        with open(filepath, encoding="utf-8") as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
         env = dict(export_match)
 
         assert sorted(env.keys()) == sorted(
-            ["DDB_PROJECT_HOME", "DDB_SOME", "DDB_ANOTHER_DEEP", "DDB_SHELL_ENVIRON_BACKUP", *list(self.additional_environment_variable.keys())])
+            [
+                "DDB_PROJECT_HOME",
+                "DDB_SOME",
+                "DDB_ANOTHER_DEEP",
+                "DDB_SHELL_ENVIRON_BACKUP",
+                *list(self.additional_environment_variable.keys()),
+            ]
+        )
 
     def test_run_activate_deactivate_project(self, capsys: CaptureFixture, project_loader):
         project_loader("project")
@@ -100,17 +108,18 @@ class ActivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, encoding='utf-8') as file:
+        with open(filepath, encoding="utf-8") as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
         env = dict(export_match)
 
-        system_path = env.get('PATH', '')
+        system_path = env.get("PATH", "")
         first = system_path.split(os.pathsep)[0]
 
-        assert first == os.path.normpath(os.path.join(os.getcwd(), "./bin")) \
-               or first == os.path.normpath(os.path.join(os.getcwd(), "./.bin"))
+        assert first == os.path.normpath(os.path.join(os.getcwd(), "./bin")) or first == os.path.normpath(
+            os.path.join(os.getcwd(), "./.bin")
+        )
 
         os.environ.update(env)
 
@@ -122,17 +131,18 @@ class ActivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, encoding='utf-8') as file:
+        with open(filepath, encoding="utf-8") as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
         env = dict(export_match)
 
-        system_path = env.get('PATH', '').split(os.pathsep)
+        system_path = env.get("PATH", "").split(os.pathsep)
         first = system_path[0]
 
-        assert first != os.path.normpath(os.path.join(os.getcwd(), "./bin")) or \
-               first != os.path.normpath(os.path.join(os.getcwd(), "./.bin"))
+        assert first != os.path.normpath(os.path.join(os.getcwd(), "./bin")) or first != os.path.normpath(
+            os.path.join(os.getcwd(), "./.bin")
+        )
 
     def test_run_activate_deactivate_project_prepend_false(self, capsys: CaptureFixture, project_loader):
         project_loader("project_prepend_false")
@@ -149,17 +159,18 @@ class ActivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, encoding='utf-8') as file:
+        with open(filepath, encoding="utf-8") as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
         env = dict(export_match)
 
-        system_path = env.get('PATH', '').split(os.pathsep)
+        system_path = env.get("PATH", "").split(os.pathsep)
         last = system_path[-1]
 
-        assert last == os.path.normpath(os.path.join(os.getcwd(), "./bin")) \
-               or last == os.path.normpath(os.path.join(os.getcwd(), "./.bin"))
+        assert last == os.path.normpath(os.path.join(os.getcwd(), "./bin")) or last == os.path.normpath(
+            os.path.join(os.getcwd(), "./.bin")
+        )
 
         os.environ.update(env)
 
@@ -171,17 +182,18 @@ class ActivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, encoding='utf-8') as file:
+        with open(filepath, encoding="utf-8") as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
         env = dict(export_match)
 
-        system_path = env.get('PATH', '').split(os.pathsep)
+        system_path = env.get("PATH", "").split(os.pathsep)
         last = system_path[-1]
 
-        assert last != os.path.normpath(os.path.join(os.getcwd(), "./bin")) or \
-               last != os.path.normpath(os.path.join(os.getcwd(), "./.bin"))
+        assert last != os.path.normpath(os.path.join(os.getcwd(), "./bin")) or last != os.path.normpath(
+            os.path.join(os.getcwd(), "./.bin")
+        )
 
     def test_empty_project_main_aliases(self, project_loader):
         project_loader("aliases")
@@ -194,7 +206,7 @@ class ActivateActionBase(ABC):
 
         with open(os.path.join("bin", alias)) as f:
             content = f.read()
-            if os.name != 'nt':
+            if os.name != "nt":
                 assert 'docker-compose "$@"' in content
             # TODO: Check the content of the file with an assertion, and test the feature behavior on windows
 
@@ -203,23 +215,26 @@ class ActivateActionBase(ABC):
 
         main(["configure"])
 
-        alias = "dc.bat" if os.name == 'nt' else "dc"
+        alias = "dc.bat" if os.name == "nt" else "dc"
 
         assert not os.path.exists(os.path.join(".bin", alias))
         assert os.path.exists(os.path.join(config.paths.home, ".bin", alias))
-        assert not expect_gitignore('.gitignore', '../home/.bin/dc')
+        assert not expect_gitignore(".gitignore", "../home/.bin/dc")
 
         with open(os.path.join(config.paths.home, ".bin", alias)) as f:
             content = f.read()
-            if os.name != 'nt':
+            if os.name != "nt":
                 assert 'docker-compose "$@"' in content
             # TODO: Check the content of the file with an assertion, and test the feature behavior on windows
 
     def test_global_aliases_projects_in_home(self, project_loader, data_dir):
         def project_in_home_config_provider(root_dir):
-            paths = ConfigPaths(ddb_home=os.path.join(root_dir, 'ddb_home'), home=os.path.join(root_dir, 'home'),
-                                user_home=os.path.join(root_dir, 'user_home'),
-                                project_home=os.path.join(root_dir, 'home', 'project'))
+            paths = ConfigPaths(
+                ddb_home=os.path.join(root_dir, "ddb_home"),
+                home=os.path.join(root_dir, "home"),
+                user_home=os.path.join(root_dir, "user_home"),
+                project_home=os.path.join(root_dir, "home", "project"),
+            )
 
             if not [path for path in paths if os.path.isdir(path)]:
                 paths = ConfigPaths(ddb_home=None, home=None, user_home=None, project_home=root_dir)
@@ -233,15 +248,15 @@ class ActivateActionBase(ABC):
 
         main(["configure"])
 
-        alias = "dc.bat" if os.name == 'nt' else "dc"
+        alias = "dc.bat" if os.name == "nt" else "dc"
 
         assert not os.path.exists(os.path.join(".bin", alias))
         assert os.path.exists(os.path.join(config.paths.home, ".bin", alias))
-        assert not expect_gitignore('.gitignore', '../home/.bin/dc')
+        assert not expect_gitignore(".gitignore", "../home/.bin/dc")
 
         with open(os.path.join(config.paths.home, ".bin", alias)) as f:
             content = f.read()
-            if os.name != 'nt':
+            if os.name != "nt":
                 assert 'docker-compose "$@"' in content
             # TODO: Check the content of the file with an assertion, and test the feature behavior on windows
 
@@ -265,7 +280,7 @@ class TestCmdActivateAction(ActivateActionBase):
 
     @property
     def additional_environment_variable(self) -> dict:
-        return {'NL': '^'}
+        return {"NL": "^"}
 
     def build_shell_integration(self) -> ShellIntegration:
         return CmdShellIntegration()
@@ -299,8 +314,8 @@ class DeactivateActionBase(ABC):
         return {}
 
     def test_run(self, capsys: CaptureFixture):
-        os.environ['DDB_PROJECT_HOME'] = config.paths.project_home
-        os.environ['DDB_SHELL_ENVIRON_BACKUP'] = encode_environ_backup(dict(os.environ))
+        os.environ["DDB_PROJECT_HOME"] = config.paths.project_home
+        os.environ["DDB_SHELL_ENVIRON_BACKUP"] = encode_environ_backup(dict(os.environ))
 
         action = DeactivateAction(self.build_shell_integration())
         action.execute()
@@ -310,7 +325,7 @@ class DeactivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, encoding='utf-8') as file:
+        with open(filepath, encoding="utf-8") as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
@@ -320,15 +335,15 @@ class DeactivateActionBase(ABC):
         unset_match = re.findall(self.unset_regex, script, re.MULTILINE)
         unset = dict(unset_match)
         assert len(unset) == 1
-        assert 'DDB_SHELL_ENVIRON_BACKUP' in unset.keys()
+        assert "DDB_SHELL_ENVIRON_BACKUP" in unset.keys()
 
     def test_run_with_empty_initial_env(self, capsys: CaptureFixture):
         expected_environ = {}
 
         os.environ.clear()
         os.environ.update(expected_environ)
-        os.environ['DDB_PROJECT_HOME'] = config.paths.project_home
-        os.environ['DDB_SHELL_ENVIRON_BACKUP'] = encode_environ_backup(expected_environ)
+        os.environ["DDB_PROJECT_HOME"] = config.paths.project_home
+        os.environ["DDB_SHELL_ENVIRON_BACKUP"] = encode_environ_backup(expected_environ)
 
         action = DeactivateAction(self.build_shell_integration())
         action.execute()
@@ -338,7 +353,7 @@ class DeactivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, encoding='utf-8') as file:
+        with open(filepath, encoding="utf-8") as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
@@ -349,15 +364,20 @@ class DeactivateActionBase(ABC):
         unset = dict(unset_match)
         assert unset
 
-        assert sorted(unset.keys()) == sorted(("DDB_PROJECT_HOME", "DDB_SHELL_ENVIRON_BACKUP",))
+        assert sorted(unset.keys()) == sorted(
+            (
+                "DDB_PROJECT_HOME",
+                "DDB_SHELL_ENVIRON_BACKUP",
+            )
+        )
 
     def test_run_with_changed_env_variable(self, capsys: CaptureFixture):
         expected_environ = {"DDB_CHANGE": "foo", "DDB_NO_CHANGE": "ok", "DDB_REMOVED": "removed"}
 
         os.environ.clear()
         os.environ.update(expected_environ)
-        os.environ['DDB_PROJECT_HOME'] = config.paths.project_home
-        os.environ['DDB_SHELL_ENVIRON_BACKUP'] = encode_environ_backup(expected_environ)
+        os.environ["DDB_PROJECT_HOME"] = config.paths.project_home
+        os.environ["DDB_SHELL_ENVIRON_BACKUP"] = encode_environ_backup(expected_environ)
 
         removed_item = os.environ.pop("DDB_REMOVED")
         os.environ["DDB_CHANGE"] = "bar"
@@ -371,16 +391,18 @@ class DeactivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, encoding='utf-8') as file:
+        with open(filepath, encoding="utf-8") as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
         exported = dict(export_match)
         assert len(exported) == (2 + len(self.additional_environment_variable.keys()))
         assert sorted(exported.keys()) == sorted(
-            ["DDB_CHANGE", "DDB_REMOVED", *list(self.additional_environment_variable.keys())])
+            ["DDB_CHANGE", "DDB_REMOVED", *list(self.additional_environment_variable.keys())]
+        )
         assert sorted(exported.values()) == sorted(
-            ["foo", removed_item, *list(self.additional_environment_variable.values())])
+            ["foo", removed_item, *list(self.additional_environment_variable.values())]
+        )
 
         unset_match = re.findall(self.unset_regex, script, re.MULTILINE)
         unset = dict(unset_match)
@@ -403,7 +425,7 @@ class TestCmdDeactivateAction(DeactivateActionBase):
 
     @property
     def additional_environment_variable(self) -> dict:
-        return {'NL': '^'}
+        return {"NL": "^"}
 
     def build_shell_integration(self) -> ShellIntegration:
         return CmdShellIntegration()

@@ -44,10 +44,11 @@ class EmitDockerComposeConfigAction(Action):
     def event_bindings(self):
         return (
             # TODO: Add support for custom docker-compose -f option (custom filename and multiple files)
-            EventBinding(events.file.found,
-                         processor=lambda file: ((), {}) if file == "docker-compose.yml" else False),
-            EventBinding(events.file.generated,
-                         processor=lambda source, target: ((), {}) if target == "docker-compose.yml" else False)
+            EventBinding(events.file.found, processor=lambda file: ((), {}) if file == "docker-compose.yml" else False),
+            EventBinding(
+                events.file.generated,
+                processor=lambda source, target: ((), {}) if target == "docker-compose.yml" else False,
+            ),
         )
 
     @property
@@ -71,7 +72,7 @@ class EmitDockerComposeConfigAction(Action):
         docker_compose_config = Dotty(yaml.load(yaml_output, yaml.SafeLoader))
         events.docker.docker_compose_config(docker_compose_config=docker_compose_config)
 
-        services = docker_compose_config.get('services')
+        services = docker_compose_config.get("services")
         if not services:
             return
 
@@ -102,7 +103,7 @@ class EmitDockerComposeConfigAction(Action):
 
     def _parse_docker_compose(self, docker_compose_config: dict, services):
         for service_name, service in services.items():
-            labels = service.get('labels')
+            labels = service.get("labels")
             if not labels:
                 continue
 
@@ -111,7 +112,7 @@ class EmitDockerComposeConfigAction(Action):
 
             event_data = self._build_event_data(docker_compose_config, labels, service, service_name)
 
-            for (event_name, event_parsed_values) in event_data.items():
+            for event_name, event_parsed_values in event_data.items():
                 for _, (args, kwargs) in event_parsed_values.items():
                     bus.emit(event_name, *args, **kwargs)
 
@@ -140,12 +141,12 @@ class EmitDockerComposeConfigAction(Action):
             property_name = match.group(3)
 
             if property_name and property_name in keyword.kwlist:
-                property_name = property_name + '_'
+                property_name = property_name + "_"
 
-            args, kwargs = self._parse_value(value,
-                                             {"service": service, "config": docker_compose_config},
-                                             property_name)
-            if event_name == 'docker:binary':
+            args, kwargs = self._parse_value(
+                value, {"service": service, "config": docker_compose_config}, property_name
+            )
+            if event_name == "docker:binary":
                 kwargs["docker_compose_service"] = service_name
 
             event_parsed_values = parsed_values.get(event_name)
@@ -196,9 +197,11 @@ class DockerComposeBinaryAction(InitializableAction):
 
     @property
     def event_bindings(self):
-        return (events.docker.binary,
-                EventBinding(events.docker.docker_compose_before_events, call=self.before_events),
-                EventBinding(events.docker.docker_compose_after_events, call=self.after_events))
+        return (
+            events.docker.binary,
+            EventBinding(events.docker.docker_compose_before_events, call=self.before_events),
+            EventBinding(events.docker.docker_compose_after_events, call=self.after_events),
+        )
 
     @property
     def name(self) -> str:
@@ -242,8 +245,19 @@ class DockerComposeBinaryAction(InitializableAction):
         docker_binaries_cache.set("cached_binaries", cached_binaries)
         docker_binaries_cache.flush()
 
-    def execute(self, name=None, workdir=None, options=None, options_condition=None, condition=None, args=None,
-                exe=False, entrypoint=None, global_=None, docker_compose_service=None):
+    def execute(
+        self,
+        name=None,
+        workdir=None,
+        options=None,
+        options_condition=None,
+        condition=None,
+        args=None,
+        exe=False,
+        entrypoint=None,
+        global_=None,
+        docker_compose_service=None,
+    ):
         """
         Execute action
         """
@@ -252,9 +266,18 @@ class DockerComposeBinaryAction(InitializableAction):
         if name is None:
             raise ValueError("name should be defined")
 
-        binary = DockerBinary(name, docker_compose_service=docker_compose_service, workdir=workdir, options=options,
-                              options_condition=options_condition, condition=condition, args=args, exe=exe,
-                              entrypoint=entrypoint, global_=global_)
+        binary = DockerBinary(
+            name,
+            docker_compose_service=docker_compose_service,
+            workdir=workdir,
+            options=options,
+            options_condition=options_condition,
+            condition=condition,
+            args=args,
+            exe=exe,
+            entrypoint=entrypoint,
+            global_=global_,
+        )
 
         self.binaries.add(binary)
 
@@ -286,15 +309,16 @@ class LocalVolumesAction(Action):
         """
         Execute action
         """
-        if 'services' not in docker_compose_config:
+        if "services" not in docker_compose_config:
             return
 
-        external_volumes = docker_compose_config['volumes'].keys() if 'volumes' in docker_compose_config else []
+        external_volumes = docker_compose_config["volumes"].keys() if "volumes" in docker_compose_config else []
 
         volume_mappings = self._get_volume_mappings(docker_compose_config, external_volumes)
 
-        volume_mappings = [(source, target) for (source, target) in volume_mappings if
-                           self._check_file_in_project(source)]
+        volume_mappings = [
+            (source, target) for (source, target) in volume_mappings if self._check_file_in_project(source)
+        ]
 
         for source, target in volume_mappings:
             self._create_local_volume(source, target)
@@ -317,7 +341,7 @@ class LocalVolumesAction(Action):
 
     @staticmethod
     def _fix_owner(relative_path):
-        if hasattr(os, 'chown'):
+        if hasattr(os, "chown"):
             stat_info = os.stat(relative_path)
             uid = stat_info.st_uid
             gid = stat_info.st_gid
@@ -328,13 +352,16 @@ class LocalVolumesAction(Action):
                     os.chown(relative_path, config.data.get("docker.user.uid"), config.data.get("docker.user.gid"))
                     context.log.info("Owner has been fixed for %s", relative_path)
                 except OSError:
-                    context.log.error("Run this command to fix: sudo chown -R \"%s:%s\" %s",
-                                      config.data.get("docker.user.uid"), config.data.get("docker.user.gid"),
-                                      relative_path)
+                    context.log.error(
+                        'Run this command to fix: sudo chown -R "%s:%s" %s',
+                        config.data.get("docker.user.uid"),
+                        config.data.get("docker.user.gid"),
+                        relative_path,
+                    )
 
     @staticmethod
     def _check_file_in_project(source):
-        if os.name == 'nt':
+        if os.name == "nt":
             source = posix_as_path_fast(source)
 
         target_path = os.path.realpath(source)
@@ -343,7 +370,7 @@ class LocalVolumesAction(Action):
 
     @staticmethod
     def _create_local_volume(source, target):
-        if os.name == 'nt':
+        if os.name == "nt":
             source = posix_as_path_fast(source)
 
         rel_source = os.path.relpath(source, ".")
@@ -372,16 +399,16 @@ class LocalVolumesAction(Action):
         volume_mappings = []
         external_volumes_dict = {}
 
-        for service in docker_compose_config.get('services', {}).values():
-            if 'volumes' not in service:
+        for service in docker_compose_config.get("services", {}).values():
+            if "volumes" not in service:
                 continue
 
-            for volume_spec in service['volumes']:
+            for volume_spec in service["volumes"]:
                 if isinstance(volume_spec, dict):
-                    source = volume_spec['source']
-                    target = volume_spec['target']
+                    source = volume_spec["source"]
+                    target = volume_spec["target"]
                 else:
-                    source, target, _ = volume_spec.rsplit(':', 2)
+                    source, target, _ = volume_spec.rsplit(":", 2)
 
                 if source in external_volumes:
                     external_volumes_dict[source] = target
@@ -392,11 +419,11 @@ class LocalVolumesAction(Action):
                 if volume_mapping not in volume_mappings:
                     volume_mappings.append(volume_mapping)
 
-        for volume, volume_config in docker_compose_config.get('volumes', {}).items():
-            if volume_config and volume_config.get('driver') == 'local' and volume_config.get('driver_opts'):
-                driver_opts = volume_config.get('driver_opts')
-                device = driver_opts.get('device')
-                if device and driver_opts.get('o') == 'bind':
+        for volume, volume_config in docker_compose_config.get("volumes", {}).items():
+            if volume_config and volume_config.get("driver") == "local" and volume_config.get("driver_opts"):
+                driver_opts = volume_config.get("driver_opts")
+                device = driver_opts.get("device")
+                if device and driver_opts.get("o") == "bind":
                     source = PurePosixPath(device).joinpath(volume)
                     target = external_volumes_dict.get(volume)
                     if source and target:
@@ -418,9 +445,7 @@ class DockerDisplayInfoAction(Action):
 
     @property
     def event_bindings(self):
-        return (
-            events.phase.info
-        )
+        return events.phase.info
 
     @property
     def name(self) -> str:
@@ -441,7 +466,7 @@ class DockerDisplayInfoAction(Action):
         self.current_yaml_output = yaml_output
 
         docker_compose_config = Dotty(yaml.load(yaml_output, yaml.SafeLoader))
-        services = docker_compose_config.get('services')
+        services = docker_compose_config.get("services")
         if not services:
             return
 
@@ -457,7 +482,7 @@ class DockerDisplayInfoAction(Action):
                 print(output)
                 print()
 
-        if features.has('traefik'):
+        if features.has("traefik"):
             for id_, extra_service_data, _ in TraefikExtraServicesAction.get_extra_services():
                 output = self._output_traefik_data(id_, extra_service_data)
                 print(output)
@@ -470,7 +495,7 @@ class DockerDisplayInfoAction(Action):
         :param service_config: the service configuration
         :return: a dict containing environment variables
         """
-        environments = service_config.get('environment')
+        environments = service_config.get("environment")
         if not environments:
             return {}
 
@@ -483,7 +508,7 @@ class DockerDisplayInfoAction(Action):
         :param service_config: the service configuration
         :return: a list of service port
         """
-        ports = service_config.get('ports')
+        ports = service_config.get("ports")
         if not ports:
             return []
 
@@ -491,7 +516,7 @@ class DockerDisplayInfoAction(Action):
             if isinstance(port, str):
                 return ServicePort.parse(port)
 
-            parameters = {'target': None, 'published': None, 'protocol': None, 'mode': None, 'external_ip': None}
+            parameters = {"target": None, "published": None, "protocol": None, "mode": None, "external_ip": None}
             parameters.update(port)
             return [ServicePort(**parameters)]
 
@@ -509,7 +534,7 @@ class DockerDisplayInfoAction(Action):
         :param service_config: the service configuration
         :return: a list containing binaries
         """
-        labels = service_config.get('labels')
+        labels = service_config.get("labels")
         if not labels:
             return []
 
@@ -522,7 +547,7 @@ class DockerDisplayInfoAction(Action):
                 continue
             event_name = match.group(1)
             binary_name = match.group(2)
-            if event_name == 'docker:binary' and binary_name not in binaries_labels:
+            if event_name == "docker:binary" and binary_name not in binaries_labels:
                 binaries_labels.append(match.group(2))
 
         return binaries_labels
@@ -534,7 +559,7 @@ class DockerDisplayInfoAction(Action):
         :param service_config: the service configuration
         :return: a list containing vhosts data
         """
-        labels = service_config.get('labels')
+        labels = service_config.get("labels")
         if not labels:
             return []
 
@@ -546,10 +571,10 @@ class DockerDisplayInfoAction(Action):
             match = vhosts_regex_re.match(value)
             if not match:
                 continue
-            http_url = f'http://{match.group(1)}/'
-            https_url = f'https://{match.group(1)}/'
+            http_url = f"http://{match.group(1)}/"
+            https_url = f"https://{match.group(1)}/"
 
-            if '-tls.' in key:
+            if "-tls." in key:
                 with contextlib.suppress(ValueError):
                     vhosts_labels.remove(http_url)
                 vhosts_labels.append(https_url)
@@ -561,8 +586,13 @@ class DockerDisplayInfoAction(Action):
         return vhosts_labels
 
     @staticmethod
-    def _output_data(service_name: str, environments: dict[str, str],
-                     ports: list[ServicePort], docker_binaries: list[str], vhosts: list[str]):
+    def _output_data(
+        service_name: str,
+        environments: dict[str, str],
+        ports: list[ServicePort],
+        docker_binaries: list[str],
+        vhosts: list[str],
+    ):
         """
         Process the data and render it to the user
         :param service_name: the service name
@@ -573,31 +603,31 @@ class DockerDisplayInfoAction(Action):
         :return: a dict containing useful labels data
         """
 
-        header_block = [f'{service_name}']
+        header_block = [f"{service_name}"]
         blocks = [header_block]
 
-        if (config.args.type is None or 'env' in config.args.type) and environments:
+        if (config.args.type is None or "env" in config.args.type) and environments:
             tmp_content = []
             for key in sorted(environments.keys()):
-                tmp_content.append(f'{key}: {environments.get(key)}')
+                tmp_content.append(f"{key}: {environments.get(key)}")
 
             blocks.append(tmp_content)
 
-        if (config.args.type is None or 'port' in config.args.type) and ports:
+        if (config.args.type is None or "port" in config.args.type) and ports:
             tmp_content = []
             for port in ports:
-                tmp_content.append(port.legacy_repr() if
-                                   hasattr(port, 'legacy_repr') else
-                                   f"{port.published}:{port.target}")
+                tmp_content.append(
+                    port.legacy_repr() if hasattr(port, "legacy_repr") else f"{port.published}:{port.target}"
+                )
             blocks.append(tmp_content)
 
-        if (config.args.type is None or 'bin' in config.args.type) and docker_binaries:
+        if (config.args.type is None or "bin" in config.args.type) and docker_binaries:
             tmp_content = []
             for binary in sorted(docker_binaries):
                 tmp_content.append(binary)
             blocks.append(tmp_content)
 
-        if (config.args.type is None or 'vhost' in config.args.type) and vhosts:
+        if (config.args.type is None or "vhost" in config.args.type) and vhosts:
             tmp_content = []
             for vhost in sorted(vhosts):
                 tmp_content.append(vhost)
@@ -605,18 +635,15 @@ class DockerDisplayInfoAction(Action):
 
         if blocks != [header_block]:
             return get_table_display(blocks, False)
-        return ''
+        return ""
 
     @staticmethod
     def _output_traefik_data(id_, extra_service_data):
-        if 'domain' in extra_service_data:
-            domain = extra_service_data.get('domain')
-            domain = 'https://' + domain if extra_service_data.get('https') in [None, True] else 'http://' + domain
+        if "domain" in extra_service_data:
+            domain = extra_service_data.get("domain")
+            domain = "https://" + domain if extra_service_data.get("https") in [None, True] else "http://" + domain
         else:
-            domain = extra_service_data.get('rule')
+            domain = extra_service_data.get("rule")
 
-        blocks = [
-            [id_ + " (extra)"],
-            [domain + ' --> ' + extra_service_data.get('url')]
-        ]
+        blocks = [[id_ + " (extra)"], [domain + " --> " + extra_service_data.get("url")]]
         return get_table_display(blocks, False)

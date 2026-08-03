@@ -13,13 +13,13 @@ def validate_checksums(response):
     :param response:
     :return:
     """
-    sums = response.get('sums', {})
+    sums = response.get("sums", {})
     for part, content in response.items():
-        if part not in ('sums', 'private_key'):
+        if part not in ("sums", "private_key"):
             sums_item = sums.get(part)
             if not sums_item:
                 continue
-            validate_checksum(part, content.encode('ascii'), sums_item)
+            validate_checksum(part, content.encode("ascii"), sums_item)
 
 
 def validate_checksum(part, content, sums_item, content_is_der=False):
@@ -48,7 +48,7 @@ def validate_checksum_algo(part, content, algo, checksum, content_is_der=False):
     if not content_is_der:
         content = convert_pem_to_der(part, content)
 
-    validated_checksum = getattr(hashlib, algo.replace('-', ''))(content).hexdigest()
+    validated_checksum = getattr(hashlib, algo.replace("-", ""))(content).hexdigest()
     checksum = checksum.lower()
     if validated_checksum != checksum:
         raise OSError(f"Invalid {part} checksum ({algo}): {checksum} != {validated_checksum} ")

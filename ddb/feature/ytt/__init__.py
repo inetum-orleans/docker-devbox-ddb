@@ -30,15 +30,12 @@ class YttFeature(Feature):
 
     @property
     def actions(self) -> Iterable[Action]:
-        return (
-            YttAction(),
-        )
+        return (YttAction(),)
 
     def _configure_defaults(self, feature_config: Dotty):
         includes = feature_config.get("includes")
         if includes is None:
             includes = TemplateFinder.build_default_includes_from_suffixes(
-                feature_config["suffixes"],
-                feature_config["extensions"]
+                feature_config["suffixes"], feature_config["extensions"]
             )
             feature_config["includes"] = includes

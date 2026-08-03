@@ -2,8 +2,9 @@ from .action import Action, InitializableAction
 from .runner import ActionEventBindingRunner, EventBindingRunner, InitializableActionEventBindingRunner
 
 
-def action_event_binding_runner_factory(action: Action, event_name: str, to_call=None, event_processor=None,
-                                        fail_fast=False) -> EventBindingRunner:
+def action_event_binding_runner_factory(
+    action: Action, event_name: str, to_call=None, event_processor=None, fail_fast=False
+) -> EventBindingRunner:
     """
     Create an event binding runner from an action, event_name and optional callable.
     """

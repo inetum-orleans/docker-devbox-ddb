@@ -55,7 +55,7 @@ def load_plugins():
             sys.path.append(os.path.abspath(extension_directory))
             for dirpath, _, files in os.walk(extension_directory):
                 module_name = os.path.relpath(dirpath, extension_directory).replace(os.sep, ".")
-                if module_name == '.':
+                if module_name == ".":
                     module_name = None
 
                 for file in files:
@@ -64,7 +64,8 @@ def load_plugins():
                     elif file.endswith("py"):
                         file_module_name = os.path.splitext(file)[0]
                         _load_plugins_module(
-                            file_module_name if not module_name else '.'.join((module_name, file_module_name)))
+                            file_module_name if not module_name else ".".join((module_name, file_module_name))
+                        )
 
 
 def _load_plugins_module(module_name):
@@ -72,10 +73,12 @@ def _load_plugins_module(module_name):
         return
     module = import_module(module_name)
     for _name, clazz in inspect.getmembers(module):
-        if inspect.isclass(clazz) and \
-                clazz.__module__ == module.__name__ and \
-                not clazz.__name__.startswith("_") and \
-                issubclass(clazz, Feature):
+        if (
+            inspect.isclass(clazz)
+            and clazz.__module__ == module.__name__
+            and not clazz.__name__.startswith("_")
+            and issubclass(clazz, Feature)
+        ):
             feature = clazz()
             append_available_feature(feature)
 
@@ -99,9 +102,11 @@ def register_default_caches():
     register_global_cache(requests_cache_name)
 
 
-def register_objects(features_list: Iterable[Feature],
-                     objects_getter: Callable[[Feature], Iterable[RegistryObject]],
-                     registry: Registry[RegistryObject]):
+def register_objects(
+    features_list: Iterable[Feature],
+    objects_getter: Callable[[Feature], Iterable[RegistryObject]],
+    registry: Registry[RegistryObject],
+):
     """
     Register objects from features inside registry.
     """
@@ -174,11 +179,11 @@ def configure_logging(level: str | int = logging.INFO):
     verboselogs.install()
 
     log_colors = dict(default_log_colors)
-    log_colors['NOTICE'] = 'thin_white'
-    log_colors['VERBOSE'] = 'thin_white'
-    log_colors['DEBUG'] = 'thin_cyan'
-    log_colors['SUCCESS'] = 'bold_green'
-    log_colors['SPAM'] = 'bold_red'
+    log_colors["NOTICE"] = "thin_white"
+    log_colors["VERBOSE"] = "thin_white"
+    log_colors["DEBUG"] = "thin_cyan"
+    log_colors["SUCCESS"] = "bold_green"
+    log_colors["SPAM"] = "bold_red"
 
     class CustomFormatter(ColoredFormatter):
         """
@@ -190,9 +195,7 @@ def configure_logging(level: str | int = logging.INFO):
             return super().format(record)
 
     handler = logging.StreamHandler()
-    handler.setFormatter(CustomFormatter(
-        '%(log_color)s[%(simplename)s] %(message)s',
-        log_colors=log_colors))
+    handler.setFormatter(CustomFormatter("%(log_color)s[%(simplename)s] %(message)s", log_colors=log_colors))
 
     logger = logging.getLogger("ddb")
     logger.handlers.clear()
@@ -250,32 +253,60 @@ def parse_command_line(args: Sequence[str] | None = None):
     Parse command line arguments, returning the command to execute, args and unknown args.
     """
     opts = ArgumentParser()
-    opts.add_argument('-v', '--verbose', action="store_true",
-                      default=config.data.get('defaults.verbose', False),
-                      help="Enable more logs")
-    opts.add_argument('-vv', '--very-verbose', action="store_true",
-                      default=config.data.get('defaults.very_verbose', False),
-                      help="Enable even more logs")
-    opts.add_argument('-s', '--silent', action="store_true",
-                      default=config.data.get('defaults.silent', False),
-                      help="Disable all logs")
-    opts.add_argument('-x', '--exceptions', action="store_true",
-                      default=config.data.get('defaults.exceptions', False),
-                      help="Display exceptions on errors")
-    opts.add_argument("-c", "--clear-cache", action="store_true",
-                      default=config.data.get('defaults.clear_cache', False),
-                      help="Clear all used caches")
-    opts.add_argument('-w', '--watch', action="store_true",
-                      default=config.data.get('defaults.watch', False),
-                      help="Enable watch mode (hot reload of generated files)")
-    opts.add_argument('-ff', '--fail-fast', action="store_true",
-                      default=config.data.get('defaults.fail_fast', False),
-                      help="Stop on first error")
-    opts.add_argument('--version', action="store_true", help='Display the ddb version and check for new ones.')
+    opts.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        default=config.data.get("defaults.verbose", False),
+        help="Enable more logs",
+    )
+    opts.add_argument(
+        "-vv",
+        "--very-verbose",
+        action="store_true",
+        default=config.data.get("defaults.very_verbose", False),
+        help="Enable even more logs",
+    )
+    opts.add_argument(
+        "-s",
+        "--silent",
+        action="store_true",
+        default=config.data.get("defaults.silent", False),
+        help="Disable all logs",
+    )
+    opts.add_argument(
+        "-x",
+        "--exceptions",
+        action="store_true",
+        default=config.data.get("defaults.exceptions", False),
+        help="Display exceptions on errors",
+    )
+    opts.add_argument(
+        "-c",
+        "--clear-cache",
+        action="store_true",
+        default=config.data.get("defaults.clear_cache", False),
+        help="Clear all used caches",
+    )
+    opts.add_argument(
+        "-w",
+        "--watch",
+        action="store_true",
+        default=config.data.get("defaults.watch", False),
+        help="Enable watch mode (hot reload of generated files)",
+    )
+    opts.add_argument(
+        "-ff",
+        "--fail-fast",
+        action="store_true",
+        default=config.data.get("defaults.fail_fast", False),
+        help="Stop on first error",
+    )
+    opts.add_argument("--version", action="store_true", help="Display the ddb version and check for new ones.")
 
     command_parsers = {}
 
-    subparsers = opts.add_subparsers(dest="command", help='Available commands')
+    subparsers = opts.add_subparsers(dest="command", help="Available commands")
     for command in commands.all():
         parser = command.add_parser(subparsers)
         command.configure_parser(parser)
@@ -283,13 +314,13 @@ def parse_command_line(args: Sequence[str] | None = None):
 
     parsed_args, unknown_args = opts.parse_known_args(args)
 
-    log_level = 'INFO'
+    log_level = "INFO"
     if parsed_args.very_verbose:
-        log_level = 'DEBUG'
+        log_level = "DEBUG"
     elif parsed_args.verbose:
-        log_level = 'VERBOSE'
+        log_level = "VERBOSE"
     elif parsed_args.silent:
-        log_level = 'CRITICAL'
+        log_level = "CRITICAL"
 
     configure_logging(log_level)
 
@@ -299,8 +330,8 @@ def parse_command_line(args: Sequence[str] | None = None):
     command = commands.get(parsed_args.command)
 
     if unknown_args and not command.allow_unknown_args:
-        msg = _('unrecognized arguments: %s')
-        opts.error(msg % ' '.join(unknown_args))
+        msg = _("unrecognized arguments: %s")
+        opts.error(msg % " ".join(unknown_args))
 
     return command, parsed_args, unknown_args
 
@@ -326,11 +357,12 @@ def _register_action_in_event_bus(action: Action, binding: Callable | str | Even
     if callable(binding.event) and hasattr(binding.event, "name"):
         binding.event = binding.event.name
 
-    bus.on(binding.event, action_event_binding_runner_factory(action,
-                                                              binding.event,
-                                                              to_call=binding.call,
-                                                              event_processor=binding.processor,
-                                                              fail_fast=fail_fast).run)
+    bus.on(
+        binding.event,
+        action_event_binding_runner_factory(
+            action, binding.event, to_call=binding.call, event_processor=binding.processor, fail_fast=fail_fast
+        ).run,
+    )
 
 
 def register_actions_in_event_bus(fail_fast=False):
@@ -347,9 +379,11 @@ def register_actions_in_event_bus(fail_fast=False):
                 _register_action_in_event_bus(action, event_binding, fail_fast)
 
 
-def main(args: Sequence[str] | None = None,  # pylint:disable=too-many-statements
-         reset_disabled=False,
-         before_handle_command_line=None):
+def main(
+    args: Sequence[str] | None = None,  # pylint:disable=too-many-statements
+    reset_disabled=False,
+    before_handle_command_line=None,
+):
     """
     Load all features and handle command line
     """
@@ -413,8 +447,9 @@ def main(args: Sequence[str] | None = None,  # pylint:disable=too-many-statement
         try:
             clear_caches()
         except Exception as clear_cache_exception:  # pylint:disable=broad-except
-            logging.getLogger('ddb').exception("An error has occured while clearing caches",
-                                               exc_info=clear_cache_exception)
+            logging.getLogger("ddb").exception(
+                "An error has occured while clearing caches", exc_info=clear_cache_exception
+            )
         raise exception
     finally:
         os.chdir(initial_cwd)
@@ -477,5 +512,5 @@ def console_script():  # pragma: no cover
         sys.exit(1)
 
 
-if __name__ == '__main__':  # pragma: no cover
+if __name__ == "__main__":  # pragma: no cover
     console_script()

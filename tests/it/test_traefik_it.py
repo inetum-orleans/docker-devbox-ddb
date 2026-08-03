@@ -29,7 +29,7 @@ class TestTraefik:
         with open("ddb.yml", "w"):
             pass
 
-        Config.defaults = {'defaults': {'fail_fast': True}}
+        Config.defaults = {"defaults": {"fail_fast": True}}
 
         setup_cfssl(module_scoped_container_getter)
 

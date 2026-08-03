@@ -7,20 +7,20 @@ from ..registry import Registry
 from .cache import Cache
 from .shelve_cache import ShelveCache
 
-caches = Registry(Cache, 'Cache')  # type: Registry[Cache]
+caches = Registry(Cache, "Cache")  # type: Registry[Cache]
 
-global_cache_name = 'global'
-requests_cache_name = 'requests'
+global_cache_name = "global"
+requests_cache_name = "requests"
 
-project_cache_name = 'project'
-project_binary_cache_name = 'binary'
+project_cache_name = "project"
+project_binary_cache_name = "binary"
 
 
 def register_project_cache(cache_name):
     """
     Creates a ShelveCache for current project, and register it with given name.
     """
-    registered_projects_cache_name = ShelveCache('project-cache-uuid', eternal=True)
+    registered_projects_cache_name = ShelveCache("project-cache-uuid", eternal=True)
     try:
         project_cache_uuid = registered_projects_cache_name.get(config.paths.project_home)
         if project_cache_uuid is None:
@@ -30,7 +30,7 @@ def register_project_cache(cache_name):
         registered_projects_cache_name.close()
 
     namespace = [item for item in (project_cache_uuid, cache_name) if item]
-    cache = ShelveCache(slugify('.'.join(namespace), regex_pattern=r'[^-a-z0-9_\.]+'))
+    cache = ShelveCache(slugify(".".join(namespace), regex_pattern=r"[^-a-z0-9_\.]+"))
 
     caches.register(cache, cache_name)
     return cache
@@ -40,7 +40,7 @@ def register_global_cache(cache_name):
     """
     Creates a ShelveCache shared for all projects, and register it with given name.
     """
-    cache = ShelveCache(slugify(cache_name, regex_pattern=r'[^-a-z0-9_\.]+'))
+    cache = ShelveCache(slugify(cache_name, regex_pattern=r"[^-a-z0-9_\.]+"))
     caches.register(cache, cache_name)
     return cache
 

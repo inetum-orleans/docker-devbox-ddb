@@ -8,6 +8,7 @@ class Bus:
 
     Can be used to register/unregister events listeners, and emit events.
     """
+
     _named_listeners: ClassVar[dict[str, list[Callable]]] = {}
     _listeners: ClassVar[list[Callable]] = []
 

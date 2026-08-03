@@ -47,8 +47,8 @@ class TestJsonnetAction:
         features.register(JsonnetFeature())
         load_registered_features()
 
-        assert config.data.get('jsonnet.docker.user.name_to_uid')
-        assert config.data.get('jsonnet.docker.user.group_to_gid')
+        assert config.data.get("jsonnet.docker.user.name_to_uid")
+        assert config.data.get("jsonnet.docker.user.group_to_gid")
 
     @pytest.mark.skipif("os.name != 'nt'")
     def test_named_user_group_windows(self, project_loader):
@@ -57,8 +57,8 @@ class TestJsonnetAction:
         features.register(JsonnetFeature())
         load_registered_features()
 
-        assert config.data.get('jsonnet.docker.user.name_to_uid') == {}
-        assert config.data.get('jsonnet.docker.user.group_to_gid') == {}
+        assert config.data.get("jsonnet.docker.user.name_to_uid") == {}
+        assert config.data.get("jsonnet.docker.user.group_to_gid") == {}
 
     def test_example1(self, project_loader):
         project_loader("example1")
@@ -73,11 +73,11 @@ class TestJsonnetAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('example1.json')
-        with open('example1.json') as f:
+        assert os.path.exists("example1.json")
+        with open("example1.json") as f:
             example = f.read()
 
-        with open('example1.expected.json') as f:
+        with open("example1.expected.json") as f:
             example_expected = f.read()
 
         assert example == example_expected
@@ -95,20 +95,20 @@ class TestJsonnetAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('example1.another')
-        with open('example1.another') as f:
+        assert os.path.exists("example1.another")
+        with open("example1.another") as f:
             example_another = f.read()
 
-        with open('example1.expected.another') as f:
+        with open("example1.expected.another") as f:
             example_another_expected = f.read()
 
         assert example_another == example_another_expected
 
-        assert os.path.exists('example1.yaml')
-        with open('example1.yaml') as f:
+        assert os.path.exists("example1.yaml")
+        with open("example1.yaml") as f:
             example_yaml = f.read()
 
-        with open('example1.expected.yaml') as f:
+        with open("example1.expected.yaml") as f:
             example_yaml_expected = f.read()
 
         assert example_yaml == example_yaml_expected
@@ -126,11 +126,11 @@ class TestJsonnetAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('example2.json')
-        with open('example2.json') as f:
+        assert os.path.exists("example2.json")
+        with open("example2.json") as f:
             example = f.read()
 
-        with open('example2.expected.json') as f:
+        with open("example2.expected.json") as f:
             example_expected = f.read()
 
         assert example == example_expected
@@ -148,29 +148,29 @@ class TestJsonnetAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('uwsgi.ini')
-        with open('uwsgi.ini') as f:
+        assert os.path.exists("uwsgi.ini")
+        with open("uwsgi.ini") as f:
             iwsgi = f.read()
 
-        with open('uwsgi.expected.ini') as f:
+        with open("uwsgi.expected.ini") as f:
             iwsgi_expected = f.read()
 
         assert iwsgi == iwsgi_expected
 
-        assert os.path.exists('init.sh')
-        with open('init.sh') as f:
+        assert os.path.exists("init.sh")
+        with open("init.sh") as f:
             init = f.read()
 
-        with open('init.expected.sh') as f:
+        with open("init.expected.sh") as f:
             init_expected = f.read()
 
         assert init == init_expected
 
-        assert os.path.exists('cassandra.conf')
-        with open('cassandra.conf') as f:
+        assert os.path.exists("cassandra.conf")
+        with open("cassandra.conf") as f:
             cassandra = f.read()
 
-        with open('cassandra.expected.conf') as f:
+        with open("cassandra.expected.conf") as f:
             cassandra_expected = f.read()
 
         assert cassandra == cassandra_expected
@@ -188,29 +188,29 @@ class TestJsonnetAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('./target/uwsgi.ini')
-        with open('./target/uwsgi.ini') as f:
+        assert os.path.exists("./target/uwsgi.ini")
+        with open("./target/uwsgi.ini") as f:
             iwsgi = f.read()
 
-        with open('uwsgi.expected.ini') as f:
+        with open("uwsgi.expected.ini") as f:
             iwsgi_expected = f.read()
 
         assert iwsgi == iwsgi_expected
 
-        assert os.path.exists('./target/init.sh')
-        with open('./target/init.sh') as f:
+        assert os.path.exists("./target/init.sh")
+        with open("./target/init.sh") as f:
             init = f.read()
 
-        with open('init.expected.sh') as f:
+        with open("init.expected.sh") as f:
             init_expected = f.read()
 
         assert init == init_expected
 
-        assert os.path.exists('./target/cassandra.conf')
-        with open('./target/cassandra.conf') as f:
+        assert os.path.exists("./target/cassandra.conf")
+        with open("./target/cassandra.conf") as f:
             cassandra = f.read()
 
-        with open('cassandra.expected.conf') as f:
+        with open("cassandra.expected.conf") as f:
             cassandra_expected = f.read()
 
         assert cassandra == cassandra_expected
@@ -228,21 +228,24 @@ class TestJsonnetAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('variables.json')
-        with open('variables.json') as f:
+        assert os.path.exists("variables.json")
+        with open("variables.json") as f:
             variables = f.read()
 
-        with open('variables.expected.json') as f:
+        with open("variables.expected.json") as f:
             variables_expected = f.read()
 
         assert variables == variables_expected
 
-    @pytest.mark.parametrize("variant", [
-        "test-dev",
-        "test-ci",
-        "test-stage",
-        "test-prod",
-    ])
+    @pytest.mark.parametrize(
+        "variant",
+        [
+            "test-dev",
+            "test-ci",
+            "test-stage",
+            "test-prod",
+        ],
+    )
     def test_docker_compose_traefik(self, project_loader, variant):
         def before_load_config():
             os.rename(f"ddb.{variant}.yml", "ddb.yml")
@@ -261,33 +264,37 @@ class TestJsonnetAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('docker-compose.yml')
-        with open('docker-compose.yml') as f:
+        assert os.path.exists("docker-compose.yml")
+        with open("docker-compose.yml") as f:
             rendered = yaml.load(f.read(), yaml.SafeLoader)
 
-        with open('docker-compose.expected.yml') as f:
+        with open("docker-compose.expected.yml") as f:
             expected_data = f.read()
 
-            if os.name == 'nt':
+            if os.name == "nt":
                 expected_data = expected_data.replace("%ddb.path.project%", path_as_posix_fast(os.getcwd()))
             else:
                 expected_data = expected_data.replace("%ddb.path.project%", os.getcwd())
-            expected_data = expected_data.replace("%network_name%",
-                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
-            expected_data = expected_data.replace("%uid%", str(config.data.get('docker.user.uid')))
-            expected_data = expected_data.replace("%gid%", str(config.data.get('docker.user.gid')))
-            expected_data = expected_data.replace("%docker.debug.host%", str(config.data.get('docker.debug.host')))
+            expected_data = expected_data.replace(
+                "%network_name%", str(config.data.get("jsonnet.docker.compose.network_name"))
+            )
+            expected_data = expected_data.replace("%uid%", str(config.data.get("docker.user.uid")))
+            expected_data = expected_data.replace("%gid%", str(config.data.get("docker.user.gid")))
+            expected_data = expected_data.replace("%docker.debug.host%", str(config.data.get("docker.debug.host")))
 
             expected = yaml.load(expected_data, yaml.SafeLoader)
 
         assert rendered == expected
 
-    @pytest.mark.parametrize("variant", [
-        "test-dev",
-        "test-ci",
-        "test-stage",
-        "test-prod",
-    ])
+    @pytest.mark.parametrize(
+        "variant",
+        [
+            "test-dev",
+            "test-ci",
+            "test-stage",
+            "test-prod",
+        ],
+    )
     def test_docker_compose_traefik_no_https(self, project_loader, variant):
         def before_load_config():
             os.rename(f"ddb.{variant}.yml", "ddb.yml")
@@ -306,32 +313,36 @@ class TestJsonnetAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('docker-compose.yml')
-        with open('docker-compose.yml') as f:
+        assert os.path.exists("docker-compose.yml")
+        with open("docker-compose.yml") as f:
             rendered = yaml.load(f.read(), yaml.SafeLoader)
 
-        with open('docker-compose.expected.yml') as f:
+        with open("docker-compose.expected.yml") as f:
             expected_data = f.read()
 
-            if os.name == 'nt':
+            if os.name == "nt":
                 expected_data = expected_data.replace("%ddb.path.project%", path_as_posix_fast(os.getcwd()))
             else:
                 expected_data = expected_data.replace("%ddb.path.project%", os.getcwd())
-            expected_data = expected_data.replace("%network_name%",
-                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
-            expected_data = expected_data.replace("%uid%", str(config.data.get('docker.user.uid')))
-            expected_data = expected_data.replace("%gid%", str(config.data.get('docker.user.gid')))
-            expected_data = expected_data.replace("%docker.debug.host%", str(config.data.get('docker.debug.host')))
+            expected_data = expected_data.replace(
+                "%network_name%", str(config.data.get("jsonnet.docker.compose.network_name"))
+            )
+            expected_data = expected_data.replace("%uid%", str(config.data.get("docker.user.uid")))
+            expected_data = expected_data.replace("%gid%", str(config.data.get("docker.user.gid")))
+            expected_data = expected_data.replace("%docker.debug.host%", str(config.data.get("docker.debug.host")))
 
             expected = yaml.load(expected_data, yaml.SafeLoader)
 
         assert rendered == expected
 
-    @pytest.mark.parametrize("variant", [
-        "dev",
-        "ci",
-        "prod",
-    ])
+    @pytest.mark.parametrize(
+        "variant",
+        [
+            "dev",
+            "ci",
+            "prod",
+        ],
+    )
     def test_docker_compose_traefik_defaults(self, project_loader, variant):
         def before_load_config():
             os.rename(f"ddb.{variant}.yml", "ddb.yml")
@@ -350,22 +361,23 @@ class TestJsonnetAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('docker-compose.yml')
-        with open('docker-compose.yml') as f:
+        assert os.path.exists("docker-compose.yml")
+        with open("docker-compose.yml") as f:
             rendered = yaml.load(f.read(), yaml.SafeLoader)
 
-        with open('docker-compose.expected.yml') as f:
+        with open("docker-compose.expected.yml") as f:
             expected_data = f.read()
 
-            if os.name == 'nt':
+            if os.name == "nt":
                 expected_data = expected_data.replace("%ddb.path.project%", path_as_posix_fast(os.getcwd()))
             else:
                 expected_data = expected_data.replace("%ddb.path.project%", os.getcwd())
-            expected_data = expected_data.replace("%network_name%",
-                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
-            expected_data = expected_data.replace("%uid%", str(config.data.get('docker.user.uid')))
-            expected_data = expected_data.replace("%gid%", str(config.data.get('docker.user.gid')))
-            expected_data = expected_data.replace("%docker.debug.host%", str(config.data.get('docker.debug.host')))
+            expected_data = expected_data.replace(
+                "%network_name%", str(config.data.get("jsonnet.docker.compose.network_name"))
+            )
+            expected_data = expected_data.replace("%uid%", str(config.data.get("docker.user.uid")))
+            expected_data = expected_data.replace("%gid%", str(config.data.get("docker.user.gid")))
+            expected_data = expected_data.replace("%docker.debug.host%", str(config.data.get("docker.debug.host")))
 
             expected = yaml.load(expected_data, yaml.SafeLoader)
 
@@ -385,22 +397,23 @@ class TestJsonnetAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('docker-compose.yml')
-        with open('docker-compose.yml') as f:
+        assert os.path.exists("docker-compose.yml")
+        with open("docker-compose.yml") as f:
             rendered = yaml.load(f.read(), yaml.SafeLoader)
 
-        with open('docker-compose.expected.yml') as f:
+        with open("docker-compose.expected.yml") as f:
             expected_data = f.read()
 
-            if os.name == 'nt':
+            if os.name == "nt":
                 expected_data = expected_data.replace("%ddb.path.project%", path_as_posix_fast(os.getcwd()))
             else:
                 expected_data = expected_data.replace("%ddb.path.project%", os.getcwd())
-            expected_data = expected_data.replace("%network_name%",
-                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
-            expected_data = expected_data.replace("%uid%", str(config.data.get('docker.user.uid')))
-            expected_data = expected_data.replace("%gid%", str(config.data.get('docker.user.gid')))
-            expected_data = expected_data.replace("%docker.debug.host%", str(config.data.get('docker.debug.host')))
+            expected_data = expected_data.replace(
+                "%network_name%", str(config.data.get("jsonnet.docker.compose.network_name"))
+            )
+            expected_data = expected_data.replace("%uid%", str(config.data.get("docker.user.uid")))
+            expected_data = expected_data.replace("%gid%", str(config.data.get("docker.user.gid")))
+            expected_data = expected_data.replace("%docker.debug.host%", str(config.data.get("docker.debug.host")))
 
             expected = yaml.load(expected_data, yaml.SafeLoader)
 
@@ -420,22 +433,23 @@ class TestJsonnetAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('docker-compose.yml')
-        with open('docker-compose.yml') as f:
+        assert os.path.exists("docker-compose.yml")
+        with open("docker-compose.yml") as f:
             rendered = yaml.load(f.read(), yaml.SafeLoader)
 
-        with open('docker-compose.expected.yml') as f:
+        with open("docker-compose.expected.yml") as f:
             expected_data = f.read()
 
-            if os.name == 'nt':
+            if os.name == "nt":
                 expected_data = expected_data.replace("%ddb.path.project%", path_as_posix_fast(os.getcwd()))
             else:
                 expected_data = expected_data.replace("%ddb.path.project%", os.getcwd())
-            expected_data = expected_data.replace("%network_name%",
-                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
-            expected_data = expected_data.replace("%uid%", str(config.data.get('docker.user.uid')))
-            expected_data = expected_data.replace("%gid%", str(config.data.get('docker.user.gid')))
-            expected_data = expected_data.replace("%docker.debug.host%", str(config.data.get('docker.debug.host')))
+            expected_data = expected_data.replace(
+                "%network_name%", str(config.data.get("jsonnet.docker.compose.network_name"))
+            )
+            expected_data = expected_data.replace("%uid%", str(config.data.get("docker.user.uid")))
+            expected_data = expected_data.replace("%gid%", str(config.data.get("docker.user.gid")))
+            expected_data = expected_data.replace("%docker.debug.host%", str(config.data.get("docker.debug.host")))
 
             expected = yaml.load(expected_data, yaml.SafeLoader)
 
@@ -455,14 +469,15 @@ class TestJsonnetAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('docker-compose.yml')
-        with open('docker-compose.yml') as f:
+        assert os.path.exists("docker-compose.yml")
+        with open("docker-compose.yml") as f:
             rendered = yaml.load(f.read(), yaml.SafeLoader)
 
-        with open('docker-compose.expected.yml') as f:
+        with open("docker-compose.expected.yml") as f:
             expected_data = f.read()
-            expected_data = expected_data.replace("%network_name%",
-                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
+            expected_data = expected_data.replace(
+                "%network_name%", str(config.data.get("jsonnet.docker.compose.network_name"))
+            )
 
             expected = yaml.load(expected_data, yaml.SafeLoader)
 
@@ -482,29 +497,33 @@ class TestJsonnetAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('docker-compose.yml')
-        with open('docker-compose.yml') as f:
+        assert os.path.exists("docker-compose.yml")
+        with open("docker-compose.yml") as f:
             rendered = yaml.load(f.read(), yaml.SafeLoader)
 
-        with open('docker-compose.expected.yml') as f:
+        with open("docker-compose.expected.yml") as f:
             expected_data = f.read()
-            expected_data = expected_data.replace("%network_name%",
-                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
+            expected_data = expected_data.replace(
+                "%network_name%", str(config.data.get("jsonnet.docker.compose.network_name"))
+            )
 
             expected = yaml.load(expected_data, yaml.SafeLoader)
 
         assert rendered == expected
 
-    @pytest.mark.parametrize("variant", [
-        "_register_binary",
-        "_register_binary_with_one_option",
-        # "_register_binary_with_multiple_options", TODO handle (options)(c1)
-        "_shared_volumes",
-        "_mount_volumes",
-        "_mount_single_volume",
-        "_mount_single_volume_with_default",
-        "_expose"
-    ])
+    @pytest.mark.parametrize(
+        "variant",
+        [
+            "_register_binary",
+            "_register_binary_with_one_option",
+            # "_register_binary_with_multiple_options", TODO handle (options)(c1)
+            "_shared_volumes",
+            "_mount_volumes",
+            "_mount_single_volume",
+            "_mount_single_volume_with_default",
+            "_expose",
+        ],
+    )
     def test_docker_compose_variants(self, project_loader, variant):
         project_loader("docker_compose" + variant)
 
@@ -519,37 +538,41 @@ class TestJsonnetAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('docker-compose.yml')
-        with open('docker-compose.yml') as f:
+        assert os.path.exists("docker-compose.yml")
+        with open("docker-compose.yml") as f:
             rendered = yaml.load(f.read(), yaml.SafeLoader)
 
-        with open('docker-compose.expected.yml') as f:
+        with open("docker-compose.expected.yml") as f:
             expected_data = f.read()
 
-            if os.name == 'nt':
+            if os.name == "nt":
                 expected_data = expected_data.replace("%ddb.path.project%", path_as_posix_fast(os.getcwd()))
             else:
                 expected_data = expected_data.replace("%ddb.path.project%", os.getcwd())
-            expected_data = expected_data.replace("%network_name%",
-                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
-            expected_data = expected_data.replace("%uid%", str(config.data.get('docker.user.uid')))
-            expected_data = expected_data.replace("%gid%", str(config.data.get('docker.user.gid')))
-            expected_data = expected_data.replace("%docker.debug.host%", str(config.data.get('docker.debug.host')))
+            expected_data = expected_data.replace(
+                "%network_name%", str(config.data.get("jsonnet.docker.compose.network_name"))
+            )
+            expected_data = expected_data.replace("%uid%", str(config.data.get("docker.user.uid")))
+            expected_data = expected_data.replace("%gid%", str(config.data.get("docker.user.gid")))
+            expected_data = expected_data.replace("%docker.debug.host%", str(config.data.get("docker.debug.host")))
 
             expected = yaml.load(expected_data, yaml.SafeLoader)
 
         assert rendered == expected
 
-        if variant == '_mount_single_volume':
-            assert os.path.isdir('volumes/shared-volume')
+        if variant == "_mount_single_volume":
+            assert os.path.isdir("volumes/shared-volume")
 
-        if variant == '_mount_single_volume_with_default':
-            assert os.path.isdir('shared-volume')
+        if variant == "_mount_single_volume_with_default":
+            assert os.path.isdir("shared-volume")
 
-    @pytest.mark.parametrize("variant", [
-        "default",
-        "no_debug",
-    ])
+    @pytest.mark.parametrize(
+        "variant",
+        [
+            "default",
+            "no_debug",
+        ],
+    )
     def test_docker_compose_xdebug(self, project_loader, variant):
         def before_load_config():
             os.rename(f"ddb.{variant}.yml", "ddb.yml")
@@ -570,18 +593,19 @@ class TestJsonnetAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('docker-compose.yml')
-        with open('docker-compose.yml') as f:
+        assert os.path.exists("docker-compose.yml")
+        with open("docker-compose.yml") as f:
             rendered = yaml.load(f.read(), yaml.SafeLoader)
 
-        with open('docker-compose.expected.yml') as f:
+        with open("docker-compose.expected.yml") as f:
             expected_data = f.read()
 
-            expected_data = expected_data.replace("%network_name%",
-                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
-            expected_data = expected_data.replace("%uid%", str(config.data.get('docker.user.uid')))
-            expected_data = expected_data.replace("%gid%", str(config.data.get('docker.user.gid')))
-            expected_data = expected_data.replace("%docker.debug.host%", str(config.data.get('docker.debug.host')))
+            expected_data = expected_data.replace(
+                "%network_name%", str(config.data.get("jsonnet.docker.compose.network_name"))
+            )
+            expected_data = expected_data.replace("%uid%", str(config.data.get("docker.user.uid")))
+            expected_data = expected_data.replace("%gid%", str(config.data.get("docker.user.gid")))
+            expected_data = expected_data.replace("%docker.debug.host%", str(config.data.get("docker.debug.host")))
 
             expected = yaml.load(expected_data, yaml.SafeLoader)
 
@@ -598,10 +622,8 @@ class TestJsonnetAutofix:
         config.args.autofix = True
 
         history = (
-            PropertyMigration("old_property",
-                              "new_property", since="v1.1.0"),
-            PropertyMigration("some.deep.old.property",
-                              "some.another.new.property", since="v1.1.0"),
+            PropertyMigration("old_property", "new_property", since="v1.1.0"),
+            PropertyMigration("some.deep.old.property", "some.another.new.property", since="v1.1.0"),
         )
 
         migrations.set_history(history)
@@ -617,19 +639,19 @@ class TestJsonnetAutofix:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('variables.json')
-        with open('variables.json') as f:
+        assert os.path.exists("variables.json")
+        with open("variables.json") as f:
             rendered = f.read()
 
-        with open('variables.expected.json') as f:
+        with open("variables.expected.json") as f:
             expected = f.read()
 
         assert expected == rendered
 
-        with open('variables.json.jsonnet') as f:
+        with open("variables.json.jsonnet") as f:
             source = f.read()
 
-        with open('variables.json.autofix') as f:
+        with open("variables.json.autofix") as f:
             fixed = f.read()
 
         assert source == fixed

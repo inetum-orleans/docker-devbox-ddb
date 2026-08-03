@@ -22,10 +22,11 @@ class UpdateGitignoreAction(InitializableAction):
 
     @property
     def event_bindings(self):
-        return (events.file.generated,
-                EventBinding(events.file.deleted, self.remove),
-                EventBinding(events.phase.configure, self.enforced)
-                )
+        return (
+            events.file.generated,
+            EventBinding(events.file.deleted, self.remove),
+            EventBinding(events.phase.configure, self.enforced),
+        )
 
     def initialize(self):
         register_project_cache("gitignore")
@@ -69,9 +70,9 @@ class UpdateGitignoreAction(InitializableAction):
         """
         Handle the list of enforced actions
         """
-        files = config.data.get('gitignore.enforce')
+        files = config.data.get("gitignore.enforce")
         cache = caches.get("gitignore")
-        cached_files = cache.get('enforced', [])
+        cached_files = cache.get("enforced", [])
 
         for file in cached_files:
             if file not in files:
@@ -82,7 +83,7 @@ class UpdateGitignoreAction(InitializableAction):
             if file not in cached_files:
                 cached_files.append(file)
 
-        cache.set('enforced', cached_files)
+        cache.set("enforced", cached_files)
         cache.flush()
 
     @staticmethod
@@ -92,8 +93,9 @@ class UpdateGitignoreAction(InitializableAction):
         :param file:
         :return:
         """
-        ignored, target_file, gitignore, block_lines, before_lines, after_lines = \
+        ignored, target_file, gitignore, block_lines, before_lines, after_lines = (
             UpdateGitignoreAction._check_file_ignored(file)
+        )
         if not ignored:
             return
 
@@ -126,8 +128,9 @@ class UpdateGitignoreAction(InitializableAction):
         """
         dirname = target
 
-        while os.path.abspath(dirname).startswith(config.paths.project_home) and \
-                os.path.abspath(dirname) != os.path.abspath(config.paths.project_home):
+        while os.path.abspath(dirname).startswith(config.paths.project_home) and os.path.abspath(
+            dirname
+        ) != os.path.abspath(config.paths.project_home):
             dirname = os.path.dirname(dirname)
             gitignore = os.path.join(dirname, ".gitignore")
             if os.path.exists(gitignore) and os.access(gitignore, os.W_OK):
@@ -169,11 +172,11 @@ class UpdateGitignoreAction(InitializableAction):
         :param start: if it is the start of the block or not
         :return:
         """
-        markers = config.data.get('gitignore.markers', ['inetum-orleans/docker-devbox'])
+        markers = config.data.get("gitignore.markers", ["inetum-orleans/docker-devbox"])
 
         if start:
-            return f'###> {markers[0]} ###'
-        return f'###< {markers[0]} ###'
+            return f"###> {markers[0]} ###"
+        return f"###< {markers[0]} ###"
 
     @staticmethod
     def _is_block_limit(line: str, start: bool | None = None):
@@ -183,14 +186,14 @@ class UpdateGitignoreAction(InitializableAction):
         :param start: if it is the start of the block or not
         :return:
         """
-        markers = config.data.get('gitignore.markers', ['inetum-orleans/docker-devbox'])
+        markers = config.data.get("gitignore.markers", ["inetum-orleans/docker-devbox"])
 
         for marker in markers:
             if start or start is None:
-                if f'###> {marker} ###' == line:
+                if f"###> {marker} ###" == line:
                     return True
             if not start or start is None:
-                if f'###< {marker} ###' == line:
+                if f"###< {marker} ###" == line:
                     return True
         return False
 
@@ -200,7 +203,7 @@ class UpdateGitignoreAction(InitializableAction):
             with open(gitignore, "w", encoding="utf-8") as gitignore_file:
                 for lineno, line in enumerate(content):
                     if lineno > 0:
-                        gitignore_file.write('\n')
+                        gitignore_file.write("\n")
                     gitignore_file.write(line)
         else:
             force_remove(gitignore)
@@ -212,7 +215,7 @@ class UpdateGitignoreAction(InitializableAction):
         before_lines = []
         content_lines = []
         after_lines = []
-        for line in gitignore_file_content.split('\n'):
+        for line in gitignore_file_content.split("\n"):
             if UpdateGitignoreAction._is_block_limit(line, False):
                 ended = True
             if not started and not ended:

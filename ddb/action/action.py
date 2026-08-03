@@ -149,9 +149,11 @@ class AbstractTemplateAction(InitializableAction, ABC):  # pylint:disable=abstra
                 return (), {"template": template, "target": target}
             return None
 
-        return (EventBinding(events.file.found, processor=file_found_processor),
-                EventBinding(events.file.deleted, call=self.delete, processor=file_delete_processor),
-                EventBinding("file:generated", processor=file_generated_processor))
+        return (
+            EventBinding(events.file.found, processor=file_found_processor),
+            EventBinding(events.file.deleted, call=self.delete, processor=file_delete_processor),
+            EventBinding("file:generated", processor=file_generated_processor),
+        )
 
     def initialize(self):
         self.template_finder = self._build_template_finder()
@@ -179,16 +181,19 @@ class AbstractTemplateAction(InitializableAction, ABC):  # pylint:disable=abstra
 
         try:
             for rendered, destination in self._render_template(template, target):
-                if original_template != template and 'autofix' in config.args and config.args.autofix:
+                if original_template != template and "autofix" in config.args and config.args.autofix:
                     context.logger.info("[autofix]: %s", original_template)
                     copy_if_different(template, original_template, log=True)
                 written = False
                 if not isinstance(rendered, bool):
                     is_bynary = isinstance(rendered, (bytes, bytearray))
-                    written = write_if_different(destination, rendered,
-                                                 'rb' if is_bynary else 'r',
-                                                 'wb' if is_bynary else 'w',
-                                                 log_source=original_template)
+                    written = write_if_different(
+                        destination,
+                        rendered,
+                        "rb" if is_bynary else "r",
+                        "wb" if is_bynary else "w",
+                        log_source=original_template,
+                    )
                     caches.get(self._cache_key).set(target, rendered)
                 context.mark_as_processed(template, destination)
 
@@ -200,7 +205,7 @@ class AbstractTemplateAction(InitializableAction, ABC):  # pylint:disable=abstra
             try:
                 template = self._autofix_render_error(template, target, original_template, render_error)
             except Exception as migrate_error:
-                context.log.warning("Automatic template migration has failed for \"%s\": %s", template, migrate_error)
+                context.log.warning('Automatic template migration has failed for "%s": %s', template, migrate_error)
                 raise render_error from migrate_error
             if not template:
                 raise render_error
@@ -217,7 +222,7 @@ class AbstractTemplateAction(InitializableAction, ABC):  # pylint:disable=abstra
             return True
         is_bynary = isinstance(rendered, (bytes, bytearray))
         read_encoding = None if is_bynary else "utf-8"
-        with open(target, mode='rb' if is_bynary else 'r', encoding=read_encoding) as read_file:
+        with open(target, mode="rb" if is_bynary else "r", encoding=read_encoding) as read_file:
             existing_data = read_file.read()
         return existing_data != rendered
 
@@ -233,11 +238,9 @@ class AbstractTemplateAction(InitializableAction, ABC):  # pylint:disable=abstra
         Perform template rendering to a string.
         """
 
-    def _autofix_render_error(self,
-                              template: str,
-                              target: str,
-                              original_template: str,
-                              render_error: Exception) -> str | None:
+    def _autofix_render_error(
+        self, template: str, target: str, original_template: str, render_error: Exception
+    ) -> str | None:
         """
         Try to automatically migrate this template in a temporary file when an error occurs.
         :return a temporary filepath to render again, if template has been fixed.

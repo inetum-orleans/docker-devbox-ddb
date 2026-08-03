@@ -7,4 +7,5 @@ class GitSchema(FeatureSchema):
     """
     Git schema.
     """
+
     fix_files_permissions = fields.Bool(dump_default=True)

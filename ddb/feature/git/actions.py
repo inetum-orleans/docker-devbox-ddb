@@ -24,7 +24,7 @@ class FixFilePermissionsAction(Action):
 
     @property
     def disabled(self) -> bool:
-        return not config.data.get("git.fix_files_permissions") or os.name == 'nt'
+        return not config.data.get("git.fix_files_permissions") or os.name == "nt"
 
     def execute(self):
         """
@@ -63,16 +63,20 @@ class FixFilePermissionsAction(Action):
         if os.path.isdir(path):
             return
 
-        if git_mode[-4:] == '0755' and not os.access(path, os.X_OK):
-            chmod(path, '+x')
-            context.log.warning('If this chmod is not expected, update the file permission in git using command "git '
-                                'update-index --chmod=+x foo.sh"')
+        if git_mode[-4:] == "0755" and not os.access(path, os.X_OK):
+            chmod(path, "+x")
+            context.log.warning(
+                'If this chmod is not expected, update the file permission in git using command "git '
+                'update-index --chmod=+x foo.sh"'
+            )
             return
 
-        if git_mode[-4:] != '0755' and os.access(path, os.X_OK):
-            chmod(path, '-x')
-            context.log.warning('If this chmod is not expected, update the file permission in git using command "git '
-                                'update-index --chmod=+x foo.sh"')
+        if git_mode[-4:] != "0755" and os.access(path, os.X_OK):
+            chmod(path, "-x")
+            context.log.warning(
+                'If this chmod is not expected, update the file permission in git using command "git '
+                'update-index --chmod=+x foo.sh"'
+            )
 
     @staticmethod
     def get_current_chmod(path: str) -> str:

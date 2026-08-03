@@ -8,9 +8,9 @@ from deepmerge.strategy.type_conflict import TypeConflictStrategies
 def _type_conflict_strategy(config, path, base, nxt):
     strategy = TypeConflictStrategies.strategy_override
     if isinstance(nxt, dict):
-        if 'merge' in nxt and 'value' in nxt:
-            value = nxt['value']
-            merge = nxt['merge']
+        if "merge" in nxt and "value" in nxt:
+            value = nxt["value"]
+            merge = nxt["merge"]
             if isinstance(merge, str):
                 if isinstance(value, list) and isinstance(base, list):
                     strategy = ExtendedListStrategies._expand_strategy(merge)  # pylint:disable=protected-access
@@ -30,8 +30,8 @@ def clean_merge_value_dicts(result):
     if isinstance(result, dict):
         updates = []
         for key, value in result.items():
-            if isinstance(value, dict) and 'merge' in value and 'value' in value:
-                updates.append((key, value['value']))
+            if isinstance(value, dict) and "merge" in value and "value" in value:
+                updates.append((key, value["value"]))
             elif isinstance(value, list):
                 clean_merge_value_dicts(value)
         for key, value in updates:
@@ -49,19 +49,19 @@ class ExtendedListStrategies(ListStrategies):
 
     @staticmethod
     def strategy_append_if_missing(config, path, base, nxt):
-        """ use the list nxt. """
+        """use the list nxt."""
         filtered_nxt = [item for item in nxt if item not in base]
         return ListStrategies.strategy_append(config, path, base, filtered_nxt)
 
     @staticmethod
     def strategy_prepend_if_missing(config, path, base, nxt):
-        """ use the list nxt. """
+        """use the list nxt."""
         filtered_nxt = [item for item in nxt if item not in base]
         return ListStrategies.strategy_prepend(config, path, base, filtered_nxt)
 
     @staticmethod
     def strategy_insert_if_missing(config, path, base, nxt):
-        """ use the list nxt. """
+        """use the list nxt."""
         idx = nxt.pop(0)
         filtered_nxt = [item for item in nxt if item not in base]
         if idx >= 0:
@@ -73,7 +73,7 @@ class ExtendedListStrategies(ListStrategies):
 
     @staticmethod
     def strategy_insert(config, path, base, nxt):
-        """ use the list nxt. """
+        """use the list nxt."""
         idx = nxt.pop(0)
         ordered_nxt = list(nxt)
         if idx >= 0:
@@ -100,8 +100,8 @@ def merge_value_strategy_wrapper(strategy):
 config_merger = Merger(
     [
         (list, merge_value_strategy_wrapper(ListStrategies.strategy_override)),
-        (dict, merge_value_strategy_wrapper(DictStrategies.strategy_merge))
+        (dict, merge_value_strategy_wrapper(DictStrategies.strategy_merge)),
     ],
     [merge_value_strategy_wrapper(FallbackStrategies.strategy_override)],
-    [_type_conflict_strategy]
+    [_type_conflict_strategy],
 )

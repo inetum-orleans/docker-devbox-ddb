@@ -1,4 +1,3 @@
-
 from ddb.feature.schema import FeatureSchema
 
 

@@ -25,5 +25,5 @@ class TestCookiecutterAction:
         action = CookiecutterAction()
         action.execute()
 
-        assert os.path.isdir('my_awesome_project')
-        assert os.path.isfile(os.path.join('my_awesome_project', 'pyproject.toml'))
+        assert os.path.isdir("my_awesome_project")
+        assert os.path.isfile(os.path.join("my_awesome_project", "pyproject.toml"))

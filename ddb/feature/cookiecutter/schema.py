@@ -10,6 +10,7 @@ class CookiecutterOptions(Schema):
     """
     Cookiecutter options
     """
+
     no_input = fields.Boolean(allow_none=True, dump_default=None)
     replay = fields.Boolean(allow_none=True, dump_default=False)
     overwrite_if_exists = fields.Boolean(allow_none=True, dump_default=True)
@@ -21,6 +22,7 @@ class TemplateSchema(CookiecutterOptions):
     """
     Template schema
     """
+
     template = fields.String(required=True)
     output_dir = fields.String(allow_none=True, dump_default=None)
     checkout = fields.String(allow_none=True, dump_default=None)
@@ -36,6 +38,7 @@ class CookiecutterFeatureSchema(FeatureSchema, CookiecutterOptions):
     """
     Cookiecutter feature schema.
     """
+
     templates = fields.List(fields.Nested(TemplateSchema()))
     cookiecutters_dir = fields.String(allow_none=True, dump_default=os.path.join(cookiecutter_tmp_dir, "templates"))
     replay_dir = fields.String(allow_none=True, dump_default=os.path.join(cookiecutter_tmp_dir, "replay"))

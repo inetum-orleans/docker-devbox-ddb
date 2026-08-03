@@ -16,9 +16,7 @@ class Custom2Feature(Feature):
 
     @property
     def actions(self) -> Iterable[Action]:
-        return (
-            Custom2Action(),
-        )
+        return (Custom2Action(),)
 
 
 class Custom2Action(Action):

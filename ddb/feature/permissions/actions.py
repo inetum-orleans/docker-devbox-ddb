@@ -19,7 +19,7 @@ class PermissionsAction(Action):
 
     @property
     def event_bindings(self):
-        specs = config.data.get('permissions.specs')
+        specs = config.data.get("permissions.specs")
         compiled_specs = []
         if specs:
             for spec, mode in specs.items():
@@ -40,9 +40,9 @@ class PermissionsAction(Action):
 
         return (
             EventBinding(events.file.found, chmod, file_found_processor),
-            EventBinding(events.file.generated, chmod, file_generated_processor)
+            EventBinding(events.file.generated, chmod, file_generated_processor),
         )
 
     @property
     def disabled(self) -> bool:
-        return os.name == 'nt'
+        return os.name == "nt"

@@ -15,14 +15,14 @@ class TestCopyFeature:
         action = CopyAction()
         action.execute()
 
-        assert os.path.exists(os.path.join('.docker', 'service1', 'ca-certs', 'some-cert.crt'))
-        assert not os.path.exists(os.path.join('.docker', 'service1', 'ca-certs', 'another-cert.crt'))
+        assert os.path.exists(os.path.join(".docker", "service1", "ca-certs", "some-cert.crt"))
+        assert not os.path.exists(os.path.join(".docker", "service1", "ca-certs", "another-cert.crt"))
 
-        assert os.path.exists(os.path.join('.docker', 'service2', 'ca-certs', 'some-cert.crt'))
-        assert not os.path.exists(os.path.join('.docker', 'service2', 'ca-certs', 'another-cert.crt'))
+        assert os.path.exists(os.path.join(".docker", "service2", "ca-certs", "some-cert.crt"))
+        assert not os.path.exists(os.path.join(".docker", "service2", "ca-certs", "another-cert.crt"))
 
-        assert not os.path.exists(os.path.join('.docker', '.not-a-service', 'ca-certs', 'some-cert.crt'))
-        assert not os.path.exists(os.path.join('.docker', '.not-a-service', 'ca-certs', 'another-cert.crt'))
+        assert not os.path.exists(os.path.join(".docker", ".not-a-service", "ca-certs", "some-cert.crt"))
+        assert not os.path.exists(os.path.join(".docker", ".not-a-service", "ca-certs", "another-cert.crt"))
 
     def test_copy_fixuid(self, project_loader):
         project_loader("copy-fixuid")
@@ -34,9 +34,9 @@ class TestCopyFeature:
         action = CopyAction()
         action.execute()
 
-        assert os.path.exists(os.path.join('.docker', 'service1', 'fixuid.tar.gz'))
-        assert os.path.exists(os.path.join('.docker', 'service2', 'fixuid.tar.gz'))
-        assert not os.path.exists(os.path.join('.docker', '.not-a-service', 'fixuid.tar.gz'))
+        assert os.path.exists(os.path.join(".docker", "service1", "fixuid.tar.gz"))
+        assert os.path.exists(os.path.join(".docker", "service2", "fixuid.tar.gz"))
+        assert not os.path.exists(os.path.join(".docker", ".not-a-service", "fixuid.tar.gz"))
 
     def test_copy_fixuid_default_filename(self, project_loader):
         project_loader("copy-fixuid-default-filename")
@@ -48,9 +48,9 @@ class TestCopyFeature:
         action = CopyAction()
         action.execute()
 
-        assert os.path.exists(os.path.join('.docker', 'service1', 'fixuid-0.5-linux-amd64.tar.gz'))
-        assert os.path.exists(os.path.join('.docker', 'service2', 'fixuid-0.5-linux-amd64.tar.gz'))
-        assert not os.path.exists(os.path.join('.docker', '.not-a-service', 'fixuid-0.5-linux-amd64.tar.gz'))
+        assert os.path.exists(os.path.join(".docker", "service1", "fixuid-0.5-linux-amd64.tar.gz"))
+        assert os.path.exists(os.path.join(".docker", "service2", "fixuid-0.5-linux-amd64.tar.gz"))
+        assert not os.path.exists(os.path.join(".docker", ".not-a-service", "fixuid-0.5-linux-amd64.tar.gz"))
 
     def test_copy_no_dispatch(self, project_loader):
         project_loader("copy-no-dispatch")
@@ -61,7 +61,7 @@ class TestCopyFeature:
 
         action = CopyAction()
         action.execute()
-        assert os.path.exists(os.path.join('.', 'some-cert.crt'))
+        assert os.path.exists(os.path.join(".", "some-cert.crt"))
 
     def test_copy_subdirectory(self, project_loader):
         project_loader("copy-subdirectory")
@@ -72,11 +72,11 @@ class TestCopyFeature:
 
         action = CopyAction()
         action.execute()
-        assert os.path.exists(os.path.join('sub', 'target'))
+        assert os.path.exists(os.path.join("sub", "target"))
 
-        assert os.path.isfile(os.path.join('sub', 'target', 'test.abc.json'))
-        assert os.path.isfile(os.path.join('sub', 'target', 'test.def.json'))
-        assert os.path.isfile(os.path.join('sub', 'target', 'test.ijk.yaml'))
+        assert os.path.isfile(os.path.join("sub", "target", "test.abc.json"))
+        assert os.path.isfile(os.path.join("sub", "target", "test.def.json"))
+        assert os.path.isfile(os.path.join("sub", "target", "test.ijk.yaml"))
 
     def test_copy_subdirectory_glob(self, project_loader):
         project_loader("copy-subdirectory-glob")
@@ -87,8 +87,8 @@ class TestCopyFeature:
 
         action = CopyAction()
         action.execute()
-        assert os.path.exists(os.path.join('sub', 'target'))
+        assert os.path.exists(os.path.join("sub", "target"))
 
-        assert os.path.isfile(os.path.join('sub', 'target', 'test.abc.json'))
-        assert os.path.isfile(os.path.join('sub', 'target', 'test.def.json'))
-        assert not os.path.exists(os.path.join('sub', 'target', 'test.ijk.yaml'))
+        assert os.path.isfile(os.path.join("sub", "target", "test.abc.json"))
+        assert os.path.isfile(os.path.join("sub", "target", "test.def.json"))
+        assert not os.path.exists(os.path.join("sub", "target", "test.ijk.yaml"))

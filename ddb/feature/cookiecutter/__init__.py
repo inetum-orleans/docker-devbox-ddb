@@ -29,16 +29,14 @@ class CookiecutterFeature(Feature):
 
     @property
     def actions(self) -> Iterable[Action]:
-        return (
-            CookiecutterAction(),
-        )
+        return (CookiecutterAction(),)
 
     def _configure_defaults(self, feature_config: Dotty):
-        if 'templates' in feature_config:
-            feature_config['templates'] = [self._sanitize_template(t) for t in feature_config['templates']]
+        if "templates" in feature_config:
+            feature_config["templates"] = [self._sanitize_template(t) for t in feature_config["templates"]]
 
     @staticmethod
     def _sanitize_template(template):
-        if template.get('output_dir'):
-            template['extra_context'] = {'directory': '.'}
+        if template.get("output_dir"):
+            template["extra_context"] = {"directory": "."}
         return template

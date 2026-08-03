@@ -23,10 +23,10 @@ def copy_from_url(source, destination, filename=None):
         response.raise_for_status()
         cache.set(source, response)
     if not filename:
-        content_disposition = response.headers['content-disposition']
+        content_disposition = response.headers["content-disposition"]
         filename = re.findall("filename=(.+)", content_disposition)[0]
     target_path = os.path.join(destination, filename)
-    if write_if_different(target_path, response.content, 'rb', 'wb', log_source=source) or config.eject:
+    if write_if_different(target_path, response.content, "rb", "wb", log_source=source) or config.eject:
         return target_path
     return None
 
@@ -79,14 +79,14 @@ class CopyAction(Action):
         generated_events = []
 
         for spec in specs:
-            source = spec['source']
-            destination = spec.get('destination')
+            source = spec["source"]
+            destination = spec.get("destination")
 
-            dispatch = spec.get('dispatch')
+            dispatch = spec.get("dispatch")
             dispatch_directories = get_dispatch_directories(dispatch)
 
             if not dispatch_directories:
-                dispatch_directories = ['']
+                dispatch_directories = [""]
 
             for dispatch_directory in dispatch_directories:
                 if destination:
@@ -103,19 +103,19 @@ class CopyAction(Action):
 
     @staticmethod
     def _copy_from_spec(destination, source, spec):
-        if source.startswith(('http://', 'https://')):
-            target_path = copy_from_url(source, destination, spec.get('filename'))
+        if source.startswith(("http://", "https://")):
+            target_path = copy_from_url(source, destination, spec.get("filename"))
             if target_path:
                 yield None, target_path
         elif os.path.exists(source) and os.path.isfile(source):
-            filename = spec.get('filename', os.path.basename(source))
+            filename = spec.get("filename", os.path.basename(source))
             target_path = os.path.join(destination, filename)
-            if copy_if_different(source, target_path, 'rb', 'wb', log=True) or config.eject:
+            if copy_if_different(source, target_path, "rb", "wb", log=True) or config.eject:
                 yield source, target_path
         else:
             if os.path.isdir(source):
-                source = source + '/*'
+                source = source + "/*"
             for file in glob.glob(source):
                 target_path = os.path.join(destination, os.path.basename(file))
-                if copy_if_different(file, target_path, 'rb', 'wb', log=True) or config.eject:
+                if copy_if_different(file, target_path, "rb", "wb", log=True) or config.eject:
                     yield file, target_path

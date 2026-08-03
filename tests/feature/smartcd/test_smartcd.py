@@ -13,7 +13,7 @@ from ddb.feature.smartcd import SmartcdAction, SmartcdFeature, WindowsProjectAct
 @pytest.mark.skipif("os.name == 'nt'")
 class TestSmartcdAction:
     def test_empty_project_without_core(self, project_loader, mocker: MockerFixture):
-        mocker.patch('ddb.feature.smartcd.actions.is_smartcd_installed', lambda: True)
+        mocker.patch("ddb.feature.smartcd.actions.is_smartcd_installed", lambda: True)
 
         project_loader("empty")
 
@@ -27,7 +27,7 @@ class TestSmartcdAction:
         assert not os.path.exists(".bash_leave")
 
     def test_empty_project_with_core(self, project_loader, mocker: MockerFixture):
-        mocker.patch('ddb.feature.smartcd.actions.is_smartcd_installed', lambda: True)
+        mocker.patch("ddb.feature.smartcd.actions.is_smartcd_installed", lambda: True)
 
         project_loader("empty")
 
@@ -42,7 +42,7 @@ class TestSmartcdAction:
         assert not os.path.exists(".bash_leave")
 
     def test_empty_project_with_activate_deactivate_commands(self, project_loader, mocker: MockerFixture):
-        mocker.patch('ddb.feature.smartcd.actions.is_smartcd_installed', lambda: True)
+        mocker.patch("ddb.feature.smartcd.actions.is_smartcd_installed", lambda: True)
 
         project_loader("empty")
 
@@ -65,7 +65,7 @@ class TestSmartcdAction:
             assert "$(ddb deactivate)" in f.read()
 
     def test_empty_project_main(self, project_loader, mocker: MockerFixture):
-        mocker.patch('ddb.feature.smartcd.actions.is_smartcd_installed', lambda: True)
+        mocker.patch("ddb.feature.smartcd.actions.is_smartcd_installed", lambda: True)
 
         project_loader("empty")
 
@@ -82,7 +82,7 @@ class TestSmartcdAction:
             assert "$(ddb deactivate)" in f.read()
 
     def test_empty_project_main_no_smartcd(self, project_loader, mocker: MockerFixture):
-        mocker.patch('ddb.feature.smartcd.actions.is_smartcd_installed', lambda: False)
+        mocker.patch("ddb.feature.smartcd.actions.is_smartcd_installed", lambda: False)
 
         project_loader("empty")
 

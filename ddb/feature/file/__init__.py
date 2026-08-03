@@ -27,6 +27,4 @@ class FileFeature(Feature):
 
     @property
     def actions(self) -> Iterable[Action]:
-        return (
-            FileWalkAction(),
-        )
+        return (FileWalkAction(),)

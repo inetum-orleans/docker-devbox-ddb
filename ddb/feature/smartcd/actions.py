@@ -36,7 +36,7 @@ class SmartcdAction(InitializableAction):
 
     @property
     def disabled(self) -> bool:
-        return os.name == 'nt'
+        return os.name == "nt"
 
     @staticmethod
     def execute():
@@ -49,17 +49,11 @@ class SmartcdAction(InitializableAction):
         if not is_smartcd_installed():
             return
 
-        bash_enter_content = [
-            "echo [smartcd] Activate",
-            "$(ddb activate)"
-        ]
-        bash_enter = '\n'.join(bash_enter_content) + '\n'
+        bash_enter_content = ["echo [smartcd] Activate", "$(ddb activate)"]
+        bash_enter = "\n".join(bash_enter_content) + "\n"
 
-        bash_leave_content = [
-            "echo [smartcd] Deactivate",
-            "$(ddb deactivate)"
-        ]
-        bash_leave = '\n'.join(bash_leave_content) + '\n'
+        bash_leave_content = ["echo [smartcd] Deactivate", "$(ddb deactivate)"]
+        bash_leave = "\n".join(bash_leave_content) + "\n"
 
         if write_if_different(".bash_enter", bash_enter):
             events.file.generated(source=None, target=".bash_enter")
@@ -84,7 +78,7 @@ class WindowsProjectActivate(InitializableAction):
 
     @property
     def disabled(self) -> bool:
-        return os.name != 'nt'
+        return os.name != "nt"
 
     @staticmethod
     def execute():
@@ -95,16 +89,32 @@ class WindowsProjectActivate(InitializableAction):
         if not commands.has("activate") and not commands.has("deactivate"):
             return
 
-        commands_activate = ["@echo off", "REM ddb:shim", "SHIFT", "set command=(ddb activate)", "%command%>cmd.txt",
-                             "set /p execution=<cmd.txt", "del cmd.txt", "%execution% \"%*\""]
-        command_activate = '\n'.join(commands_activate) + '\n'
+        commands_activate = [
+            "@echo off",
+            "REM ddb:shim",
+            "SHIFT",
+            "set command=(ddb activate)",
+            "%command%>cmd.txt",
+            "set /p execution=<cmd.txt",
+            "del cmd.txt",
+            '%execution% "%*"',
+        ]
+        command_activate = "\n".join(commands_activate) + "\n"
 
         if write_if_different("ddb_activate.bat", command_activate):
             events.file.generated(source=None, target="ddb_activate.bat")
 
-        commands_deactivate = ["@echo off", "REM ddb:shim", "SHIFT", "set command=(ddb deactivate)",
-                               "%command%>cmd.txt", "set /p execution=<cmd.txt", "del cmd.txt", "%execution% \"%*\""]
-        command_deactivate = '\n'.join(commands_deactivate) + '\n'
+        commands_deactivate = [
+            "@echo off",
+            "REM ddb:shim",
+            "SHIFT",
+            "set command=(ddb deactivate)",
+            "%command%>cmd.txt",
+            "set /p execution=<cmd.txt",
+            "del cmd.txt",
+            '%execution% "%*"',
+        ]
+        command_deactivate = "\n".join(commands_deactivate) + "\n"
 
         if write_if_different("ddb_deactivate.bat", command_deactivate):
             events.file.generated(source=None, target="ddb_deactivate.bat")

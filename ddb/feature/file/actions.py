@@ -33,11 +33,13 @@ class FileWalkAction(InitializableAction, WatchSupport):
         return events.phase.configure
 
     def initialize(self):
-        self.file_walker = FileWalker(config.data.get("file.includes"),
-                                      config.data.get("file.excludes"),
-                                      config.data.get("file.include_files"),
-                                      config.data.get("file.exclude_files"),
-                                      config.data.get("file.suffixes"))
+        self.file_walker = FileWalker(
+            config.data.get("file.includes"),
+            config.data.get("file.excludes"),
+            config.data.get("file.include_files"),
+            config.data.get("file.exclude_files"),
+            config.data.get("file.suffixes"),
+        )
 
         register_project_cache("file")
 
@@ -52,19 +54,19 @@ class FileWalkAction(InitializableAction, WatchSupport):
         cache = caches.get("file")
         found_files = set()
 
-        context.log.debug('Walk through all existing files')
+        context.log.debug("Walk through all existing files")
         for file in self.file_walker.items:
             cache.set(file, None)
             found_files.add(file)
-        context.log.debug('%s files found', len(found_files))
+        context.log.debug("%s files found", len(found_files))
 
-        context.log.debug('Emit events for removed files using cache from previous run')
+        context.log.debug("Emit events for removed files using cache from previous run")
         for cached_file in cache.keys():
             if cached_file not in found_files:
                 cache.pop(cached_file)
                 events.file.deleted(cached_file)
 
-        context.log.debug('Generate found events for all actual files')
+        context.log.debug("Generate found events for all actual files")
         for file in self.file_walker.items:
             events.file.found(file)
 
@@ -94,7 +96,7 @@ class ObserverHandler(FileSystemEventHandler):
         """
         Emit given event if file is not filtered by file_walker
         """
-        if not file.endswith('~') and not self.action.file_walker.is_source_filtered(file):
+        if not file.endswith("~") and not self.action.file_walker.is_source_filtered(file):
             logging.getLogger("ddb.watch").debug("%s", file)
             context.mark_as_unprocessed(file)
             func(file=file)

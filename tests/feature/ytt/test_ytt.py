@@ -51,11 +51,11 @@ class TestYttAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('yaml.yml')
-        with open('yaml.yml') as f:
+        assert os.path.exists("yaml.yml")
+        with open("yaml.yml") as f:
             rendered = f.read()
 
-        with open('yaml.expected.yml') as f:
+        with open("yaml.expected.yml") as f:
             expected = f.read()
 
         assert rendered == expected
@@ -73,11 +73,11 @@ class TestYttAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('variables.yaml')
-        with open('variables.yaml') as f:
+        assert os.path.exists("variables.yaml")
+        with open("variables.yaml") as f:
             rendered = f.read()
 
-        with open('variables.expected.yaml') as f:
+        with open("variables.expected.yaml") as f:
             expected = f.read()
 
         assert rendered == expected
@@ -95,8 +95,8 @@ class TestYttAction:
         action.initialize()
         action.execute()
 
-        assert not os.path.exists('yaml.txt')
-        assert not os.path.exists('yaml.yml')
+        assert not os.path.exists("yaml.txt")
+        assert not os.path.exists("yaml.yml")
 
     def test_depends_suffixes(self, project_loader):
         project_loader("depends_suffixes")
@@ -111,11 +111,11 @@ class TestYttAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('variables.yaml')
-        with open('variables.yaml') as f:
+        assert os.path.exists("variables.yaml")
+        with open("variables.yaml") as f:
             rendered = f.read()
 
-        with open('variables.expected.yaml') as f:
+        with open("variables.expected.yaml") as f:
             expected = f.read()
 
         assert rendered == expected
@@ -132,10 +132,8 @@ class TestYttAutofix:
         config.args.autofix = True
 
         history = (
-            PropertyMigration("old_property",
-                              "new_property", since="v1.1.0"),
-            PropertyMigration("some.deep.old.property",
-                              "some.another.new.property", since="v1.1.0"),
+            PropertyMigration("old_property", "new_property", since="v1.1.0"),
+            PropertyMigration("some.deep.old.property", "some.another.new.property", since="v1.1.0"),
         )
 
         migrations.set_history(history)
@@ -150,19 +148,19 @@ class TestYttAutofix:
         action.initialize()
         action.execute()
 
-        assert os.path.exists('variables.yaml')
-        with open('variables.yaml') as f:
+        assert os.path.exists("variables.yaml")
+        with open("variables.yaml") as f:
             rendered = f.read()
 
-        with open('variables.expected.yaml') as f:
+        with open("variables.expected.yaml") as f:
             expected = f.read()
 
         assert expected == rendered
 
-        with open('variables.ytt.yaml') as f:
+        with open("variables.ytt.yaml") as f:
             source = f.read()
 
-        with open('variables.yaml.autofix') as f:
+        with open("variables.yaml.autofix") as f:
             fixed = f.read()
 
         assert source == fixed
