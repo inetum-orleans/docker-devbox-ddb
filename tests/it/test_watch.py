@@ -1,4 +1,3 @@
-import os
 import shutil
 import threading
 import time
@@ -15,6 +14,10 @@ from tests.utilstest import expect_gitignore, setup_cfssl
 # The watchers report changes asynchronously, and macOS coalesces them behind FSEvents.
 WATCH_TIMEOUT = 20
 
+# wait_watch_started returns as soon as the observers are started, but the watches they
+# install, and the events macOS has already coalesced, need a moment to settle.
+WATCH_SETTLE_DELAY = 2
+
 
 def init_test_watch(command: Iterable[str], *, watch: bool):
     thread = None
@@ -29,9 +32,7 @@ def init_test_watch(command: Iterable[str], *, watch: bool):
         thread = threading.Thread(name="watch", target=main_runner)
         thread.start()
         wait_watch_started(30)
-        if os.environ.get("TRAVIS") == "true":
-            # On TravisCI, it seems there is some race condition that may cause tests to fail without this.
-            time.sleep(1)
+        time.sleep(WATCH_SETTLE_DELAY)
     else:
         main_runner()
 
