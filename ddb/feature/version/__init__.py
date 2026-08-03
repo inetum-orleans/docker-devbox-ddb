@@ -71,7 +71,7 @@ def get_branch_from_vcs() -> str | None:
                 if refs_split:
                     value = refs_split[0]
                     if value.startswith(remote + "/"):
-                        return value[len(remote + "origin/") :]
+                        return value[len(remote + "/") :]
         except CalledProcessError as exc:
             if exc.returncode == 128:
                 return branch
