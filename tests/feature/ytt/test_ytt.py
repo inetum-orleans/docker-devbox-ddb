@@ -19,7 +19,7 @@ class TestYttAction:
         features.register(FileFeature())
         features.register(YttFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -32,7 +32,7 @@ class TestYttAction:
         features.register(FileFeature())
         features.register(YttFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -45,7 +45,7 @@ class TestYttAction:
         features.register(FileFeature())
         features.register(YttFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -67,7 +67,7 @@ class TestYttAction:
         features.register(FileFeature())
         features.register(YttFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -89,7 +89,7 @@ class TestYttAction:
         features.register(FileFeature())
         features.register(YttFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -105,7 +105,7 @@ class TestYttAction:
         features.register(FileFeature())
         features.register(YttFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -142,7 +142,7 @@ class TestYttAutofix:
         features.register(FileFeature())
         features.register(YttFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()

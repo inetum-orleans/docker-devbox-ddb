@@ -57,7 +57,7 @@ def get_current_version():
     return __version__
 
 
-def print_version(github_repository, silent=False):
+def print_version(github_repository, *, silent=False):
     """
     Print the version and informations.
 
@@ -144,7 +144,7 @@ def is_version_greater_or_equal(reference, version):
     return coerce_version(reference) < coerce_version(version)
 
 
-def check_for_update(github_repository: str, output=False, details=False):
+def check_for_update(github_repository: str, *, output=False, details=False):
     """
     Check if a new version is available on github.
     :param github_repository github repository to check
@@ -525,7 +525,7 @@ class VersionAction(Action):
         return events.main.version
 
     @staticmethod
-    def execute(silent: bool):
+    def execute(*, silent: bool):
         """
         Check for updates.
 
@@ -533,7 +533,7 @@ class VersionAction(Action):
         :return:
         """
         github_repository = config.data.get("core.github_repository")
-        print_version(github_repository, silent)
+        print_version(github_repository, silent=silent)
 
 
 class CheckForUpdateAction(InitializableAction):

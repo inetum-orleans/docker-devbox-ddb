@@ -82,7 +82,7 @@ class TestFixuidFeature:
 
         features.register(FixuidFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         with open("docker-compose.yml") as config_file:
             config = yaml.load(config_file, yaml.SafeLoader)
@@ -114,7 +114,7 @@ class TestFixuidFeature:
 
         features.register(FixuidFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         with open("docker-compose.yml") as config_file:
             config = yaml.load(config_file, yaml.SafeLoader)
@@ -135,7 +135,7 @@ class TestFixuidFeature:
 
         features.register(FixuidFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         with open("docker-compose.yml") as config_file:
             config = yaml.load(config_file, yaml.SafeLoader)
@@ -156,7 +156,7 @@ class TestFixuidFeature:
 
         features.register(FixuidFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         with open("docker-compose.yml") as config_file:
             config = yaml.load(config_file, yaml.SafeLoader)
@@ -177,7 +177,7 @@ class TestFixuidFeature:
 
         features.register(FixuidFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         with open("docker-compose.yml") as config_file:
             config = yaml.load(config_file, yaml.SafeLoader)

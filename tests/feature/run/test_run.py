@@ -25,7 +25,7 @@ class TestRunFeature:
         features.register(RunFeature())
         features.register(ShellFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = RunAction()
         action.execute()
@@ -37,7 +37,7 @@ class TestRunFeature:
         features.register(RunFeature())
         features.register(ShellFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = RunAction()
         action.execute()
@@ -49,7 +49,7 @@ class TestRunFeature:
         features.register(RunFeature())
         features.register(ShellFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = RunAction()
 
@@ -63,7 +63,7 @@ class TestRunFeature:
         features.register(RunFeature())
         features.register(ShellFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         binaries.register(DefaultBinary("test", ["some", "command"]))
 
@@ -83,7 +83,7 @@ class TestRunFeature:
         features.register(RunFeature())
         features.register(ShellFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         binaries.register(DockerBinary("bin", "service", "/app"))
 
@@ -103,7 +103,7 @@ class TestRunFeature:
         features.register(RunFeature())
         features.register(ShellFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         binaries.register(DockerBinary("bin", "service", "/app"))
 
@@ -123,7 +123,7 @@ class TestRunFeature:
         features.register(RunFeature())
         features.register(ShellFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         binaries.register(DockerBinary("bin", "service", "/app"))
 
@@ -151,7 +151,7 @@ class TestRunFeature:
         features.register(RunFeature())
         features.register(ShellFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         binaries.register(DockerBinary("echo", docker_compose_service="web", args="echo", exe=True))
 
@@ -177,7 +177,7 @@ class TestRunFeature:
         features.register(RunFeature())
         features.register(ShellFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         binary1 = DockerBinary("npm", "node1")
         binary2 = DockerBinary("npm", "node2")

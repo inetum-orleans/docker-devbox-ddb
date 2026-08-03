@@ -39,7 +39,7 @@ class TraefikInstalllCertsAction(Action):
         return "traefik:install-certs"
 
     @staticmethod
-    def execute(domain: str, private_key: str, certificate: str, wildcard: bool = False):
+    def execute(domain: str, private_key: str, certificate: str, *, wildcard: bool = False):
         """
         Execute action.
         """

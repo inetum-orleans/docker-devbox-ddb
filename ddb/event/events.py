@@ -43,7 +43,7 @@ class Certs:
     """
 
     @event("certs:generate")
-    def generate(self, domain: str, wildcard=True):
+    def generate(self, domain: str, *, wildcard: bool = True):
         """
         Ask to generate a certificate.
 
@@ -60,7 +60,7 @@ class Certs:
         """
 
     @event("certs:generated")
-    def generated(self, domain: str, wildcard: bool, private_key: bytes | str, certificate: bytes | str):
+    def generated(self, domain: str, *, wildcard: bool, private_key: bytes | str, certificate: bytes | str):
         """
         When a certificate is generated.
 
@@ -79,7 +79,7 @@ class Certs:
         """
 
     @event("certs:available")
-    def available(self, domain: str, wildcard: bool, private_key: bytes | str, certificate: bytes | str):
+    def available(self, domain: str, *, wildcard: bool, private_key: bytes | str, certificate: bytes | str):
         """
         When a certificate is available.
 
@@ -137,7 +137,7 @@ class Run:
         """
 
     @event("run:command")
-    def command(self, command: Iterable[str], system_path: bool = False):
+    def command(self, command: Iterable[str], *, system_path: bool = False):
         """
         When a command request should be handled.
 
@@ -184,6 +184,7 @@ class Docker:
         options_condition=None,
         condition=None,
         args=None,
+        *,
         exe=False,
         entrypoint=None,
         global_=None,
@@ -278,7 +279,7 @@ class Main:
         """
 
     @event("main:version")
-    def version(self, silent: bool):
+    def version(self, *, silent: bool):
         """
         Main version.
         """

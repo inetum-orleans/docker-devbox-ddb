@@ -42,6 +42,7 @@ class DefaultPhase(DefaultRegistryObject, Phase):
         name: str,
         description: str | None = None,
         parser: Callable[[ArgumentParser], Any] | None = None,
+        *,
         run_once: bool = False,
         allow_unknown_args: bool = False,
     ):

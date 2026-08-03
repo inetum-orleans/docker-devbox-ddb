@@ -21,7 +21,7 @@ class TestJsonnetAction:
         features.register(FileFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -34,7 +34,7 @@ class TestJsonnetAction:
         features.register(FileFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -67,7 +67,7 @@ class TestJsonnetAction:
         features.register(FileFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -89,7 +89,7 @@ class TestJsonnetAction:
         features.register(FileFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -120,7 +120,7 @@ class TestJsonnetAction:
         features.register(FileFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -142,7 +142,7 @@ class TestJsonnetAction:
         features.register(FileFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -182,7 +182,7 @@ class TestJsonnetAction:
         features.register(FileFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -222,7 +222,7 @@ class TestJsonnetAction:
         features.register(FileFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -258,7 +258,7 @@ class TestJsonnetAction:
         features.register(DockerFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -307,7 +307,7 @@ class TestJsonnetAction:
         features.register(DockerFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -355,7 +355,7 @@ class TestJsonnetAction:
         features.register(DockerFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -391,7 +391,7 @@ class TestJsonnetAction:
         features.register(DockerFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -427,7 +427,7 @@ class TestJsonnetAction:
         features.register(DockerFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -463,7 +463,7 @@ class TestJsonnetAction:
         features.register(DockerFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -491,7 +491,7 @@ class TestJsonnetAction:
         features.register(DockerFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -532,7 +532,7 @@ class TestJsonnetAction:
         features.register(DockerFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -587,7 +587,7 @@ class TestJsonnetAction:
         features.register(DockerFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -633,7 +633,7 @@ class TestJsonnetAutofix:
         features.register(DockerFeature())
         features.register(JsonnetFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()

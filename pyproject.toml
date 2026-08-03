@@ -178,7 +178,7 @@ select = [
     "N",    # pep8-naming
     "C90",  # mccabe complexity
     "DTZ",  # flake8-datetimez
-    "FBT003",  # boolean positional value in call
+    "FBT",  # flake8-boolean-trap
     "LOG",  # flake8-logging
     "G",    # flake8-logging-format
 ]
@@ -249,9 +249,9 @@ max-complexity = 15
 "ddb/feature/traefik/schema.py" = ["E501"]
 # Tests assert on full command lines, patch with plain functions rather than mock
 # return values, and check raised messages with `str(excinfo.value)` after the block.
-# Test classes and helpers document themselves through their names, patch with
-# lambdas, and pass flags positionally to the functions under test.
-"tests/**" = ["ARG", "D", "DTZ", "E501", "FBT003", "N802", "PT008", "PT011", "PT012", "S", "TRY"]
+# Test classes and helpers document themselves through their names and patch with
+# lambdas.
+"tests/**" = ["ARG", "D", "DTZ", "E501", "N802", "PT008", "PT011", "PT012", "S", "TRY"]
 
 [tool.pytest.ini_options]
 addopts = "-s --ignore=build --ignore=docs --docker-compose-remove-volumes"

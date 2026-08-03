@@ -141,8 +141,8 @@ class CoreFeature(Feature):
             LifecycleCommand("self-update", "Update ddb to latest version", "selfupdate"),
         )
 
-    def configure(self, bootstrap=False):
-        super().configure(bootstrap)
+    def configure(self, *, bootstrap=False):
+        super().configure(bootstrap=bootstrap)
         if bootstrap:
             return
         self._load_environment_configuration()

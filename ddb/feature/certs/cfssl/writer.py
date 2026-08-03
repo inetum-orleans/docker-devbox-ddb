@@ -44,6 +44,7 @@ def write_files(
     csr,
     conf=None,
     destination=None,
+    *,
     append_ca_certificate=False,
     client=None,
     verify_checksum=True,

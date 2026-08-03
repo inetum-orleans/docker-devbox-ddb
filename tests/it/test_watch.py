@@ -13,7 +13,7 @@ from ddb.__main__ import main, stop_watch, wait_watch_started
 from tests.utilstest import expect_gitignore, setup_cfssl
 
 
-def init_test_watch(watch: bool, command: Iterable[str]):
+def init_test_watch(command: Iterable[str], *, watch: bool):
     thread = None
 
     full_command = ["--watch"] if watch else []
@@ -40,7 +40,7 @@ class TestWatch:
     def test_watch_file_change(self, project_loader, watch):
         project_loader("watch1")
 
-        thread, main_runner = init_test_watch(watch, ["configure"])
+        thread, main_runner = init_test_watch(["configure"], watch=watch)
 
         try:
             assert os.path.exists("test.txt")
@@ -72,7 +72,7 @@ class TestWatch:
     def test_watch_file_created(self, project_loader, watch):
         project_loader("watch1")
 
-        thread, main_runner = init_test_watch(watch, ["configure"])
+        thread, main_runner = init_test_watch(["configure"], watch=watch)
 
         try:
             assert os.path.exists("test.txt")
@@ -108,7 +108,7 @@ class TestWatch:
     def test_watch_file_delete(self, project_loader, watch):
         project_loader("watch1")
 
-        thread, main_runner = init_test_watch(watch, ["configure"])
+        thread, main_runner = init_test_watch(["configure"], watch=watch)
 
         try:
             assert os.path.exists("test.txt")
@@ -131,7 +131,7 @@ class TestWatch:
     def test_watch_file_move(self, project_loader, watch):
         project_loader("watch1")
 
-        thread, main_runner = init_test_watch(watch, ["configure"])
+        thread, main_runner = init_test_watch(["configure"], watch=watch)
 
         try:
             assert os.path.exists("test.txt")
@@ -169,7 +169,7 @@ class TestWatchFixuid:
     def test_watch_fixuid_order_1(self, project_loader, watch):
         project_loader("watch-fixuid")
 
-        thread, main_runner = init_test_watch(watch, ["configure"])
+        thread, main_runner = init_test_watch(["configure"], watch=watch)
 
         try:
             os.makedirs(os.path.join(".docker", "db"), exist_ok=True)
@@ -265,7 +265,7 @@ class TestWatchFixuid:
         watch, files = parameters
         project_loader("watch-fixuid")
 
-        thread, main_runner = init_test_watch(watch, ["configure"])
+        thread, main_runner = init_test_watch(["configure"], watch=watch)
 
         try:
             os.makedirs(os.path.join(".docker", "db"), exist_ok=True)
@@ -306,7 +306,7 @@ class TestWatchConfig:
     def test_watch_config_change(self, project_loader):
         project_loader("watch-config")
 
-        thread, _main_runner = init_test_watch(True, ["configure"])
+        thread, _main_runner = init_test_watch(["configure"], watch=True)
 
         try:
             wait(
@@ -342,7 +342,7 @@ class TestWatchCerts:
 
         setup_cfssl(module_scoped_container_getter)
 
-        thread, main_runner = init_test_watch(watch, ["configure"])
+        thread, main_runner = init_test_watch(["configure"], watch=watch)
 
         try:
             assert not os.path.exists(os.path.join(".certs", "watch-certs.test.key"))

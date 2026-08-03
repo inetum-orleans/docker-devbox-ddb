@@ -59,7 +59,7 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
     Runner for an action event binding.
     """
 
-    def __init__(self, action: A, event_name: str, to_call=None, event_processor=None, fail_fast=False):
+    def __init__(self, action: A, event_name: str, to_call=None, event_processor=None, *, fail_fast=False):
         super().__init__(action, event_name, to_call)
         self.event_processor = event_processor
         self.fail_fast = fail_fast

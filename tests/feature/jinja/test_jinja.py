@@ -16,7 +16,7 @@ class TestJinjaAction:
         features.register(FileFeature())
         features.register(JinjaFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -29,7 +29,7 @@ class TestJinjaAction:
         features.register(FileFeature())
         features.register(JinjaFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -42,7 +42,7 @@ class TestJinjaAction:
         features.register(FileFeature())
         features.register(JinjaFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -61,7 +61,7 @@ class TestJinjaAction:
         features.register(FileFeature())
         features.register(JinjaFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -83,7 +83,7 @@ class TestJinjaAction:
         features.register(FileFeature())
         features.register(JinjaFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -102,7 +102,7 @@ class TestJinjaAction:
         features.register(FileFeature())
         features.register(JinjaFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -121,7 +121,7 @@ class TestJinjaAction:
         features.register(FileFeature())
         features.register(JinjaFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -145,7 +145,7 @@ class TestJinjaAction:
         features.register(FileFeature())
         features.register(JinjaFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         config.data["jinja.options"] = {"keep_trailing_newline": False}
 
@@ -166,7 +166,7 @@ class TestJinjaAction:
         features.register(FileFeature())
         features.register(JinjaFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -185,7 +185,7 @@ class TestJinjaAction:
         features.register(FileFeature())
         features.register(JinjaFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         config.data["jinja.options"] = {"keep_trailing_newline": True}
 
@@ -219,7 +219,7 @@ class TestJinjaAutofix:
         features.register(FileFeature())
         features.register(JinjaFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -255,7 +255,7 @@ class TestJinjaAutofix:
         features.register(FileFeature())
         features.register(JinjaFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -284,7 +284,7 @@ class TestJinjaAutofix:
         features.register(FileFeature())
         features.register(JinjaFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()

@@ -22,7 +22,7 @@ from .integrations import ShellIntegration
 _env_environ_backup = config.env_prefix + "_SHELL_ENVIRON_BACKUP"
 
 
-def get_shims_path(global_: bool = False):
+def get_shims_path(*, global_: bool = False):
     """
     Get local or global shims path.
 
@@ -167,8 +167,8 @@ class CreateBinaryShim(Action):
         """
         Create binary shim.
         """
-        shims_path = get_shims_path(binary.global_)
-        written, shim = self.shell.create_binary_shim(shims_path, binary.name, binary.global_)
+        shims_path = get_shims_path(global_=binary.global_)
+        written, shim = self.shell.create_binary_shim(shims_path, binary.name, global_=binary.global_)
         if written:
             context.log.success("Shim created: %s", shim)
         else:
@@ -212,7 +212,7 @@ class CreateAliasShim(Action):
         for alias in aliases:
             global_alias = alias in global_aliases
 
-            shim_directory = get_shims_path(global_alias)
+            shim_directory = get_shims_path(global_=global_alias)
             if not shim_directory:
                 continue
 
@@ -266,7 +266,7 @@ class ActivateAction(Action):
         Execute action.
         """
         try:
-            check_activated("force" not in config.args or not config.args.force)
+            check_activated(do_raise="force" not in config.args or not config.args.force)
             if config.args.force:
                 self._deactivate()
             else:
@@ -352,7 +352,7 @@ class DeactivateAction(Action):
         Execute action.
         """
         with contextlib.suppress(CheckAnotherProjectActivatedException):
-            check_activated("force" not in config.args or not config.args.force)
+            check_activated(do_raise="force" not in config.args or not config.args.force)
 
         if os.environ.get(_env_environ_backup):
             environ_backup = decode_environ_backup(os.environ[_env_environ_backup])
@@ -409,7 +409,7 @@ class CheckAnotherProjectActivatedException(CheckActivatedException):
     """
 
 
-def check_activated(do_raise=False, do_log=False):
+def check_activated(*, do_raise=False, do_log=False):
     """
     Check if project is activated in current shell.
 
@@ -503,7 +503,7 @@ class CommandAction(Action):
     def disabled(self) -> bool:
         return config.data.get("shell.shell") != self.shell.name
 
-    def execute(self, command: Iterable[str], system_path: bool = False):
+    def execute(self, command: Iterable[str], *, system_path: bool = False):
         """
         Execute action.
         """

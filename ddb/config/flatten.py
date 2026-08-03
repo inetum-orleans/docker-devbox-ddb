@@ -46,6 +46,7 @@ def flatten(
     array_index_format="[%s]",
     key_transformer=None,
     value_transformer=None,
+    *,
     keep_primitive_list=False,
     stop_for_features=None,
 ) -> dict:
@@ -60,8 +61,8 @@ def flatten(
         array_index_format,
         key_transformer,
         value_transformer,
-        keep_primitive_list,
-        stop_for,
+        keep_primitive_list=keep_primitive_list,
+        stop_for=stop_for,
         data=dict(data),
     )
 
@@ -72,6 +73,7 @@ def _flatten(
     array_index_format="[%s]",
     key_transformer=None,
     value_transformer=None,
+    *,
     keep_primitive_list=False,
     stop_for=(),
     data=None,
@@ -107,10 +109,10 @@ def _flatten(
                 array_index_format,
                 key_transformer,
                 value_transformer,
-                keep_primitive_list,
-                stop_for,
-                value,
-                output,
+                keep_primitive_list=keep_primitive_list,
+                stop_for=stop_for,
+                data=value,
+                output=output,
             )
 
     elif not stop_recursion and isinstance(data, list):
@@ -129,10 +131,10 @@ def _flatten(
                     array_index_format,
                     key_transformer,
                     value_transformer,
-                    keep_primitive_list,
-                    stop_for,
-                    value,
-                    output,
+                    keep_primitive_list=keep_primitive_list,
+                    stop_for=stop_for,
+                    data=value,
+                    output=output,
                 )
     else:
         output[prefix] = value_transformer(data)

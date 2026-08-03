@@ -188,7 +188,7 @@ class TestDockerFeature:
 
         features.register(DockerFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = actions.get("docker:emit-docker-compose-config")  # type:EmitDockerComposeConfigAction
         action.execute()
@@ -202,7 +202,7 @@ class TestDockerFeature:
 
         features.register(DockerFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = actions.get("docker:emit-docker-compose-config")  # type:EmitDockerComposeConfigAction
         action.execute()
@@ -275,7 +275,7 @@ class TestDockerFeature:
 
         features.register(DockerFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = actions.get("docker:emit-docker-compose-config")  # type:EmitDockerComposeConfigAction
         action.execute()
@@ -295,7 +295,7 @@ class TestDockerFeature:
 
         features.register(DockerFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = actions.get("docker:emit-docker-compose-config")  # type:EmitDockerComposeConfigAction
         action.execute()
@@ -313,7 +313,7 @@ class TestDockerFeature:
         features.register(TraefikFeature())
         features.register(DockerFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         setup_cfssl(module_scoped_container_getter)
 

@@ -20,7 +20,7 @@ class ShelveCache(Cache):
     A cache implementation relying of shelve module.
     """
 
-    def __init__(self, namespace: str, eternal=False):
+    def __init__(self, namespace: str, *, eternal=False):
         super().__init__(namespace)
 
         clear_cache = config.clear_cache and not eternal

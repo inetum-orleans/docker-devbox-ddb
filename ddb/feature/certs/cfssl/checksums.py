@@ -23,7 +23,7 @@ def validate_checksums(response):
             validate_checksum(part, content.encode("ascii"), sums_item)
 
 
-def validate_checksum(part, content, sums_item, content_is_der=False):
+def validate_checksum(part, content, sums_item, *, content_is_der=False):
     """
     Validate a checksum from certificate sums and content.
 
@@ -34,10 +34,10 @@ def validate_checksum(part, content, sums_item, content_is_der=False):
     :return:
     """
     for algo, checksum in sums_item.items():
-        validate_checksum_algo(part, content, algo, checksum, content_is_der)
+        validate_checksum_algo(part, content, algo, checksum, content_is_der=content_is_der)
 
 
-def validate_checksum_algo(part, content, algo, checksum, content_is_der=False):
+def validate_checksum_algo(part, content, algo, checksum, *, content_is_der=False):
     """
     Validate a checksum using content, algo and checksum.
 

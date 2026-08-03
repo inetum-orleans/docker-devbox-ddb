@@ -121,7 +121,7 @@ class DockerComposeControl:
         containers = run(*self.docker_command, "ps", "-q", "--no-trunc").decode("utf-8").rstrip().split("\n")
         return container_id in containers
 
-    def config(self, parse=True):
+    def config(self, *, parse=True):
         """
         Get the docker-compose.yml configuration content.
 

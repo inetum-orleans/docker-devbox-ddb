@@ -56,6 +56,7 @@ class DefaultCommand(DefaultRegistryObject, Command):
         name: str,
         description: str | None = None,
         parent: Command | str | None = None,
+        *,
         allow_unknown_args=False,
         before_execute: Callable[[], Any] | None = None,
         avoid_stdout=False,
@@ -119,7 +120,7 @@ class LifecycleCommand(DefaultCommand):
         before_execute: Callable[[], Any] | None = None,
         avoid_stdout=False,
     ):
-        super().__init__(name, description, parent, before_execute=before_execute, avoid_stdout=avoid_stdout)
+        super().__init__(name, description, parent=parent, before_execute=before_execute, avoid_stdout=avoid_stdout)
         self._lifecycle: list[Phase] = [
             phases.get(phase) if not isinstance(phase, Phase) else phase for phase in lifecycle
         ]

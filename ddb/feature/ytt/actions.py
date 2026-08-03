@@ -27,7 +27,7 @@ class YttAction(AbstractTemplateAction):
         )
 
     @staticmethod
-    def _escape_config(input_config: dict, with_config: bool = True):
+    def _escape_config(input_config: dict, *, with_config: bool = True):
         new = {}
         keywords = config.data["ytt.keywords"]
         keywords_escape_format = config.data["ytt.keywords_escape_format"]

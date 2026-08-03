@@ -17,7 +17,7 @@ class TestSymlinksAction:
         with pytest.raises(FeatureConfigurationError):
             features.register(SymlinksFeature())
             load_registered_features()
-            register_actions_in_event_bus(True)
+            register_actions_in_event_bus(fail_fast=True)
 
     def test_empty_configuration_with_core(self, project_loader):
         project_loader("empty")
@@ -26,7 +26,7 @@ class TestSymlinksAction:
         features.register(FileFeature())
         features.register(SymlinksFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -39,7 +39,7 @@ class TestSymlinksAction:
         features.register(FileFeature())
         features.register(SymlinksFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -60,7 +60,7 @@ class TestSymlinksAction:
         features.register(FileFeature())
         features.register(SymlinksFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -87,7 +87,7 @@ class TestSymlinksAction:
         features.register(FileFeature())
         features.register(SymlinksFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -107,7 +107,7 @@ class TestSymlinksAction:
         features.register(FileFeature())
         features.register(SymlinksFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()
@@ -123,7 +123,7 @@ class TestSymlinksAction:
         features.register(FileFeature())
         features.register(SymlinksFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = FileWalkAction()
         action.initialize()

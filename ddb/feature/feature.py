@@ -71,18 +71,18 @@ class Feature(RegistryObject, ABC):
         """
         return []
 
-    def configure(self, bootstrap=False):
+    def configure(self, *, bootstrap=False):
         """
         Configure this feature.
         """
         feature_config = config.data.get(self.name)
         try:
-            valid_feature_config = self.validate_feature_configuration(feature_config, bootstrap)
+            valid_feature_config = self.validate_feature_configuration(feature_config, bootstrap=bootstrap)
         except ValidationError as err:
             raise FeatureConfigurationValidationError(self, err) from err
         config.data[self.name] = valid_feature_config
 
-    def validate_feature_configuration(self, feature_config: Dotty, bootstrap=False):
+    def validate_feature_configuration(self, feature_config: Dotty, *, bootstrap=False):
         """
         Sanitize and validate using given schema part of the configuration.
         """

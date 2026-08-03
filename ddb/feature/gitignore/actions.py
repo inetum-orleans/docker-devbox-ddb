@@ -116,7 +116,7 @@ class UpdateGitignoreAction(InitializableAction):
         return target_path.startswith(cwd)
 
     @staticmethod
-    def _get_relative_path(target: str, gitignore: str, first_slash: bool = True):
+    def _get_relative_path(target: str, gitignore: str, *, first_slash: bool = True):
         relpath = pathlib.Path(os.path.relpath(target, os.path.dirname(gitignore))).as_posix()
         if first_slash:
             return "/" + relpath
@@ -168,7 +168,7 @@ class UpdateGitignoreAction(InitializableAction):
         return False, None, None, None, None, None
 
     @staticmethod
-    def _get_block_limit(start: bool):
+    def _get_block_limit(*, start: bool):
         """
         Generate the gitignore block limit.
 
@@ -182,7 +182,7 @@ class UpdateGitignoreAction(InitializableAction):
         return f"###< {markers[0]} ###"
 
     @staticmethod
-    def _is_block_limit(line: str, start: bool | None = None):
+    def _is_block_limit(line: str, *, start: bool | None = None):
         """
         Check if line match a block limit.
 

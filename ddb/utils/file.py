@@ -22,7 +22,7 @@ def has_same_content(filename1: str, filename2: str, read_mode="rb") -> bool:
         return file1.read() == file2.read()
 
 
-def write_if_different(file, data, read_mode="r", write_mode="w", log_source=None, readonly=True, **kwargs) -> bool:
+def write_if_different(file, data, read_mode="r", write_mode="w", log_source=None, *, readonly=True, **kwargs) -> bool:
     """
     Write the file if existing data is different than given data.
     """
@@ -57,7 +57,7 @@ def write_if_different(file, data, read_mode="r", write_mode="w", log_source=Non
             chmod(file, "+r", logging=False)
 
 
-def copy_if_different(source, target, read_mode="r", write_mode="w", log=False, readonly=True, **kwargs) -> bool:
+def copy_if_different(source, target, read_mode="r", write_mode="w", *, log=False, readonly=True, **kwargs) -> bool:
     """
     Copy source to target if existing source data is different than target data.
     """
@@ -96,7 +96,7 @@ def copy_if_different(source, target, read_mode="r", write_mode="w", log=False, 
             chmod(target, "+r", logging=False)
 
 
-def force_remove(file: str, silent=False):
+def force_remove(file: str, *, silent=False):
     """
     Remove a file, trying to unset readonly flag if a PermissionError occurs.
     """
@@ -111,7 +111,7 @@ def force_remove(file: str, silent=False):
             context.log.warning("%s can't be removed because it's already absent", file)
 
 
-def chmod(file: str, mode: str, logging=True):
+def chmod(file: str, mode: str, *, logging=True):
     """
     Apply given mode to file.
     """
@@ -171,6 +171,7 @@ class FileWalker:
         exclude_files: list[str] | None,
         suffixes: list[str] | None,
         rootpath: Path | str | None = None,
+        *,
         recursive=True,
         skip_processed_sources=True,
         skip_processed_targets=True,
@@ -214,7 +215,7 @@ class FileWalker:
     def _do_yield(self, source):
         yield source
 
-    def _walk(self, path, recursive=True):
+    def _walk(self, path, *, recursive=True):
         for root, dirs, files in os.walk(path):
             context.log.debug("%s", root)
             for dirs_item in list(dirs):
@@ -342,7 +343,7 @@ class TemplateFinder(FileWalker):
                     return
             yield source, target
 
-    def get_target(self, source, check=True):
+    def get_target(self, source, *, check=True):
         """
         Get the target of given source, or None if it doesn't match suffixes.
         """

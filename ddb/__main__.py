@@ -132,7 +132,7 @@ def preload_registered_features():
     return enabled_features
 
 
-def load_registered_features(preload=True):
+def load_registered_features(*, preload=True):
     """
     Load all registered features.
     """
@@ -361,7 +361,7 @@ def _as_event_binding(binding: Callable | str | EventBinding) -> EventBinding:
     raise ValueError(msg)
 
 
-def _register_action_in_event_bus(action: Action, binding: Callable | str | EventBinding, fail_fast=False):
+def _register_action_in_event_bus(action: Action, binding: Callable | str | EventBinding, *, fail_fast=False):
     """
     Register a single event binding. It supports name property added by @event decorator on events callable.
     """
@@ -379,7 +379,7 @@ def _register_action_in_event_bus(action: Action, binding: Callable | str | Even
     )
 
 
-def register_actions_in_event_bus(fail_fast=False):
+def register_actions_in_event_bus(*, fail_fast=False):
     """
     Register actions into event bus.
     """
@@ -387,14 +387,15 @@ def register_actions_in_event_bus(fail_fast=False):
 
     for action in sorted_actions:
         if isinstance(action.event_bindings, (str, EventBinding)) or callable(action.event_bindings):
-            _register_action_in_event_bus(action, action.event_bindings, fail_fast)
+            _register_action_in_event_bus(action, action.event_bindings, fail_fast=fail_fast)
         else:
             for event_binding in action.event_bindings:
-                _register_action_in_event_bus(action, event_binding, fail_fast)
+                _register_action_in_event_bus(action, event_binding, fail_fast=fail_fast)
 
 
 def main(
     args: Sequence[str] | None = None,
+    *,
     reset_disabled=False,
 ):
     """
@@ -421,7 +422,7 @@ def main(
                 raise
 
         load_registered_features(preload=False)
-        register_actions_in_event_bus(config.args.fail_fast)
+        register_actions_in_event_bus(fail_fast=config.args.fail_fast)
 
         if config.args.version:
             events.main.version(silent=config.args.silent)

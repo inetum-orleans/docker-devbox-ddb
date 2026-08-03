@@ -80,7 +80,7 @@ class EmitDockerComposeConfigAction(Action):
 
         cert_domains = []
 
-        def on_available(domain: str, wildcard: bool, private_key: bytes | str, certificate: bytes | str):
+        def on_available(domain: str, *, wildcard: bool, private_key: bytes | str, certificate: bytes | str):
             """
             When a certificate is available.
 
@@ -254,6 +254,7 @@ class DockerComposeBinaryAction(InitializableAction):
         options_condition=None,
         condition=None,
         args=None,
+        *,
         exe=False,
         entrypoint=None,
         global_=None,

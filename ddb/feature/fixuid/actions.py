@@ -365,18 +365,18 @@ class FixuidDockerComposeAction(Action):
         for service in self.get_fixuid_services():
             self.apply_fixuid(service)
 
-    def find_fixuid_service(self, dockerfile_filepath: str, include_missing_fixuid=False):
+    def find_fixuid_service(self, dockerfile_filepath: str, *, include_missing_fixuid=False):
         """
         Find related fixuid service from dockerfile filepath.
         """
-        for service in self.get_fixuid_services(include_missing_fixuid):
+        for service in self.get_fixuid_services(include_missing_fixuid=include_missing_fixuid):
             if os.path.abspath(os.path.join(service.context, service.dockerfile)) == os.path.abspath(
                 dockerfile_filepath
             ):
                 return service
         return None
 
-    def get_fixuid_services(self, include_missing_fixuid=False) -> Iterable[BuildServiceDef]:
+    def get_fixuid_services(self, *, include_missing_fixuid=False) -> Iterable[BuildServiceDef]:
         """
         Services where fixuid.tar.gz is available in build context.
         """

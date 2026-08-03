@@ -24,15 +24,15 @@ class GenerateCertAction(Action):
         return "certs:generate"
 
     @staticmethod
-    def execute(domain, wildcard=True):
+    def execute(domain, *, wildcard=True):
         """
         Generate a certificate.
         """
         if config.data.get("certs.type") == "cfssl":
-            GenerateCertAction.generate_cfssl(domain, wildcard)
+            GenerateCertAction.generate_cfssl(domain, wildcard=wildcard)
 
     @staticmethod
-    def generate_cfssl(domain, wildcard=True):
+    def generate_cfssl(domain, *, wildcard=True):
         """
         Generate domain certificate with CFSSL.
         """
@@ -62,9 +62,9 @@ class GenerateCertAction(Action):
                 None,
                 config.data["certs.cfssl.writer"],
                 config.data["certs.destination"],
-                config.data["certs.cfssl.append_ca_certificate"],
-                client,
-                config.data["certs.cfssl.verify_checksum"],
+                append_ca_certificate=config.data["certs.cfssl.append_ca_certificate"],
+                client=client,
+                verify_checksum=config.data["certs.cfssl.verify_checksum"],
             )
 
             context.log.success("TLS certificate generated for domain %s", domain)

@@ -47,7 +47,7 @@ class ShellIntegration(ABC):
         """
 
     @abstractmethod
-    def create_binary_shim(self, shims_path: str, name: str, global_: bool) -> tuple[bool, str]:
+    def create_binary_shim(self, shims_path: str, name: str, *, global_: bool) -> tuple[bool, str]:
         """
         Add a binary shim for this shell.
 
@@ -69,19 +69,19 @@ class ShellIntegration(ABC):
         """
 
     @abstractmethod
-    def generate_and_operator(self, new_line: bool = False) -> str:
+    def generate_and_operator(self, *, new_line: bool = False) -> str:
         """
         Build the shell command to run the given command inside the current shell context.
         """
 
     @abstractmethod
-    def generate_or_operator(self, new_line: bool = False) -> str:
+    def generate_or_operator(self, *, new_line: bool = False) -> str:
         """
         Build the shell command to run the given command inside the current shell context.
         """
 
     @abstractmethod
-    def generate_cmdline(self, command: Iterable[str], system_path=True) -> str:
+    def generate_cmdline(self, command: Iterable[str], *, system_path=True) -> str:
         """
         Build the shell command to run the given command inside the current shell context.
         """
@@ -140,7 +140,7 @@ class BashShellIntegration(ShellIntegration):
         force_remove(shim)
         return shim
 
-    def create_binary_shim(self, shims_path: str, name: str, global_: bool):
+    def create_binary_shim(self, shims_path: str, name: str, *, global_: bool):
         command: list[str] = []
         if global_:
             ddb_project_home_variable = next(
@@ -199,13 +199,13 @@ class BashShellIntegration(ShellIntegration):
     def evaluate_script(self, script_filepath) -> Iterable[str]:
         yield f". {script_filepath}"
 
-    def generate_and_operator(self, new_line: bool = False) -> str:
+    def generate_and_operator(self, *, new_line: bool = False) -> str:
         return " &&" + ("\\" if new_line else " ")
 
-    def generate_or_operator(self, new_line: bool = False) -> str:
+    def generate_or_operator(self, *, new_line: bool = False) -> str:
         return " ||" + ("\\" if new_line else " ")
 
-    def generate_cmdline(self, command: Iterable[str], system_path=True) -> str:
+    def generate_cmdline(self, command: Iterable[str], *, system_path=True) -> str:
         return subprocess.list2cmdline(command)
 
 
@@ -239,7 +239,7 @@ class CmdShellIntegration(ShellIntegration):
         force_remove(shim)
         return shim
 
-    def create_binary_shim(self, shims_path: str, name: str, global_: bool):
+    def create_binary_shim(self, shims_path: str, name: str, *, global_: bool):
         commands: list[str] = []
         if global_:
             commands.extend(
@@ -309,11 +309,11 @@ class CmdShellIntegration(ShellIntegration):
     def header(self) -> Iterable[str]:
         return ["@echo off", "set NL=^", ""]
 
-    def generate_and_operator(self, new_line: bool = False) -> str:
+    def generate_and_operator(self, *, new_line: bool = False) -> str:
         return " &&" + ("\\" if new_line else " ")
 
-    def generate_or_operator(self, new_line: bool = False) -> str:
+    def generate_or_operator(self, *, new_line: bool = False) -> str:
         return " ||" + ("\\" if new_line else " ")
 
-    def generate_cmdline(self, command: Iterable[str], system_path=True) -> str:
+    def generate_cmdline(self, command: Iterable[str], *, system_path=True) -> str:
         return subprocess.list2cmdline(command)

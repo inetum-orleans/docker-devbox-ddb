@@ -26,6 +26,7 @@ class DockerBinary(AbstractBinary):
         options_condition: str | None = None,
         condition: str | None = None,
         args: str | None = None,
+        *,
         exe: bool = False,
         entrypoint: str | None = None,
         global_: bool = False,
