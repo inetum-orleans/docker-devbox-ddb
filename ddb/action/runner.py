@@ -44,7 +44,7 @@ class EventBindingRunner(Generic[A], ABC):
     def __init__(self, action: A, event_name: str, to_call=None):
         self.action = action
         self.event_name = event_name
-        self.to_call = to_call if to_call else action.execute
+        self.to_call = to_call if to_call else action.execute  # type: ignore[attr-defined]
 
     @abstractmethod
     def run(self, *args, **kwargs):

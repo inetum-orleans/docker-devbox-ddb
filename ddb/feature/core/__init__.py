@@ -2,7 +2,6 @@ import os
 import platform
 from argparse import ArgumentParser
 from collections.abc import Iterable
-from typing import ClassVar
 
 import distro
 from dotty_dict import Dotty
@@ -61,7 +60,7 @@ class CoreFeature(Feature):
         return "core"
 
     @property
-    def schema(self) -> ClassVar[FeatureSchema]:
+    def schema(self) -> type[FeatureSchema]:
         return CoreFeatureSchema
 
     @property

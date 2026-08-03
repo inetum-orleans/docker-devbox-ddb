@@ -1,5 +1,4 @@
 from collections.abc import Iterable
-from typing import ClassVar
 
 from ddb.action import Action
 from ddb.feature import Feature
@@ -22,7 +21,7 @@ class PermissionsFeature(Feature):
         return ["core"]
 
     @property
-    def schema(self) -> ClassVar[PermissionsSchema]:
+    def schema(self) -> type[PermissionsSchema]:
         return PermissionsSchema
 
     @property

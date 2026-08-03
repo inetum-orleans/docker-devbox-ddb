@@ -1,7 +1,6 @@
 from abc import ABC
 from collections.abc import Iterable
 from os import linesep
-from typing import ClassVar
 
 from dotty_dict import Dotty, dotty
 from marshmallow import ValidationError
@@ -23,7 +22,7 @@ class Feature(RegistryObject, ABC):
     """
 
     @property
-    def schema(self) -> ClassVar[FeatureSchema]:
+    def schema(self) -> type[FeatureSchema]:
         """
         Configuration schema for this feature.
         """
@@ -140,7 +139,7 @@ class FeatureConfigurationAutoConfigureError(FeatureConfigurationError):
     Feature configuration error raised when something wrongs occurs during auto-configuration.
     """
 
-    def __init__(self, feature: Feature, setting_name: str | None = None, error: Exception | str | None = None):
+    def __init__(self, feature: Feature, setting_name: str, error: Exception | str | None = None):
         super().__init__(
             feature,
             setting_name
@@ -160,7 +159,7 @@ class FeatureConfigurationReadOnlyError(FeatureConfigurationError):
     Feature configuration error raised when a read-only property is defined in configuration files user.
     """
 
-    def __init__(self, feature: Feature, setting_name: str | None = None):
+    def __init__(self, feature: Feature, setting_name: str):
         super().__init__(
             feature,
             setting_name
@@ -179,10 +178,14 @@ class FeatureConfigurationValidationError(FeatureConfigurationError):
     Feature configuration error raised on validation error.
     """
 
-    def __init__(self, feature: Feature, validation_error: ValidationError = None):
+    def __init__(self, feature: Feature, validation_error: ValidationError):
         additional_messages = []
-        for field, field_messages in validation_error.messages.items():
-            for field_message in field_messages:
-                additional_messages.append(f"{field}: {field_message}")
+        messages = validation_error.messages
+        if isinstance(messages, dict):
+            for field, field_messages in messages.items():
+                for field_message in field_messages:
+                    additional_messages.append(f"{field}: {field_message}")
+        else:
+            additional_messages.extend(str(message) for message in messages)
         super().__init__(feature, *additional_messages)
         self.validation_error = validation_error

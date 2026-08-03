@@ -24,7 +24,8 @@ class EventBinding:
     """
 
     def __init__(self, event: Callable | str, call: Callable | None = None, processor: Callable | None = None):
-        self.event = event
+        # Events declared with the @event decorator carry their name as an attribute.
+        self.event: str = event if isinstance(event, str) else event.name  # type: ignore[attr-defined]
         self.call = call
         self.processor = processor
 
@@ -201,17 +202,17 @@ class AbstractTemplateAction(InitializableAction, ABC):
                     events.file.generated(source=original_template, target=destination)
         except Exception as render_error:
             if migrate_retries_count > 50:
-                raise render_error
+                raise
             try:
-                template = self._autofix_render_error(template, target, original_template, render_error)
+                fixed_template = self._autofix_render_error(template, target, original_template, render_error)
             except Exception as migrate_error:
                 context.log.warning('Automatic template migration has failed for "%s": %s', template, migrate_error)
                 raise render_error from migrate_error
-            if not template:
-                raise render_error
+            if not fixed_template:
+                raise
 
             migrate_retries_count += 1
-            self.execute(template, target, migrate_retries_count, original_template)
+            self.execute(fixed_template, target, migrate_retries_count, original_template)
 
     def _target_is_modified(self, template: str, target: str) -> bool:
         rendered = caches.get(self._cache_key).get(target)

@@ -1,5 +1,4 @@
 from collections.abc import Iterable
-from typing import ClassVar
 
 from dotty_dict import Dotty
 
@@ -24,7 +23,7 @@ class CookiecutterFeature(Feature):
         return ["core"]
 
     @property
-    def schema(self) -> ClassVar[CookiecutterFeatureSchema]:
+    def schema(self) -> type[CookiecutterFeatureSchema]:
         return CookiecutterFeatureSchema
 
     @property

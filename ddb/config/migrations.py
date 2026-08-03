@@ -7,7 +7,7 @@ from ddb.config.merger import config_merger
 from ddb.context import context
 
 silent = False
-_warns = set()
+_warns: set[str] = set()
 
 
 class AbstractDeprecation(ABC):
@@ -202,11 +202,11 @@ class MigrationsDotty(Dotty):
                     pass
         try:
             value = super().__getitem__(item)
-        except KeyError as key_error:
+        except KeyError:
             deprecation_dict = self._build_deprecation_dict(item)
             if deprecation_dict:
                 return deprecation_dict
-            raise key_error
+            raise
 
         if isinstance(value, dict):
             deprecation_dict = self._build_deprecation_dict(item)
@@ -267,8 +267,8 @@ _default_history = (
 )
 
 _history = None
-_history_from_old_config_key_dict = None
-_history_from_new_config_key_dict = None
+_history_from_old_config_key_dict: dict[str, "AbstractPropertyMigration"] = {}
+_history_from_new_config_key_dict: dict[str, "AbstractPropertyMigration"] = {}
 
 
 def get_history():

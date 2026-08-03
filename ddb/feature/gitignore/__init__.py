@@ -1,5 +1,4 @@
 from collections.abc import Iterable
-from typing import ClassVar
 
 from dotty_dict import Dotty
 
@@ -25,7 +24,7 @@ class GitignoreFeature(Feature):
         return ["core"]
 
     @property
-    def schema(self) -> ClassVar[GitignoreSchema]:
+    def schema(self) -> type[GitignoreSchema]:
         return GitignoreSchema
 
     @property

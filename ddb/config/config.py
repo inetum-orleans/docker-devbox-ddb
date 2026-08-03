@@ -31,9 +31,8 @@ def get_default_config_paths(env_prefix, filenames, extensions) -> ConfigPaths:
     """
     Get configuration paths
     """
-    if os.environ.get(env_prefix + "_PROJECT_HOME"):
-        project_home = os.environ.get(env_prefix + "_PROJECT_HOME")
-    else:
+    project_home = os.environ.get(env_prefix + "_PROJECT_HOME")
+    if not project_home:
         project_home_candidate = os.getcwd()
         while not configuration_file(project_home_candidate, filenames, extensions):
             project_home_candidate_parent = str(Path(project_home_candidate).parent)
@@ -57,10 +56,14 @@ class Config:
     Configuration
     """
 
+    # Set by the core feature from the effective configuration, which may override
+    # the discovered paths (notably when ejecting).
+    path: ConfigPaths
+
     # Static default/overrides values for configuration, can be modified from code mainly for tests purpose
     defaults = None
 
-    def overrides(config):
+    def overrides(config):  # noqa: N805 - extension point, replaced as a whole (Config.overrides = ...)
         return config
 
     def __init__(
@@ -78,11 +81,11 @@ class Config:
         self.env_override_prefix = env_override_prefix
         self.filenames = filenames
         self.extensions = extensions
-        self.env_additions = {}
+        self.env_additions: dict[str, str] = {}
         self.data = MigrationsDotty()
         self.paths = paths if paths else get_default_config_paths(env_prefix, filenames, extensions)
         self.cwd = cwd
-        self.args = args if args else Namespace()
+        self.args: Namespace = args if args else Namespace()
         self.unknown_args = unknown_args if unknown_args else []
         self.env_key = "env"
 

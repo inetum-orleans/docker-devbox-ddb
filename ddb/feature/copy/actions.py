@@ -19,7 +19,7 @@ def copy_from_url(source, destination, filename=None):
     cache = caches.get(requests_cache_name)
     response = cache.get(source)
     if not response:
-        response = requests.get(source, allow_redirects=True)
+        response = requests.get(source, allow_redirects=True, timeout=30)
         response.raise_for_status()
         cache.set(source, response)
     if not filename:

@@ -7,7 +7,7 @@ from ..registry import Registry
 from .cache import Cache
 from .shelve_cache import ShelveCache
 
-caches = Registry(Cache, "Cache")  # type: Registry[Cache]
+caches: Registry[Cache] = Registry(Cache, "Cache")  # type: ignore[type-abstract]
 
 global_cache_name = "global"
 requests_cache_name = "requests"

@@ -51,4 +51,5 @@ def validate_checksum_algo(part, content, algo, checksum, content_is_der=False):
     validated_checksum = getattr(hashlib, algo.replace("-", ""))(content).hexdigest()
     checksum = checksum.lower()
     if validated_checksum != checksum:
-        raise OSError(f"Invalid {part} checksum ({algo}): {checksum} != {validated_checksum} ")
+        msg = f"Invalid {part} checksum ({algo}): {checksum} != {validated_checksum} "
+        raise OSError(msg)

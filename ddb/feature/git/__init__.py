@@ -1,5 +1,4 @@
 from collections.abc import Iterable
-from typing import ClassVar
 
 from ddb.action import Action
 from ddb.feature import Feature
@@ -22,7 +21,7 @@ class GitFeature(Feature):
         return ["core"]
 
     @property
-    def schema(self) -> ClassVar[GitSchema]:
+    def schema(self) -> type[GitSchema]:
         return GitSchema
 
     @property

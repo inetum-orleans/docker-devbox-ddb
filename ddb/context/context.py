@@ -56,21 +56,21 @@ class Context:
         self.__init__()
 
     @property
-    def event_name(self) -> str:
+    def event_name(self) -> str | None:
         """
         Current event name in stack.
         """
         return self.stack[-1].event_name if self.stack else None
 
     @property
-    def action(self) -> "Action":
+    def action(self) -> "Action | None":
         """
         Current action in stack.
         """
         return self.stack[-1].action if self.stack else None
 
     @property
-    def to_call(self) -> Callable:
+    def to_call(self) -> Callable | None:
         """
         Current callable in stack
         """

@@ -1,5 +1,4 @@
 from collections.abc import Iterable
-from typing import ClassVar
 
 from ...action import Action
 from ..feature import Feature
@@ -22,7 +21,7 @@ class FixuidFeature(Feature):
         return ["core", "docker[optional]"]
 
     @property
-    def schema(self) -> ClassVar[FeatureSchema]:
+    def schema(self) -> type[FeatureSchema]:
         return FixuidSchema
 
     @property

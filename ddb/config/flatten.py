@@ -22,7 +22,7 @@ def _get_stop_fields_from_schema(schema: Schema, stack, ret):
 
 
 def _get_stop_fields(features: Iterable["Feature"]):
-    ret = []
+    ret: list[str] = []
     stack = []
     for feature in features:
         stack.append(feature.name)

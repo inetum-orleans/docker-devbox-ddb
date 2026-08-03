@@ -2,7 +2,6 @@ import os
 import re
 import socket
 from collections.abc import Iterable
-from typing import ClassVar
 
 import psutil
 from dotty_dict import Dotty
@@ -35,7 +34,7 @@ class DockerFeature(Feature):
         return ["core"]
 
     @property
-    def schema(self) -> ClassVar[FeatureSchema]:
+    def schema(self) -> type[FeatureSchema]:
         return DockerSchema
 
     @property
@@ -67,9 +66,7 @@ class DockerFeature(Feature):
                 interface = feature_config.get("interface")
                 docker_if = psutil.net_if_addrs().get(interface)
                 if docker_if is None:
-                    raise FeatureConfigurationAutoConfigureError(
-                        self, "ip", "Invalid network interface: " + interface
-                    )
+                    raise FeatureConfigurationAutoConfigureError(self, "ip", "Invalid network interface: " + interface)
                 ip_address = next((addr.address for addr in docker_if if addr.family == socket.AF_INET), None)
                 if not ip_address:
                     raise FeatureConfigurationAutoConfigureError(

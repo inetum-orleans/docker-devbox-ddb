@@ -1,6 +1,5 @@
 from collections.abc import Iterable
 from subprocess import CalledProcessError
-from typing import ClassVar
 
 from dotty_dict import Dotty
 
@@ -131,7 +130,7 @@ class VersionFeature(Feature):
         return ["core"]
 
     @property
-    def schema(self) -> ClassVar[VersionSchema]:
+    def schema(self) -> type[VersionSchema]:
         return VersionSchema
 
     def _configure_defaults(self, feature_config: Dotty):

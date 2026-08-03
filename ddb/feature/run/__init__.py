@@ -1,6 +1,5 @@
 from argparse import ArgumentParser
 from collections.abc import Iterable
-from typing import ClassVar
 
 from ...action import Action
 from ...command import Command
@@ -26,7 +25,7 @@ class RunFeature(Feature):
         return ["core"]
 
     @property
-    def schema(self) -> ClassVar[FeatureSchema]:
+    def schema(self) -> type[FeatureSchema]:
         return RunSchema
 
     @property

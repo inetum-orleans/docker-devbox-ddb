@@ -21,6 +21,7 @@ uv run pytest --cov=ddb        # with coverage (what CI runs)
 uv run pytest tests/feature/gitignore/test_gitignore.py::TestUpdateGitIgnoreAction::test_empty_project_with_core  # single test
 uv run ruff check              # lint, blocking in CI
 uv run ruff format             # format
+uv run mypy                    # type check, blocking in CI
 uv run pre-commit run --all-files   # the full quality gate, as CI runs it
 uv run tox                     # run the suite on py311..py314
 uv run pyinstaller --dist ./dist ddb.spec  # build the standalone binary
@@ -31,7 +32,7 @@ The [ytt](https://carvel.dev/ytt/) binary must be in `PATH` for the ytt feature 
 with `python -m ddb` instead of `ddb`.
 
 Supported interpreters are 3.11 → 3.14. `ddb/utils/simpleeval.py`, `ddb/feature/docker/lib` and
-`pytest_docker_compose` are vendored copies excluded from ruff, so leave their formatting alone.
+`pytest_docker_compose` are vendored copies excluded from ruff and mypy, so leave their formatting alone.
 
 Commits must follow [conventional commits](https://www.conventionalcommits.org/) — commitizen (`uv run cz check`)
 rejects invalid messages in CI, and `uv run cz commit` helps write them. `ddb/__version__.py` is bumped by
@@ -113,8 +114,9 @@ instance to `_default_available_features` in `ddb/feature/bootstrap.py`, add `do
 
 ## Code conventions
 
-- `ruff check` and `ruff format` must pass; the rule set, the 120-column limit and the justified per-file exceptions
-  live in `pyproject.toml`. Docstrings on classes, functions and methods remain the house style.
+- `ruff check`, `ruff format` and `mypy` must pass; the rule set, the 120-column limit, the type checking settings
+  and the justified per-file exceptions live in `pyproject.toml`. Docstrings on classes, functions and methods
+  remain the house style. Every ignore is expected to carry a comment explaining why.
 - Code must remain compatible with Python 3.11 (CI matrix is 3.11 → 3.14).
 - Cross-platform behaviour (Linux, Windows, macOS/alpine binaries) is expected; prefer helpers from `ddb/utils/`
   (`file.py`, `process.py`, `compat.py`) over raw `os`/`subprocess` calls where one exists.

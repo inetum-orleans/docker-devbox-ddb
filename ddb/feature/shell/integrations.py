@@ -139,7 +139,7 @@ class BashShellIntegration(ShellIntegration):
         return shim
 
     def create_binary_shim(self, shims_path: str, name: str, global_: bool):
-        command = []
+        command: list[str] = []
         if global_:
             ddb_project_home_variable = next(
                 self.set_environment_variable(config.env_prefix + "_PROJECT_HOME", config.paths.project_home)
@@ -237,7 +237,7 @@ class CmdShellIntegration(ShellIntegration):
         return shim
 
     def create_binary_shim(self, shims_path: str, name: str, global_: bool):
-        commands = []
+        commands: list[str] = []
         if global_:
             commands.extend(
                 (

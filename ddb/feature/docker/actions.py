@@ -264,7 +264,8 @@ class DockerComposeBinaryAction(InitializableAction):
         if name is None and docker_compose_service:
             name = docker_compose_service
         if name is None:
-            raise ValueError("name should be defined")
+            msg = "name should be defined"
+            raise ValueError(msg)
 
         binary = DockerBinary(
             name,
@@ -564,7 +565,7 @@ class DockerDisplayInfoAction(Action):
 
         vhosts_regex_re = re.compile(r"^Host\(`(.+?)`\)$")
 
-        vhosts_labels = []
+        vhosts_labels: list[str] = []
         for key in labels.keys():
             value = labels.get(key)
             match = vhosts_regex_re.match(value)

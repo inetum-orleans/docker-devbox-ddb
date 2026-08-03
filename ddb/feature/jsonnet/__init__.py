@@ -2,7 +2,6 @@ import hashlib
 import os
 import re
 from collections.abc import Iterable
-from typing import ClassVar
 
 from dotty_dict import Dotty
 from slugify import slugify
@@ -31,7 +30,7 @@ class JsonnetFeature(Feature):
         return ["core", "file", "docker[optional]", "version[optional]"]
 
     @property
-    def schema(self) -> ClassVar[JsonnetSchema]:
+    def schema(self) -> type[JsonnetSchema]:
         return JsonnetSchema
 
     @property
@@ -166,7 +165,9 @@ class JsonnetFeature(Feature):
         if port_prefix is None:
             project_name = config.data.get("core.project.name")
             if project_name:
-                port_prefix = int(hashlib.sha1(project_name.encode("utf-8")).hexdigest(), 16) % 655
+                port_prefix = (
+                    int(hashlib.sha1(project_name.encode("utf-8"), usedforsecurity=False).hexdigest(), 16) % 655
+                )
                 feature_config["docker.expose.port_prefix"] = port_prefix
 
     @staticmethod

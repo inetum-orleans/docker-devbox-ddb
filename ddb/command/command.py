@@ -120,7 +120,9 @@ class LifecycleCommand(DefaultCommand):
         avoid_stdout=False,
     ):
         super().__init__(name, description, parent, before_execute=before_execute, avoid_stdout=avoid_stdout)
-        self._lifecycle = [phases.get(phase) if not isinstance(phase, Phase) else phase for phase in lifecycle]  # type: Iterable[Phase]
+        self._lifecycle: list[Phase] = [
+            phases.get(phase) if not isinstance(phase, Phase) else phase for phase in lifecycle
+        ]
         for phase in self._lifecycle:
             if phase.allow_unknown_args:
                 self._allow_unknown_args = True

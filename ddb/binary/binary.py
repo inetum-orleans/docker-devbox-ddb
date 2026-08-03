@@ -99,7 +99,7 @@ class DefaultBinary(AbstractBinary):
         super().__init__(name)
         self._command = tuple(command)
 
-    def command(self, *args) -> tuple[str]:
+    def command(self, *args) -> tuple[str, ...]:
         return self._command
 
     def __eq__(self, other) -> bool:

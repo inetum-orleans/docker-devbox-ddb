@@ -85,8 +85,9 @@ class DockerBinary(AbstractBinary):
         if self.entrypoint:
             params.append(f"--entrypoint={self.entrypoint}")
 
-        if os.environ.get("DDB_RUN_OPTS"):
-            params.extend([shlex.quote(param) for param in shlex.split(os.environ.get("DDB_RUN_OPTS"))])
+        run_opts = os.environ.get("DDB_RUN_OPTS")
+        if run_opts:
+            params.extend([shlex.quote(param) for param in shlex.split(run_opts)])
 
         self.add_options_to_params(params, self.options, self.options_condition, *args)
 
@@ -96,7 +97,8 @@ class DockerBinary(AbstractBinary):
 
         docker_compose_command = config.data.get("docker.docker_compose_command")
         if not docker_compose_command:
-            raise ConfigurationError("DockerBinary requires docker feature configuration")
+            msg = "DockerBinary requires docker feature configuration"
+            raise ConfigurationError(msg)
         return effective_command(*shlex.split(docker_compose_command), *params)
 
     def add_options_to_params(self, params, options, condition, *args):

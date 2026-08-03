@@ -1,6 +1,5 @@
 import os
 from collections.abc import Iterable
-from typing import ClassVar
 
 from dotty_dict import Dotty
 
@@ -26,7 +25,7 @@ class TraefikFeature(Feature):
         return ["core", "certs[optional]"]
 
     @property
-    def schema(self) -> ClassVar[FeatureSchema]:
+    def schema(self) -> type[FeatureSchema]:
         return TraefikSchema
 
     @property

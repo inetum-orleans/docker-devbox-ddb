@@ -138,8 +138,8 @@ jobs:
       - name: Sync dependencies
         run: uv sync --group dev
 
-      # Runs the whole .pre-commit-config.yaml (ruff check, ruff format) — the same
-      # hooks developers run locally, so CI and local stay in sync from one config.
+      # Runs the whole .pre-commit-config.yaml (ruff check, ruff format, mypy) — the
+      # same hooks developers run locally, so CI and local stay in sync from one config.
       - name: Run pre-commit
         run: uv run pre-commit run --all-files --show-diff-on-failure
 

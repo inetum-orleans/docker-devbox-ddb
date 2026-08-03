@@ -1,5 +1,4 @@
 from collections.abc import Iterable
-from typing import ClassVar
 
 from dotty_dict import Dotty
 
@@ -25,7 +24,7 @@ class SymlinksFeature(Feature):
         return ["core", "file"]
 
     @property
-    def schema(self) -> ClassVar[SymlinksSchema]:
+    def schema(self) -> type[SymlinksSchema]:
         return SymlinksSchema
 
     @property

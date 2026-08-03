@@ -96,7 +96,7 @@ test = [
     "responses",
     "waiting",
 ]
-lint = ["ruff"]
+lint = ["mypy", "ruff"]
 build = ["pex", "pyinstaller"]
 dev = [
     { include-group = "build" },
@@ -164,6 +164,14 @@ select = [
     "FA",   # flake8-future-annotations
     "PT",   # flake8-pytest-style
     "RUF",  # ruff-specific rules
+    "S",    # flake8-bandit
+    "EM",   # flake8-errmsg
+    "TRY",  # tryceratops
+    "N",    # pep8-naming
+    "C90",  # mccabe complexity
+    "DTZ",  # flake8-datetimez
+    "LOG",  # flake8-logging
+    "G",    # flake8-logging-format
 ]
 ignore = [
     # Base classes expose optional hooks (before_load, close, flush, warn, ...) as
@@ -177,18 +185,39 @@ ignore = [
     # `for k in d.keys()` is not interchangeable with `for k in d` here: caches and
     # dotty dicts expose keys() without being iterable themselves.
     "SIM118",
+    # Exception classes predate this rule and are part of the public API; renaming
+    # them to a `Error` suffix would be a breaking change.
+    "N818",
+    # Messages passed straight to raise read better than a variable per exception.
+    "TRY003",
+    # Raising inside try is how the config and action pipelines report failures they
+    # then translate; splitting those blocks would obscure the flow.
+    "TRY301",
+    # `return` at the end of a try block reads fine when the try only guards the
+    # statements above it.
+    "TRY300",
 ]
+
+[tool.ruff.lint.mccabe]
+# Current worst offender, so complexity cannot grow; lower it as functions get split.
+max-complexity = 20
 
 [tool.ruff.lint.per-file-ignores]
 # Shelve caches and rendered templates own file handles that outlive the call.
-"ddb/cache/shelve_cache.py" = ["SIM115"]
+# S301: shelve pickles ddb's own cache entries, written and read back locally.
+"ddb/cache/shelve_cache.py" = ["SIM115", "S301"]
+# S603: running configured processes is what this helper is for.
+"ddb/utils/process.py" = ["S603"]
+# S701: templates render configuration files (yaml, toml, ini), never HTML, and
+# autoescaping would corrupt them.
+"ddb/feature/jinja/actions.py" = ["S701"]
 "ddb/feature/ytt/actions.py" = ["SIM115"]
 "ddb/utils/file.py" = ["SIM115"]
 # Embedded traefik configuration templates, kept verbatim.
 "ddb/feature/traefik/schema.py" = ["E501"]
 # Tests assert on full command lines, patch with plain functions rather than mock
 # return values, and check raised messages with `str(excinfo.value)` after the block.
-"tests/**" = ["E501", "PT008", "PT011", "PT012"]
+"tests/**" = ["E501", "N802", "PT008", "PT011", "PT012", "S", "TRY", "DTZ"]
 
 [tool.pytest.ini_options]
 addopts = "-s --ignore=build --ignore=docs --docker-compose-remove-volumes"
@@ -200,3 +229,12 @@ omit = ["ddb/__version__.py", "ddb/utils/simpleeval.py", "pytest_docker_compose/
 
 [tool.coverage.report]
 exclude_lines = ["pragma: no cover"]
+
+[tool.mypy]
+files = ["ddb"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# Vendored code, kept as close as possible to its upstream source.
+module = ["ddb.utils.simpleeval", "ddb.feature.docker.lib.*"]
+ignore_errors = true

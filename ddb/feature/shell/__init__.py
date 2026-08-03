@@ -1,7 +1,6 @@
 import os
 from argparse import ArgumentParser
 from collections.abc import Iterable
-from typing import ClassVar
 
 from dotty_dict import Dotty
 
@@ -37,7 +36,7 @@ class ShellFeature(Feature):
         return ["core"]
 
     @property
-    def schema(self) -> ClassVar[FeatureSchema]:
+    def schema(self) -> type[FeatureSchema]:
         return ShellSchema
 
     @property

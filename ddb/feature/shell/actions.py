@@ -269,7 +269,8 @@ class ActivateAction(Action):
             if config.args.force:
                 self._deactivate()
             else:
-                raise CheckIsActivatedException("project is already activated.")
+                msg = "project is already activated."
+                raise CheckIsActivatedException(msg)
         except CheckIsNotActivatedException:
             pass
 
@@ -420,23 +421,23 @@ def check_activated(do_raise=False, do_log=False):
                 context.log.info("Project is activated.")
             return True
         try:
-            raise CheckAnotherProjectActivatedException(
-                f"Another project is already activated ({os.environ[project_home_key]})"
-            )
+            msg = f"Another project is already activated ({os.environ[project_home_key]})"
+            raise CheckAnotherProjectActivatedException(msg)
         except CheckAnotherProjectActivatedException as exc:
             if do_log:
                 context.log.error(str(exc))
             if do_raise:
-                raise exc
+                raise
         return False
 
     try:
-        raise CheckIsNotActivatedException("Project is not activated")
+        msg = "Project is not activated"
+        raise CheckIsNotActivatedException(msg)
     except CheckIsNotActivatedException as exc:
         if do_log:
             context.log.error(str(exc))
         if do_raise:
-            raise exc
+            raise
         return False
 
 

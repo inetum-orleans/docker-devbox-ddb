@@ -110,7 +110,7 @@ def register_objects(
     """
     Register objects from features inside registry.
     """
-    all_objects = []
+    all_objects: list[RegistryObject] = []
 
     for feature in features_list:
         objects = objects_getter(feature)
@@ -346,21 +346,35 @@ def handle_command_line(command: Command):
         handle_watch()
 
 
-def _register_action_in_event_bus(action: Action, binding: Callable | str | EventBinding, fail_fast=False):
+def _as_event_binding(binding: Callable | str | EventBinding) -> EventBinding:
     """
-    Register a single event binding. It supports name property added by @event decorator on events callable.
+    Normalize an event binding declaration. It supports name property added by @event decorator on events
+    callable.
     """
     if callable(binding) and hasattr(binding, "name"):
         binding = binding.name
     if isinstance(binding, str):
-        binding = EventBinding(binding)
-    if callable(binding.event) and hasattr(binding.event, "name"):
-        binding.event = binding.event.name
+        return EventBinding(binding)
+    if isinstance(binding, EventBinding):
+        return binding
+    msg = f"Unsupported event binding declaration: {binding!r}"
+    raise ValueError(msg)
+
+
+def _register_action_in_event_bus(action: Action, binding: Callable | str | EventBinding, fail_fast=False):
+    """
+    Register a single event binding. It supports name property added by @event decorator on events callable.
+    """
+    event_binding = _as_event_binding(binding)
 
     bus.on(
-        binding.event,
+        event_binding.event,
         action_event_binding_runner_factory(
-            action, binding.event, to_call=binding.call, event_processor=binding.processor, fail_fast=fail_fast
+            action,
+            event_binding.event,
+            to_call=event_binding.call,
+            event_processor=event_binding.processor,
+            fail_fast=fail_fast,
         ).run,
     )
 
@@ -397,8 +411,8 @@ def main(
         preload_registered_features()
 
         try:
-            command, args, unknown_args = parse_command_line(args)
-            config.args = args
+            command, parsed_args, unknown_args = parse_command_line(args)
+            config.args = parsed_args
             config.unknown_args = unknown_args
         except ParseCommandLineException as exc:
             config.args = exc.parsed_args
@@ -443,14 +457,14 @@ def main(
         return context.exceptions
     except ExpectedError as exception:
         return [exception]
-    except Exception as exception:
+    except Exception:
         try:
             clear_caches()
         except Exception as clear_cache_exception:
             logging.getLogger("ddb").exception(
                 "An error has occured while clearing caches", exc_info=clear_cache_exception
             )
-        raise exception
+        raise
     finally:
         os.chdir(initial_cwd)
         if not reset_disabled:

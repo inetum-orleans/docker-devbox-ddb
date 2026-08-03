@@ -2,7 +2,7 @@ import inspect
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from ordered_set import OrderedSet
 
@@ -27,7 +27,7 @@ class RegistryObject(ABC):
         """
         The description of the object.
         """
-        return inspect.getdoc(self.__class__)
+        return inspect.getdoc(self.__class__) or ""
 
 
 class DefaultRegistryObject(RegistryObject):
@@ -56,12 +56,12 @@ class Registry(Generic[T]):
     Container for registered objects. Objects can be retrieved with their unique name.
     """
 
-    def __init__(self, clazz: ClassVar[T], type_name="Object"):
+    def __init__(self, clazz: type[T], type_name="Object"):
         self._clazz = clazz
         self._type_name = type_name
-        self._objects = []
-        self._objects_dict = {}
-        self._cache = None
+        self._objects: list[T] = []
+        self._objects_dict: dict[str, Any] = {}
+        self._cache: Cache | None = None
 
     def set_cache(self, cache: "Cache"):
         """
@@ -81,7 +81,8 @@ class Registry(Generic[T]):
         """
         if hasattr(obj, "name"):
             return obj.name
-        raise ValueError("Name should be provided to register this kind of object")
+        msg = "Name should be provided to register this kind of object"
+        raise ValueError(msg)
 
     def register(self, obj: T, name=None):
         """
@@ -90,7 +91,9 @@ class Registry(Generic[T]):
         name = name if name else self._default_name(obj)
 
         if not isinstance(obj, self._clazz):
-            raise ValueError(self._type_name + ' name "' + name + '" should be an instance of ' + self._clazz.__name__)
+            raise ValueError(  # noqa: TRY004
+                self._type_name + ' name "' + name + '" should be an instance of ' + self._clazz.__name__
+            )
 
         return self._register_impl(name, obj)
 
@@ -130,6 +133,8 @@ class Registry(Generic[T]):
 
     def _unregister_impl(self, name, obj=None, callback: Callable[[T], Any] | None = None) -> bool:
         item = self._objects_dict.get(name)
+        if item is None:
+            return False
         if obj is None or item == obj:
             self._objects_dict.pop(name)
             self._objects.remove(item)
@@ -151,7 +156,7 @@ class Registry(Generic[T]):
             raise ValueError(self._type_name + ' name "' + name + '" is not registered')
         return self._objects_dict[name]
 
-    def all(self) -> tuple[T]:
+    def all(self) -> tuple[T, ...]:
         """
         Get all object instances.
         """
@@ -177,12 +182,12 @@ class Registry(Generic[T]):
         self.clear()
 
 
-class RegistryOrderedSet(Registry):
+class RegistryOrderedSet(Registry[T]):
     """
     Container for registered objects. Objects set can be retrieved with their unique name.
     """
 
-    def __init__(self, clazz: ClassVar[T], type_name="Object"):
+    def __init__(self, clazz: type[T], type_name="Object"):
         super().__init__(clazz, type_name)
         self._objects_dict = defaultdict(OrderedSet)
 
@@ -227,5 +232,6 @@ class RegistryOrderedSet(Registry):
     def _has_obj_impl(self, dict_value: OrderedSet[T], obj) -> bool:
         return obj in dict_value
 
-    def get(self, name: str) -> OrderedSet[T]:
-        return super().get(name)
+    # Deliberately narrows the base registry: entries are sets of objects sharing a name.
+    def get(self, name: str) -> OrderedSet[T]:  # type: ignore[override]
+        return super().get(name)  # type: ignore[return-value]

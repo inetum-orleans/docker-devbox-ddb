@@ -27,7 +27,8 @@ def effective_command(executable: str, *args: str) -> list[str]:
     prepending args.
     """
     if not args:
-        executable, *args = shlex.split(executable)
+        executable, *split_args = shlex.split(executable)
+        args = tuple(split_args)
 
     configured_executable = config.data.get(f"core.process.{executable}.bin", executable)
     prepend_args = config.data.get(f"core.process.{executable}.prepend", [])

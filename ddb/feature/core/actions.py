@@ -2,7 +2,7 @@ import os
 import re
 import shutil
 import sys
-from datetime import date
+from datetime import UTC, datetime
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from urllib.error import HTTPError
@@ -35,7 +35,7 @@ def get_latest_release(github_repository: str):
     :param github_repository github repository to check
     :return: Version from tag_name retrieved from GitHub API
     """
-    response = requests.get(f"https://api.github.com/repos/{github_repository}/releases/latest")
+    response = requests.get(f"https://api.github.com/repos/{github_repository}/releases/latest", timeout=30)
     try:
         response.raise_for_status()
         tag_name = response.json().get("tag_name")
@@ -233,7 +233,8 @@ def get_local_binary_path():
     context.log.debug("local_binary_path: %s", local_binary_path)
 
     if not local_binary_path:
-        raise ValueError("Can't find local binary path to update.")
+        msg = "Can't find local binary path to update."
+        raise ValueError(msg)
     return local_binary_path
 
 
@@ -361,10 +362,12 @@ class ConfigAction(Action):
     @staticmethod
     def _print_config_value(configuration, prop):
         if configuration is None:
-            raise ValueError(f"{prop} not found in configuration.")
+            msg = f"{prop} not found in configuration."
+            raise ValueError(msg)
         dotty_configuration = Dotty(configuration)
         if prop and prop not in dotty_configuration:
-            raise ValueError(f"{prop} not found in configuration.")
+            msg = f"{prop} not found in configuration."
+            raise ValueError(msg)
         value = dotty_configuration[prop] if prop and prop in dotty_configuration else configuration
         print(value)
 
@@ -450,8 +453,9 @@ class EjectAction(Action):
         """
         Execute action
         """
-        force_remove(source)
-        events.file.deleted(source)
+        if source:
+            force_remove(source)
+            events.file.deleted(source)
         events.file.deleted(target)
 
 
@@ -547,7 +551,7 @@ class CheckForUpdateAction(InitializableAction):
         if not command.avoid_stdout and config.data.get("core.check_updates"):
             cache = caches.get("core.check_for_update.version")
             last_check = cache.get("last_check", None)
-            today = date.today()
+            today = datetime.now(UTC).date()
 
             if last_check is None or last_check < today:
                 github_repository = config.data.get("core.github_repository")
@@ -593,10 +597,11 @@ class CheckRequiredVersion(Action):
                 update_tip = _build_update_tip()
                 if update_tip:
                     update_tip = " " + update_tip
-                raise RequiredVersionError(
+                msg = (
                     f"This project requires ddb {required_version}+. "
                     f"Current version is {get_current_version()}.{update_tip}"
                 )
+                raise RequiredVersionError(msg)
 
 
 class SelfUpdateAction(Action):
@@ -646,10 +651,12 @@ class SelfUpdateAction(Action):
         local_binary_path = get_local_binary_path()
 
         if not os.access(local_binary_path, os.W_OK):
-            raise PermissionError(f"You don't have permission to write on ddb binary file. ({local_binary_path})")
+            msg = f"You don't have permission to write on ddb binary file. ({local_binary_path})"
+            raise PermissionError(msg)
 
         if not os.path.isfile(local_binary_path):
-            raise ValueError(f"Local binary path is not a file. ({local_binary_path})")
+            msg = f"Local binary path is not a file. ({local_binary_path})"
+            raise ValueError(msg)
 
         release_asset_name = config.data.get("core.release_asset_name")
         if not release_asset_name:
@@ -660,7 +667,7 @@ class SelfUpdateAction(Action):
         context.log.debug("Downloading ddb asset: %s", url)
 
         progress_bar = None
-        with requests.get(url, stream=True) as response:
+        with requests.get(url, stream=True, timeout=30) as response:
             response.raise_for_status()
 
             with NamedTemporaryFile(delete=False) as tmp:

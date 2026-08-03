@@ -35,7 +35,7 @@ class RunAction(Action):
         Execute the action
         """
         if not args:
-            args = config.unknown_args
+            args = tuple(config.unknown_args)
 
         binary_set = binaries.get(name)
         binary = None
@@ -53,7 +53,7 @@ class RunAction(Action):
         """
         Select effective binary between many binaries.
         """
-        ordered_binary = sorted(binary_set)
+        ordered_binary = sorted(binary_set)  # type: ignore[type-var]
         for binary in ordered_binary:
             if binary.should_run(*args):
                 return binary

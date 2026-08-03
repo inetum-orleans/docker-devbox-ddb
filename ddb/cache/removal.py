@@ -36,7 +36,8 @@ class RemovalCacheSupport:
         Set current value for given key.
         """
         if key not in self.keys:
-            raise ValueError(f"Given key '{key}' doesn't match any of the supported key {self.keys}")
+            msg = f"Given key '{key}' doesn't match any of the supported key {self.keys}"
+            raise ValueError(msg)
         self.cached[key].add(value)
         self.current[key].add(value)
 

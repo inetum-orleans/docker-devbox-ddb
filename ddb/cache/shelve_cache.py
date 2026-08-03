@@ -7,12 +7,12 @@ from ..config import config
 from .cache import Cache
 
 # Easy fix for https://github.com/inetum-orleans/docker-devbox-ddb/issues/49
-_dbm_names = dbm._names = ["dbm.gnu", "dbm.ndbm", "dbm.dumb"]
+_dbm_names = dbm._names = ["dbm.gnu", "dbm.ndbm", "dbm.dumb"]  # type: ignore[attr-defined]
 if "dbm.dumb" in _dbm_names:
     # Let's make dbm.dumb the preferred implementation
     _dbm_names.remove("dbm.dumb")
     _dbm_names.insert(0, "dbm.dumb")
-    dbm._names = _dbm_names
+    dbm._names = _dbm_names  # type: ignore[attr-defined]
 
 
 class ShelveCache(Cache):
@@ -43,7 +43,7 @@ class ShelveCache(Cache):
                 except Exception as fallback_error:
                     raise open_error from fallback_error
             else:
-                raise open_error
+                raise
         if clear_cache:
             self._shelf.clear()
 
@@ -62,6 +62,7 @@ class ShelveCache(Cache):
     def flush(self):
         self._shelf.sync()
 
+    # Shelve pickles ddb's own cache entries, written and read back locally.
     def get(self, key: str, default=None):
         try:
             return self._shelf.get(key, default)

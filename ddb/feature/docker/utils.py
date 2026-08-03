@@ -36,7 +36,8 @@ class DockerComposeControl:
         docker_compose_command = config.data.get("docker.docker_compose_command")
 
         if not docker_command or not docker_compose_command:
-            raise ConfigurationError("DockerComposeControl requires docker feature configuration")
+            msg = "DockerComposeControl requires docker feature configuration"
+            raise ConfigurationError(msg)
 
         self.docker_command = shlex.split(docker_command)
         self.docker_compose_command = shlex.split(docker_compose_command)

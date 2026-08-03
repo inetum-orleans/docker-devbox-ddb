@@ -3,4 +3,4 @@ from .command import Command, LifecycleCommand
 
 __all__ = ["Command", "LifecycleCommand", "commands"]
 
-commands = Registry(Command, "Command")  # type: Registry[Command]
+commands: Registry[Command] = Registry(Command, "Command")  # type: ignore[type-abstract]
