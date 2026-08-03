@@ -108,6 +108,43 @@ class TestConfig:
         assert configurations["some.custom.yml"]["some"] is True
         assert "app.value" not in configurations["some.custom.yml"]
 
+    def test_config_output_extra_filenames_full_files_option(self, project_loader, capsys: CaptureFixture):
+        project_loader("extra-filenames")
+
+        main(["config", "--full", "--files"])
+
+        reset()
+
+        output = capsys.readouterr().out
+
+        parts = [part.lstrip() for part in output.split("---") if part.strip()]
+        filenames = [part.split("\n", 1)[0][2:] for part in parts]
+
+        assert filenames[0] == "default"
+        assert [os.path.relpath(filename, str(Path.cwd())) for filename in filenames[1:]] == [
+            "ddb.yml",
+            "some.custom.yml",
+            "another.config.file.yaml",
+            "ddb.local.yml",
+        ]
+
+        default_configuration = Dotty(yaml.safe_load(parts[0].split("\n", 1)[1]))
+
+        assert default_configuration["core.domain.ext"] == "test"
+
+    def test_config_output_extra_filenames_variables_files_option(self, project_loader, capsys: CaptureFixture):
+        project_loader("extra-filenames")
+
+        main(["config", "app", "--variables", "--files"])
+
+        reset()
+
+        blocks = [block.strip() for block in capsys.readouterr().out.split("\n\n") if block.strip()]
+
+        assert len(blocks) == 4
+        assert blocks[0].endswith("app.value: default")
+        assert blocks[-1].endswith("app.value: local")
+
     def test_config_local_falsy(self, project_loader):
         project_loader("local-falsy")
 
