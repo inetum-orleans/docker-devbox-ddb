@@ -43,13 +43,20 @@ jobs:
       - name: Sync dependencies
         run: uv sync --no-dev --group test
 
+      # The threshold is enforced by the dedicated step below, so a coverage drop is reported as its own
+      # failure instead of a pytest one.
       - name: Pytest (Coverage)
-        run: uv run --no-sync pytest --cov=ddb
+        run: uv run --no-sync pytest --cov=ddb --cov-report=xml --cov-fail-under=0
 
+      - name: Coverage threshold
+        run: uv run --no-sync coverage report
+
+      # `files` is required: the uploader does not read coverage.py's own `.coverage` data file.
       - name: Codecov
-        uses: codecov/codecov-action@v4
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
 
   ci-macos:
     runs-on: macos-latest
@@ -90,8 +97,8 @@ jobs:
         run: uv sync --no-dev --group test
 
       - name: Pytest (Coverage)
-        # The macOS runners have no docker daemon.
-        run: uv run --no-sync pytest --cov=ddb -m "not docker"
+        # The macOS runners have no docker daemon, so the threshold cannot be met here.
+        run: uv run --no-sync pytest --cov=ddb -m "not docker" --cov-fail-under=0
 
   ci-windows:
     runs-on: windows-latest
@@ -123,7 +130,8 @@ jobs:
         run: uv sync --no-dev --group test
 
       - name: Pytest (Coverage)
-        run: uv run --no-sync pytest --cov=ddb -m "not docker"
+        # The windows runners have no docker daemon, so the threshold cannot be met here.
+        run: uv run --no-sync pytest --cov=ddb -m "not docker" --cov-fail-under=0
 
   pre-commit:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository

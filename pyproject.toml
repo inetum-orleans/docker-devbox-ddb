@@ -269,6 +269,9 @@ omit = ["ddb/__version__.py", "ddb/utils/simpleeval.py", "pytest_docker_compose/
 
 [tool.coverage.report]
 exclude_lines = ["pragma: no cover"]
+# Measured by the linux job, which is the only one running the whole suite. Raise it as gaps get closed; runs
+# skipping tests (`-m "not docker"`, a single test file) need `--cov-fail-under=0` to opt out.
+fail_under = 94
 
 [tool.mypy]
 files = ["ddb"]
