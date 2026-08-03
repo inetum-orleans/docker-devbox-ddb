@@ -26,6 +26,7 @@ class TemplateSchema(CookiecutterOptions):
     template = fields.String(required=True)
     output_dir = fields.String(allow_none=True, dump_default=None)
     checkout = fields.String(allow_none=True, dump_default=None)
+    accept_hooks = fields.Boolean(allow_none=True, dump_default=None)
     extra_context = fields.Dict(allow_none=True, dump_default=None)
     password = fields.String(allow_none=True, dump_default=None)
     version = fields.String(allow_none=True, dump_default=None)

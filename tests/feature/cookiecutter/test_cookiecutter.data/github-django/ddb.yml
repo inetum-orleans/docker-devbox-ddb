@@ -1,3 +1,8 @@
 cookiecutter:
   templates:
+    # Pinned and generated without hooks: the template hooks install the generated project
+    # dependencies with uv, which ties the test to the python version cookiecutter-django
+    # currently requires instead of testing ddb.
     - template: 'gh:cookiecutter/cookiecutter-django'
+      checkout: '2026.08.02'
+      accept_hooks: false
