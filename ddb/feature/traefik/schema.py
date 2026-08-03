@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
+from marshmallow import Schema, fields
+
 from ddb.feature.schema import FeatureSchema
-from marshmallow import fields, Schema
 
 
 class ExtraServiceSchema(Schema):

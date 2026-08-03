@@ -2,7 +2,7 @@ import os
 
 from ddb.__main__ import load_registered_features, register_default_caches
 from ddb.feature import features
-from ddb.feature.copy import CopyFeature, CopyAction
+from ddb.feature.copy import CopyAction, CopyFeature
 
 
 class TestCopyFeature:

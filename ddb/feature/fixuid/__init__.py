@@ -1,11 +1,11 @@
-# -*- coding: utf-8 -*-
-from typing import Iterable, ClassVar
+from collections.abc import Iterable
+from typing import ClassVar
 
-from .actions import FixuidDockerComposeAction
-from .schema import FixuidSchema
+from ...action import Action
 from ..feature import Feature
 from ..schema import FeatureSchema
-from ...action import Action
+from .actions import FixuidDockerComposeAction
+from .schema import FixuidSchema
 
 
 class FixuidFeature(Feature):

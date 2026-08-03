@@ -1,8 +1,9 @@
-from typing import Iterable, Union, TYPE_CHECKING
+from collections.abc import Iterable
+from typing import TYPE_CHECKING
 
 from dotty_dict import Dotty
 from marshmallow import Schema
-from marshmallow.fields import Nested, Dict, List
+from marshmallow.fields import Dict, List, Nested
 
 if TYPE_CHECKING:
     from ddb.feature import Feature
@@ -31,7 +32,7 @@ def _get_stop_fields(features: Iterable['Feature']):
     return ret
 
 
-def to_environ(data: Union[Dotty, dict], env_prefix) -> dict:
+def to_environ(data: Dotty | dict, env_prefix) -> dict:
     """
     Export configuration to environment dict.
     """
@@ -41,7 +42,7 @@ def to_environ(data: Union[Dotty, dict], env_prefix) -> dict:
                     data=dict(data))
 
 
-def flatten(data: Union[Dotty, dict], prefix=None, sep=".", array_index_format="[%s]",
+def flatten(data: Dotty | dict, prefix=None, sep=".", array_index_format="[%s]",
             key_transformer=None, value_transformer=None, keep_primitive_list=False,
             stop_for_features=None) -> dict:
     """
@@ -63,9 +64,11 @@ def _flatten(prefix=None, sep=".", array_index_format="[%s]",
     if prefix is None:
         prefix = ""
     if key_transformer is None:
-        key_transformer = lambda x: x
+        def key_transformer(x):
+            return x
     if value_transformer is None:
-        value_transformer = lambda x: x
+        def value_transformer(x):
+            return x
 
     stop_recursion = False
     if prefix in stop_for:
@@ -85,16 +88,13 @@ def _flatten(prefix=None, sep=".", array_index_format="[%s]",
                                     not set(filter(lambda x: x not in (int, float, bool, str), set(map(type, data))))):
             output[prefix] = value_transformer(data)
         else:
-            i = 0
-            for value in data:
+            for i, value in enumerate(data):
                 replace_prefix = (prefix if prefix else "") + (array_index_format % str(i))
                 replace_prefix = key_transformer(replace_prefix)
 
                 _flatten(replace_prefix, sep, array_index_format,
                          key_transformer, value_transformer, keep_primitive_list,
                          stop_for, value, output)
-
-                i += 1
     else:
         output[prefix] = value_transformer(data)
 

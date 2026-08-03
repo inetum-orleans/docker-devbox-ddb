@@ -2,14 +2,15 @@ import os
 import shutil
 import threading
 import time
+from collections.abc import Iterable
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Iterable
 
 import pytest
-from ddb.__main__ import main, wait_watch_started, stop_watch
-from tests.utilstest import expect_gitignore, setup_cfssl
 from waiting import wait
+
+from ddb.__main__ import main, stop_watch, wait_watch_started
+from tests.utilstest import expect_gitignore, setup_cfssl
 
 
 def init_test_watch(watch: bool, command: Iterable[str]):
@@ -18,7 +19,8 @@ def init_test_watch(watch: bool, command: Iterable[str]):
     full_command = ["--watch"] if watch else []
     full_command.extend(command)
 
-    main_runner = lambda: main(full_command)
+    def main_runner():
+        return main(full_command)
 
     if watch:
         thread = threading.Thread(name="watch",
@@ -155,9 +157,8 @@ class TestWatch:
 
 
 def copy_from_files(f):
-    with NamedTemporaryFile('w', delete=False) as tmp:
-        with open(os.path.join("..", "files", f)) as source:
-            shutil.copyfileobj(source, tmp)
+    with NamedTemporaryFile('w', delete=False) as tmp, open(os.path.join("..", "files", f)) as source:
+        shutil.copyfileobj(source, tmp)
 
     os.rename(tmp.name, f)
 
@@ -194,10 +195,10 @@ class TestWatchFixuid:
                  timeout_seconds=30)
 
             def check_dockerfile():
-                with open(os.path.join("..", "expected", "Dockerfile"), "r") as file:
+                with open(os.path.join("..", "expected", "Dockerfile")) as file:
                     expected_dockerfile = file.read()
 
-                with open(os.path.join(".docker", "db", "Dockerfile"), "r") as file:
+                with open(os.path.join(".docker", "db", "Dockerfile")) as file:
                     actual_dockerfile = file.read()
 
                 return expected_dockerfile == actual_dockerfile
@@ -257,10 +258,10 @@ class TestWatchFixuid:
                  timeout_seconds=30)
 
             def _check_dockerfile():
-                with open(os.path.join("..", "expected", "Dockerfile"), "r") as file:
+                with open(os.path.join("..", "expected", "Dockerfile")) as file:
                     expected_dockerfile = file.read()
 
-                with open(os.path.join(".docker", "db", "Dockerfile"), "r") as file:
+                with open(os.path.join(".docker", "db", "Dockerfile")) as file:
                     actual_dockerfile = file.read()
 
                 return expected_dockerfile == actual_dockerfile
@@ -279,13 +280,13 @@ class TestWatchConfig:
     def test_watch_config_change(self, project_loader):
         project_loader("watch-config")
 
-        thread, main_runner = init_test_watch(True, ["configure"])
+        thread, _main_runner = init_test_watch(True, ["configure"])
 
         try:
             wait(lambda: os.path.exists("test.txt") and Path("test.txt").read_text() == "app.value: foo",
                  timeout_seconds=60)
 
-            with open("ddb.yml", "r") as f:
+            with open("ddb.yml") as f:
                 ddb_yml_content = f.read()
 
             ddb_yml_content = ddb_yml_content.replace("foo", "bar")
@@ -329,7 +330,7 @@ class TestWatchCerts:
             wait(lambda: not os.path.exists(os.path.join(".certs", "watch-certs.test.key")), timeout_seconds=5)
             wait(lambda: not os.path.exists(os.path.join(".certs", "watch-certs.test.crt")), timeout_seconds=5)
 
-            with open("docker-compose.yml.jsonnet", "r") as f:
+            with open("docker-compose.yml.jsonnet") as f:
                 ddb_yml_content = f.read()
 
             ddb_yml_content = ddb_yml_content.replace('ddb.Image("httpd")',

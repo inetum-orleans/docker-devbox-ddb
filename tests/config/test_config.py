@@ -1,7 +1,7 @@
-# -*- coding: utf-8 -*-
 import os
 
 import yaml
+
 from ddb.config import Config
 from ddb.config.flatten import flatten
 

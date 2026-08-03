@@ -1,12 +1,11 @@
-# -*- coding: utf-8 -*-
 from uuid import uuid4
 
 from slugify import slugify
 
-from .cache import Cache
-from .shelve_cache import ShelveCache
 from ..config import config
 from ..registry import Registry
+from .cache import Cache
+from .shelve_cache import ShelveCache
 
 caches = Registry(Cache, 'Cache')  # type: Registry[Cache]
 

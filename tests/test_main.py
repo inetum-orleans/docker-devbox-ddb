@@ -1,13 +1,12 @@
-# -*- coding: utf-8 -*-
 import pytest
 from _pytest.capture import CaptureFixture
 
-from ddb.__main__ import main, ParseCommandLineException
+from ddb.__main__ import ParseCommandLineException, main
 
 
 def test_main_no_args(project_loader):
     project_loader("no-config")
-    with pytest.raises(ParseCommandLineException) as exc:
+    with pytest.raises(ParseCommandLineException):
         main([])
 
 

@@ -1,16 +1,15 @@
-# -*- coding: utf-8 -*-
 import os
-from typing import Iterable, ClassVar
+from collections.abc import Iterable
+from typing import ClassVar
 
 from dotty_dict import Dotty
 
-from ddb.feature.traefik.schema import ExtraServiceSchema
-from .actions import TraefikInstalllCertsAction, TraefikUninstalllCertsAction, TraefikExtraServicesAction
-from .schema import TraefikSchema
-from ..feature import Feature, FeatureConfigurationAutoConfigureError
-from ..schema import FeatureSchema
 from ...action import Action
 from ...config import config
+from ..feature import Feature, FeatureConfigurationAutoConfigureError
+from ..schema import FeatureSchema
+from .actions import TraefikExtraServicesAction, TraefikInstalllCertsAction, TraefikUninstalllCertsAction
+from .schema import TraefikSchema
 
 
 class TraefikFeature(Feature):
@@ -64,7 +63,7 @@ class TraefikFeature(Feature):
                     if not domain:
                         raise FeatureConfigurationAutoConfigureError(self, 'extra_services',
                                                                      "domain must be defined when rule is not defined.")
-                    extra_service['rule'] = "Host(`%s`)" % domain
+                    extra_service['rule'] = f"Host(`{domain}`)"
                 if extra_service.get('https') is not False and not domain:
                     raise FeatureConfigurationAutoConfigureError(self, 'extra_services',
                                                                  "domain must be defined when https is not False.")

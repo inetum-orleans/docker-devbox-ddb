@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
-from abc import abstractmethod, ABC
-from typing import Iterable, Tuple
+from abc import ABC, abstractmethod
+from collections.abc import Iterable
 
 from ddb.registry import RegistryObject
 
@@ -100,7 +99,7 @@ class DefaultBinary(AbstractBinary):
         super().__init__(name)
         self._command = tuple(command)
 
-    def command(self, *args) -> Tuple[str]:
+    def command(self, *args) -> tuple[str]:
         return self._command
 
     def __eq__(self, other) -> bool:

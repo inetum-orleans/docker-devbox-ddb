@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
 import inspect
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import TypeVar, Generic, ClassVar, TYPE_CHECKING, Tuple, Optional, Callable, Any
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar
 
 from ordered_set import OrderedSet
 
@@ -35,7 +35,7 @@ class DefaultRegistryObject(RegistryObject):
     Default object that can be registered in a registry. It should have a unique name.
     """
 
-    def __init__(self, name: str, description: str = None):
+    def __init__(self, name: str, description: str | None = None):
         self._name = name
         self._description = description
 
@@ -94,8 +94,7 @@ class Registry(Generic[T]):
                              name + "\" should be an instance of " +
                              self._clazz.__name__)
 
-        data = self._register_impl(name, obj)
-        return data
+        return self._register_impl(name, obj)
 
     def _register_impl(self, name: str, obj: T):
         if name in self._objects_dict:
@@ -110,7 +109,7 @@ class Registry(Generic[T]):
 
         return obj
 
-    def has(self, name: str, obj: Optional[T] = None) -> bool:
+    def has(self, name: str, obj: T | None = None) -> bool:
         """
         Check if name is registered.
         """
@@ -122,7 +121,7 @@ class Registry(Generic[T]):
     def _has_obj_impl(self, dict_value, obj) -> bool:
         return dict_value == obj
 
-    def unregister(self, name, obj: Optional[T] = None, callback: Optional[Callable[[T], Any]] = None) -> bool:
+    def unregister(self, name, obj: T | None = None, callback: Callable[[T], Any] | None = None) -> bool:
         """
         Unregister an object instance
         """
@@ -131,7 +130,7 @@ class Registry(Generic[T]):
 
         return self._unregister_impl(name, obj, callback)
 
-    def _unregister_impl(self, name, obj=None, callback: Optional[Callable[[T], Any]] = None) -> bool:
+    def _unregister_impl(self, name, obj=None, callback: Callable[[T], Any] | None = None) -> bool:
         item = self._objects_dict.get(name)
         if obj is None or item == obj:
             self._objects_dict.pop(name)
@@ -154,7 +153,7 @@ class Registry(Generic[T]):
             raise ValueError(self._type_name + " name \"" + name + "\" is not registered")
         return self._objects_dict[name]
 
-    def all(self) -> Tuple[T]:
+    def all(self) -> tuple[T]:
         """
         Get all object instances.
         """
@@ -205,7 +204,7 @@ class RegistryOrderedSet(Registry):
 
         return items
 
-    def _unregister_impl(self, name, obj=None, callback: Optional[Callable[[T], Any]] = None) -> bool:
+    def _unregister_impl(self, name, obj=None, callback: Callable[[T], Any] | None = None) -> bool:
         items = self._objects_dict.get(name)
         ret = False
         if items:

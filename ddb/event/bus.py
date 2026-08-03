@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
-from typing import Callable, Dict, List, Union
+from collections.abc import Callable
+from typing import ClassVar
 
 
 class Bus:
@@ -8,10 +8,10 @@ class Bus:
 
     Can be used to register/unregister events listeners, and emit events.
     """
-    _named_listeners = {}  # type: Dict[str, List[Callable]]
-    _listeners = []  # type: List[Callable]
+    _named_listeners: ClassVar[dict[str, list[Callable]]] = {}
+    _listeners: ClassVar[list[Callable]] = []
 
-    def on(self, event_name: Union[str, None], listener: Callable):  # pylint:disable=invalid-name
+    def on(self, event_name: str | None, listener: Callable):  # pylint:disable=invalid-name
         """
         Register a listener on given event name.
         """
@@ -24,7 +24,7 @@ class Bus:
             self._listeners.append(listener)
         return lambda: self.off(event_name, listener)
 
-    def off(self, event_name: Union[str, None], listener: Callable):
+    def off(self, event_name: str | None, listener: Callable):
         """
         Unregister a listener from given event name.
         """

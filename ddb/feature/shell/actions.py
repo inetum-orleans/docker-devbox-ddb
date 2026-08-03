@@ -1,15 +1,14 @@
-# -*- coding: utf-8 -*-
 import base64
+import contextlib
 import json
 import os
 import shlex
+from collections.abc import Iterable
 from tempfile import NamedTemporaryFile
-from typing import Iterable
 
 import zgitignore
 from dictdiffer import diff
 
-from .integrations import ShellIntegration
 from ...action import Action, actions
 from ...action.action import EventBinding
 from ...binary import Binary, binaries
@@ -18,6 +17,7 @@ from ...config import config
 from ...config.flatten import to_environ
 from ...context import context
 from ...event import events
+from .integrations import ShellIntegration
 
 _env_environ_backup = config.env_prefix + "_SHELL_ENVIRON_BACKUP"
 
@@ -80,7 +80,7 @@ def apply_diff_to_shell(shell: ShellIntegration,
         if action == 'change':
             variables.append((source, dest_items[1]))
         if action == 'remove':
-            for (key, value) in dest_items:
+            for key, _value in dest_items:
                 variables.append((key, None))
 
     envignore_helper = None
@@ -300,9 +300,8 @@ class ActivateAction(Action):
 
             path_directories = config.data.get('shell.path.directories')
             if path_directories:
-                path_additions = map(
-                    lambda path_addition: os.path.normpath(os.path.join(config.paths.project_home, path_addition)),
-                    path_directories)
+                path_additions = (os.path.normpath(os.path.join(config.paths.project_home, path_addition))
+                                  for path_addition in path_directories)
                 file.writelines('\n'.join(add_to_system_path(self.shell, path_additions)))
                 file.write('\n')
 
@@ -345,10 +344,8 @@ class DeactivateAction(Action):
         """
         Execute action
         """
-        try:
+        with contextlib.suppress(CheckAnotherProjectActivatedException):
             check_activated('force' not in config.args or not config.args.force)
-        except CheckAnotherProjectActivatedException:
-            pass
 
         if os.environ.get(_env_environ_backup):
             environ_backup = decode_environ_backup(os.environ[_env_environ_backup])
@@ -417,7 +414,7 @@ def check_activated(do_raise=False, do_log=False):
             return True
         try:
             raise CheckAnotherProjectActivatedException(
-                "Another project is already activated (%s)" % os.environ[project_home_key])
+                f"Another project is already activated ({os.environ[project_home_key]})")
         except CheckAnotherProjectActivatedException as exc:
             if do_log:
                 context.log.error(str(exc))
@@ -514,9 +511,8 @@ class CommandAction(Action):
             if system_path:
                 path_directories = config.data.get('shell.path.directories')
                 if path_directories:
-                    path_additions = map(
-                        lambda path_addition: os.path.normpath(os.path.join(config.paths.project_home, path_addition)),
-                        path_directories)
+                    path_additions = (os.path.normpath(os.path.join(config.paths.project_home, path_addition))
+                                  for path_addition in path_directories)
                     for instruction in remove_from_system_path(self.shell, path_additions):
                         print(instruction, file=file)
                     print(file=file)

@@ -1,13 +1,14 @@
-# -*- coding: utf-8 -*-
-from typing import ClassVar, Iterable
+from collections.abc import Iterable
+from typing import ClassVar
 
 from dotty_dict import Dotty
 
 from ddb.action import Action
 from ddb.feature import Feature
+
+from ...utils.file import TemplateFinder
 from .actions import JinjaAction
 from .schema import JinjaSchema
-from ...utils.file import TemplateFinder
 
 
 class JinjaFeature(Feature):

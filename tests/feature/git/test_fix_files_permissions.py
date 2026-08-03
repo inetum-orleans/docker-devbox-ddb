@@ -8,7 +8,7 @@ from ddb.__main__ import load_registered_features
 from ddb.config import config
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
-from ddb.feature.git import GitFeature, FixFilePermissionsAction
+from ddb.feature.git import FixFilePermissionsAction, GitFeature
 
 
 def test_update_files_disabled(project_loader):

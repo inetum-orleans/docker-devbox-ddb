@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, List, Callable, Dict
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 from dotty_dict import Dotty
@@ -31,10 +31,7 @@ class ContextStackItem:
 
     def __repr__(self):
         parameters_repr = self._build_parameters_repr(*self.args, **self.kwargs)
-        return "%s => %s.%s(%s)" % (self.event_name,
-                                    type(self.action).__name__,
-                                    self.to_call.__name__,
-                                    parameters_repr)
+        return f"{self.event_name} => {type(self.action).__name__}.{self.to_call.__name__}({parameters_repr})"
 
 
 class Context:  # pylint:disable=too-many-instance-attributes
@@ -84,10 +81,8 @@ class Context:  # pylint:disable=too-many-instance-attributes
         """
         Logger for current context.
         """
-        logger_name = ".".join(["ddb.context"] +
-                               list(map(lambda x: x.name,
-                                        [x for x in [self.command, self.phase, self.action] if x]))
-                               )
+        stack_items = [item for item in (self.command, self.phase, self.action) if item]
+        logger_name = ".".join(["ddb.context", *[item.name for item in stack_items]])
         return logging.getLogger(logger_name)
 
     @property

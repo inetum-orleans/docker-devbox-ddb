@@ -1,14 +1,14 @@
-# -*- coding: utf-8 -*-
-from typing import ClassVar, Iterable
+from collections.abc import Iterable
+from typing import ClassVar
 
 from dotty_dict import Dotty
 
-from .actions import SymlinksAction
-from .schema import SymlinksSchema
-from ..feature import Feature, FeatureConfigurationError
 from ...action import Action
 from ...config import config
-from ...utils.file import TemplateFinder, FileWalker
+from ...utils.file import FileWalker
+from ..feature import Feature, FeatureConfigurationError
+from .actions import SymlinksAction
+from .schema import SymlinksSchema
 
 
 class SymlinksFeature(Feature):
@@ -47,10 +47,7 @@ class SymlinksFeature(Feature):
             available_suffixes = ["." + env for env in env_available]
 
             env_current = config.data.get("core.env.current")
-            if not env_current:
-                current_suffix = available_suffixes[-1]
-            else:
-                current_suffix = "." + env_current
+            current_suffix = available_suffixes[-1] if not env_current else "." + env_current
 
             suffixes = available_suffixes[available_suffixes.index(current_suffix):]
             feature_config["suffixes"] = suffixes

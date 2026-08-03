@@ -1,8 +1,9 @@
 import os
+
 import pytest
 
-from ddb.__main__ import main, reset
-from ddb.config import config, Config
+from ddb.__main__ import main
+from ddb.config import Config, config
 from tests.utilstest import setup_cfssl
 
 

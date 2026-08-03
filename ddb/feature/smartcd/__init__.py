@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
-from typing import Iterable, ClassVar
+from collections.abc import Iterable
 
 from ddb.action import Action
 from ddb.feature import Feature
+
 from .actions import SmartcdAction, WindowsProjectActivate
 
 

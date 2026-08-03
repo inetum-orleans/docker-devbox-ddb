@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
-from typing import Optional, Iterable
+from collections.abc import Iterable
 
 from ...action import Action
 from ...action.action import EventBinding
-from ...binary import binaries, Binary
+from ...binary import Binary, binaries
 from ...config import config
 from ...event import events
 
@@ -53,7 +52,7 @@ class RunAction(Action):
             events.run.command([name, *args], True)
 
     @staticmethod
-    def select_binary(binary_set: Iterable[Binary], *args) -> Optional[Binary]:
+    def select_binary(binary_set: Iterable[Binary], *args) -> Binary | None:
         """
         Select effective binary between many binaries.
         """

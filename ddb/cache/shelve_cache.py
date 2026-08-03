@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
 import dbm
 import os
 import shelve
 import tempfile
 
-from .cache import Cache
 from ..config import config
+from .cache import Cache
 
 # Easy fix for https://github.com/inetum-orleans/docker-devbox-ddb/issues/49
 # pylint:disable=protected-access

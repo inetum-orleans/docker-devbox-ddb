@@ -12,7 +12,7 @@ from ddb.feature.core import CoreFeature
 from ddb.feature.docker import DockerFeature
 from ddb.feature.docker.binaries import DockerBinary
 from ddb.feature.docker.utils import DockerComposeControl
-from ddb.feature.run import RunFeature, RunAction
+from ddb.feature.run import RunAction, RunFeature
 from ddb.feature.shell import ShellFeature
 
 docker_compose_bin = "docker compose" if os.name != "nt" else "docker.exe compose"

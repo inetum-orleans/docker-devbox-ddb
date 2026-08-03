@@ -1,9 +1,10 @@
-from typing import Optional, Union, Iterable
+from collections.abc import Iterable
 
 from ddb.binary import Binary as BinaryType
-from . import event
+
 # pylint:disable=redefined-outer-name
 from ..command import Command
+from . import event
 
 
 class File:
@@ -26,7 +27,7 @@ class File:
         """
 
     @event("file:generated")
-    def generated(self, source: Optional[str], target: str):
+    def generated(self, source: str | None, target: str):
         """
         When a file is generated.
         :param source:
@@ -55,7 +56,7 @@ class Certs:
         """
 
     @event("certs:generated")
-    def generated(self, domain: str, wildcard: bool, private_key: Union[bytes, str], certificate: Union[bytes, str]):
+    def generated(self, domain: str, wildcard: bool, private_key: bytes | str, certificate: bytes | str):
         """
         When a certificate is generated.
         :param domain:
@@ -72,7 +73,7 @@ class Certs:
         """
 
     @event("certs:available")
-    def available(self, domain: str, wildcard: bool, private_key: Union[bytes, str], certificate: Union[bytes, str]):
+    def available(self, domain: str, wildcard: bool, private_key: bytes | str, certificate: bytes | str):
         """
         When a certificate is available.
         :param domain:

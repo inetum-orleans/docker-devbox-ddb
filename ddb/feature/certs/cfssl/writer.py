@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 """
 Writer module
 """
 
-from os.path import normpath, expanduser, expandvars, join
+from os.path import expanduser, expandvars, join, normpath
 
 from .checksums import validate_checksum
 from .crypto import convert_pem_to_der

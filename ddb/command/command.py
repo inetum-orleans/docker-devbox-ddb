@@ -1,12 +1,12 @@
-# -*- coding: utf-8 -*-
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser
-from typing import Iterable, Union, Optional, Callable, Any
+from collections.abc import Callable
+from typing import Any
 
 from ..context import context
-from ..phase import phases, Phase
+from ..phase import Phase, phases
 from ..phase.phase import execute_phase
-from ..registry import RegistryObject, DefaultRegistryObject
+from ..registry import DefaultRegistryObject, RegistryObject
 
 
 class Command(RegistryObject, ABC):
@@ -51,8 +51,8 @@ class DefaultCommand(DefaultRegistryObject, Command):
     A command is available in the program usage and can perform some action on the system.
     """
 
-    def __init__(self, name: str, description: str = None, parent: Optional[Union[Command, str]] = None,
-                 allow_unknown_args=False, before_execute: Optional[Callable[[], Any]] = None, avoid_stdout=False):
+    def __init__(self, name: str, description: str | None = None, parent: Command | str | None = None,
+                 allow_unknown_args=False, before_execute: Callable[[], Any] | None = None, avoid_stdout=False):
         super().__init__(name, description)
         self.before_execute = before_execute
         self._parent = parent
@@ -68,7 +68,7 @@ class DefaultCommand(DefaultRegistryObject, Command):
         return self._avoid_stdout
 
     @property
-    def parent(self) -> Optional[Command]:
+    def parent(self) -> Command | None:
         """
         Parent command
         """
@@ -102,12 +102,11 @@ class LifecycleCommand(DefaultCommand):
     Triggered events are named "phase:<phase.name>"
     """
 
-    def __init__(self, name: str, description: Union[str, None], *lifecycle: Union[str, Phase],
-                 parent: Optional[Union[Command, str]] = None, before_execute: Optional[Callable[[], Any]] = None,
+    def __init__(self, name: str, description: str | None, *lifecycle: str | Phase,
+                 parent: Command | str | None = None, before_execute: Callable[[], Any] | None = None,
                  avoid_stdout=False):
         super().__init__(name, description, parent, before_execute=before_execute, avoid_stdout=avoid_stdout)
-        self._lifecycle = list(map(lambda phase: phases.get(phase) if not isinstance(phase, Phase) else phase,
-                                   lifecycle))  # type: Iterable[Phase]
+        self._lifecycle = [phases.get(phase) if not isinstance(phase, Phase) else phase for phase in lifecycle]  # type: Iterable[Phase]
         for phase in self._lifecycle:
             if phase.allow_unknown_args:
                 self._allow_unknown_args = True

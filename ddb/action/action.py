@@ -1,14 +1,13 @@
-# -*- coding: utf-8 -*-
 import os
-from abc import abstractmethod, ABC
-from typing import Callable, Iterable, Union, Tuple, Optional
+from abc import ABC, abstractmethod
+from collections.abc import Callable, Iterable
 
-from ddb.cache import register_project_cache, caches
+from ddb.cache import caches, register_project_cache
 from ddb.config import config
 from ddb.context import context
 from ddb.event import events
 from ddb.registry import RegistryObject
-from ddb.utils.file import write_if_different, TemplateFinder, force_remove, copy_if_different
+from ddb.utils.file import TemplateFinder, copy_if_different, force_remove, write_if_different
 
 
 class EventBinding:
@@ -24,7 +23,7 @@ class EventBinding:
     If processor returns a 2-tuple, it will use those as *args, **kwargs to invoke the method.
     """
 
-    def __init__(self, event: Union[Callable, str], call: Callable = None, processor: Callable = None):
+    def __init__(self, event: Callable | str, call: Callable | None = None, processor: Callable | None = None):
         self.event = event
         self.call = call
         self.processor = processor
@@ -37,7 +36,7 @@ class Action(RegistryObject, ABC):
 
     @property
     @abstractmethod
-    def event_bindings(self) -> Union[Iterable[Union[Callable, str, EventBinding]], Union[Callable, str, EventBinding]]:
+    def event_bindings(self) -> Iterable[Callable | str | EventBinding] | Callable | str | EventBinding:
         """
         The event bindings that should trigger the action.
 
@@ -229,7 +228,7 @@ class AbstractTemplateAction(InitializableAction, ABC):  # pylint:disable=abstra
         """
 
     @abstractmethod
-    def _render_template(self, template: str, target: str) -> Iterable[Tuple[Union[str, bytes, bool], str]]:
+    def _render_template(self, template: str, target: str) -> Iterable[tuple[str | bytes | bool, str]]:
         """
         Perform template rendering to a string.
         """
@@ -238,7 +237,7 @@ class AbstractTemplateAction(InitializableAction, ABC):  # pylint:disable=abstra
                               template: str,
                               target: str,
                               original_template: str,
-                              render_error: Exception) -> Optional[str]:
+                              render_error: Exception) -> str | None:
         """
         Try to automatically migrate this template in a temporary file when an error occurs.
         :return a temporary filepath to render again, if template has been fixed.

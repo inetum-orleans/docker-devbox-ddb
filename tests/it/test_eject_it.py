@@ -39,10 +39,10 @@ class TestEject:
         assert not os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
         assert not expect_gitignore(".gitignore", "/.docker/db/Dockerfile")
 
-        with open('docker-compose.yml', 'r') as dc_file:
+        with open('docker-compose.yml') as dc_file:
             actual = yaml.load(dc_file, yaml.SafeLoader)
 
-        with open('../expected/docker-compose.yml', 'r') as expected_dc_file:
+        with open('../expected/docker-compose.yml') as expected_dc_file:
             expected_data = expected_dc_file.read()
             expected_data = expected_data.replace("%network_name%",
                                                   str(config.data.get('jsonnet.docker.compose.network_name')))
@@ -80,10 +80,10 @@ class TestEject:
         assert not os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
         assert not expect_gitignore(".gitignore", "/.docker/db/Dockerfile")
 
-        with open('docker-compose.yml', 'r') as dc_file:
+        with open('docker-compose.yml') as dc_file:
             actual = yaml.load(dc_file, yaml.SafeLoader)
 
-        with open('../expected/docker-compose.yml', 'r') as expected_dc_file:
+        with open('../expected/docker-compose.yml') as expected_dc_file:
             expected_data = expected_dc_file.read()
             expected_data = expected_data.replace("%network_name%",
                                                   str(config.data.get('jsonnet.docker.compose.network_name')))
@@ -123,10 +123,10 @@ class TestEject:
         assert not os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
         assert not expect_gitignore(".gitignore", "/.docker/db/Dockerfile")
 
-        with open('docker-compose.yml', 'r') as dc_file:
+        with open('docker-compose.yml') as dc_file:
             actual = yaml.load(dc_file, yaml.SafeLoader)
 
-        with open('../expected/docker-compose.jsonnet.disabled.yml', 'r') as expected_dc_file:
+        with open('../expected/docker-compose.jsonnet.disabled.yml') as expected_dc_file:
             expected_data = expected_dc_file.read()
             expected_data = expected_data.replace("%network_name%",
                                                   str(config.data.get('jsonnet.docker.compose.network_name')))

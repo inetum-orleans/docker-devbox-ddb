@@ -1,15 +1,14 @@
-# -*- coding: utf-8 -*-
 import os
 import re
 import tempfile
-from typing import Union, Iterable, Tuple, Optional
+from collections.abc import Iterable
 
 import yaml
 
 from ddb.action.action import AbstractTemplateAction
 from ddb.config import config, migrations
 from ddb.config.migrations import AbstractPropertyMigration
-from ddb.utils.file import TemplateFinder, SingleTemporaryFile
+from ddb.utils.file import SingleTemporaryFile, TemplateFinder
 from ddb.utils.process import run
 
 
@@ -49,7 +48,7 @@ class YttAction(AbstractTemplateAction):
             new['_config']['unknown_args'] = list(config.unknown_args)
         return new
 
-    def _render_template(self, template: str, target: str) -> Iterable[Tuple[Union[str, bytes, bool], str]]:
+    def _render_template(self, template: str, target: str) -> Iterable[tuple[str | bytes | bool, str]]:
         yaml_config = yaml.safe_dump(YttAction._escape_config(config.data.raw()))
 
         includes = TemplateFinder.build_default_includes_from_suffixes(
@@ -74,7 +73,7 @@ class YttAction(AbstractTemplateAction):
 
         try:
             try:
-                input_files = [template, yaml_config_file.name] + depends_files
+                input_files = [template, yaml_config_file.name, *depends_files]
                 for input_file in input_files:
                     input_files_args += ["-f", input_file]
 
@@ -97,7 +96,7 @@ class YttAction(AbstractTemplateAction):
                               template: str,
                               target: str,
                               original_template: str,
-                              render_error: Exception) -> Optional[str]:
+                              render_error: Exception) -> str | None:
         if not hasattr(render_error, "stderr"):
             return None
         error_message = str(render_error.stderr, encoding="utf-8")
@@ -115,7 +114,7 @@ class YttAction(AbstractTemplateAction):
                     property_migration_set.add(property_migration)
 
         if property_migration_set:
-            with open(template, "r", encoding="utf-8") as template_file:
+            with open(template, encoding="utf-8") as template_file:
                 initial_template_data = template_file.read()
                 template_data = initial_template_data
 

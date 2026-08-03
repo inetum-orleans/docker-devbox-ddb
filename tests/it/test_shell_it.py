@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 from _pytest.capture import CaptureFixture
+
 from ddb.__main__ import main
 
 

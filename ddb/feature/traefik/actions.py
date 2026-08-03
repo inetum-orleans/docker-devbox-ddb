@@ -1,18 +1,16 @@
-# -*- coding: utf-8 -*-
 import os
 import re
-from typing import Dict
 
 from jinja2 import Template
 
 from ddb.config import config
-from ddb.feature.traefik.schema import ExtraServiceSchema
+
 from ...action import Action, InitializableAction
 from ...cache.removal import RemovalCacheSupport
 from ...config.migrations import MigrationsDotty
 from ...context import context
 from ...event import events
-from ...utils.file import write_if_different, copy_if_different, force_remove, FileUtils
+from ...utils.file import FileUtils, copy_if_different, force_remove, write_if_different
 
 
 def get_template(template: str) -> Template:
@@ -48,11 +46,11 @@ class TraefikInstalllCertsAction(Action):
         mapped_certs_directory = config.data.get('traefik.mapped_certs_directory')
         config_directory = config.data.get('traefik.config_directory')
 
-        private_key_filename = "%s.key" % (domain,)
+        private_key_filename = f"{domain}.key"
         private_key_filename_target = os.path.join(certs_directory, private_key_filename)
         copy_if_different(private_key, private_key_filename_target, log=True)
 
-        certificate_filename = "%s.crt" % (domain,)
+        certificate_filename = f"{domain}.crt"
         certificate_filename_target = os.path.join(certs_directory, certificate_filename)
         copy_if_different(certificate, certificate_filename_target, log=True)
 
@@ -64,11 +62,11 @@ class TraefikInstalllCertsAction(Action):
 
         ssl_config = get_template(config.data.get('traefik.ssl_config_template')).render(config_data)
 
-        config_target = os.path.join(config_directory, "%s.ssl.toml" % (domain,))
+        config_target = os.path.join(config_directory, f"{domain}.ssl.toml")
         if write_if_different(config_target, ssl_config, 'r', 'w'):
-            context.log.success("SSL Configuration file written for domain %s" % (domain,))
+            context.log.success(f"SSL Configuration file written for domain {domain}")
         else:
-            context.log.notice("SSL Configuration file exists for domain %s" % (domain,))
+            context.log.notice(f"SSL Configuration file exists for domain {domain}")
 
 
 class TraefikUninstalllCertsAction(Action):
@@ -90,24 +88,24 @@ class TraefikUninstalllCertsAction(Action):
         Execute action
         """
         config_directory = config.data.get('traefik.config_directory')
-        config_target = os.path.join(config_directory, "%s.ssl.toml" % (domain,))
+        config_target = os.path.join(config_directory, f"{domain}.ssl.toml")
 
         if os.path.exists(config_target):
             force_remove(config_target)
-            context.log.notice("SSL Configuration file removed for domain %s" % (domain,))
+            context.log.notice(f"SSL Configuration file removed for domain {domain}")
 
         certs_directory = config.data.get('traefik.certs_directory')
-        private_key_filename = "%s.key" % (domain,)
+        private_key_filename = f"{domain}.key"
         private_key_filename_target = os.path.join(certs_directory, private_key_filename)
         if os.path.exists(private_key_filename_target):
             force_remove(private_key_filename_target)
-            context.log.notice("SSL private key file removed for domain %s" % (domain,))
+            context.log.notice(f"SSL private key file removed for domain {domain}")
 
-        certificate_filename = "%s.crt" % (domain,)
+        certificate_filename = f"{domain}.crt"
         certificate_filename_target = os.path.join(certs_directory, certificate_filename)
         if os.path.exists(certificate_filename_target):
             force_remove(certificate_filename_target)
-            context.log.notice("SSL certificate file removed for domain %s" % (domain,))
+            context.log.notice(f"SSL certificate file removed for domain {domain}")
 
 
 class TraefikExtraServicesAction(InitializableAction):
@@ -166,13 +164,13 @@ class TraefikExtraServicesAction(InitializableAction):
                     x for x in ['rule', config.data.get('core.domain.sub'), config.data.get('core.domain.ext')] if x
                 )
 
-            config_target = os.path.join(config_directory, "%s.extra-service.%s.toml" % (prefix, id_))
+            config_target = os.path.join(config_directory, f"{prefix}.extra-service.{id_}.toml")
             if write_if_different(config_target, rendered_config, 'r', 'w'):
                 context.log.success(
-                    "Extra service configuration file written for domain %s" % (prefix,))
+                    f"Extra service configuration file written for domain {prefix}")
             else:
                 context.log.notice(
-                    "Extra service configuration file exists for domain %s" % (prefix,))
+                    f"Extra service configuration file exists for domain {prefix}")
 
             self.removal_cache_support.set_current_value('generated-files', config_target)
 

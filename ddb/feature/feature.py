@@ -1,12 +1,11 @@
-# -*- coding: utf-8 -*-
 from abc import ABC
+from collections.abc import Iterable
 from os import linesep
-from typing import ClassVar, Iterable, Union
+from typing import ClassVar
 
 from dotty_dict import Dotty, dotty
 from marshmallow import ValidationError
 
-from .schema import FeatureSchema
 from ..action import Action
 from ..binary import Binary
 from ..command import Command
@@ -14,6 +13,7 @@ from ..config import config
 from ..phase import Phase
 from ..registry import RegistryObject
 from ..service import Service
+from .schema import FeatureSchema
 
 
 class Feature(RegistryObject, ABC):  # pylint:disable=abstract-method
@@ -98,9 +98,8 @@ class Feature(RegistryObject, ABC):  # pylint:disable=abstract-method
             self._configure_defaults(dotty(feature_config))
 
             feature_config = schema.load(feature_config)
-        feature_config = config.apply_environ_overrides(feature_config, config.env_override_prefix + "_" + self.name)
+        return config.apply_environ_overrides(feature_config, config.env_override_prefix + "_" + self.name)
 
-        return feature_config
 
     def _configure_defaults(self, feature_config: Dotty):
         """
@@ -142,7 +141,7 @@ class FeatureConfigurationAutoConfigureError(FeatureConfigurationError):
     Feature configuration error raised when something wrongs occurs during auto-configuration.
     """
 
-    def __init__(self, feature: Feature, setting_name: str = None, error: Union[Exception, str] = None):
+    def __init__(self, feature: Feature, setting_name: str | None = None, error: Exception | str | None = None):
         super().__init__(feature,
                          setting_name + ": " + "auto-configuration has failed" +
                          (" (" + str(error) + "). " if error else ". ") +
@@ -154,7 +153,7 @@ class FeatureConfigurationReadOnlyError(FeatureConfigurationError):
     Feature configuration error raised when a read-only property is defined in configuration files user.
     """
 
-    def __init__(self, feature: Feature, setting_name: str = None):
+    def __init__(self, feature: Feature, setting_name: str | None = None):
         super().__init__(feature,
                          setting_name + ": " + "auto-configuration has failed" +
                          feature.name + "." + setting_name + " is a read-only property computed from other properties "
@@ -171,6 +170,6 @@ class FeatureConfigurationValidationError(FeatureConfigurationError):
         additional_messages = []
         for (field, field_messages) in validation_error.messages.items():
             for field_message in field_messages:
-                additional_messages.append("%s: %s" % (field, field_message))
+                additional_messages.append(f"{field}: {field_message}")
         super().__init__(feature, *additional_messages)
         self.validation_error = validation_error

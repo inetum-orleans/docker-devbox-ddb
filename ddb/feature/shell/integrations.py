@@ -2,13 +2,14 @@ import os
 import shlex
 import subprocess
 from abc import ABC, abstractmethod
-from typing import Tuple, Iterable, Dict, Any, Optional
+from collections.abc import Iterable
+from typing import Any
 
 from slugify import slugify
 
 from ddb.binary import Binary
 from ddb.config import config
-from ddb.utils.file import force_remove, write_if_different, chmod
+from ddb.utils.file import chmod, force_remove, write_if_different
 
 
 class ShellIntegration(ABC):
@@ -39,21 +40,21 @@ class ShellIntegration(ABC):
         """
 
     @abstractmethod
-    def remove_binary_shim(self, shims_path: str, name: str) -> Optional[str]:
+    def remove_binary_shim(self, shims_path: str, name: str) -> str | None:
         """
         Delete a binary shim for this shell.
         @return removed filepath
         """
 
     @abstractmethod
-    def create_binary_shim(self, shims_path: str, name: str, global_: bool) -> Tuple[bool, str]:
+    def create_binary_shim(self, shims_path: str, name: str, global_: bool) -> tuple[bool, str]:
         """
         Add a binary shim for this shell.
         :return created filepath
         """
 
     @abstractmethod
-    def create_alias_binary_shim(self, shims_path: str, binary: Binary) -> Tuple[bool, str]:
+    def create_alias_binary_shim(self, shims_path: str, binary: Binary) -> tuple[bool, str]:
         """
         Add a alias binary shim for this shell.
         :return created filepath
@@ -83,7 +84,7 @@ class ShellIntegration(ABC):
         Build the shell command to run the given command inside the current shell context.
         """
 
-    def before_environ_backup(self, environ: Dict[str, str]):
+    def before_environ_backup(self, environ: dict[str, str]):
         """
         Alter environment variables before backup. This should be used to remove for saved environ variables that
         should not be restored on deactivation.
@@ -102,7 +103,7 @@ class ShellIntegration(ABC):
         yield from ()
 
     @property
-    def temporary_file_kwargs(self) -> Dict[str, Any]:
+    def temporary_file_kwargs(self) -> dict[str, Any]:
         """
         Additional options for temporary file
         """
@@ -130,7 +131,7 @@ class BashShellIntegration(ShellIntegration):
     def remove_self_script(self, script_path: str) -> Iterable[str]:
         yield f'rm -- {shlex.quote(script_path)}'
 
-    def remove_binary_shim(self, shims_path: str, name: str) -> Optional[str]:
+    def remove_binary_shim(self, shims_path: str, name: str) -> str | None:
         shim = os.path.join(shims_path, name)
         if not os.path.isfile(shim):
             return None
@@ -164,11 +165,11 @@ class BashShellIntegration(ShellIntegration):
 
         return self._write_shim(shims_path, name, 'binary', command)
 
-    def create_alias_binary_shim(self, shims_path: str, binary: Binary) -> Tuple[bool, str]:
+    def create_alias_binary_shim(self, shims_path: str, binary: Binary) -> tuple[bool, str]:
         return self._write_shim(shims_path, binary.name, 'alias', [' '.join(binary.command()) + ' "$@"'])
 
     @staticmethod
-    def _write_shim(shims_path: str, shim_name: str, shim_type: str, lines: Iterable[str]) -> Tuple[bool, str]:
+    def _write_shim(shims_path: str, shim_name: str, shim_type: str, lines: Iterable[str]) -> tuple[bool, str]:
         """
         Generate the shim file
         :return:
@@ -187,11 +188,11 @@ class BashShellIntegration(ShellIntegration):
         return written, shim
 
     @property
-    def temporary_file_kwargs(self) -> Dict[str, Any]:
+    def temporary_file_kwargs(self) -> dict[str, Any]:
         return {"encoding": "utf-8", "newline": '\n'}
 
     def evaluate_script(self, script_filepath) -> Iterable[str]:
-        yield ". %s" % (script_filepath,)
+        yield f". {script_filepath}"
 
     def generate_and_operator(self, new_line: bool = False) -> str:
         return " &&" + ("\\" if new_line else " ")
@@ -226,7 +227,7 @@ class CmdShellIntegration(ShellIntegration):
         # https://stackoverflow.com/a/20333152/2663813
         yield f'start /b "" cmd /c del "{script_path}"&exit /b'
 
-    def remove_binary_shim(self, shims_path: str, name: str) -> Optional[str]:
+    def remove_binary_shim(self, shims_path: str, name: str) -> str | None:
         shim = os.path.join(shims_path, name + '.bat')
         if not os.path.isfile(shim):
             return None
@@ -274,7 +275,7 @@ class CmdShellIntegration(ShellIntegration):
         return self._write_shim(shims_path, binary.name, 'alias', [' '.join(binary.command())])
 
     @staticmethod
-    def _write_shim(shims_path: str, shim_name: str, shim_type: str, lines: Iterable[str]) -> Tuple[bool, str]:
+    def _write_shim(shims_path: str, shim_name: str, shim_type: str, lines: Iterable[str]) -> tuple[bool, str]:
         """
         Generate the shim file
         :return:
@@ -293,7 +294,7 @@ class CmdShellIntegration(ShellIntegration):
         return written, shim
 
     def evaluate_script(self, script_filepath) -> Iterable[str]:
-        yield "call %s" % (script_filepath,)
+        yield f"call {script_filepath}"
 
     def header(self) -> Iterable[str]:
         return ["@echo off", "set NL=^", ""]

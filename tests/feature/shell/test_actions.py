@@ -3,14 +3,15 @@ import re
 from abc import ABC, abstractmethod
 
 from _pytest.capture import CaptureFixture
-from ddb.__main__ import main, load_registered_features
+
+from ddb.__main__ import load_registered_features, main
 from ddb.config import config
 from ddb.config.config import ConfigPaths
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.shell import ActivateAction, DeactivateAction, ShellFeature
 from ddb.feature.shell.actions import encode_environ_backup
-from ddb.feature.shell.integrations import BashShellIntegration, ShellIntegration, CmdShellIntegration
+from ddb.feature.shell.integrations import BashShellIntegration, CmdShellIntegration, ShellIntegration
 from tests.utilstest import expect_gitignore
 
 
@@ -51,14 +52,14 @@ class ActivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, 'r', encoding='utf-8') as file:
+        with open(filepath, encoding='utf-8') as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
         env = dict(export_match)
 
         assert sorted(env.keys()) == sorted(
-            ["DDB_PROJECT_HOME", "DDB_SHELL_ENVIRON_BACKUP"] + list(self.additional_environment_variable.keys()))
+            ["DDB_PROJECT_HOME", "DDB_SHELL_ENVIRON_BACKUP", *list(self.additional_environment_variable.keys())])
 
         assert "DDB_SHELL_ENVIRON_BACKUP" in env
         assert env["DDB_SHELL_ENVIRON_BACKUP"]
@@ -75,15 +76,14 @@ class ActivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, 'r', encoding='utf-8') as file:
+        with open(filepath, encoding='utf-8') as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
         env = dict(export_match)
 
         assert sorted(env.keys()) == sorted(
-            ["DDB_PROJECT_HOME", "DDB_SOME", "DDB_ANOTHER_DEEP",
-             "DDB_SHELL_ENVIRON_BACKUP"] + list(self.additional_environment_variable.keys()))
+            ["DDB_PROJECT_HOME", "DDB_SOME", "DDB_ANOTHER_DEEP", "DDB_SHELL_ENVIRON_BACKUP", *list(self.additional_environment_variable.keys())])
 
     def test_run_activate_deactivate_project(self, capsys: CaptureFixture, project_loader):
         project_loader("project")
@@ -100,7 +100,7 @@ class ActivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, 'r', encoding='utf-8') as file:
+        with open(filepath, encoding='utf-8') as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
@@ -122,7 +122,7 @@ class ActivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, 'r', encoding='utf-8') as file:
+        with open(filepath, encoding='utf-8') as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
@@ -149,7 +149,7 @@ class ActivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, 'r', encoding='utf-8') as file:
+        with open(filepath, encoding='utf-8') as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
@@ -171,7 +171,7 @@ class ActivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, 'r', encoding='utf-8') as file:
+        with open(filepath, encoding='utf-8') as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
@@ -192,7 +192,7 @@ class ActivateActionBase(ABC):
         assert os.path.exists(os.path.join("bin", alias))
         assert not os.path.exists(os.path.join(config.paths.home, "bin", alias))
 
-        with open(os.path.join("bin", alias), 'r') as f:
+        with open(os.path.join("bin", alias)) as f:
             content = f.read()
             if os.name != 'nt':
                 assert 'docker-compose "$@"' in content
@@ -209,7 +209,7 @@ class ActivateActionBase(ABC):
         assert os.path.exists(os.path.join(config.paths.home, ".bin", alias))
         assert not expect_gitignore('.gitignore', '../home/.bin/dc')
 
-        with open(os.path.join(config.paths.home, ".bin", alias), 'r') as f:
+        with open(os.path.join(config.paths.home, ".bin", alias)) as f:
             content = f.read()
             if os.name != 'nt':
                 assert 'docker-compose "$@"' in content
@@ -239,7 +239,7 @@ class ActivateActionBase(ABC):
         assert os.path.exists(os.path.join(config.paths.home, ".bin", alias))
         assert not expect_gitignore('.gitignore', '../home/.bin/dc')
 
-        with open(os.path.join(config.paths.home, ".bin", alias), 'r') as f:
+        with open(os.path.join(config.paths.home, ".bin", alias)) as f:
             content = f.read()
             if os.name != 'nt':
                 assert 'docker-compose "$@"' in content
@@ -271,7 +271,7 @@ class TestCmdActivateAction(ActivateActionBase):
         return CmdShellIntegration()
 
     def get_shim_filename(self, shimname: str) -> str:
-        return "{}.bat".format(shimname)
+        return f"{shimname}.bat"
 
 
 class DeactivateActionBase(ABC):
@@ -310,7 +310,7 @@ class DeactivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, 'r', encoding='utf-8') as file:
+        with open(filepath, encoding='utf-8') as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
@@ -323,7 +323,7 @@ class DeactivateActionBase(ABC):
         assert 'DDB_SHELL_ENVIRON_BACKUP' in unset.keys()
 
     def test_run_with_empty_initial_env(self, capsys: CaptureFixture):
-        expected_environ = dict()
+        expected_environ = {}
 
         os.environ.clear()
         os.environ.update(expected_environ)
@@ -338,7 +338,7 @@ class DeactivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, 'r', encoding='utf-8') as file:
+        with open(filepath, encoding='utf-8') as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
@@ -371,16 +371,16 @@ class DeactivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, 'r', encoding='utf-8') as file:
+        with open(filepath, encoding='utf-8') as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
         exported = dict(export_match)
         assert len(exported) == (2 + len(self.additional_environment_variable.keys()))
         assert sorted(exported.keys()) == sorted(
-            ["DDB_CHANGE", "DDB_REMOVED"] + list(self.additional_environment_variable.keys()))
+            ["DDB_CHANGE", "DDB_REMOVED", *list(self.additional_environment_variable.keys())])
         assert sorted(exported.values()) == sorted(
-            ["foo", removed_item] + list(self.additional_environment_variable.values()))
+            ["foo", removed_item, *list(self.additional_environment_variable.values())])
 
         unset_match = re.findall(self.unset_regex, script, re.MULTILINE)
         unset = dict(unset_match)

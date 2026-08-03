@@ -1,16 +1,16 @@
-# -*- coding: utf-8 -*-
 import os
 import re
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Union, Iterable, Tuple, Optional, Set
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 from ddb.config import config, migrations
-from ddb.utils.file import TemplateFinder, SingleTemporaryFile, get_single_temporary_file_directory
-from . import filters, tests
+from ddb.utils.file import SingleTemporaryFile, TemplateFinder, get_single_temporary_file_directory
+
 from ...action.action import AbstractTemplateAction
 from ...config.migrations import AbstractPropertyMigration
+from . import filters, tests
 
 custom_filters = vars(filters)
 for k in tuple(custom_filters.keys()):
@@ -73,7 +73,7 @@ class JinjaAction(AbstractTemplateAction):
         self.context['_config.args'] = vars(config.args)
         self.context['_config.unknown_args'] = config.unknown_args
 
-    def _render_template(self, template: str, target: str) -> Iterable[Tuple[Union[str, bytes, bool], str]]:
+    def _render_template(self, template: str, target: str) -> Iterable[tuple[str | bytes | bool, str]]:
         if template.startswith(self._migrationpath):
             template_name = os.path.relpath(os.path.normpath(template),
                                             os.path.normpath(str(self._migrationpath)))
@@ -90,7 +90,7 @@ class JinjaAction(AbstractTemplateAction):
                               template: str,
                               target: str,
                               original_template: str,
-                              render_error: Exception) -> Optional[str]:
+                              render_error: Exception) -> str | None:
         property_migration_set = self._find_property_migration_set(render_error)
 
         if property_migration_set:
@@ -110,7 +110,7 @@ class JinjaAction(AbstractTemplateAction):
         return None
 
     @staticmethod
-    def _find_property_migration_set(render_error: Exception) -> Set[AbstractPropertyMigration]:
+    def _find_property_migration_set(render_error: Exception) -> set[AbstractPropertyMigration]:
         property_migration_set = set()
 
         undefined_match = re.match("'(.*)' is undefined", str(render_error))
@@ -136,7 +136,7 @@ class JinjaAction(AbstractTemplateAction):
                              template: str,
                              original_template: str,
                              property_migration_set: Iterable[AbstractPropertyMigration]):
-        with open(template, "r", encoding="utf-8") as template_file:
+        with open(template, encoding="utf-8") as template_file:
             altered = False
             altered_template_data = ""
             variable_content = ""

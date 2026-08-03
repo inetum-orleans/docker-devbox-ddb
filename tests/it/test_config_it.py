@@ -69,8 +69,8 @@ class TestConfig:
             filename = os.path.relpath(filename, os.getcwd())
             configurations[filename] = Dotty(yaml.safe_load(config))
 
-        assert ('ddb.yml', 'some.custom.yml', 'another.config.file.yaml', 'ddb.local.yml') == \
-               tuple(configurations.keys())
+        assert tuple(configurations.keys()) == \
+               ('ddb.yml', 'some.custom.yml', 'another.config.file.yaml', 'ddb.local.yml')
 
         assert configurations['ddb.yml']['app.value'] == 'default'
         assert configurations['some.custom.yml']['app.value'] == 'custom'
@@ -98,8 +98,8 @@ class TestConfig:
             filename = os.path.relpath(filename, os.getcwd())
             configurations[filename] = Dotty(yaml.safe_load(config))
 
-        assert ('some.custom.yml',) == \
-               tuple(configurations.keys())
+        assert tuple(configurations.keys()) == \
+               ('some.custom.yml',)
 
         assert configurations['some.custom.yml']['some'] is True
         assert 'app.value' not in configurations['some.custom.yml']

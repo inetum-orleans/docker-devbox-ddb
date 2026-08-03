@@ -1,5 +1,5 @@
+import contextlib
 from abc import ABC, abstractmethod
-from typing import Optional, Set
 
 from dotty_dict import Dotty
 
@@ -128,9 +128,9 @@ class PropertyMigration(AbstractPropertyMigration):
             since_message = f" since {self.since}" if self.since else ""
             source_message = f" (in \"{source}\")." if source else "."
 
-            message = "[deprecated] " + \
+            message = "[deprecated] " \
                       f"\"{self.old_config_key}\" configuration property is deprecated{since_message} " \
-                      f"and will be removed in {self.removed_in}. " + \
+                      f"and will be removed in {self.removed_in}. " \
                       f"You should use \"{self.new_config_key}\" instead{source_message}"
 
             if message not in _warns:
@@ -174,10 +174,8 @@ class MigrationsDotty(Dotty):
         deprecation_dict = Dotty({})
 
         for migration in migrations:
-            try:
+            with contextlib.suppress(KeyError):
                 deprecation_dict[migration.old_config_key[len(item + "."):]] = migration.get_new_value(self)
-            except KeyError:
-                pass
 
         return dict(deprecation_dict)
 
@@ -332,21 +330,21 @@ def set_history(history=_default_history):
 set_history()
 
 
-def get_migration_from_old_config_key(old_config_key: str) -> Optional[AbstractPropertyMigration]:
+def get_migration_from_old_config_key(old_config_key: str) -> AbstractPropertyMigration | None:
     """
     Get a migration from old config key.
     """
     return _history_from_old_config_key_dict.get(old_config_key)
 
 
-def get_migration_from_new_config_key(new_config_key: str) -> Optional[AbstractPropertyMigration]:
+def get_migration_from_new_config_key(new_config_key: str) -> AbstractPropertyMigration | None:
     """
     Get a migration from new config key.
     """
     return _history_from_new_config_key_dict.get(new_config_key)
 
 
-def get_migrations_from_old_config_key_startswith(old_config_key_start: str) -> Set[AbstractPropertyMigration]:
+def get_migrations_from_old_config_key_startswith(old_config_key_start: str) -> set[AbstractPropertyMigration]:
     """
     Get all migrations where old_config_key starts with given value
     """

@@ -1,34 +1,43 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import inspect
 import logging
 import os
 import sys
 import threading
 from argparse import ArgumentParser, Namespace
+from collections.abc import Callable, Iterable, Sequence
 from gettext import gettext as _
 from importlib import import_module
-from typing import Optional, Sequence, Iterable, Callable, Union, List
 
 import verboselogs
-from colorlog import default_log_colors, ColoredFormatter
+from colorlog import ColoredFormatter, default_log_colors
 
 from ddb.action import actions
-from ddb.action.action import EventBinding, Action, WatchSupport
+from ddb.action.action import Action, EventBinding, WatchSupport
 from ddb.action.runner import ExpectedError
 from ddb.action.runnerfactory import action_event_binding_runner_factory
 from ddb.binary import binaries
-from ddb.cache import caches, global_cache_name, requests_cache_name, \
-    project_binary_cache_name, register_global_cache, project_cache_name
-from ddb.cache import register_project_cache
+from ddb.cache import (
+    caches,
+    global_cache_name,
+    project_binary_cache_name,
+    project_cache_name,
+    register_global_cache,
+    register_project_cache,
+    requests_cache_name,
+)
 from ddb.command import commands
-from ddb.command.command import execute_command, Command
+from ddb.command.command import Command, execute_command
 from ddb.config import config
 from ddb.context import context
 from ddb.event import bus, events
-from ddb.feature import features, Feature
-from ddb.feature.bootstrap import reset_available_features, append_available_feature, \
-    load_bootstrap_config, bootstrap_register_features
+from ddb.feature import Feature, features
+from ddb.feature.bootstrap import (
+    append_available_feature,
+    bootstrap_register_features,
+    load_bootstrap_config,
+    reset_available_features,
+)
 from ddb.feature.core import ConfigureSecondPassException
 from ddb.phase import phases
 from ddb.registry import Registry, RegistryObject
@@ -62,7 +71,7 @@ def _load_plugins_module(module_name):
     if not module_name:
         return
     module = import_module(module_name)
-    for _, clazz in inspect.getmembers(module):
+    for _name, clazz in inspect.getmembers(module):
         if inspect.isclass(clazz) and \
                 clazz.__module__ == module.__name__ and \
                 not clazz.__name__.startswith("_") and \
@@ -158,7 +167,7 @@ def load_registered_features(preload=True):
     return enabled_features
 
 
-def configure_logging(level: Union[str, int] = logging.INFO):
+def configure_logging(level: str | int = logging.INFO):
     """
     Configure context logger.
     """
@@ -229,14 +238,14 @@ class ParseCommandLineException(Exception):
     Exception raised when an invalid command line is given.
     """
 
-    def __init__(self, opts: ArgumentParser, parsed_args: Namespace, unknown_args: List[str]):
+    def __init__(self, opts: ArgumentParser, parsed_args: Namespace, unknown_args: list[str]):
         super().__init__()
         self.opts = opts
         self.parsed_args = parsed_args
         self.unknown_args = unknown_args
 
 
-def parse_command_line(args: Optional[Sequence[str]] = None):
+def parse_command_line(args: Sequence[str] | None = None):
     """
     Parse command line arguments, returning the command to execute, args and unknown args.
     """
@@ -306,7 +315,7 @@ def handle_command_line(command: Command):
         handle_watch()
 
 
-def _register_action_in_event_bus(action: Action, binding: Union[Callable, str, EventBinding], fail_fast=False):
+def _register_action_in_event_bus(action: Action, binding: Callable | str | EventBinding, fail_fast=False):
     """
     Register a single event binding. It supports name property added by @event decorator on events callable.
     """
@@ -338,7 +347,7 @@ def register_actions_in_event_bus(fail_fast=False):
                 _register_action_in_event_bus(action, event_binding, fail_fast)
 
 
-def main(args: Optional[Sequence[str]] = None,  # pylint:disable=too-many-statements
+def main(args: Sequence[str] | None = None,  # pylint:disable=too-many-statements
          reset_disabled=False,
          before_handle_command_line=None):
     """
@@ -413,7 +422,7 @@ def main(args: Optional[Sequence[str]] = None,  # pylint:disable=too-many-statem
             reset()
 
 
-def wait_watch_started(timeout: Optional[float] = None):
+def wait_watch_started(timeout: float | None = None):
     """
     Wait for watch mode to be started.
     """

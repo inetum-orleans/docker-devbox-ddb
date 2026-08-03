@@ -1,11 +1,9 @@
-# -*- coding: utf-8 -*-
 import fnmatch
 import os
 import re
 import shutil
 from pathlib import Path
-from tempfile import gettempdir, NamedTemporaryFile
-from typing import List, Union, Optional, Tuple
+from tempfile import NamedTemporaryFile, gettempdir
 
 import chmod_monkey
 import requests
@@ -20,9 +18,8 @@ def has_same_content(filename1: str, filename2: str, read_mode='rb') -> bool:
     """
     Check if the content of two files are same
     """
-    with open(filename1, mode=read_mode) as file1:  # pylint:disable=unspecified-encoding
-        with open(filename2, mode=read_mode) as file2:  # pylint:disable=unspecified-encoding
-            return file1.read() == file2.read()
+    with open(filename1, mode=read_mode) as file1, open(filename2, mode=read_mode) as file2:
+        return file1.read() == file2.read()
 
 
 def write_if_different(file, data, read_mode='r', write_mode='w', log_source=None, readonly=True, **kwargs) -> bool:
@@ -167,12 +164,12 @@ class FileWalker:
 
     # pylint:disable=too-many-arguments
     def __init__(self,
-                 includes: Optional[List[str]],
-                 excludes: Optional[List[str]],
-                 include_files: Optional[List[str]],
-                 exclude_files: Optional[List[str]],
-                 suffixes: Optional[List[str]],
-                 rootpath: Optional[Union[Path, str]] = None,
+                 includes: list[str] | None,
+                 excludes: list[str] | None,
+                 include_files: list[str] | None,
+                 exclude_files: list[str] | None,
+                 suffixes: list[str] | None,
+                 rootpath: Path | str | None = None,
                  recursive=True,
                  skip_processed_sources=True,
                  skip_processed_targets=True):
@@ -294,7 +291,7 @@ class FileWalker:
         return os.path.join(parent, child) if parent != '.' else child
 
     @staticmethod
-    def re_compile_patterns(*patterns: List[str]):
+    def re_compile_patterns(*patterns: list[str]):
         """
         Compile a list of string containing patterns to regexp
         """
@@ -313,14 +310,11 @@ class FileWalker:
         return False
 
     @staticmethod
-    def build_default_includes_from_suffixes(suffixes: List[str], extensions=(".*", "")):
+    def build_default_includes_from_suffixes(suffixes: list[str], extensions=(".*", "")):
         """
         Build default includes configuration from suffixes configuration.
         """
-        if extensions:
-            extensions_pattern = "{" + ",".join(extensions) + "}"
-        else:
-            extensions_pattern = ""
+        extensions_pattern = "{" + ",".join(extensions) + "}" if extensions else ""
 
         if len(suffixes) > 1:
             joined_suffixes = ','.join(suffixes)
@@ -370,7 +364,7 @@ class TemplateFinder(FileWalker):
         return target
 
     @staticmethod
-    def _get_target_and_suffix(template_candidate: str, suffixes: List[str]) -> Optional[Tuple[str, str]]:
+    def _get_target_and_suffix(template_candidate: str, suffixes: list[str]) -> tuple[str, str] | None:
         basename, ext = os.path.splitext(template_candidate)
         if ext in suffixes:
             return basename, ext

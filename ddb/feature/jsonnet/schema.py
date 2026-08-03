@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 
-from marshmallow import fields, Schema
+from marshmallow import Schema, fields
 from marshmallow_union import Union
 
-from ddb.feature.schema import FeatureSchema, DisableableSchema
+from ddb.feature.schema import DisableableSchema, FeatureSchema
 
 
 class RegistrySchema(Schema):

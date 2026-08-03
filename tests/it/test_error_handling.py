@@ -17,7 +17,7 @@ class TestErrorHandling:
         record = caplog.records[0]
 
         assert record.message == \
-               'An unexpected error has occured ' + \
-               '[phase:configure => FileWalkAction.execute(), ' + \
-               'file:found => JsonnetAction.execute(target=invalid, template=invalid.jsonnet)]: ' + \
+               'An unexpected error has occured ' \
+               '[phase:configure => FileWalkAction.execute(), ' \
+               'file:found => JsonnetAction.execute(target=invalid, template=invalid.jsonnet)]: ' \
                'STATIC ERROR: invalid.jsonnet:1:1-9: Unknown variable: trololol'

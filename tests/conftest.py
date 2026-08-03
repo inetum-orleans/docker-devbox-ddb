@@ -1,17 +1,16 @@
-# -*- coding: utf-8 -*-
 import os
 import shutil
 import zipfile
-from pathlib import Path
-from typing import Callable, Optional
+from collections.abc import Callable
 
 import pytest
 from _pytest.fixtures import FixtureRequest
 from _pytest.tmpdir import TempPathFactory
-from ddb.__main__ import reset, configure_logging
-from ddb.config import Config
 from pytest_mock import MockerFixture
 from verboselogs import SPAM
+
+from ddb.__main__ import configure_logging, reset
+from ddb.config import Config
 
 from .utilstest import init_config_paths
 
@@ -31,10 +30,10 @@ def data_dir(global_data_dir: str, request: FixtureRequest) -> str:
     return os.path.join(dirname, data_dirname + ".data")
 
 
-@pytest.fixture()
+@pytest.fixture
 def project_loader(data_dir: str, tmp_path_factory: TempPathFactory, request: FixtureRequest) -> Callable[
-    [Optional[str]], Config]:
-    def load(name: str = None, before_load_config=None, config_provider=init_config_paths):
+    [str | None], Config]:
+    def load(name: str | None = None, before_load_config=None, config_provider=init_config_paths):
         root_dir = os.path.join(data_dir, name) if name else data_dir
 
         tmp_path = tmp_path_factory.mktemp(request.function.__name__)  # type: Path
@@ -64,7 +63,7 @@ def configure(mocker: MockerFixture):
     Config.defaults = {'defaults': {'fail_fast': True}}
 
     def overrides(config):
-        if not 'core' in config:
+        if 'core' not in config:
             config['core'] = {}
         config.get('core')['check_updates'] = False
 

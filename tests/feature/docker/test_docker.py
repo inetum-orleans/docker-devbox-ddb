@@ -14,11 +14,10 @@ from ddb.event import bus
 from ddb.feature import features
 from ddb.feature.certs import CertsFeature
 from ddb.feature.core import CoreFeature
-from ddb.feature.docker import DockerDisplayInfoAction
-from ddb.feature.docker import DockerFeature, EmitDockerComposeConfigAction
+from ddb.feature.docker import DockerFeature
 from ddb.feature.docker.binaries import DockerBinary
 from ddb.feature.docker.lib.compose.config.types import ServicePort
-from ddb.feature.docker.utils import get_mapped_path, DockerComposeControl
+from ddb.feature.docker.utils import DockerComposeControl, get_mapped_path
 from ddb.feature.traefik import TraefikFeature
 from tests.utilstest import setup_cfssl
 
@@ -203,7 +202,7 @@ class TestDockerFeature:
 
         npm_simple_set = binaries.get("npm-simple")
         assert len(npm_simple_set) == 1
-        npm_simple = list(npm_simple_set)[0]
+        npm_simple = next(iter(npm_simple_set))
         assert npm_simple.command() == (
                 docker_compose_bin + " -f ./docker-compose.yml run --rm --workdir=/app/. --label traefik.enable=false node").split()
         assert npm_simple.command("serve") == (
@@ -213,7 +212,7 @@ class TestDockerFeature:
 
         npm_conditions_set = binaries.get("npm-conditions")
         assert len(npm_conditions_set) == 1
-        npm_conditions = list(npm_conditions_set)[0]
+        npm_conditions = next(iter(npm_conditions_set))
         assert npm_conditions.command() == (
                 docker_compose_bin + " -f ./docker-compose.yml run --rm --workdir=/app/. --label traefik.enable=false node").split()
         assert npm_conditions.command("serve") == (
@@ -222,7 +221,7 @@ class TestDockerFeature:
 
         mysql_set = binaries.get("mysql")
         assert len(mysql_set) == 1
-        mysql = list(mysql_set)[0]
+        mysql = next(iter(mysql_set))
         assert mysql.command() == (
                 docker_compose_bin + ' -f ./docker-compose.yml run --rm --workdir=/app/. db mysql -hdb -uproject-management-tool -pproject-management-tool').split()
 
@@ -243,7 +242,7 @@ class TestDockerFeature:
         assert os.path.isfile('new_file')
         assert os.path.isfile('another_new_file.txt')
 
-        with open('existing-file.txt', 'r') as f:
+        with open('existing-file.txt') as f:
             assert f.read() == 'existing-file.txt'
 
     def test_local_volume_related(self, project_loader):
@@ -325,17 +324,17 @@ class TestDockerDisplayInfoAction:
         load_registered_features()
         action = actions.get('docker:display-info')  # type:DockerDisplayInfoAction
 
-        assert {} == action._retrieve_environment_data(Dotty({}))
-        assert {} == action._retrieve_environment_data(Dotty({'toto': 'toto'}))
-        assert {'AZERTY': '123'} == action._retrieve_environment_data(Dotty({'environment': {'AZERTY': '123'}}))
+        assert action._retrieve_environment_data(Dotty({})) == {}
+        assert action._retrieve_environment_data(Dotty({'toto': 'toto'})) == {}
+        assert action._retrieve_environment_data(Dotty({'environment': {'AZERTY': '123'}})) == {'AZERTY': '123'}
 
     def test_retrieve_ports_data(self):
         features.register(DockerFeature())
         load_registered_features()
         action = actions.get('docker:display-info')  # type:DockerDisplayInfoAction
 
-        assert [] == action._retrieve_service_ports(Dotty({}))
-        assert [] == action._retrieve_service_ports(Dotty({'toto': 'toto'}))
+        assert action._retrieve_service_ports(Dotty({})) == []
+        assert action._retrieve_service_ports(Dotty({'toto': 'toto'})) == []
         assert [ServicePort(45, 123, None, None, None)] == action._retrieve_service_ports(
             Dotty({'ports': [{'published': '123', 'target': '45'}]}))
         assert [ServicePort(45, 123, None, None, None)] == action._retrieve_service_ports(Dotty({'ports': ['123:45']}))
@@ -347,42 +346,42 @@ class TestDockerDisplayInfoAction:
         load_registered_features()
         action = actions.get('docker:display-info')  # type:DockerDisplayInfoAction
 
-        assert [] == action._retrieve_binaries_data(Dotty({}))
-        assert [] == action._retrieve_binaries_data(Dotty({'toto': 'toto'}))
-        assert [] == action._retrieve_binaries_data(Dotty({'labels': {'toto': '123'}}))
-        assert ['npm-simple'] == action._retrieve_binaries_data(Dotty({'labels': {
+        assert action._retrieve_binaries_data(Dotty({})) == []
+        assert action._retrieve_binaries_data(Dotty({'toto': 'toto'})) == []
+        assert action._retrieve_binaries_data(Dotty({'labels': {'toto': '123'}})) == []
+        assert action._retrieve_binaries_data(Dotty({'labels': {
             'ddb.emit.docker:binary[npm-simple](name)': 'npm-simple',
             'ddb.emit.docker:binary[npm-simple](workdir)': '/app'
-        }}))
-        assert ['npm', 'npm-simple'] == sorted(action._retrieve_binaries_data(Dotty({'labels': {
+        }})) == ['npm-simple']
+        assert sorted(action._retrieve_binaries_data(Dotty({'labels': {
             'ddb.emit.docker:binary[npm](name)': 'npm',
             'ddb.emit.docker:binary[npm-simple](name)': 'npm-simple',
             'ddb.emit.docker:binary[npm-simple](workdir)': '/app'
-        }})))
+        }}))) == ['npm', 'npm-simple']
 
     def test_retrieve_vhosts_data(self):
         features.register(DockerFeature())
         load_registered_features()
         action = actions.get('docker:display-info')  # type:DockerDisplayInfoAction
 
-        assert [] == action._retrieve_vhosts_data(Dotty({}))
-        assert [] == action._retrieve_vhosts_data(Dotty({'toto': 'toto'}))
-        assert [] == action._retrieve_vhosts_data(Dotty({'labels': {'toto': '123'}}))
-        assert ['http://web.domain.tld/'] == action._retrieve_vhosts_data(Dotty({'labels': {
+        assert action._retrieve_vhosts_data(Dotty({})) == []
+        assert action._retrieve_vhosts_data(Dotty({'toto': 'toto'})) == []
+        assert action._retrieve_vhosts_data(Dotty({'labels': {'toto': '123'}})) == []
+        assert action._retrieve_vhosts_data(Dotty({'labels': {
             'traefik.http.routers.defaults-project.rule': 'Host(`web.domain.tld`)',
             'ddb.emit.docker:binary[npm-simple](workdir)': '/app'
-        }}))
-        assert ['http://test.tld/', 'http://web.domain.tld/'] == sorted(action._retrieve_vhosts_data(Dotty({'labels': {
+        }})) == ['http://web.domain.tld/']
+        assert sorted(action._retrieve_vhosts_data(Dotty({'labels': {
             'traefik.http.routers.defaults-project.rule': 'Host(`web.domain.tld`)',
             'traefik.http.routers.test-project.rule': 'Host(`test.tld`)',
             'ddb.emit.docker:binary[npm-simple](workdir)': '/app'
-        }})))
-        assert ['http://test.tld/', 'https://web.domain.tld/'] == sorted(action._retrieve_vhosts_data(Dotty({'labels': {
+        }}))) == ['http://test.tld/', 'http://web.domain.tld/']
+        assert sorted(action._retrieve_vhosts_data(Dotty({'labels': {
             'traefik.http.routers.defaults-project.rule': 'Host(`web.domain.tld`)',
             'traefik.http.routers.defaults-project-tls.rule': 'Host(`web.domain.tld`)',
             'traefik.http.routers.test-project.rule': 'Host(`test.tld`)',
             'ddb.emit.docker:binary[npm-simple](workdir)': '/app'
-        }})))
+        }}))) == ['http://test.tld/', 'https://web.domain.tld/']
 
     def test_output_data(self, project_loader):
         features.register(DockerFeature())
@@ -391,7 +390,7 @@ class TestDockerDisplayInfoAction:
 
         config.args.type = None
 
-        assert '' == action._output_data('test', dict(), [], [], [])
+        assert action._output_data('test', {}, [], [], []) == ''
 
         test_vhosts = action._retrieve_vhosts_data(Dotty({'labels': {
             'traefik.http.routers.defaults-project.rule': 'Host(`web.domain.tld`)',
@@ -405,7 +404,7 @@ class TestDockerDisplayInfoAction:
                            '+-------------------------+',
                            '| http://test.tld/        |',
                            '| https://web.domain.tld/ |',
-                           '+-------------------------+'])) == action._output_data('test', dict(), [],
+                           '+-------------------------+'])) == action._output_data('test', {}, [],
                                                                                    [], test_vhosts)
 
         test_binaries = action._retrieve_binaries_data(Dotty({'labels': {
@@ -422,7 +421,7 @@ class TestDockerDisplayInfoAction:
                            '+-------------------------+',
                            '| http://test.tld/        |',
                            '| https://web.domain.tld/ |',
-                           '+-------------------------+'])) == action._output_data('test', dict(), [],
+                           '+-------------------------+'])) == action._output_data('test', {}, [],
                                                                                    test_binaries, test_vhosts)
 
         test_envs = action._retrieve_environment_data(Dotty({'environment': {'AZERTY': '123'}}))
@@ -456,7 +455,7 @@ class TestDockerDisplayInfoAction:
                                                                                    test_binaries, test_vhosts)
 
         config.args.type = 'nothing'
-        assert '' == action._output_data('test', dict(), [], [], test_vhosts)
+        assert action._output_data('test', {}, [], [], test_vhosts) == ''
 
         config.args.type = 'vhost'
         assert ('\n'.join(['+-------------------------+',
@@ -464,7 +463,7 @@ class TestDockerDisplayInfoAction:
                            '+-------------------------+',
                            '| http://test.tld/        |',
                            '| https://web.domain.tld/ |',
-                           '+-------------------------+'])) == action._output_data('test', dict(), [],
+                           '+-------------------------+'])) == action._output_data('test', {}, [],
                                                                                    [], test_vhosts)
 
     def test_execute_traefik_cert(self, capsys: CaptureFixture, project_loader):

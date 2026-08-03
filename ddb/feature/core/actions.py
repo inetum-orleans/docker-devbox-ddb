@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import os
 import re
 import shutil
@@ -6,7 +5,6 @@ import sys
 from datetime import date
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Optional
 from urllib.error import HTTPError
 
 import requests
@@ -22,12 +20,13 @@ from ddb.config import config
 from ddb.event import events
 from ddb.utils.file import force_remove
 from ddb.utils.table_display import get_table_display
-from .. import features
+
 from ...action.action import EventBinding
-from ...action.runner import FailFastError, ExpectedError
+from ...action.runner import ExpectedError, FailFastError
 from ...command import Command
 from ...config.flatten import flatten
 from ...context import context
+from .. import features
 
 
 def get_latest_release(github_repository: str):
@@ -36,7 +35,7 @@ def get_latest_release(github_repository: str):
     :param github_repository github repository to check
     :return: Version from tag_name retrieved from GitHub API
     """
-    response = requests.get('https://api.github.com/repos/{}/releases/latest'.format(github_repository))
+    response = requests.get(f'https://api.github.com/repos/{github_repository}/releases/latest')
     try:
         response.raise_for_status()
         tag_name = response.json().get('tag_name')
@@ -169,7 +168,7 @@ def check_for_update(github_repository: str, output=False, details=False):
 
 
 def _build_update_header(version):
-    return ['A new version is available: {}'.format(version)]
+    return [f'A new version is available: {version}']
 
 
 def _build_update_details(github_repository, tag_name):
@@ -179,8 +178,8 @@ def _build_update_details(github_repository, tag_name):
         row.append(update_tip)
     row.extend((
         'For more information, check the following links:',
-        'https://github.com/{}/releases/tag/{}'.format(github_repository, tag_name),
-        'https://github.com/{}/releases/tag/{}/CHANGELOG.md'.format(github_repository, tag_name),
+        f'https://github.com/{github_repository}/releases/tag/{tag_name}',
+        f'https://github.com/{github_repository}/releases/tag/{tag_name}/CHANGELOG.md',
     ))
     return row
 
@@ -276,7 +275,7 @@ class FeaturesAction(Action):
         enabled_features = [f for f in features.all() if not f.disabled]
 
         for feature in enabled_features:
-            print("%s: %s" % (feature.name, feature.description))
+            print(f"{feature.name}: {feature.description}")
 
 
 class ConfigAction(Action):
@@ -435,7 +434,7 @@ class EjectAction(Action):
 
     @property
     def event_bindings(self):
-        def eject_processor(source: Optional[str], target: str):
+        def eject_processor(source: str | None, target: str):
             if not source or not \
                     os.path.abspath(source).startswith(config.paths.project_home):
                 return False
@@ -460,7 +459,7 @@ class EjectAction(Action):
         return super().disabled
 
     @staticmethod
-    def delete_generated_source(source: Optional[str], target: str):
+    def delete_generated_source(source: str | None, target: str):
         """
         Execute action
         """
@@ -609,9 +608,8 @@ class CheckRequiredVersion(Action):
                 if update_tip:
                     update_tip = ' ' + update_tip
                 raise RequiredVersionError(
-                    "This project requires ddb {}+. Current version is {}.{}".format(required_version,
-                                                                                     get_current_version(),
-                                                                                     update_tip))
+                    f"This project requires ddb {required_version}+. "
+                    f"Current version is {get_current_version()}.{update_tip}")
 
 
 class SelfUpdateAction(Action):
@@ -636,8 +634,8 @@ class SelfUpdateAction(Action):
         if not is_binary():
             print('ddb is running from a package mode than doesn\'t support self-update.')
             print(
-                'You can download binary package supporting it ' +
-                'from github: https://github.com/{}/releases'.format(github_repository)
+                'You can download binary package supporting it '
+                f'from github: https://github.com/{github_repository}/releases'
             )
             return
 
@@ -671,7 +669,7 @@ class SelfUpdateAction(Action):
             print('ddb is running from a platform that doesn\'t support binary package mode.')
             return
 
-        url = 'https://github.com/{}/releases/download/{}/{}'.format(github_repository, tag_name, release_asset_name)
+        url = f'https://github.com/{github_repository}/releases/download/{tag_name}/{release_asset_name}'
         context.log.debug('Downloading ddb asset: %s', url)
 
         progress_bar = None

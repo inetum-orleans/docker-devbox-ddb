@@ -1,24 +1,32 @@
-# -*- coding: utf-8 -*-
 import os
 import platform
 from argparse import ArgumentParser
-from typing import Iterable, ClassVar
+from collections.abc import Iterable
+from typing import ClassVar
 
 import distro
 from dotty_dict import Dotty
 
-from .actions import FeaturesAction, ConfigAction, ReloadConfigAction, EjectAction, SelfUpdateAction, \
-    CheckForUpdateAction, VersionAction, CheckRequiredVersion
-from .schema import CoreFeatureSchema
-from ..feature import Feature, FeatureConfigurationAutoConfigureError, FeatureConfigurationReadOnlyError
-from ..schema import FeatureSchema
 from ...action import Action
 from ...action.runner import ExpectedError, FailFastError
-from ...command import LifecycleCommand, Command
+from ...command import Command, LifecycleCommand
 from ...config import config
 from ...config.config import ConfigPaths
 from ...context import context
-from ...phase import Phase, DefaultPhase
+from ...phase import DefaultPhase, Phase
+from ..feature import Feature, FeatureConfigurationAutoConfigureError, FeatureConfigurationReadOnlyError
+from ..schema import FeatureSchema
+from .actions import (
+    CheckForUpdateAction,
+    CheckRequiredVersion,
+    ConfigAction,
+    EjectAction,
+    FeaturesAction,
+    ReloadConfigAction,
+    SelfUpdateAction,
+    VersionAction,
+)
+from .schema import CoreFeatureSchema
 
 
 class ConfigureSecondPassException(Exception):

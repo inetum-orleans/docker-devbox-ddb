@@ -1,6 +1,6 @@
 import os
+from collections.abc import Callable, Iterable
 from subprocess import CalledProcessError
-from typing import Union, Iterable, Callable
 
 from ddb.action.action import EventBinding, InitializableAction
 from ddb.command import commands
@@ -27,7 +27,7 @@ class SmartcdAction(InitializableAction):
     """
 
     @property
-    def event_bindings(self) -> Union[Iterable[Union[Callable, str, EventBinding]], Union[Callable, str, EventBinding]]:
+    def event_bindings(self) -> Iterable[Callable | str | EventBinding] | Callable | str | EventBinding:
         return events.phase.configure
 
     @property
@@ -75,7 +75,7 @@ class WindowsProjectActivate(InitializableAction):
     """
 
     @property
-    def event_bindings(self) -> Union[Iterable[Union[Callable, str, EventBinding]], Union[Callable, str, EventBinding]]:
+    def event_bindings(self) -> Iterable[Callable | str | EventBinding] | Callable | str | EventBinding:
         return events.phase.configure
 
     @property

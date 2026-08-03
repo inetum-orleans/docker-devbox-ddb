@@ -1,7 +1,7 @@
-# -*- coding: utf-8 -*-
+import contextlib
 import os
-import patch
 
+import patch
 from cookiecutter.config import DEFAULT_CONFIG
 from cookiecutter.main import cookiecutter
 
@@ -38,10 +38,8 @@ class CookiecutterAction(Action):
         try:
             if cookiecutter_config:
                 for parameter in config_parameters:
-                    try:
+                    with contextlib.suppress(KeyError):
                         DEFAULT_CONFIG[parameter] = cookiecutter_config[parameter]
-                    except KeyError:
-                        pass
 
             templates = cookiecutter_config.get('templates')
             if templates:

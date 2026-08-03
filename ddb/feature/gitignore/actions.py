@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
 import os
 import pathlib
-from typing import Optional, List
 
 import zgitignore
 
@@ -37,7 +35,7 @@ class UpdateGitignoreAction(InitializableAction):
             caches.unregister("gitignore", callback=lambda c: c.close())
 
     @staticmethod
-    def execute(target: str, source: str = None):
+    def execute(target: str, source: str | None = None):
         """
         Execute action
         """
@@ -178,7 +176,7 @@ class UpdateGitignoreAction(InitializableAction):
         return f'###< {markers[0]} ###'
 
     @staticmethod
-    def _is_block_limit(line: str, start: Optional[bool] = None):
+    def _is_block_limit(line: str, start: bool | None = None):
         """
         Check if line match a block limit.
         :param line: line to check
@@ -197,7 +195,7 @@ class UpdateGitignoreAction(InitializableAction):
         return False
 
     @staticmethod
-    def _write_gitignore_content(gitignore: str, content: List[str]):
+    def _write_gitignore_content(gitignore: str, content: list[str]):
         if [line for line in content if line]:
             with open(gitignore, "w", encoding="utf-8") as gitignore_file:
                 for lineno, line in enumerate(content):

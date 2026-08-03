@@ -161,12 +161,30 @@ select = [
     "PT",   # flake8-pytest-style
     "RUF",  # ruff-specific rules
 ]
-# SIM102: collapsing nested `if`s hurts readability with long conditions here.
-ignore = ["SIM102"]
+ignore = [
+    # Base classes expose optional hooks (before_load, close, flush, warn, ...) as
+    # empty methods: subclasses override the ones they care about.
+    "B024",
+    "B027",
+    # Long log and error messages are built from adjacent literals across lines.
+    "ISC002",
+    # Collapsing nested `if`s hurts readability with the long conditions used here.
+    "SIM102",
+    # `for k in d.keys()` is not interchangeable with `for k in d` here: caches and
+    # dotty dicts expose keys() without being iterable themselves.
+    "SIM118",
+]
 
 [tool.ruff.lint.per-file-ignores]
-# Tests reach into private helpers and assert on them; that is intentional here.
-"tests/**" = ["B011", "PT011", "PT012", "SIM115"]
+# Shelve caches and rendered templates own file handles that outlive the call.
+"ddb/cache/shelve_cache.py" = ["SIM115"]
+"ddb/feature/ytt/actions.py" = ["SIM115"]
+"ddb/utils/file.py" = ["SIM115"]
+# Embedded traefik configuration templates, kept verbatim.
+"ddb/feature/traefik/schema.py" = ["E501"]
+# Tests assert on full command lines, patch with plain functions rather than mock
+# return values, and check raised messages with `str(excinfo.value)` after the block.
+"tests/**" = ["E501", "PT008", "PT011", "PT012"]
 
 [tool.pytest.ini_options]
 addopts = "-s --ignore=build --ignore=docs --docker-compose-remove-volumes"

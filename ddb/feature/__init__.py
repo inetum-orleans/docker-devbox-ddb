@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-from .feature import Feature
 from ..registry import Registry
+from .feature import Feature
 
 features = Registry(Feature, "Feature")  # type: Registry[Feature]

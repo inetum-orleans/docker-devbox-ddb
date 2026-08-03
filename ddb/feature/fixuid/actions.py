@@ -1,17 +1,15 @@
-# -*- coding: utf-8 -*-
 import json
 import os
 import re
 import shlex
 from collections import namedtuple
+from collections.abc import Iterable
 from subprocess import CalledProcessError
-from typing import Iterable
 
 from chmod_monkey import tmp_chmod
 from dockerfile_parse import DockerfileParser
 from dotty_dict import Dotty
 
-from ..copy.actions import copy_from_url
 from ...action import Action
 from ...action.action import EventBinding
 from ...config import config
@@ -19,6 +17,7 @@ from ...context import context
 from ...event import events
 from ...utils.file import force_remove
 from ...utils.process import run
+from ..copy.actions import copy_from_url
 
 BuildServiceDef = namedtuple("BuildServiceDef", "context dockerfile")
 
@@ -64,10 +63,7 @@ class CustomDockerfileParser(DockerfileParser):
             elif insndesc['instruction'] == 'ENTRYPOINT':
                 entrypoint = insndesc
 
-        if value:
-            new_entrypoint = 'ENTRYPOINT ' + value
-        else:
-            new_entrypoint = None
+        new_entrypoint = 'ENTRYPOINT ' + value if value else None
 
         if entrypoint:
             if new_entrypoint:
@@ -107,10 +103,7 @@ class CustomDockerfileParser(DockerfileParser):
             elif insndesc['instruction'] == 'CMD':
                 cmd = insndesc
 
-        if value:
-            new_cmd = 'CMD ' + value
-        else:
-            new_cmd = None
+        new_cmd = 'CMD ' + value if value else None
         if cmd:
             if new_cmd:
                 self.add_lines_at(cmd, new_cmd, replace=True)
@@ -131,9 +124,9 @@ class FixuidDockerComposeAction(Action):
     def __init__(self):
         self.docker_compose_config = {}
         self._dockerfile_lines = ("ADD fixuid.tar.gz /usr/local/bin",
-                                  "RUN chown root:root /usr/local/bin/fixuid && "
+                                  ("RUN chown root:root /usr/local/bin/fixuid && "
                                   "chmod 4755 /usr/local/bin/fixuid && "
-                                  "mkdir -p /etc/fixuid",
+                                  "mkdir -p /etc/fixuid"),
                                   "COPY fixuid.yml /etc/fixuid/config.yml")
 
     @property
@@ -208,13 +201,12 @@ class FixuidDockerComposeAction(Action):
         """
         dockerfile_path = os.path.join(service.context, service.dockerfile)
         if os.path.exists(dockerfile_path):
-            with tmp_chmod(dockerfile_path, '+w'):
-                with open(dockerfile_path, "ba+") as dockerfile_file:
-                    parser = CustomDockerfileParser(fileobj=dockerfile_file)
+            with tmp_chmod(dockerfile_path, '+w'), open(dockerfile_path, "ba+") as dockerfile_file:
+                parser = CustomDockerfileParser(fileobj=dockerfile_file)
 
-                    if FixuidDockerComposeAction._apply_fixuid_from_parser(self, parser, service):
-                        context.log.success("Fixuid applied to %s",
-                                            os.path.relpath(dockerfile_path, config.paths.project_home))
+                if FixuidDockerComposeAction._apply_fixuid_from_parser(self, parser, service):
+                    context.log.success("Fixuid applied to %s",
+                                        os.path.relpath(dockerfile_path, config.paths.project_home))
 
     def remove_fixuid(self, service: BuildServiceDef):
         """
@@ -222,13 +214,12 @@ class FixuidDockerComposeAction(Action):
         """
         dockerfile_path = os.path.join(service.context, service.dockerfile)
         if os.path.exists(dockerfile_path):
-            with tmp_chmod(dockerfile_path, '+w'):
-                with open(dockerfile_path, "ba+") as dockerfile_file:
-                    parser = CustomDockerfileParser(fileobj=dockerfile_file)
+            with tmp_chmod(dockerfile_path, '+w'), open(dockerfile_path, "ba+") as dockerfile_file:
+                parser = CustomDockerfileParser(fileobj=dockerfile_file)
 
-                    if FixuidDockerComposeAction._remove_fixuid_from_parser(self, parser, service):
-                        context.log.success("Fixuid removed from %s",
-                                            os.path.relpath(dockerfile_path, config.paths.project_home))
+                if FixuidDockerComposeAction._remove_fixuid_from_parser(self, parser, service):
+                    context.log.success("Fixuid removed from %s",
+                                        os.path.relpath(dockerfile_path, config.paths.project_home))
 
     @staticmethod
     def _get_cmd_and_entrypoint(parser):
@@ -436,12 +427,12 @@ class FixuidDockerComposeAction(Action):
 
         fixuid_entrypoint_prefix = ["fixuid", "-q"]
         if entrypoint_list[:len(fixuid_entrypoint_prefix)] != fixuid_entrypoint_prefix:
-            entrypoint_list = ["fixuid", "-q"] + entrypoint_list
+            entrypoint_list = ["fixuid", "-q", *entrypoint_list]
         if as_list:
             entrypoint = json.dumps(entrypoint_list)
         else:
             entrypoint = " ".join(entrypoint_list)
-            entrypoint = "%s%s%s" % (start_quote, entrypoint, end_quote)
+            entrypoint = f"{start_quote}{entrypoint}{end_quote}"
 
         return entrypoint
 
@@ -457,6 +448,6 @@ class FixuidDockerComposeAction(Action):
             entrypoint = json.dumps(entrypoint_list)
         else:
             entrypoint = " ".join(entrypoint_list)
-            entrypoint = "%s%s%s" % (start_quote, entrypoint, end_quote)
+            entrypoint = f"{start_quote}{entrypoint}{end_quote}"
 
         return entrypoint

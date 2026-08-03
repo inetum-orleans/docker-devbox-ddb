@@ -7,7 +7,7 @@ from ddb.config import config
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.utils import file
-from ddb.utils.file import FileWalker, FileUtils
+from ddb.utils.file import FileUtils, FileWalker
 
 
 class TestHasSameContent:

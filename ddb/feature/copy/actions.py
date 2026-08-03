@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+import contextlib
 import glob
 import os
 import re
@@ -9,7 +9,7 @@ from ddb.action import Action
 from ddb.cache import caches, requests_cache_name
 from ddb.config import config
 from ddb.event import events
-from ddb.utils.file import write_if_different, copy_if_different
+from ddb.utils.file import copy_if_different, write_if_different
 
 
 def copy_from_url(source, destination, filename=None):
@@ -42,10 +42,8 @@ def get_dispatch_directories(dispatch):
                 matches = glob.glob(dispatch_expr[1:])
                 dirs = [match for match in matches if os.path.isdir(match)]
                 for to_remove in dirs:
-                    try:
+                    with contextlib.suppress(ValueError):
                         dispatch_directories.remove(to_remove)
-                    except ValueError:
-                        pass
             else:
                 matches = glob.glob(dispatch_expr)
                 dirs = [match for match in matches if os.path.isdir(match)]
@@ -105,7 +103,7 @@ class CopyAction(Action):
 
     @staticmethod
     def _copy_from_spec(destination, source, spec):
-        if source.startswith('http://') or source.startswith('https://'):
+        if source.startswith(('http://', 'https://')):
             target_path = copy_from_url(source, destination, spec.get('filename'))
             if target_path:
                 yield None, target_path

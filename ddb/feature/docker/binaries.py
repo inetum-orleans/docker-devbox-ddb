@@ -1,12 +1,12 @@
 import os
 import posixpath
 import shlex
-from typing import Optional, Iterable
+from collections.abc import Iterable
 
 from ddb.binary.binary import AbstractBinary
 from ddb.config import config
 from ddb.feature.docker.lib.compose.config.errors import ConfigurationError
-from ddb.feature.docker.utils import get_mapped_path, DockerComposeControl
+from ddb.feature.docker.utils import DockerComposeControl, get_mapped_path
 from ddb.utils.compat import path_as_posix_fast
 from ddb.utils.process import effective_command
 from ddb.utils.simpleeval import simple_eval
@@ -20,13 +20,13 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
     def __init__(self,
                  name: str,
                  docker_compose_service: str,
-                 workdir: Optional[str] = None,
-                 options: Optional[str] = None,
-                 options_condition: Optional[str] = None,
-                 condition: Optional[str] = None,
-                 args: Optional[str] = None,
+                 workdir: str | None = None,
+                 options: str | None = None,
+                 options_condition: str | None = None,
+                 condition: str | None = None,
+                 args: str | None = None,
                  exe: bool = False,
-                 entrypoint: Optional[str] = None,
+                 entrypoint: str | None = None,
                  global_: bool = False):
         super().__init__(name)
         self.docker_compose_service = docker_compose_service
@@ -94,8 +94,7 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
         docker_compose_command = config.data.get('docker.docker_compose_command')
         if not docker_compose_command:
             raise ConfigurationError('DockerBinary requires docker feature configuration')
-        command = effective_command(*shlex.split(docker_compose_command), *params)
-        return command
+        return effective_command(*shlex.split(docker_compose_command), *params)
 
     def add_options_to_params(self, params, options, condition, *args):
         """
@@ -167,10 +166,7 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
             return False
         if self.exe != other.exe:
             return False
-        if self.entrypoint != other.entrypoint:
-            return False
-
-        return True
+        return self.entrypoint == other.entrypoint
 
     def __hash__(self):
         return hash((super().__hash__(),

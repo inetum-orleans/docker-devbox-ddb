@@ -1,19 +1,20 @@
-# -*- coding: utf-8 -*-
 import hashlib
 import os
 import re
-from typing import ClassVar, Iterable
+from collections.abc import Iterable
+from typing import ClassVar
 
 from dotty_dict import Dotty
 from slugify import slugify
 
 from ddb.action import Action
 from ddb.feature import Feature
-from .actions import JsonnetAction
-from .schema import JsonnetSchema
+
 from ...config import config
 from ...utils.compat import path_as_posix_fast
 from ...utils.file import TemplateFinder
+from .actions import JsonnetAction
+from .schema import JsonnetSchema
 
 
 class JsonnetFeature(Feature):

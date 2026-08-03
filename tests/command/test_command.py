@@ -1,4 +1,4 @@
-from ddb.__main__ import register_default_caches, clear_caches
+from ddb.__main__ import clear_caches, register_default_caches
 from ddb.command import LifecycleCommand
 from ddb.config import config
 from ddb.event import bus

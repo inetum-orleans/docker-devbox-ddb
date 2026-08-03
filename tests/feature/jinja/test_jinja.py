@@ -49,7 +49,7 @@ class TestJinjaAction:
         action.execute()
 
         assert os.path.exists('foo.yml')
-        with open('foo.yml', 'r') as f:
+        with open('foo.yml') as f:
             foo = f.read()
 
         assert foo == 'env: dev'
@@ -68,7 +68,7 @@ class TestJinjaAction:
         action.execute()
 
         assert os.path.exists('foo.yml')
-        with open('foo.yml', 'r') as f:
+        with open('foo.yml') as f:
             foo = f.read()
 
         assert foo == 'env: dev\nincluded: True'
@@ -90,7 +90,7 @@ class TestJinjaAction:
         action.execute()
 
         assert os.path.exists('.foo.yml')
-        with open('.foo.yml', 'r') as f:
+        with open('.foo.yml') as f:
             foo = f.read()
 
         assert foo == 'env: dev'
@@ -109,7 +109,7 @@ class TestJinjaAction:
         action.execute()
 
         assert os.path.exists('foo')
-        with open('foo', 'r') as f:
+        with open('foo') as f:
             foo = f.read()
 
         assert foo == 'env=dev'
@@ -128,12 +128,12 @@ class TestJinjaAction:
         action.execute()
 
         assert os.path.exists('foo')
-        with open('foo', 'r') as f:
+        with open('foo') as f:
             foo = f.read()
         assert foo == 'env=dev'
 
         assert os.path.exists('foo.yml')
-        with open('foo.yml', 'r') as f:
+        with open('foo.yml') as f:
             foo = f.read()
 
         assert foo == 'env: dev'
@@ -154,7 +154,7 @@ class TestJinjaAction:
         action.execute()
 
         assert os.path.exists('foo.yml')
-        with open('foo.yml', 'r') as f:
+        with open('foo.yml') as f:
             foo = f.read()
 
         assert foo == 'test: trailing'
@@ -173,7 +173,7 @@ class TestJinjaAction:
         action.execute()
 
         assert os.path.exists('foo.yml')
-        with open('foo.yml', 'r') as f:
+        with open('foo.yml') as f:
             foo = f.read()
 
         assert foo == 'test: trailing\n'
@@ -194,7 +194,7 @@ class TestJinjaAction:
         action.execute()
 
         assert os.path.exists('foo.yml')
-        with open('foo.yml', 'r') as f:
+        with open('foo.yml') as f:
             foo = f.read()
 
         assert foo == 'test: trailing\n'
@@ -228,18 +228,18 @@ class TestJinjaAutofix:
         action.execute()
 
         assert os.path.exists('config.properties')
-        with open('config.properties', 'r') as f:
+        with open('config.properties') as f:
             rendered = f.read()
 
-        with open('config.expected.properties', 'r') as f:
+        with open('config.expected.properties') as f:
             expected = f.read()
 
         assert rendered == expected
 
-        with open('config.properties.jinja', 'r') as f:
+        with open('config.properties.jinja') as f:
             source = f.read()
 
-        with open('config.properties.autofix', 'r') as f:
+        with open('config.properties.autofix') as f:
             fixed = f.read()
 
         assert source == fixed
@@ -265,10 +265,10 @@ class TestJinjaAutofix:
         action.initialize()
         action.execute()
 
-        with open('docker-compose.properties', 'r') as f:
+        with open('docker-compose.properties') as f:
             rendered = f.read()
 
-        with open('docker-compose.expected.properties', 'r') as f:
+        with open('docker-compose.expected.properties') as f:
             expected = f.read()
 
         assert rendered == expected
@@ -296,18 +296,18 @@ class TestJinjaAutofix:
         action.initialize()
         action.execute()
 
-        with open('msmtprc', 'r') as f:
+        with open('msmtprc') as f:
             rendered = f.read()
 
-        with open('msmtprc.expected', 'r') as f:
+        with open('msmtprc.expected') as f:
             expected = f.read()
 
         assert rendered == expected
 
-        with open('msmtprc.jinja', 'r') as f:
+        with open('msmtprc.jinja') as f:
             template = f.read()
 
-        with open('msmtprc.autofix', 'r') as f:
+        with open('msmtprc.autofix') as f:
             autofix = f.read()
 
         assert autofix == template

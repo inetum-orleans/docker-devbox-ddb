@@ -1,4 +1,5 @@
 import os
+
 import pytest
 
 from ddb.__main__ import load_registered_features

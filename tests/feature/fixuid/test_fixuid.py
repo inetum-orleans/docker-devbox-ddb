@@ -4,11 +4,11 @@ import docker
 import pytest
 import yaml
 
-from ddb.__main__ import load_registered_features, register_default_caches, register_actions_in_event_bus
+from ddb.__main__ import load_registered_features, register_actions_in_event_bus, register_default_caches
 from ddb.event import events
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
-from ddb.feature.fixuid import FixuidFeature, FixuidDockerComposeAction
+from ddb.feature.fixuid import FixuidDockerComposeAction, FixuidFeature
 
 
 class TestFixuidFeature:
@@ -51,15 +51,15 @@ class TestFixuidFeature:
         features.register(FixuidFeature())
         load_registered_features()
 
-        with open('docker-compose.yml', 'r') as config_file:
+        with open('docker-compose.yml') as config_file:
             config = yaml.load(config_file, yaml.SafeLoader)
 
         action = FixuidDockerComposeAction()
         action.execute(docker_compose_config=config)
 
-        with open(os.path.join("docker", "Dockerfile.expected"), "r") as f:
+        with open(os.path.join("docker", "Dockerfile.expected")) as f:
             expected = f.read()
-        with open(os.path.join("docker", "Dockerfile"), "r") as f:
+        with open(os.path.join("docker", "Dockerfile")) as f:
             content = f.read()
         assert content == expected
 
@@ -81,14 +81,14 @@ class TestFixuidFeature:
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        with open('docker-compose.yml', 'r') as config_file:
+        with open('docker-compose.yml') as config_file:
             config = yaml.load(config_file, yaml.SafeLoader)
 
         events.docker.docker_compose_config(config)
 
-        with open(os.path.join("docker", "Dockerfile.expected"), "r") as f:
+        with open(os.path.join("docker", "Dockerfile.expected")) as f:
             expected = f.read()
-        with open(os.path.join("docker", "Dockerfile"), "r") as f:
+        with open(os.path.join("docker", "Dockerfile")) as f:
             content = f.read()
         assert content == expected
 
@@ -97,9 +97,9 @@ class TestFixuidFeature:
         os.remove(os.path.join("docker", "fixuid.yml"))
         events.file.deleted(os.path.join("docker", "fixuid.yml"))
 
-        with open(os.path.join("docker", "Dockerfile.removed.expected"), "r") as f:
+        with open(os.path.join("docker", "Dockerfile.removed.expected")) as f:
             expected = f.read()
-        with open(os.path.join("docker", "Dockerfile"), "r") as f:
+        with open(os.path.join("docker", "Dockerfile")) as f:
             content = f.read()
         assert content == expected
 
@@ -113,14 +113,14 @@ class TestFixuidFeature:
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        with open('docker-compose.yml', 'r') as config_file:
+        with open('docker-compose.yml') as config_file:
             config = yaml.load(config_file, yaml.SafeLoader)
 
         events.docker.docker_compose_config(config)
 
-        with open(os.path.join("docker", "Dockerfile.expected"), "r") as f:
+        with open(os.path.join("docker", "Dockerfile.expected")) as f:
             expected = f.read()
-        with open(os.path.join("docker", "Dockerfile"), "r") as f:
+        with open(os.path.join("docker", "Dockerfile")) as f:
             content = f.read()
         assert content == expected
 
@@ -134,14 +134,14 @@ class TestFixuidFeature:
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        with open('docker-compose.yml', 'r') as config_file:
+        with open('docker-compose.yml') as config_file:
             config = yaml.load(config_file, yaml.SafeLoader)
 
         events.docker.docker_compose_config(config)
 
-        with open(os.path.join("docker", "Dockerfile.expected"), "r") as f:
+        with open(os.path.join("docker", "Dockerfile.expected")) as f:
             expected = f.read()
-        with open(os.path.join("docker", "Dockerfile"), "r") as f:
+        with open(os.path.join("docker", "Dockerfile")) as f:
             content = f.read()
         assert content == expected
 
@@ -155,14 +155,14 @@ class TestFixuidFeature:
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        with open('docker-compose.yml', 'r') as config_file:
+        with open('docker-compose.yml') as config_file:
             config = yaml.load(config_file, yaml.SafeLoader)
 
         events.docker.docker_compose_config(config)
 
-        with open(os.path.join("docker", "Dockerfile.expected"), "r") as f:
+        with open(os.path.join("docker", "Dockerfile.expected")) as f:
             expected = f.read()
-        with open(os.path.join("docker", "Dockerfile"), "r") as f:
+        with open(os.path.join("docker", "Dockerfile")) as f:
             content = f.read()
         assert content == expected
 
@@ -176,14 +176,14 @@ class TestFixuidFeature:
         load_registered_features()
         register_actions_in_event_bus(True)
 
-        with open('docker-compose.yml', 'r') as config_file:
+        with open('docker-compose.yml') as config_file:
             config = yaml.load(config_file, yaml.SafeLoader)
 
         events.docker.docker_compose_config(config)
 
-        with open(os.path.join("docker", "Dockerfile.expected"), "r") as f:
+        with open(os.path.join("docker", "Dockerfile.expected")) as f:
             expected = f.read()
-        with open(os.path.join("docker", "Dockerfile"), "r") as f:
+        with open(os.path.join("docker", "Dockerfile")) as f:
             content = f.read()
         assert content == expected
 

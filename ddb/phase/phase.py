@@ -1,12 +1,12 @@
-# -*- coding: utf-8 -*-
 from abc import ABC
 from argparse import ArgumentParser
-from typing import Any, Callable, Union
+from collections.abc import Callable
+from typing import Any
 
 from ddb.cache import project_cache
 from ddb.context import context
 from ddb.event import bus
-from ddb.registry import RegistryObject, DefaultRegistryObject
+from ddb.registry import DefaultRegistryObject, RegistryObject
 
 
 class Phase(RegistryObject, ABC):  # pylint:disable=abstract-method
@@ -39,8 +39,8 @@ class DefaultPhase(DefaultRegistryObject, Phase):
 
     def __init__(self,
                  name: str,
-                 description: Union[str, None] = None,
-                 parser: Callable[[ArgumentParser], Any] = None,
+                 description: str | None = None,
+                 parser: Callable[[ArgumentParser], Any] | None = None,
                  run_once: bool = False,
                  allow_unknown_args: bool = False):
         super().__init__(name, description)

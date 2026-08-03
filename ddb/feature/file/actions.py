@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
 import logging
 import os
 
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
-from watchdog.utils.delayed_queue import DelayedQueue
 
 from ddb.action import InitializableAction
 from ddb.action.action import WatchSupport

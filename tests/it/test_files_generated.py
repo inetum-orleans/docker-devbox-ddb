@@ -16,17 +16,17 @@ class TestFilesGenerated:
 
         assert os.path.exists("test.dev.yml.jsonnet")
         assert not os.path.exists("test.dev.yml.jinja")
-        with open("test.dev.yml.jsonnet", "r") as dockerfile:
+        with open("test.dev.yml.jsonnet") as dockerfile:
             data = dockerfile.read()
             assert data == '{["e" + "n" + "v"]: "dev"}\n'
 
         assert os.path.exists("test.dev.yml")
-        with open("test.dev.yml", "r") as dockerfile:
+        with open("test.dev.yml") as dockerfile:
             data = dockerfile.read()
             assert yaml.load(data, yaml.SafeLoader) == {"env": "dev"}
 
         assert os.path.exists("test.yml")
-        with open("test.yml", "r") as dockerfile:
+        with open("test.yml") as dockerfile:
             data = dockerfile.read()
             assert yaml.load(data, yaml.SafeLoader) == {"env": "dev"}
 
@@ -44,17 +44,17 @@ class TestFilesGenerated:
 
         assert not os.path.exists("test.dev.yml.jsonnet")
         assert os.path.exists("test.dev.yml.jinja")
-        with open("test.dev.yml.jinja", "r") as dockerfile:
+        with open("test.dev.yml.jinja") as dockerfile:
             data = dockerfile.read().splitlines()
             assert data == ['{', '   "env": "{{ core.env.current }}"', '}']
 
         assert os.path.exists("test.dev.yml")
-        with open("test.dev.yml", "r") as dockerfile:
+        with open("test.dev.yml") as dockerfile:
             data = dockerfile.read()
             assert yaml.load(data, yaml.SafeLoader) == {"env": "dev"}
 
         assert os.path.exists("test.yml")
-        with open("test.yml", "r") as dockerfile:
+        with open("test.yml") as dockerfile:
             data = dockerfile.read()
             assert yaml.load(data, yaml.SafeLoader) == {"env": "dev"}
 

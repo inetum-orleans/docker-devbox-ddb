@@ -1,20 +1,26 @@
-# -*- coding: utf-8 -*-
 import os
 from argparse import ArgumentParser
-from typing import Iterable, ClassVar
+from collections.abc import Iterable
+from typing import ClassVar
 
 from dotty_dict import Dotty
 
-from .actions import ActivateAction, DeactivateAction, CreateBinaryShim, CreateAliasShim, CheckActivatedAction, \
-    CommandAction
-from .integrations import BashShellIntegration, CmdShellIntegration
-from .schema import ShellSchema
+from ...action import Action
+from ...command import Command, LifecycleCommand
+from ...config import config
+from ...phase import DefaultPhase, Phase
 from ..feature import Feature, FeatureConfigurationAutoConfigureError
 from ..schema import FeatureSchema
-from ...action import Action
-from ...command import LifecycleCommand, Command
-from ...config import config
-from ...phase import Phase, DefaultPhase
+from .actions import (
+    ActivateAction,
+    CheckActivatedAction,
+    CommandAction,
+    CreateAliasShim,
+    CreateBinaryShim,
+    DeactivateAction,
+)
+from .integrations import BashShellIntegration, CmdShellIntegration
+from .schema import ShellSchema
 
 
 class ShellFeature(Feature):

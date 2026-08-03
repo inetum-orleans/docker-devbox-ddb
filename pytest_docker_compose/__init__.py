@@ -129,7 +129,10 @@ def generate_scoped_containers_fixture(scope: str):
         container_getter = ContainerGetter(docker_project)
         yield container_getter
 
-        if request.config.getoption("--verbose"):
+        # `-q` sets verbosity to -1, which is truthy, and compose.up() returns
+        # None: both would turn this reporting block into a teardown failure,
+        # leaving the containers running for the next test module.
+        if request.config.getoption("--verbose") > 0 and containers:
             for container in sorted(containers, key=lambda c: c.name):
                 header = "Logs from {name}:".format(name=container.name)
                 print(header, '\n', "=" * len(header))

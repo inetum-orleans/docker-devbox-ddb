@@ -1,11 +1,9 @@
 import os
 from pathlib import Path
-from unittest.mock import Mock
 
-import pytest
+import responses
 from _pytest.capture import CaptureFixture
 from pytest_mock import MockerFixture
-import responses
 
 from ddb import __version__
 from ddb.__main__ import main
@@ -72,7 +70,7 @@ class TestCore:
         outerr = capsys.readouterr()
         assert outerr.err == ""
         assert outerr.out == 'A new version is available: 1.10.0\nddb has been updated.\n'
-    
+
     @responses.activate
     def test_self_update_outdated_with_previous_old(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
         mocker.patch('ddb.feature.core.actions.get_local_binary_path', lambda *args, **kwargs: self.bin)
@@ -127,7 +125,8 @@ class TestCore:
         assert outerr.err == ""
         assert outerr.out == 'ddb is already up to date.\nddb has been updated.\n'
 
-    def test_self_update_up_to_date(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
+    def test_self_update_up_to_date_with_mocked_current_version(self, project_loader, capsys: CaptureFixture,
+                                                               mocker: MockerFixture):
         mocker.patch('ddb.feature.core.actions.get_local_binary_path', lambda *args, **kwargs: self.bin)
         mocker.patch('ddb.feature.core.actions.is_binary', lambda *args, **kwargs: True)
         mocker.patch('ddb.feature.core.actions.get_latest_release', lambda *args, **kwargs: ('1.3.0', 'v1.3.0'))

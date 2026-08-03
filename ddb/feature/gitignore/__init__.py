@@ -1,10 +1,11 @@
-# -*- coding: utf-8 -*-
-from typing import ClassVar, Iterable
+from collections.abc import Iterable
+from typing import ClassVar
+
+from dotty_dict import Dotty
 
 from ddb.action import Action
 from ddb.config import config
 from ddb.feature import Feature
-from dotty_dict import Dotty
 
 from .actions import UpdateGitignoreAction
 from .schema import GitignoreSchema

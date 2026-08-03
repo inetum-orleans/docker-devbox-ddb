@@ -1,8 +1,9 @@
-# -*- coding: utf-8 -*-
-from typing import ClassVar, Iterable
+from collections.abc import Iterable
+from typing import ClassVar
 
 from ddb.action import Action
 from ddb.feature import Feature
+
 from .actions import FixFilePermissionsAction
 from .schema import GitSchema
 

@@ -10,7 +10,7 @@ from ddb.feature.bootstrap import bootstrap_features_configuration
 from ddb.feature.gitignore import UpdateGitignoreAction
 
 
-def load_config(data_dir: str = None, name: str = None):
+def load_config(data_dir: str | None = None, name: str | None = None):
     init_config_paths(data_dir, name)
 
     bootstrap_features_configuration()
@@ -19,7 +19,7 @@ def load_config(data_dir: str = None, name: str = None):
     return config
 
 
-def init_config_paths(data_dir: str = None, name: str = None):
+def init_config_paths(data_dir: str | None = None, name: str | None = None):
     root_dir = os.path.join(data_dir, name) if name else data_dir
 
     paths = ConfigPaths(ddb_home=os.path.join(root_dir, 'ddb_home'), home=os.path.join(root_dir, 'home'),
@@ -42,6 +42,7 @@ def _get_docker_ip():
     match = re.match(r"tcp:\/\/(.*?):(.*)", docker_host)
     if match:
         return match.group(1)
+    return None
 
 
 def _wait_cfssl_ready(max_retry=20):
@@ -51,7 +52,7 @@ def _wait_cfssl_ready(max_retry=20):
         try:
             client.info("")
             break
-        except:
+        except Exception:
             retry += 1
             time.sleep(1)
             if retry > max_retry:
@@ -74,7 +75,7 @@ def expect_gitignore(gitignore: str, *expected_lines: str):
     in_block_lines = set()
 
     if os.path.exists(gitignore):
-        with open(gitignore, 'r') as file:
+        with open(gitignore) as file:
             inside_block = False
             for gitignore_line in file.read().splitlines():
                 if UpdateGitignoreAction._is_block_limit(gitignore_line, True):
@@ -86,11 +87,7 @@ def expect_gitignore(gitignore: str, *expected_lines: str):
                 if inside_block:
                     in_block_lines.add(gitignore_line)
 
-    for expected_line in expected_lines:
-        if expected_line not in in_block_lines:
-            return False
-
-    return True
+    return all(expected_line in in_block_lines for expected_line in expected_lines)
 
 
 def get_user_uid_gid(username):

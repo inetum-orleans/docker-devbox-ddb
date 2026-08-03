@@ -1,5 +1,5 @@
 from .action import Action, InitializableAction
-from .runner import InitializableActionEventBindingRunner, ActionEventBindingRunner, EventBindingRunner
+from .runner import ActionEventBindingRunner, EventBindingRunner, InitializableActionEventBindingRunner
 
 
 def action_event_binding_runner_factory(action: Action, event_name: str, to_call=None, event_processor=None,

@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
+import contextlib
 import keyword
 import os
 import re
-from pathlib import PurePosixPath, Path
-from typing import Union, Iterable, List, Dict, Set
+from collections.abc import Iterable
+from pathlib import Path, PurePosixPath
 
 import yaml
 from dotty_dict import Dotty
@@ -11,18 +11,19 @@ from dotty_dict import Dotty
 from ddb.feature import features
 from ddb.feature.traefik import TraefikExtraServicesAction
 from ddb.utils.simpleeval import simple_eval
-from .binaries import DockerBinary
-from .lib.compose.config.types import ServicePort
-from .utils import DockerComposeControl
+
 from ...action import Action
 from ...action.action import EventBinding, InitializableAction
-from ...binary import binaries, Binary
+from ...binary import binaries
 from ...cache import caches, register_project_cache
 from ...config import config
 from ...context import context
 from ...event import bus, events
 from ...utils.compat import posix_as_path_fast
 from ...utils.table_display import get_table_display
+from .binaries import DockerBinary
+from .lib.compose.config.types import ServicePort
+from .utils import DockerComposeControl
 
 
 class EmitDockerComposeConfigAction(Action):
@@ -78,7 +79,7 @@ class EmitDockerComposeConfigAction(Action):
 
         cert_domains = []
 
-        def on_available(domain: str, wildcard: bool, private_key: Union[bytes, str], certificate: Union[bytes, str]):
+        def on_available(domain: str, wildcard: bool, private_key: bytes | str, certificate: bytes | str):
             """
             When a certificate is available.
             :param domain:
@@ -258,7 +259,7 @@ class DockerComposeBinaryAction(InitializableAction):
         self.binaries.add(binary)
 
         if binaries.has(name, binary):
-            context.log.notice("Binary exists: %s" % (name,))
+            context.log.notice(f"Binary exists: {name}")
             events.binary.found(binary=binary)
             return
 
@@ -463,7 +464,7 @@ class DockerDisplayInfoAction(Action):
                 print()
 
     @staticmethod
-    def _retrieve_environment_data(service_config: Dotty) -> Dict[str, str]:
+    def _retrieve_environment_data(service_config: Dotty) -> dict[str, str]:
         """
         Retrieve environment data
         :param service_config: the service configuration
@@ -476,7 +477,7 @@ class DockerDisplayInfoAction(Action):
         return environments
 
     @staticmethod
-    def _retrieve_service_ports(service_config: Dotty) -> List[ServicePort]:
+    def _retrieve_service_ports(service_config: Dotty) -> list[ServicePort]:
         """
         Retrieve services ports data
         :param service_config: the service configuration
@@ -502,7 +503,7 @@ class DockerDisplayInfoAction(Action):
         return service_ports
 
     @staticmethod
-    def _retrieve_binaries_data(service_config: Dotty) -> List[str]:
+    def _retrieve_binaries_data(service_config: Dotty) -> list[str]:
         """
         Retrieve binaries data
         :param service_config: the service configuration
@@ -527,7 +528,7 @@ class DockerDisplayInfoAction(Action):
         return binaries_labels
 
     @staticmethod
-    def _retrieve_vhosts_data(service_config: Dotty) -> List[str]:
+    def _retrieve_vhosts_data(service_config: Dotty) -> list[str]:
         """
         Retrieve vhosts data
         :param service_config: the service configuration
@@ -545,14 +546,12 @@ class DockerDisplayInfoAction(Action):
             match = vhosts_regex_re.match(value)
             if not match:
                 continue
-            http_url = 'http://{}/'.format(match.group(1))
-            https_url = 'https://{}/'.format(match.group(1))
+            http_url = f'http://{match.group(1)}/'
+            https_url = f'https://{match.group(1)}/'
 
             if '-tls.' in key:
-                try:
+                with contextlib.suppress(ValueError):
                     vhosts_labels.remove(http_url)
-                except ValueError:
-                    pass
                 vhosts_labels.append(https_url)
                 continue
 
@@ -562,8 +561,8 @@ class DockerDisplayInfoAction(Action):
         return vhosts_labels
 
     @staticmethod
-    def _output_data(service_name: str, environments: Dict[str, str],
-                     ports: List[ServicePort], docker_binaries: List[str], vhosts: List[str]):
+    def _output_data(service_name: str, environments: dict[str, str],
+                     ports: list[ServicePort], docker_binaries: list[str], vhosts: list[str]):
         """
         Process the data and render it to the user
         :param service_name: the service name
@@ -574,13 +573,13 @@ class DockerDisplayInfoAction(Action):
         :return: a dict containing useful labels data
         """
 
-        header_block = ['{}'.format(service_name)]
+        header_block = [f'{service_name}']
         blocks = [header_block]
 
         if (config.args.type is None or 'env' in config.args.type) and environments:
             tmp_content = []
             for key in sorted(environments.keys()):
-                tmp_content.append('{}: {}'.format(key, environments.get(key)))
+                tmp_content.append(f'{key}: {environments.get(key)}')
 
             blocks.append(tmp_content)
 
@@ -589,7 +588,7 @@ class DockerDisplayInfoAction(Action):
             for port in ports:
                 tmp_content.append(port.legacy_repr() if
                                    hasattr(port, 'legacy_repr') else
-                                   "%s:%s" % (port.published, port.target))
+                                   f"{port.published}:{port.target}")
             blocks.append(tmp_content)
 
         if (config.args.type is None or 'bin' in config.args.type) and docker_binaries:
@@ -612,10 +611,7 @@ class DockerDisplayInfoAction(Action):
     def _output_traefik_data(id_, extra_service_data):
         if 'domain' in extra_service_data:
             domain = extra_service_data.get('domain')
-            if extra_service_data.get('https') in [None, True]:
-                domain = 'https://' + domain
-            else:
-                domain = 'http://' + domain
+            domain = 'https://' + domain if extra_service_data.get('https') in [None, True] else 'http://' + domain
         else:
             domain = extra_service_data.get('rule')
 

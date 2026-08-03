@@ -138,7 +138,7 @@ class TestBinaries:
         assert str(exceptions[0]) == 'Binary name "psql" is not registered'
 
     @pytest.mark.parametrize(
-        'relative_cwd,expected',
+        ("relative_cwd", "expected"),
         [('node10', 'node10'), ('node12', 'node12'), (None, 'node14')]
     )
     def test_docker_binaries_condition(self, relative_cwd, expected, project_loader, capsys: CaptureFixture):

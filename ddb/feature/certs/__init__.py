@@ -1,11 +1,11 @@
-# -*- coding: utf-8 -*-
-from typing import Iterable, ClassVar
+from collections.abc import Iterable
+from typing import ClassVar
 
-from .actions import GenerateCertAction, RemoveCertAction, GenerateSignerCertificateAction
-from .schema import CertsSchema
+from ...action import Action
 from ..feature import Feature
 from ..schema import FeatureSchema
-from ...action import Action
+from .actions import GenerateCertAction, GenerateSignerCertificateAction, RemoveCertAction
+from .schema import CertsSchema
 
 
 class CertsFeature(Feature):

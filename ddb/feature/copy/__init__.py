@@ -1,11 +1,11 @@
-# -*- coding: utf-8 -*-
-from typing import Iterable, ClassVar
+from collections.abc import Iterable
+from typing import ClassVar
 
-from .actions import CopyAction
-from .schema import CopySchema
+from ...action import Action
 from ..feature import Feature
 from ..schema import FeatureSchema
-from ...action import Action
+from .actions import CopyAction
+from .schema import CopySchema
 
 
 class CopyFeature(Feature):

@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 import pytest
 
-from ddb.binary.binary import DefaultBinary, Binary
+from ddb.binary.binary import Binary, DefaultBinary
 from ddb.feature.docker.binaries import DockerBinary
-from ddb.registry import Registry, DefaultRegistryObject, RegistryOrderedSet
+from ddb.registry import DefaultRegistryObject, Registry, RegistryOrderedSet
 
 
 class Dummy(DefaultRegistryObject):

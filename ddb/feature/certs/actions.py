@@ -1,14 +1,13 @@
-# -*- coding: utf-8 -*-
 import os
 
 import cfssl as cfssl_client
 
-from .cfssl import checksums, writer
 from ...action import Action
 from ...config import config
 from ...context import context
 from ...event import events
-from ...utils.file import force_remove, copy_if_different
+from ...utils.file import copy_if_different, force_remove
+from .cfssl import checksums, writer
 
 
 class GenerateCertAction(Action):
@@ -47,7 +46,7 @@ class GenerateCertAction(Action):
 
             certificate_request = cfssl_client.CertificateRequest()
             certificate_request.common_name = domain
-            certificate_request.hosts = (domain, "*.%s" % domain) if wildcard else domain
+            certificate_request.hosts = (domain, f"*.{domain}") if wildcard else domain
 
             response = client.new_cert(certificate_request)
             checksums.validate_checksums(response)

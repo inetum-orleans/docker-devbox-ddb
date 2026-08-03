@@ -1,19 +1,23 @@
-# -*- coding: utf-8 -*-
 import os
 import re
-from typing import Iterable, ClassVar
+from collections.abc import Iterable
+from typing import ClassVar
 
 import netifaces
 from dotty_dict import Dotty
 
-from .actions import EmitDockerComposeConfigAction, DockerComposeBinaryAction, LocalVolumesAction, \
-    DockerDisplayInfoAction
-from .schema import DockerSchema
-from ..feature import Feature, FeatureConfigurationAutoConfigureError
-from ..schema import FeatureSchema
 from ...action import Action
 from ...config import config
 from ...utils.compat import path_as_posix_fast
+from ..feature import Feature, FeatureConfigurationAutoConfigureError
+from ..schema import FeatureSchema
+from .actions import (
+    DockerComposeBinaryAction,
+    DockerDisplayInfoAction,
+    EmitDockerComposeConfigAction,
+    LocalVolumesAction,
+)
+from .schema import DockerSchema
 
 
 class DockerFeature(Feature):

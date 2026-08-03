@@ -3,7 +3,7 @@ import os
 from ddb.__main__ import load_registered_features, main
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
-from ddb.feature.gitignore import UpdateGitignoreAction, GitignoreFeature
+from ddb.feature.gitignore import GitignoreFeature, UpdateGitignoreAction
 from tests.utilstest import expect_gitignore
 
 
@@ -66,7 +66,7 @@ class TestUpdateGitIgnoreAction:
         project_loader("already_ignored")
 
         assert os.path.exists('.gitignore')
-        with open('.gitignore', 'r') as f:
+        with open('.gitignore') as f:
             expected_gitignore = f.read()
 
         features.register(GitignoreFeature())
@@ -76,7 +76,7 @@ class TestUpdateGitIgnoreAction:
         action.execute(target="./exists.yml")
 
         assert os.path.exists('.gitignore')
-        with open('.gitignore', 'r') as f:
+        with open('.gitignore') as f:
             gitignore = f.read()
 
         assert gitignore == expected_gitignore
@@ -85,7 +85,7 @@ class TestUpdateGitIgnoreAction:
         project_loader("already_ignored")
 
         assert os.path.exists('.gitignore')
-        with open('.gitignore', 'r') as f:
+        with open('.gitignore') as f:
             expected_gitignore = f.read()
 
         features.register(GitignoreFeature())
@@ -96,7 +96,7 @@ class TestUpdateGitIgnoreAction:
 
         action.remove("./another.yml")
         assert os.path.exists('.gitignore')
-        with open('.gitignore', 'r') as f:
+        with open('.gitignore') as f:
             gitignore = f.read()
 
         assert gitignore == expected_gitignore
@@ -105,7 +105,7 @@ class TestUpdateGitIgnoreAction:
         project_loader("keep_negated")
 
         assert os.path.exists('.gitignore')
-        with open('.gitignore', 'r') as f:
+        with open('.gitignore') as f:
             expected_gitignore = f.read()
 
         features.register(GitignoreFeature())
@@ -115,7 +115,7 @@ class TestUpdateGitIgnoreAction:
         action.execute(target="./exists.yml")
 
         assert os.path.exists('.gitignore')
-        with open('.gitignore', 'r') as f:
+        with open('.gitignore') as f:
             gitignore = f.read()
 
         assert gitignore == expected_gitignore

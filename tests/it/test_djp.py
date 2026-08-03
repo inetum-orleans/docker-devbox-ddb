@@ -1,7 +1,7 @@
 import os
+import zipfile
 
 from ddb.__main__ import main
-import zipfile
 
 
 class TestDjp:
@@ -17,7 +17,7 @@ class TestDjp:
         assert os.path.exists('.docker/djp/djp.libjsonnet')
 
         with open('.docker/djp/djp.libjsonnet') as djp_libjsonnet:
-            assert not '// Edited\n' in djp_libjsonnet.readlines()
+            assert '// Edited\n' not in djp_libjsonnet.readlines()
 
     def test_djp_patch(self, project_loader):
         project_loader("djp_patch")

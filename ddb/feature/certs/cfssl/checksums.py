@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Checksums module
 """
@@ -52,4 +51,4 @@ def validate_checksum_algo(part, content, algo, checksum, content_is_der=False):
     validated_checksum = getattr(hashlib, algo.replace('-', ''))(content).hexdigest()
     checksum = checksum.lower()
     if validated_checksum != checksum:
-        raise IOError("Invalid %s checksum (%s): %s != %s " % (part, algo, checksum, validated_checksum))
+        raise OSError(f"Invalid {part} checksum ({algo}): {checksum} != {validated_checksum} ")

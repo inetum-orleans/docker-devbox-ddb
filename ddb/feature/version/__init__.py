@@ -1,12 +1,13 @@
-# -*- coding: utf-8 -*-
+from collections.abc import Iterable
 from subprocess import CalledProcessError
-from typing import ClassVar, Iterable
+from typing import ClassVar
 
 from dotty_dict import Dotty
 
 from ddb.feature import Feature
-from .schema import VersionSchema
+
 from ...utils.process import run
+from .schema import VersionSchema
 
 
 def is_git_repository():

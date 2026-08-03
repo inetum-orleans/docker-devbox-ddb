@@ -1,7 +1,8 @@
+import contextlib
 import logging
 from abc import ABC, abstractmethod
 from subprocess import CalledProcessError
-from typing import TypeVar, Generic
+from typing import Generic, TypeVar
 
 from ddb.action import Action, InitializableAction
 from ddb.config import config
@@ -68,10 +69,8 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
             resp = self.event_processor(*args, **kwargs)
             if resp is False or resp is None:
                 return None
-            try:
+            with contextlib.suppress(ValueError):
                 args, kwargs = resp
-            except ValueError:
-                pass
 
         context.stack.append(ContextStackItem(self.event_name, self.action, self.to_call, args, kwargs))
         try:

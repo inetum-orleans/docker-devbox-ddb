@@ -8,8 +8,11 @@ from ddb.feature.core import CoreFeature
 from ddb.feature.docker import DockerFeature
 from ddb.feature.jsonnet import JsonnetFeature
 from ddb.feature.traefik import TraefikFeature
-from ddb.feature.traefik.actions import TraefikInstalllCertsAction, TraefikUninstalllCertsAction, \
-    TraefikExtraServicesAction
+from ddb.feature.traefik.actions import (
+    TraefikExtraServicesAction,
+    TraefikInstalllCertsAction,
+    TraefikUninstalllCertsAction,
+)
 
 
 class TestTraefikFeature:
@@ -46,10 +49,10 @@ class TestTraefikFeature:
         assert os.path.exists(os.path.join(config.paths.home, "certs", "dummy.tld.crt"))
 
         with open(os.path.join(config.paths.home, "certs", "dummy.tld.crt")) as crt_file:
-            assert 'crt' == crt_file.read()
+            assert crt_file.read() == 'crt'
 
         with open(os.path.join(config.paths.home, "certs", "dummy.tld.key")) as key_file:
-            assert 'key' == key_file.read()
+            assert key_file.read() == 'key'
 
         assert os.path.exists(os.path.join(config.data['traefik']['config_directory'], "dummy.tld.ssl.toml"))
 

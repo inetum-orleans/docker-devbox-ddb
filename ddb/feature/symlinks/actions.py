@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 import os
-from typing import Union, Iterable, Tuple
+from collections.abc import Iterable
 
 from ddb.action.action import AbstractTemplateAction
 from ddb.config import config
@@ -24,7 +23,7 @@ class SymlinksAction(AbstractTemplateAction):
                               config.data.get("symlinks.excludes"),
                               config.data.get("symlinks.suffixes"))
 
-    def _render_template(self, template: str, target: str) -> Iterable[Tuple[Union[str, bytes, bool], str]]:
+    def _render_template(self, template: str, target: str) -> Iterable[tuple[str | bytes | bool, str]]:
         """
         Create a symbolic link
         """

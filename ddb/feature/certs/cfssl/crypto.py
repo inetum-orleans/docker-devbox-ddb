@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Crypto module
 """
@@ -30,4 +29,4 @@ def convert_pem_to_der(part, content):
     if part == 'certificate_request':
         csr = x509.load_pem_x509_csr(content, default_backend())
         return csr.public_bytes(serialization.Encoding.DER)
-    raise CryptoException('Unknown object type: %s' % part)
+    raise CryptoException(f'Unknown object type: {part}')

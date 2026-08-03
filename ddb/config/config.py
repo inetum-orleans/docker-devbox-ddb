@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
 import os
 from argparse import Namespace
 from collections import namedtuple
+from collections.abc import Iterable
 from copy import deepcopy
 from os.path import exists
 from pathlib import Path
-from typing import Union, Iterable, Dict
 
 import yaml
 
@@ -59,10 +58,11 @@ class Config:  # pylint:disable=too-many-instance-attributes
     """
     # Static default/overrides values for configuration, can be modified from code mainly for tests purpose
     defaults = None
-    overrides = lambda config: config
+    def overrides(config):
+        return config
 
     def __init__(self,
-                 paths: Union[ConfigPaths, None] = None,
+                 paths: ConfigPaths | None = None,
                  env_prefix='DDB',
                  env_override_prefix='DDB_OVERRIDE',
                  filenames=('ddb', 'ddb.local'),
@@ -152,10 +152,7 @@ class Config:  # pylint:disable=too-many-instance-attributes
         """
         Read configuration data from files.
         """
-        if defaults is None:
-            loaded_data = {}
-        else:
-            loaded_data = dict(defaults)
+        loaded_data = {} if defaults is None else dict(defaults)
 
         if files is None:
             files = self.files
@@ -175,7 +172,7 @@ class Config:  # pylint:disable=too-many-instance-attributes
 
         return self.apply_environ_overrides(loaded_data), found_files
 
-    def load_from_data(self, data: Dict):
+    def load_from_data(self, data: dict):
         """
         Load configuration data from readen files.
         """
@@ -226,15 +223,12 @@ class Config:  # pylint:disable=too-many-instance-attributes
 
                 data[name] = self.apply_environ_overrides(value, key_prefix)
         if isinstance(data, list):
-            i = 0
-            for value in data:
+            for i, value in enumerate(data):
                 replace_prefix = prefix + "[" + str(i) + "]"
                 replace_prefix = replace_prefix.upper()
 
                 environ_value = os.environ.get(replace_prefix)
                 if environ_value:
                     data[i] = self.apply_environ_overrides(value, replace_prefix)
-
-                i += 1
 
         return data

@@ -1,15 +1,15 @@
-# -*- coding: utf-8 -*-
 from argparse import ArgumentParser
-from typing import Iterable, ClassVar
+from collections.abc import Iterable
+from typing import ClassVar
 
-from .actions import RunAction
-from .schema import RunSchema
+from ...action import Action
+from ...command import Command
+from ...command.command import LifecycleWithoutHelpCommand
+from ...phase import DefaultPhase, Phase
 from ..feature import Feature
 from ..schema import FeatureSchema
-from ...action import Action
-from ...command import LifecycleCommand, Command
-from ...command.command import LifecycleWithoutHelpCommand
-from ...phase import Phase, DefaultPhase
+from .actions import RunAction
+from .schema import RunSchema
 
 
 class RunFeature(Feature):

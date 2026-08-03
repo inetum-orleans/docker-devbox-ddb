@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
 import os
 
-from git import Repo, InvalidGitRepositoryError
+from git import InvalidGitRepositoryError, Repo
 
 from ddb.action import Action
 from ddb.config import config

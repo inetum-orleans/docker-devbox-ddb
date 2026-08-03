@@ -3,11 +3,11 @@ import os
 import pytest
 from pytest_mock import MockerFixture
 
-from ddb.__main__ import main, load_registered_features
+from ddb.__main__ import load_registered_features, main
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.feature.shell import ShellFeature
-from ddb.feature.smartcd import SmartcdFeature, SmartcdAction, WindowsProjectActivate
+from ddb.feature.smartcd import SmartcdAction, SmartcdFeature, WindowsProjectActivate
 
 
 @pytest.mark.skipif("os.name == 'nt'")

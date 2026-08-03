@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 import json
 import os
 import re
+from collections.abc import Iterable
 from importlib import import_module
-from typing import Tuple, Union, Iterable, Optional
 
 import yaml
 from _jsonnet import evaluate_file  # pylint: disable=no-name-in-module
@@ -12,7 +11,7 @@ from ddb.action.action import AbstractTemplateAction
 from ddb.config import config, migrations
 from ddb.config.flatten import flatten
 from ddb.feature import features
-from ddb.utils.file import TemplateFinder, SingleTemporaryFile
+from ddb.utils.file import SingleTemporaryFile, TemplateFinder
 
 
 class JsonnetAction(AbstractTemplateAction):
@@ -31,7 +30,7 @@ class JsonnetAction(AbstractTemplateAction):
                               config.data.get("jsonnet.excludes"),
                               config.data.get("jsonnet.suffixes"))
 
-    def _render_template(self, template: str, target: str) -> Iterable[Tuple[Union[str, bytes, bool], str]]:
+    def _render_template(self, template: str, target: str) -> Iterable[tuple[str | bytes | bool, str]]:
         """
         Render jsonnet template
         """
@@ -81,7 +80,7 @@ class JsonnetAction(AbstractTemplateAction):
                               template: str,
                               target: str,
                               original_template: str,
-                              render_error: Exception) -> Optional[str]:
+                              render_error: Exception) -> str | None:
         property_name_match = re.match('RUNTIME ERROR: undefined external variable: (.*)\n', str(render_error))
         if property_name_match:
             property_name = property_name_match.group(1)
@@ -91,7 +90,7 @@ class JsonnetAction(AbstractTemplateAction):
             if property_migration and not property_migration.requires_value_migration:
                 property_migration.warn(original_template)
 
-                with open(template, "r", encoding="utf-8") as template_file:
+                with open(template, encoding="utf-8") as template_file:
                     initial_template_data = template_file.read()
                     template_data = initial_template_data
                     template_data = template_data.replace('std.extVar("' + property_migration.old_config_key + '")',
@@ -122,17 +121,16 @@ class JsonnetAction(AbstractTemplateAction):
         ext_vars = {k: v for (k, v) in vars_config.items() if isinstance(v, str)}
         ext_codes = {k: str(v).lower() if isinstance(v, bool) else str(v) if v is not None else "null"
                      for (k, v) in codes_config.items() if not isinstance(v, str)}
-        evaluated = evaluate_file(template_path,
+        return evaluate_file(template_path,
                                   ext_vars=ext_vars,
                                   ext_codes=ext_codes,
                                   jpathdir=os.path.join(os.path.dirname(__file__), "lib"))
-        return evaluated
 
     @staticmethod
     def _parse_multiple_header(template_path, target_path):
         multiple_file_output = False
         multiple_file_dir = None
-        with open(template_path, 'r', encoding="utf-8") as template:
+        with open(template_path, encoding="utf-8") as template:
             first_line = template.readline()
             if first_line.startswith('// multiple-file-output'):
                 multiple_file_output = True

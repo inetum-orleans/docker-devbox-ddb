@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from ddb.cache import register_project_cache, caches
+from ddb.cache import caches, register_project_cache
 
 
 class RemovalCacheSupport:  # pylint:disable=too-many-instance-attributes
@@ -36,7 +36,7 @@ class RemovalCacheSupport:  # pylint:disable=too-many-instance-attributes
         Set current value for given key.
         """
         if key not in self.keys:
-            raise ValueError("Given key '%s' doesn't match any of the supported key %s" % (key, self.keys))
+            raise ValueError(f"Given key '{key}' doesn't match any of the supported key {self.keys}")
         self.cached[key].add(value)
         self.current[key].add(value)
 

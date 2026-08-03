@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-from marshmallow import fields, Schema
+from marshmallow import Schema, fields
 
 from ddb.feature.schema import FeatureSchema
 

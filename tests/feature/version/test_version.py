@@ -1,6 +1,6 @@
 from pytest_mock import MockerFixture
 
-from ddb.__main__ import main, load_registered_features
+from ddb.__main__ import load_registered_features, main
 from ddb.config import config
 from ddb.feature import features
 from ddb.feature.core import CoreFeature

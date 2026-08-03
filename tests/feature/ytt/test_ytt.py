@@ -3,7 +3,7 @@ import os
 import pytest
 
 from ddb.__main__ import load_registered_features, register_actions_in_event_bus
-from ddb.config import migrations, config
+from ddb.config import config, migrations
 from ddb.config.migrations import PropertyMigration
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
@@ -52,10 +52,10 @@ class TestYttAction:
         action.execute()
 
         assert os.path.exists('yaml.yml')
-        with open('yaml.yml', 'r') as f:
+        with open('yaml.yml') as f:
             rendered = f.read()
 
-        with open('yaml.expected.yml', 'r') as f:
+        with open('yaml.expected.yml') as f:
             expected = f.read()
 
         assert rendered == expected
@@ -74,10 +74,10 @@ class TestYttAction:
         action.execute()
 
         assert os.path.exists('variables.yaml')
-        with open('variables.yaml', 'r') as f:
+        with open('variables.yaml') as f:
             rendered = f.read()
 
-        with open('variables.expected.yaml', 'r') as f:
+        with open('variables.expected.yaml') as f:
             expected = f.read()
 
         assert rendered == expected
@@ -112,10 +112,10 @@ class TestYttAction:
         action.execute()
 
         assert os.path.exists('variables.yaml')
-        with open('variables.yaml', 'r') as f:
+        with open('variables.yaml') as f:
             rendered = f.read()
 
-        with open('variables.expected.yaml', 'r') as f:
+        with open('variables.expected.yaml') as f:
             expected = f.read()
 
         assert rendered == expected
@@ -151,18 +151,18 @@ class TestYttAutofix:
         action.execute()
 
         assert os.path.exists('variables.yaml')
-        with open('variables.yaml', 'r') as f:
+        with open('variables.yaml') as f:
             rendered = f.read()
 
-        with open('variables.expected.yaml', 'r') as f:
+        with open('variables.expected.yaml') as f:
             expected = f.read()
 
         assert expected == rendered
 
-        with open('variables.ytt.yaml', 'r') as f:
+        with open('variables.ytt.yaml') as f:
             source = f.read()
 
-        with open('variables.yaml.autofix', 'r') as f:
+        with open('variables.yaml.autofix') as f:
             fixed = f.read()
 
         assert source == fixed

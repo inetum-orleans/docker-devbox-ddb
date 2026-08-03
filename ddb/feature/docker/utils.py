@@ -42,7 +42,7 @@ class DockerComposeControl:
         self.docker_command = shlex.split(docker_command)
         self.docker_compose_command = shlex.split(docker_compose_command)
 
-    def up(self, name: str = None):  # pylint:disable=invalid-name
+    def up(self, name: str | None = None):  # pylint:disable=invalid-name
         """
         Execute docker-compose up -d
         :param name: the name of a specific service to up
@@ -137,4 +137,4 @@ class DockerComposeYamlMissingException(Exception):
 
     def __init__(self):
         super().__init__()
-        self.message = "There is no docker-compose.yml file in current folder ({})".format(os.getcwd())
+        self.message = f"There is no docker-compose.yml file in current folder ({os.getcwd()})"

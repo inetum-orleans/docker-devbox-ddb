@@ -3,7 +3,7 @@ import re
 from _pytest.logging import LogCaptureFixture
 
 from ddb.config import migrations
-from ddb.config.migrations import PropertyMigration, MigrationsDotty
+from ddb.config.migrations import MigrationsDotty, PropertyMigration
 
 
 class TestWarnDeprecatedDotty:

@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
+from collections.abc import Iterable
 from importlib.metadata import entry_points
-from typing import Iterable
 
 from toposort import toposort_flatten
 
+from ..config import config, migrations
 from . import features
 from .certs import CertsFeature
 from .cookiecutter import CookiecutterFeature
@@ -25,8 +25,6 @@ from .symlinks import SymlinksFeature
 from .traefik import TraefikFeature
 from .version import VersionFeature
 from .ytt import YttFeature
-from ..config import config
-from ..config import migrations
 
 _default_available_features = [CertsFeature(),
                                CopyFeature(),
@@ -51,7 +49,7 @@ _default_available_features = [CertsFeature(),
 _available_features = list(_default_available_features)
 
 
-def get_sorted_features(available_features: Iterable[Feature] = None):
+def get_sorted_features(available_features: Iterable[Feature] | None = None):
     """
     Register default features and setuptools entrypoint 'ddb_features' inside features registry.
     Features are registered in order for their dependency to be registered first with a topological sort.
