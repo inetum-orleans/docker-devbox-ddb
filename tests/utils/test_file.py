@@ -7,7 +7,7 @@ from ddb.config import config
 from ddb.feature import features
 from ddb.feature.core import CoreFeature
 from ddb.utils import file
-from ddb.utils.file import FileUtils, FileWalker
+from ddb.utils.file import FileUtils, FileWalker, TemplateFinder
 
 
 class TestHasSameContent:
@@ -35,6 +35,29 @@ class TestFileWalker:
         assert fw._is_included("readme.txt", *fw.includes) is True
         assert fw._is_included("readme.md", *fw.includes) is True
         assert fw._is_included("readme.rst", *fw.includes) is False
+
+
+class TestTemplateFinder:
+    @pytest.mark.parametrize(
+        ("candidate", "expected"),
+        [
+            ("docker-compose.yml.jinja", ("docker-compose.yml", ".jinja")),
+            ("sub/docker-compose.yml.jinja", ("sub/docker-compose.yml", ".jinja")),
+            ("./sub/docker-compose.yml.jinja", ("./sub/docker-compose.yml", ".jinja")),
+            (".gitignore.jinja", (".gitignore", ".jinja")),
+            ("sub.dir/file.jinja", ("sub.dir/file", ".jinja")),
+            ("docker-compose.yml.jsonnet.jinja", ("docker-compose.yml.jsonnet", ".jinja")),
+            (".jinja", (None, None)),
+            ("docker-compose.yml", (None, None)),
+            ("sub.jinja/file.yml", (None, None)),
+            (".gitignore", (None, None)),
+            ("file", (None, None)),
+            ("x.jinja.", ("x.", ".jinja")),
+            ("sub.jinja/", (None, None)),
+        ],
+    )
+    def test_target_and_suffix(self, candidate, expected):
+        assert TemplateFinder._get_target_and_suffix(candidate, [".jinja", ".jsonnet"]) == expected
 
 
 class TestFileUtils:

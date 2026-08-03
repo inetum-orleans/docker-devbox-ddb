@@ -23,6 +23,7 @@ def get_template(template: str) -> Template:
     :param template: the template
     :return:
     """
+    # jinja2.Template.__new__ is typed as returning Any.
     if re.compile("^(https?|file)://").match(template):
         return Template(FileUtils.get_file_content(template))  # type: ignore[no-any-return]
     return Template(template)  # type: ignore[no-any-return]
@@ -136,6 +137,7 @@ class TraefikExtraServicesAction(InitializableAction):
     def destroy(self) -> None:
         if self.removal_cache_support:
             self.removal_cache_support.close()
+            # Reset like __init__ does, initialize() sets it again on the next run.
             self.removal_cache_support = None  # type: ignore[assignment]
 
     @staticmethod

@@ -65,7 +65,7 @@ class CookiecutterAction(Action):
         context.log.success(f"{template['template']} -> {output_dir}")
 
         for patch_path in Path(output_dir).iterdir():
-            if patch_path.suffix == ".patch":
+            if patch_path.name.endswith(".patch"):
                 patch_file = str(patch_path)
                 if patch_path.is_file():
                     context.log.notice("Applying patch %s in %s", patch_file, output_dir)

@@ -44,8 +44,8 @@ class TestPermissionsAction:
 
         assert os.access("script.sh", os.X_OK)
         assert os.access(str(Path("subdirectory") / "another-script.sh"), os.X_OK)
-        assert os.access(str(Path("subdirectory")), os.W_OK)
-        assert not os.access(str(Path("denied")), os.W_OK)
+        assert os.access("subdirectory", os.W_OK)
+        assert not os.access("denied", os.W_OK)
 
     def test_inherit_from_template(self, project_loader):
         project_loader("inherit_from_template")

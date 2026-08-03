@@ -395,8 +395,9 @@ class TemplateFinder(FileWalker):
 
     @staticmethod
     def _get_target_and_suffix(template_candidate: str, suffixes: list[str]) -> tuple[str, str] | tuple[None, None]:
-        ext = Path(template_candidate).suffix
-        basename = template_candidate[: len(template_candidate) - len(ext)] if ext else template_candidate
+        # PTH122: Path.suffix parts ways with splitext on trailing dots and trailing separators,
+        # and candidates are file paths coming from the project.
+        basename, ext = os.path.splitext(template_candidate)  # noqa: PTH122
         if ext in suffixes:
             return basename, ext
 

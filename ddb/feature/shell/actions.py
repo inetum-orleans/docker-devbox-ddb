@@ -269,6 +269,7 @@ class ActivateAction(Action):
 
     def _deactivate(self) -> None:
         deactivate_action = actions.get("shell:" + self.shell.name + ":deactivate")
+        # execute is the conventional entry point of an action, not part of the Action interface.
         deactivate_action.execute()  # type: ignore[attr-defined]
 
     def execute(self) -> None:

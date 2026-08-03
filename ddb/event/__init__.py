@@ -19,6 +19,7 @@ def event(event_name: str) -> Callable[[Callable[P, None]], Callable[P, None]]:
     """
 
     def decorator(function: Callable[P, None]) -> Callable[P, None]:
+        # The name is carried by the callable itself, so bindings can reference events directly.
         function.name = event_name  # type: ignore[attr-defined]
 
         @wraps(function)
@@ -34,4 +35,5 @@ def event_name(declaration: Callable[..., None]) -> str:
     """
     Get the event name carried by a callable declared with the @event decorator.
     """
+    # The attribute is set by the decorator above, out of reach of the type checker.
     return str(declaration.name)  # type: ignore[attr-defined]
