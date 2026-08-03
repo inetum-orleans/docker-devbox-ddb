@@ -128,21 +128,23 @@ def write_files(
 
     if der:
         if certificate_der is not None:
-            generated["certificate_der"] = _write_file(
+            certificate_der_path = _write_file(
                 filenames.get("certificate_der", "%s.der") % output, certificate_der, destination=destination
             )
+            generated["certificate_der"] = certificate_der_path
             if verify_checksum and should_verify_certificate_der:
-                with Path(filenames.get("certificate_der", "%s.der") % output).open("rb") as der_file:
+                with Path(certificate_der_path).open("rb") as der_file:
                     content = der_file.read()
                     validate_checksum("certificate", content, response["sums"]["certificate"], content_is_der=True)
         if certificate_request_der is not None:
-            generated["certificate_request_der"] = _write_file(
+            certificate_request_der_path = _write_file(
                 filenames.get("certificate_request_der", "%s.csr.der") % output,
                 certificate_request_der,
                 destination=destination,
             )
+            generated["certificate_request_der"] = certificate_request_der_path
             if verify_checksum:
-                with Path(filenames.get("certificate_request_der", "%s.csr.der") % output).open("rb") as der_file:
+                with Path(certificate_request_der_path).open("rb") as der_file:
                     content = der_file.read()
                     validate_checksum(
                         "certificate_request", content, response["sums"]["certificate_request"], content_is_der=True
@@ -183,6 +185,6 @@ def write_stdout(
 
     if der:
         if "certificate" in response:
-            print(convert_pem_to_der("certificate", response["certificate"]))
+            print(convert_pem_to_der("certificate", response["certificate"].encode("ascii")))
         if csr and "certificate_request" in response:
-            print(convert_pem_to_der("certificate_request", response["certificate_request"]))
+            print(convert_pem_to_der("certificate_request", response["certificate_request"].encode("ascii")))
