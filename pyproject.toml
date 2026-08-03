@@ -142,6 +142,8 @@ line-length = 120
 target-version = "py311"
 # Vendored code kept as close as possible to its upstream source.
 extend-exclude = ["ddb/feature/docker/lib", "ddb/utils/simpleeval.py", "pytest_docker_compose"]
+# Honour the exclusions even for paths passed explicitly, as pre-commit does.
+force-exclude = true
 
 [tool.ruff.lint]
 select = [

@@ -13,16 +13,17 @@ jobs:
       fail-fast: false
       matrix:
         # Keep this in sync with tox.ini
-        python-version: [ '3.8', '3.9', '3.10', '3.11', '3.12' ]
+        python-version: [ '3.11', '3.12', '3.13', '3.14' ]
 
     steps:
-      - name: Setup python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
 
       - name: Git User config
         run: |
@@ -32,23 +33,18 @@ jobs:
       - name: Install YTT
         run: |
           mkdir -p $HOME/bin
-          curl -fLo $HOME/bin/ytt https://github.com/vmware-tanzu/carvel-ytt/releases/download/v0.31.0/ytt-linux-amd64
+          curl -fLo $HOME/bin/ytt https://github.com/carvel-dev/ytt/releases/download/v0.55.1/ytt-linux-amd64
           echo "$HOME/bin" >> $GITHUB_PATH
           chmod +x $HOME/bin/ytt
 
       - name: Check YTT version
-        run: |
-          ytt --version
+        run: ytt --version
 
-      - name: Install Dependencies
-        run: pip install -e .[dev]
-
-      - name: Pylint
-        run: pylint ddb
+      - name: Sync dependencies
+        run: uv sync --no-dev --group test
 
       - name: Pytest (Coverage)
-        run: |
-          pytest --cov=ddb
+        run: uv run --no-sync pytest --cov=ddb
 
       - name: Codecov
         uses: codecov/codecov-action@v4
@@ -56,22 +52,22 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   ci-macos:
-    # if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     # Tests needs to be fixed.
     if: false
     runs-on: macos-latest
     continue-on-error: true
 
-    name: Python 3.11 (MacOS)
+    name: Python 3.14 (MacOS)
 
     steps:
-      - name: Setup python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.1'
-
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: '3.14'
+          enable-cache: true
 
       - name: Git User config
         run: |
@@ -81,46 +77,33 @@ jobs:
       - name: Install YTT
         run: |
           mkdir -p $HOME/bin
-          curl -fLo $HOME/bin/ytt https://github.com/vmware-tanzu/carvel-ytt/releases/download/v0.31.0/ytt-darwin-amd64
+          curl -fLo $HOME/bin/ytt https://github.com/carvel-dev/ytt/releases/download/v0.55.1/ytt-darwin-amd64
           echo "$HOME/bin" >> $GITHUB_PATH
           chmod +x $HOME/bin/ytt
 
-      - name: Check YTT version
-        run: |
-          ytt --version
-
-      - name: Install Dependencies
-        run: pip install -e .[dev]
-
-      - name: Pylint
-        run: pylint ddb
+      - name: Sync dependencies
+        run: uv sync --no-dev --group test
 
       - name: Pytest (Coverage)
-        run: |
-          pytest --cov=ddb
-
-      - name: Codecov
-        uses: codecov/codecov-action@v4
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: uv run --no-sync pytest --cov=ddb
 
   ci-windows:
-    # if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     # Tests needs to be fixed.
     if: false
     runs-on: windows-latest
     continue-on-error: true
 
-    name: Python 3.11 (Windows)
+    name: Python 3.14 (Windows)
 
     steps:
-      - name: Setup python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: '3.14'
+          enable-cache: true
 
       - name: Git User config
         run: |
@@ -130,72 +113,107 @@ jobs:
       - name: Install YTT
         run: |
           mkdir "$HOME\bin"
-          curl -fLo "$HOME\bin\ytt.exe" https://github.com/vmware-tanzu/carvel-ytt/releases/download/v0.31.0/ytt-windows-amd64.exe
+          curl -fLo "$HOME\bin\ytt.exe" https://github.com/carvel-dev/ytt/releases/download/v0.55.1/ytt-windows-amd64.exe
           echo "$HOME\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          ls "$HOME\bin"
 
-      - name: Check YTT version
-        run: |
-          ytt --version
-
-      - name: Install Dependencies
-        run: |
-          pip install -e .[dev]
-
-      - name: Pylint
-        run: pylint ddb
+      - name: Sync dependencies
+        run: uv sync --no-dev --group test
 
       - name: Pytest (Coverage)
-        run: |
-          pytest --cov=ddb -m "not docker"
+        run: uv run --no-sync pytest --cov=ddb -m "not docker"
 
-      - name: Codecov
-        uses: codecov/codecov-action@v4
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
-  commitlint:
+  pre-commit:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: '3.14'
+          enable-cache: true
+
+      - name: Sync dependencies
+        run: uv sync --group dev
+
+      # Runs the whole .pre-commit-config.yaml (ruff check, ruff format) — the same
+      # hooks developers run locally, so CI and local stay in sync from one config.
+      - name: Run pre-commit
+        run: uv run pre-commit run --all-files --show-diff-on-failure
+
+  commit-messages:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: wagoid/commitlint-github-action@v6
 
-  build-setuptools-linux:
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: '3.14'
+          enable-cache: true
+
+      - name: Sync dependencies
+        run: uv sync --group dev
+
+      # commitizen shares [tool.commitizen] with the local commit-msg hook.
+      - name: Check commit messages
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --quiet origin "${{ github.base_ref }}"
+            range="origin/${{ github.base_ref }}..HEAD"
+          else
+            before="${{ github.event.before }}"
+            if [ -z "$before" ] || [ "$before" = "0000000000000000000000000000000000000000" ] \
+              || ! git cat-file -e "$before^{commit}" 2>/dev/null; then
+              range="HEAD~1..HEAD"
+            else
+              range="$before..${{ github.sha }}"
+            fi
+          fi
+          echo "Checking commit messages in range: $range"
+          uv run --no-sync cz check --rev-range "$range"
+
+  build-python-linux:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     needs: [ ci-linux ]
 
     runs-on: ubuntu-latest
 
-    name: Build (Linux Setuptools)
+    name: Build (Linux Python package)
 
     steps:
-      - name: Setup python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: '3.14'
+          enable-cache: true
 
       - name: Git User config
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "github-actions"
 
-      - name: Install Dependencies
-        run: |
-          pip install -e .[dev]
+      - name: Sync dependencies
+        run: uv sync --group dev
 
+      # Stamps the next version into ddb/__version__.py without committing or
+      # tagging: the release job below owns the actual version commit.
       - name: Bump version
-        run: semantic-release -v DEBUG version
+        run: uv run --no-sync semantic-release -v version --no-commit --no-tag --no-push --no-changelog --skip-build
 
       - name: Build
-        run: python setup.py sdist bdist_wheel
+        run: uv build
 
       - uses: actions/upload-artifact@v4
         with:
@@ -211,33 +229,32 @@ jobs:
     name: Build (Linux Binary)
 
     steps:
-      - name: Setup python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: '3.14'
+          enable-cache: true
 
       - name: Git User config
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "github-actions"
 
-      - name: Install Dependencies
-        run: |
-          pip install -e .[dev]
+      - name: Sync dependencies
+        run: uv sync --group dev
 
       - name: Bump version
-        run: semantic-release -v DEBUG version
+        run: uv run --no-sync semantic-release -v version --no-commit --no-tag --no-push --no-changelog --skip-build
 
       - name: Binary
-        run: pyinstaller --dist ./dist ddb.spec
+        run: uv run --no-sync pyinstaller --dist ./dist ddb.spec
 
       - uses: actions/upload-artifact@v4
-        if: matrix.regex == '0'
         with:
           name: ddb-bin-linux
           path: ./dist
@@ -251,26 +268,27 @@ jobs:
     name: Build (Alpine Binary)
 
     steps:
-      - name: Setup python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: '3.14'
+          enable-cache: true
 
       - name: Git User config
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "github-actions"
 
-      - name: Install python-semantic-release
-        run: pip install "python-semantic-release<8"
+      - name: Sync dependencies
+        run: uv sync --group dev
 
       - name: Bump version
-        run: semantic-release -v DEBUG version
+        run: uv run --no-sync semantic-release -v version --no-commit --no-tag --no-push --no-changelog --skip-build
 
       - name: Build in alpine container
         run: docker build -f .build/Dockerfile.builder.alpine . -t ddb-builder-alpine
@@ -283,44 +301,42 @@ jobs:
           docker rm -v $id
 
       - uses: actions/upload-artifact@v4
-        if: matrix.regex == '0'
         with:
           name: ddb-bin-alpine
           path: ./dist
 
   build-bin-windows:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
-    # needs: [ci-windows]
 
     runs-on: windows-latest
 
     name: Build (Windows)
 
     steps:
-      - name: Setup python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: '3.14'
+          enable-cache: true
 
       - name: Git User config
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "github-actions"
 
-      - name: Install Dependencies
-        run: |
-          pip install -e .[dev]
+      - name: Sync dependencies
+        run: uv sync --group dev
 
       - name: Bump version
-        run: semantic-release -v DEBUG version
+        run: uv run --no-sync semantic-release -v version --no-commit --no-tag --no-push --no-changelog --skip-build
 
       - name: Binary
-        run: pyinstaller --dist .\dist ddb.spec
+        run: uv run --no-sync pyinstaller --dist .\dist ddb.spec
 
       - uses: actions/upload-artifact@v4
         with:
@@ -329,37 +345,36 @@ jobs:
 
   build-bin-macos:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
-    # needs: [ci-macos]
 
     runs-on: macos-latest
 
     name: Build (MacOS)
 
     steps:
-      - name: Setup python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: '3.14'
+          enable-cache: true
 
       - name: Git User config
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "github-actions"
 
-      - name: Install Dependencies
-        run: |
-          pip install -e .[dev]
+      - name: Sync dependencies
+        run: uv sync --group dev
 
       - name: Bump version
-        run: semantic-release -v DEBUG version
+        run: uv run --no-sync semantic-release -v version --no-commit --no-tag --no-push --no-changelog --skip-build
 
       - name: Binary
-        run: pyinstaller --dist ./dist ddb.spec
+        run: uv run --no-sync pyinstaller --dist ./dist ddb.spec
 
       - uses: actions/upload-artifact@v4
         with:
@@ -368,27 +383,34 @@ jobs:
 
   release:
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-    needs: [ commitlint, build-setuptools-linux, build-bin-linux, build-bin-windows, build-bin-macos, build-bin-alpine ]
+    needs: [ commit-messages, pre-commit, build-python-linux, build-bin-linux, build-bin-windows, build-bin-macos, build-bin-alpine ]
 
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
 
     name: Release
 
     steps:
-      - name: Setup python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: '3.14'
+          enable-cache: true
+
       - name: Git User config
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "github-actions"
+
+      - name: Sync dependencies
+        run: uv sync --group dev
 
       - uses: actions/download-artifact@v4
         with:
@@ -403,14 +425,21 @@ jobs:
           mv artifacts/ddb-bin-windows/ddb.exe ./dist/ddb-windows.exe
           mv artifacts/ddb-python/* ./dist
 
-      - name: Install python-semantic-release
-        run: pip install "python-semantic-release<8"
-
-      - name: Publish release
-        run: semantic-release -v DEBUG publish
+      # Commits and tags the new version, generates the changelog and creates the
+      # GitHub release. `build_command = "uv lock"` keeps uv.lock in sync with it.
+      - name: Bump version
+        run: uv run semantic-release -v version
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+
+      - name: Upload to PyPI
+        run: uv publish --token ${{ secrets.PYPI_TOKEN }} dist/*.whl dist/*.tar.gz
+
+      # Attaches ./dist to the GitHub release created above.
+      - name: Publish release
+        run: uv run semantic-release -v publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Merge master to develop
         uses: robotology/gh-action-nightly-merge@v1.5.0
