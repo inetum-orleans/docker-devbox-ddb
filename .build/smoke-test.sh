@@ -11,7 +11,8 @@ if [ -z "$1" ]; then
 fi
 
 ddb="$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
-project="$(mktemp -d)"
+# BSD mktemp, on macOS, wants an explicit template.
+project="$(mktemp -d 2>/dev/null || mktemp -d -t ddb-smoke)"
 
 # Reaches api.github.com, which covers the certificate bundle pyinstaller has to ship.
 "$ddb" --version
