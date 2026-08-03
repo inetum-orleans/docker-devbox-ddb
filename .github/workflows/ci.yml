@@ -52,10 +52,7 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   ci-macos:
-    # Tests needs to be fixed.
-    if: false
     runs-on: macos-latest
-    continue-on-error: true
 
     name: Python 3.14 (MacOS)
 
@@ -85,13 +82,11 @@ jobs:
         run: uv sync --no-dev --group test
 
       - name: Pytest (Coverage)
-        run: uv run --no-sync pytest --cov=ddb
+        # The macOS runners have no docker daemon.
+        run: uv run --no-sync pytest --cov=ddb -m "not docker"
 
   ci-windows:
-    # Tests needs to be fixed.
-    if: false
     runs-on: windows-latest
-    continue-on-error: true
 
     name: Python 3.14 (Windows)
 
