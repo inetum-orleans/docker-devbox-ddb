@@ -1,5 +1,6 @@
 import os
 import shutil
+from pathlib import Path
 
 import pytest
 from _pytest.capture import CaptureFixture
@@ -280,14 +281,14 @@ class TestDockerFeature:
         action = actions.get("docker:emit-docker-compose-config")  # type:EmitDockerComposeConfigAction
         action.execute()
 
-        assert not os.path.exists("node-path")
-        assert os.path.isdir("existing-directory")
-        assert os.path.isdir("new_directory")
-        assert os.path.isfile("existing-file.txt")
-        assert os.path.isfile("new_file")
-        assert os.path.isfile("another_new_file.txt")
+        assert not Path("node-path").exists()
+        assert Path("existing-directory").is_dir()
+        assert Path("new_directory").is_dir()
+        assert Path("existing-file.txt").is_file()
+        assert Path("new_file").is_file()
+        assert Path("another_new_file.txt").is_file()
 
-        with open("existing-file.txt") as f:
+        with Path("existing-file.txt").open() as f:
             assert f.read() == "existing-file.txt"
 
     def test_local_volume_related(self, project_loader):
@@ -300,10 +301,10 @@ class TestDockerFeature:
         action = actions.get("docker:emit-docker-compose-config")  # type:EmitDockerComposeConfigAction
         action.execute()
 
-        assert not os.path.exists("node-path")
-        assert os.path.isdir("new_directory")
-        assert os.path.isdir("child")
-        assert os.path.isdir(os.path.join("new_directory", "some", "child"))
+        assert not Path("node-path").exists()
+        assert Path("new_directory").is_dir()
+        assert Path("child").is_dir()
+        assert (Path("new_directory") / "some" / "child").is_dir()
 
     @pytest.mark.docker
     def test_traefik_cert(self, project_loader, module_scoped_container_getter):
@@ -322,44 +323,44 @@ class TestDockerFeature:
         action = actions.get("docker:emit-docker-compose-config")  # type:EmitDockerComposeConfigAction
         action.execute()
 
-        assert os.path.exists(os.path.join(config.paths.project_home, ".certs", "web.domain.tld.key"))
-        assert os.path.exists(os.path.join(config.paths.project_home, ".certs", "web.domain.tld.crt"))
-        assert os.path.exists(os.path.join(config.paths.home, "certs", "web.domain.tld.key"))
-        assert os.path.exists(os.path.join(config.paths.home, "certs", "web.domain.tld.crt"))
-        assert os.path.exists(os.path.join(config.paths.home, "traefik", "config", "web.domain.tld.ssl.toml"))
+        assert (Path(config.paths.project_home) / ".certs" / "web.domain.tld.key").exists()
+        assert (Path(config.paths.project_home) / ".certs" / "web.domain.tld.crt").exists()
+        assert (Path(config.paths.home) / "certs" / "web.domain.tld.key").exists()
+        assert (Path(config.paths.home) / "certs" / "web.domain.tld.crt").exists()
+        assert (Path(config.paths.home) / "traefik" / "config" / "web.domain.tld.ssl.toml").exists()
 
         shutil.copyfile("docker-compose.removed.yml", "docker-compose.yml")
         action.execute()
 
-        assert not os.path.exists(os.path.join(config.paths.project_home, ".certs", "web.domain.tld.key"))
-        assert not os.path.exists(os.path.join(config.paths.project_home, ".certs", "web.domain.tld.crt"))
-        assert not os.path.exists(os.path.join(config.paths.home, "certs", "web.domain.tld.key"))
-        assert not os.path.exists(os.path.join(config.paths.home, "certs", "web.domain.tld.crt"))
-        assert not os.path.exists(os.path.join(config.paths.home, "traefik", "config", "web.domain.tld.ssl.toml"))
+        assert not (Path(config.paths.project_home) / ".certs" / "web.domain.tld.key").exists()
+        assert not (Path(config.paths.project_home) / ".certs" / "web.domain.tld.crt").exists()
+        assert not (Path(config.paths.home) / "certs" / "web.domain.tld.key").exists()
+        assert not (Path(config.paths.home) / "certs" / "web.domain.tld.crt").exists()
+        assert not (Path(config.paths.home) / "traefik" / "config" / "web.domain.tld.ssl.toml").exists()
 
         shutil.copyfile("docker-compose.original.yml", "docker-compose.yml")
         action.execute()
 
-        assert os.path.exists(os.path.join(config.paths.project_home, ".certs", "web.domain.tld.key"))
-        assert os.path.exists(os.path.join(config.paths.project_home, ".certs", "web.domain.tld.crt"))
-        assert os.path.exists(os.path.join(config.paths.home, "certs", "web.domain.tld.key"))
-        assert os.path.exists(os.path.join(config.paths.home, "certs", "web.domain.tld.crt"))
-        assert os.path.exists(os.path.join(config.paths.home, "traefik", "config", "web.domain.tld.ssl.toml"))
+        assert (Path(config.paths.project_home) / ".certs" / "web.domain.tld.key").exists()
+        assert (Path(config.paths.project_home) / ".certs" / "web.domain.tld.crt").exists()
+        assert (Path(config.paths.home) / "certs" / "web.domain.tld.key").exists()
+        assert (Path(config.paths.home) / "certs" / "web.domain.tld.crt").exists()
+        assert (Path(config.paths.home) / "traefik" / "config" / "web.domain.tld.ssl.toml").exists()
 
         shutil.copyfile("docker-compose.changed.yml", "docker-compose.yml")
         action.execute()
 
-        assert not os.path.exists(os.path.join(config.paths.project_home, ".certs", "web.domain.tld.key"))
-        assert not os.path.exists(os.path.join(config.paths.project_home, ".certs", "web.domain.tld.crt"))
-        assert not os.path.exists(os.path.join(config.paths.home, "certs", "web.domain.tld.key"))
-        assert not os.path.exists(os.path.join(config.paths.home, "certs", "web.domain.tld.crt"))
-        assert not os.path.exists(os.path.join(config.paths.home, "traefik", "config", "web.domain.tld.ssl.toml"))
+        assert not (Path(config.paths.project_home) / ".certs" / "web.domain.tld.key").exists()
+        assert not (Path(config.paths.project_home) / ".certs" / "web.domain.tld.crt").exists()
+        assert not (Path(config.paths.home) / "certs" / "web.domain.tld.key").exists()
+        assert not (Path(config.paths.home) / "certs" / "web.domain.tld.crt").exists()
+        assert not (Path(config.paths.home) / "traefik" / "config" / "web.domain.tld.ssl.toml").exists()
 
-        assert os.path.exists(os.path.join(config.paths.project_home, ".certs", "web-changed.domain.tld.key"))
-        assert os.path.exists(os.path.join(config.paths.project_home, ".certs", "web-changed.domain.tld.crt"))
-        assert os.path.exists(os.path.join(config.paths.home, "certs", "web-changed.domain.tld.key"))
-        assert os.path.exists(os.path.join(config.paths.home, "certs", "web-changed.domain.tld.crt"))
-        assert os.path.exists(os.path.join(config.paths.home, "traefik", "config", "web-changed.domain.tld.ssl.toml"))
+        assert (Path(config.paths.project_home) / ".certs" / "web-changed.domain.tld.key").exists()
+        assert (Path(config.paths.project_home) / ".certs" / "web-changed.domain.tld.crt").exists()
+        assert (Path(config.paths.home) / "certs" / "web-changed.domain.tld.key").exists()
+        assert (Path(config.paths.home) / "certs" / "web-changed.domain.tld.crt").exists()
+        assert (Path(config.paths.home) / "traefik" / "config" / "web-changed.domain.tld.ssl.toml").exists()
 
 
 class TestDockerDisplayInfoAction:

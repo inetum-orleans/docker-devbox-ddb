@@ -1,6 +1,6 @@
-import os
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
+from pathlib import Path
 
 from ddb.cache import caches, register_project_cache
 from ddb.config import config
@@ -8,6 +8,7 @@ from ddb.context import context
 from ddb.event import events
 from ddb.registry import RegistryObject
 from ddb.utils.file import TemplateFinder, copy_if_different, force_remove, write_if_different
+from ddb.utils.path import absolute_path
 
 
 class EventBinding:
@@ -163,7 +164,7 @@ class AbstractTemplateAction(InitializableAction, ABC):
         """
         Delete a rendered template.
         """
-        if os.path.exists(target):
+        if Path(target).exists():
             force_remove(target)
             context.log.warning("%s removed", target)
             caches.get(self._cache_key).pop(target)
@@ -173,7 +174,7 @@ class AbstractTemplateAction(InitializableAction, ABC):
         """
         Render a template.
         """
-        if os.path.abspath(os.path.join(os.getcwd(), target)) in config.files:
+        if absolute_path(target) in config.files:
             # Never write a file that match ddb configuration file
             return
 
@@ -218,12 +219,12 @@ class AbstractTemplateAction(InitializableAction, ABC):
         rendered = caches.get(self._cache_key).get(target)
         if rendered is None:
             return True
-        if not os.path.exists(target):
+        if not Path(target).exists():
             caches.get(self._cache_key).pop(target)
             return True
         is_bynary = isinstance(rendered, (bytes, bytearray))
         read_encoding = None if is_bynary else "utf-8"
-        with open(target, mode="rb" if is_bynary else "r", encoding=read_encoding) as read_file:
+        with Path(target).open(mode="rb" if is_bynary else "r", encoding=read_encoding) as read_file:
             existing_data = read_file.read()
         return existing_data != rendered
 

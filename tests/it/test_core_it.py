@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import responses
@@ -207,7 +206,7 @@ class TestCore:
         exceptions = main(["configure"])
 
         assert not exceptions
-        assert os.path.exists("test")
+        assert Path("test").exists()
 
     def test_required_version_lt(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
         mocker.patch("ddb.feature.core.actions.get_current_version", lambda *args, **kwargs: "1.2.9")
@@ -222,7 +221,7 @@ class TestCore:
         assert "This project requires ddb 1.3.0+. Current version is 1.2.9." in outerr.err
         assert outerr.out == ""
 
-        assert not os.path.exists("test")
+        assert not Path("test").exists()
 
     def test_required_version_lt_binary(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
         mocker.patch("ddb.feature.core.actions.is_binary", lambda *args, **kwargs: True)
@@ -242,7 +241,7 @@ class TestCore:
         assert "This project requires ddb 1.3.0+. Current version is 1.2.9." in outerr.err
         assert outerr.out == ""
 
-        assert not os.path.exists("test")
+        assert not Path("test").exists()
 
     def test_required_version_gt(self, project_loader, capsys: CaptureFixture, mocker: MockerFixture):
         mocker.patch("ddb.feature.core.actions.get_current_version", lambda *args, **kwargs: "1.3.1")
@@ -252,4 +251,4 @@ class TestCore:
         exceptions = main(["configure"])
 
         assert not exceptions
-        assert os.path.exists("test")
+        assert Path("test").exists()

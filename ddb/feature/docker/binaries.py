@@ -2,6 +2,7 @@ import os
 import posixpath
 import shlex
 from collections.abc import Iterable
+from pathlib import Path
 
 from ddb.binary.binary import AbstractBinary
 from ddb.config import config
@@ -59,17 +60,16 @@ class DockerBinary(AbstractBinary):
         }
 
     def command(self, *args) -> Iterable[str]:
-        cwd = config.cwd if config.cwd else os.getcwd()
+        cwd = config.cwd if config.cwd else str(Path.cwd())
         real_cwd = os.path.realpath(cwd)
         real_project_home = os.path.realpath(config.paths.project_home)
-        project_relpath = os.path.relpath(config.paths.project_home, config.cwd if config.cwd else os.getcwd())
+        project_relpath = os.path.relpath(config.paths.project_home, cwd)
+        # PTH118: the joined path lands in the command line printed by `ddb run` and in the
+        # generated shims, where Path would drop the leading `./` of a relative project path.
+        compose_file = os.path.join(project_relpath, "docker-compose.yml")  # noqa: PTH118
 
         if real_cwd.startswith(real_project_home):
-            params = (
-                ["exec"]
-                if hasattr(self, "exe") and self.exe
-                else ["-f", os.path.join(project_relpath, "docker-compose.yml"), "run", "--rm"]
-            )
+            params = ["exec"] if hasattr(self, "exe") and self.exe else ["-f", compose_file, "run", "--rm"]
 
             if self.workdir:
                 relpath = os.path.relpath(cwd, config.paths.project_home)
@@ -77,7 +77,7 @@ class DockerBinary(AbstractBinary):
                 params.append(f"--workdir={container_workdir}")
         else:
             # cwd is outside of project home.
-            params = ["-f", os.path.join(project_relpath, "docker-compose.yml"), "run", "--rm"]
+            params = ["-f", compose_file, "run", "--rm"]
             if self.workdir:
                 mapped_cwd = get_mapped_path(real_cwd)
                 params.append(f"--volume={mapped_cwd}:{self.workdir}")

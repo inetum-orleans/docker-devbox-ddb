@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import docker
 import pytest
@@ -54,22 +54,22 @@ class TestFixuidFeature:
         features.register(FixuidFeature())
         load_registered_features()
 
-        with open("docker-compose.yml") as config_file:
+        with Path("docker-compose.yml").open() as config_file:
             config = yaml.load(config_file, yaml.SafeLoader)
 
         action = FixuidDockerComposeAction()
         action.execute(docker_compose_config=config)
 
-        with open(os.path.join("docker", "Dockerfile.expected")) as f:
+        with (Path("docker") / "Dockerfile.expected").open() as f:
             expected = f.read()
-        with open(os.path.join("docker", "Dockerfile")) as f:
+        with (Path("docker") / "Dockerfile").open() as f:
             content = f.read()
         assert content == expected
 
         if project in ["from-php-missing-configuration"]:
-            assert not os.path.exists(os.path.join("docker", "fixuid.tar.gz"))
+            assert not (Path("docker") / "fixuid.tar.gz").exists()
         else:
-            assert os.path.exists(os.path.join("docker", "fixuid.tar.gz"))
+            assert (Path("docker") / "fixuid.tar.gz").exists()
 
         if "scratch" not in project:
             client = docker.from_env()
@@ -84,29 +84,29 @@ class TestFixuidFeature:
         load_registered_features()
         register_actions_in_event_bus(fail_fast=True)
 
-        with open("docker-compose.yml") as config_file:
+        with Path("docker-compose.yml").open() as config_file:
             config = yaml.load(config_file, yaml.SafeLoader)
 
         events.docker.docker_compose_config(config)
 
-        with open(os.path.join("docker", "Dockerfile.expected")) as f:
+        with (Path("docker") / "Dockerfile.expected").open() as f:
             expected = f.read()
-        with open(os.path.join("docker", "Dockerfile")) as f:
+        with (Path("docker") / "Dockerfile").open() as f:
             content = f.read()
         assert content == expected
 
-        assert os.path.exists(os.path.join("docker", "fixuid.tar.gz"))
+        assert (Path("docker") / "fixuid.tar.gz").exists()
 
-        os.remove(os.path.join("docker", "fixuid.yml"))
-        events.file.deleted(os.path.join("docker", "fixuid.yml"))
+        (Path("docker") / "fixuid.yml").unlink()
+        events.file.deleted(str(Path("docker") / "fixuid.yml"))
 
-        with open(os.path.join("docker", "Dockerfile.removed.expected")) as f:
+        with (Path("docker") / "Dockerfile.removed.expected").open() as f:
             expected = f.read()
-        with open(os.path.join("docker", "Dockerfile")) as f:
+        with (Path("docker") / "Dockerfile").open() as f:
             content = f.read()
         assert content == expected
 
-        assert not os.path.exists(os.path.join("docker", "fixuid.tar.gz"))
+        assert not (Path("docker") / "fixuid.tar.gz").exists()
 
     def test_no_fixuid(self, project_loader):
         project_loader("no-fixuid")
@@ -116,18 +116,18 @@ class TestFixuidFeature:
         load_registered_features()
         register_actions_in_event_bus(fail_fast=True)
 
-        with open("docker-compose.yml") as config_file:
+        with Path("docker-compose.yml").open() as config_file:
             config = yaml.load(config_file, yaml.SafeLoader)
 
         events.docker.docker_compose_config(config)
 
-        with open(os.path.join("docker", "Dockerfile.expected")) as f:
+        with (Path("docker") / "Dockerfile.expected").open() as f:
             expected = f.read()
-        with open(os.path.join("docker", "Dockerfile")) as f:
+        with (Path("docker") / "Dockerfile").open() as f:
             content = f.read()
         assert content == expected
 
-        assert not os.path.exists(os.path.join("docker", "fixuid.tar.gz"))
+        assert not (Path("docker") / "fixuid.tar.gz").exists()
 
     def test_fixuid_manual(self, project_loader):
         project_loader("fixuid-manual")
@@ -137,18 +137,18 @@ class TestFixuidFeature:
         load_registered_features()
         register_actions_in_event_bus(fail_fast=True)
 
-        with open("docker-compose.yml") as config_file:
+        with Path("docker-compose.yml").open() as config_file:
             config = yaml.load(config_file, yaml.SafeLoader)
 
         events.docker.docker_compose_config(config)
 
-        with open(os.path.join("docker", "Dockerfile.expected")) as f:
+        with (Path("docker") / "Dockerfile.expected").open() as f:
             expected = f.read()
-        with open(os.path.join("docker", "Dockerfile")) as f:
+        with (Path("docker") / "Dockerfile").open() as f:
             content = f.read()
         assert content == expected
 
-        assert os.path.exists(os.path.join("docker", "fixuid.tar.gz"))
+        assert (Path("docker") / "fixuid.tar.gz").exists()
 
     def test_fixuid_manual_install(self, project_loader):
         project_loader("fixuid-manual-install")
@@ -158,18 +158,18 @@ class TestFixuidFeature:
         load_registered_features()
         register_actions_in_event_bus(fail_fast=True)
 
-        with open("docker-compose.yml") as config_file:
+        with Path("docker-compose.yml").open() as config_file:
             config = yaml.load(config_file, yaml.SafeLoader)
 
         events.docker.docker_compose_config(config)
 
-        with open(os.path.join("docker", "Dockerfile.expected")) as f:
+        with (Path("docker") / "Dockerfile.expected").open() as f:
             expected = f.read()
-        with open(os.path.join("docker", "Dockerfile")) as f:
+        with (Path("docker") / "Dockerfile").open() as f:
             content = f.read()
         assert content == expected
 
-        assert os.path.exists(os.path.join("docker", "fixuid.tar.gz"))
+        assert (Path("docker") / "fixuid.tar.gz").exists()
 
     def test_fixuid_manual_entrypoint(self, project_loader):
         project_loader("fixuid-manual-entrypoint")
@@ -179,15 +179,15 @@ class TestFixuidFeature:
         load_registered_features()
         register_actions_in_event_bus(fail_fast=True)
 
-        with open("docker-compose.yml") as config_file:
+        with Path("docker-compose.yml").open() as config_file:
             config = yaml.load(config_file, yaml.SafeLoader)
 
         events.docker.docker_compose_config(config)
 
-        with open(os.path.join("docker", "Dockerfile.expected")) as f:
+        with (Path("docker") / "Dockerfile.expected").open() as f:
             expected = f.read()
-        with open(os.path.join("docker", "Dockerfile")) as f:
+        with (Path("docker") / "Dockerfile").open() as f:
             content = f.read()
         assert content == expected
 
-        assert os.path.exists(os.path.join("docker", "fixuid.tar.gz"))
+        assert (Path("docker") / "fixuid.tar.gz").exists()

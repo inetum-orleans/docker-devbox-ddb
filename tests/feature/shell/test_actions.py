@@ -1,6 +1,7 @@
 import os
 import re
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 from _pytest.capture import CaptureFixture
 
@@ -52,7 +53,7 @@ class ActivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, encoding="utf-8") as file:
+        with Path(filepath).open(encoding="utf-8") as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
@@ -77,7 +78,7 @@ class ActivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, encoding="utf-8") as file:
+        with Path(filepath).open(encoding="utf-8") as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
@@ -108,7 +109,7 @@ class ActivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, encoding="utf-8") as file:
+        with Path(filepath).open(encoding="utf-8") as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
@@ -117,8 +118,8 @@ class ActivateActionBase(ABC):
         system_path = env.get("PATH", "")
         first = system_path.split(os.pathsep)[0]
 
-        assert first == os.path.normpath(os.path.join(os.getcwd(), "./bin")) or first == os.path.normpath(
-            os.path.join(os.getcwd(), "./.bin")
+        assert first == os.path.normpath(str(Path.cwd() / "./bin")) or first == os.path.normpath(
+            str(Path.cwd() / "./.bin")
         )
 
         os.environ.update(env)
@@ -131,7 +132,7 @@ class ActivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, encoding="utf-8") as file:
+        with Path(filepath).open(encoding="utf-8") as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
@@ -140,8 +141,8 @@ class ActivateActionBase(ABC):
         system_path = env.get("PATH", "").split(os.pathsep)
         first = system_path[0]
 
-        assert first != os.path.normpath(os.path.join(os.getcwd(), "./bin")) or first != os.path.normpath(
-            os.path.join(os.getcwd(), "./.bin")
+        assert first != os.path.normpath(str(Path.cwd() / "./bin")) or first != os.path.normpath(
+            str(Path.cwd() / "./.bin")
         )
 
     def test_run_activate_deactivate_project_prepend_false(self, capsys: CaptureFixture, project_loader):
@@ -159,7 +160,7 @@ class ActivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, encoding="utf-8") as file:
+        with Path(filepath).open(encoding="utf-8") as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
@@ -168,8 +169,8 @@ class ActivateActionBase(ABC):
         system_path = env.get("PATH", "").split(os.pathsep)
         last = system_path[-1]
 
-        assert last == os.path.normpath(os.path.join(os.getcwd(), "./bin")) or last == os.path.normpath(
-            os.path.join(os.getcwd(), "./.bin")
+        assert last == os.path.normpath(str(Path.cwd() / "./bin")) or last == os.path.normpath(
+            str(Path.cwd() / "./.bin")
         )
 
         os.environ.update(env)
@@ -182,7 +183,7 @@ class ActivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, encoding="utf-8") as file:
+        with Path(filepath).open(encoding="utf-8") as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
@@ -191,8 +192,8 @@ class ActivateActionBase(ABC):
         system_path = env.get("PATH", "").split(os.pathsep)
         last = system_path[-1]
 
-        assert last != os.path.normpath(os.path.join(os.getcwd(), "./bin")) or last != os.path.normpath(
-            os.path.join(os.getcwd(), "./.bin")
+        assert last != os.path.normpath(str(Path.cwd() / "./bin")) or last != os.path.normpath(
+            str(Path.cwd() / "./.bin")
         )
 
     def test_empty_project_main_aliases(self, project_loader):
@@ -201,10 +202,10 @@ class ActivateActionBase(ABC):
         main(["configure"])
 
         alias = "dc.bat" if os.name == "nt" else "dc"
-        assert os.path.exists(os.path.join("bin", alias))
-        assert not os.path.exists(os.path.join(config.paths.home, "bin", alias))
+        assert (Path("bin") / alias).exists()
+        assert not (Path(config.paths.home) / "bin" / alias).exists()
 
-        with open(os.path.join("bin", alias)) as f:
+        with (Path("bin") / alias).open() as f:
             content = f.read()
             if os.name != "nt":
                 assert 'docker-compose "$@"' in content
@@ -217,11 +218,11 @@ class ActivateActionBase(ABC):
 
         alias = "dc.bat" if os.name == "nt" else "dc"
 
-        assert not os.path.exists(os.path.join(".bin", alias))
-        assert os.path.exists(os.path.join(config.paths.home, ".bin", alias))
+        assert not (Path(".bin") / alias).exists()
+        assert (Path(config.paths.home) / ".bin" / alias).exists()
         assert not expect_gitignore(".gitignore", "../home/.bin/dc")
 
-        with open(os.path.join(config.paths.home, ".bin", alias)) as f:
+        with (Path(config.paths.home) / ".bin" / alias).open() as f:
             content = f.read()
             if os.name != "nt":
                 assert 'docker-compose "$@"' in content
@@ -230,13 +231,13 @@ class ActivateActionBase(ABC):
     def test_global_aliases_projects_in_home(self, project_loader, data_dir):
         def project_in_home_config_provider(root_dir):
             paths = ConfigPaths(
-                ddb_home=os.path.join(root_dir, "ddb_home"),
-                home=os.path.join(root_dir, "home"),
-                user_home=os.path.join(root_dir, "user_home"),
-                project_home=os.path.join(root_dir, "home", "project"),
+                ddb_home=str(Path(root_dir) / "ddb_home"),
+                home=str(Path(root_dir) / "home"),
+                user_home=str(Path(root_dir) / "user_home"),
+                project_home=str(Path(root_dir) / "home" / "project"),
             )
 
-            if not [path for path in paths if os.path.isdir(path)]:
+            if not [path for path in paths if Path(path).is_dir()]:
                 paths = ConfigPaths(ddb_home=None, home=None, user_home=None, project_home=root_dir)
 
             config.paths = paths
@@ -250,11 +251,11 @@ class ActivateActionBase(ABC):
 
         alias = "dc.bat" if os.name == "nt" else "dc"
 
-        assert not os.path.exists(os.path.join(".bin", alias))
-        assert os.path.exists(os.path.join(config.paths.home, ".bin", alias))
+        assert not (Path(".bin") / alias).exists()
+        assert (Path(config.paths.home) / ".bin" / alias).exists()
         assert not expect_gitignore(".gitignore", "../home/.bin/dc")
 
-        with open(os.path.join(config.paths.home, ".bin", alias)) as f:
+        with (Path(config.paths.home) / ".bin" / alias).open() as f:
             content = f.read()
             if os.name != "nt":
                 assert 'docker-compose "$@"' in content
@@ -325,7 +326,7 @@ class DeactivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, encoding="utf-8") as file:
+        with Path(filepath).open(encoding="utf-8") as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
@@ -353,7 +354,7 @@ class DeactivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, encoding="utf-8") as file:
+        with Path(filepath).open(encoding="utf-8") as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)
@@ -391,7 +392,7 @@ class DeactivateActionBase(ABC):
         assert not capture.err
 
         filepath = re.match(self.filepath_regex, capture.out).group(1)
-        with open(filepath, encoding="utf-8") as file:
+        with Path(filepath).open(encoding="utf-8") as file:
             script = file.read()
 
         export_match = re.findall(self.export_regex, script, re.MULTILINE)

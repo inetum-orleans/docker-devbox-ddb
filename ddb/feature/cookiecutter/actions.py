@@ -1,5 +1,6 @@
 import contextlib
 import os
+from pathlib import Path
 
 import patch
 from cookiecutter.config import DEFAULT_CONFIG
@@ -61,10 +62,10 @@ class CookiecutterAction(Action):
 
         context.log.success(f"{template['template']} -> {output_dir}")
 
-        for patch_file in os.listdir(output_dir):
-            if patch_file.endswith(".patch"):
-                patch_file = os.path.join(output_dir, patch_file)
-                if os.path.isfile(patch_file):
+        for patch_path in Path(output_dir).iterdir():
+            if patch_path.suffix == ".patch":
+                patch_file = str(patch_path)
+                if patch_path.is_file():
                     context.log.notice("Applying patch %s in %s", patch_file, output_dir)
                     try:
                         pset = patch.fromfile(patch_file)

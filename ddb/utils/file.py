@@ -18,7 +18,7 @@ def has_same_content(filename1: str, filename2: str, read_mode="rb") -> bool:
     """
     Check if the content of two files are same.
     """
-    with open(filename1, mode=read_mode) as file1, open(filename2, mode=read_mode) as file2:
+    with Path(filename1).open(mode=read_mode) as file1, Path(filename2).open(mode=read_mode) as file2:
         return file1.read() == file2.read()
 
 
@@ -30,9 +30,9 @@ def write_if_different(file, data, read_mode="r", write_mode="w", log_source=Non
         read_encoding = "utf-8" if "b" not in read_mode else None  # TODO: make default encoding configurable
         write_encoding = "utf-8" if "b" not in write_mode else None
 
-        if os.path.exists(file):
+        if Path(file).exists():
             try:
-                with open(file, mode=read_mode, encoding=read_encoding, **kwargs) as read_file:
+                with Path(file).open(mode=read_mode, encoding=read_encoding, **kwargs) as read_file:
                     existing_data = read_file.read()
             except OSError:
                 shutil.rmtree(file)
@@ -44,16 +44,16 @@ def write_if_different(file, data, read_mode="r", write_mode="w", log_source=Non
             context.log.notice("%s -> %s", log_source if log_source else "", file)
             return False
 
-        if not os.access(file, os.W_OK) and os.path.isfile(file):
+        if not os.access(file, os.W_OK) and Path(file).is_file():
             chmod(file, "+w", logging=False)
-        with open(file, mode=write_mode, encoding=write_encoding, **kwargs) as write_file:
+        with Path(file).open(mode=write_mode, encoding=write_encoding, **kwargs) as write_file:
             write_file.write(data)
 
         context.log.success("%s -> %s", log_source if log_source else "", file)
 
         return True
     finally:
-        if readonly and os.path.isfile(file):
+        if readonly and Path(file).is_file():
             chmod(file, "+r", logging=False)
 
 
@@ -65,14 +65,14 @@ def copy_if_different(source, target, read_mode="r", write_mode="w", *, log=Fals
         read_encoding = "utf-8" if "b" not in read_mode else None  # TODO: make default encoding configurable
         write_encoding = "utf-8" if "b" not in write_mode else None
 
-        if os.path.exists(source):
-            with open(source, mode=read_mode, encoding=read_encoding, **kwargs) as read_file:
+        if Path(source).exists():
+            with Path(source).open(mode=read_mode, encoding=read_encoding, **kwargs) as read_file:
                 source_data = read_file.read()
         else:
             source_data = None
 
-        if os.path.exists(target):
-            with open(target, mode=read_mode, encoding=read_encoding, **kwargs) as read_file:
+        if Path(target).exists():
+            with Path(target).open(mode=read_mode, encoding=read_encoding, **kwargs) as read_file:
                 target_data = read_file.read()
         else:
             target_data = None
@@ -82,9 +82,9 @@ def copy_if_different(source, target, read_mode="r", write_mode="w", *, log=Fals
                 context.log.notice("%s -> %s", source, target)
             return False
 
-        if not os.access(target, os.W_OK) and os.path.exists(target):
+        if not os.access(target, os.W_OK) and Path(target).exists():
             chmod(target, "+w")
-        with open(target, mode=write_mode, encoding=write_encoding, **kwargs) as write_file:
+        with Path(target).open(mode=write_mode, encoding=write_encoding, **kwargs) as write_file:
             write_file.write(source_data)
 
         if log:
@@ -92,7 +92,7 @@ def copy_if_different(source, target, read_mode="r", write_mode="w", *, log=Fals
 
         return True
     finally:
-        if readonly and os.path.isfile(target):
+        if readonly and Path(target).is_file():
             chmod(target, "+r", logging=False)
 
 
@@ -101,11 +101,11 @@ def force_remove(file: str, *, silent=False):
     Remove a file, trying to unset readonly flag if a PermissionError occurs.
     """
     try:
-        os.remove(file)
+        Path(file).unlink()
     except PermissionError:
         # On windows, removing a readonly file raise this error.
         chmod(file, "+w", logging=False)
-        os.remove(file)
+        Path(file).unlink()
     except FileNotFoundError:
         if not silent:
             context.log.warning("%s can't be removed because it's already absent", file)
@@ -119,7 +119,7 @@ def chmod(file: str, mode: str, *, logging=True):
     if old_mode != new_mode:
         if logging:
             context.log.success("chmod %s %s", mode, file)
-        os.chmod(file, new_mode)
+        Path(file).chmod(new_mode)
     else:
         if logging:
             context.log.notice("chmod %s %s", mode, file)
@@ -151,9 +151,9 @@ class FileUtils:
         :return:
         """
         file_path = file_path.replace("file://", "")
-        if not os.path.isabs(file_path):
-            file_path = os.path.join(config.path.project_home, file_path)
-        with open(file_path, "rb") as file:
+        if not Path(file_path).is_absolute():
+            file_path = str(Path(config.path.project_home) / file_path)
+        with Path(file_path).open("rb") as file:
             return file.read().decode("utf-8")
 
 
@@ -292,7 +292,9 @@ class FileWalker:
 
     @staticmethod
     def _join(parent: str, child: str):
-        return os.path.join(parent, child) if parent != "." else child
+        # PTH118: os.walk yields "./sub" as root, and the walked paths are published as is
+        # through file:found, cached and written to .gitignore; Path would drop the "./".
+        return os.path.join(parent, child) if parent != "." else child  # noqa: PTH118
 
     @staticmethod
     def re_compile_patterns(*patterns: str):
@@ -370,7 +372,8 @@ class TemplateFinder(FileWalker):
 
     @staticmethod
     def _get_target_and_suffix(template_candidate: str, suffixes: list[str]) -> tuple[str, str] | tuple[None, None]:
-        basename, ext = os.path.splitext(template_candidate)
+        ext = Path(template_candidate).suffix
+        basename = template_candidate[: len(template_candidate) - len(ext)] if ext else template_candidate
         if ext in suffixes:
             return basename, ext
 
@@ -389,7 +392,7 @@ def get_single_temporary_file_directory(*args):
     """
     Get directory for SingleTemporaryFile *args.
     """
-    return os.path.join(gettempdir(), *args)
+    return str(Path(gettempdir()).joinpath(*args))
 
 
 class SingleTemporaryFile:
@@ -400,7 +403,7 @@ class SingleTemporaryFile:
 
     def __init__(self, *args, **kwargs):
         self.tempdir = get_single_temporary_file_directory(*args)
-        os.makedirs(self.tempdir, exist_ok=True)
+        Path(self.tempdir).mkdir(parents=True, exist_ok=True)
 
         if "dir" in kwargs:
             kwargs.pop("dir")
@@ -417,7 +420,6 @@ class SingleTemporaryFile:
         try:
             return self.named_temporary_file.__exit__(exc_type, exc_value, exc_traceback)
         finally:
-            for previous_temporary_file in os.listdir(self.tempdir):
-                previous_temporary_filepath = os.path.join(self.tempdir, previous_temporary_file)
-                if previous_temporary_filepath != tmp_filepath:
-                    os.remove(previous_temporary_filepath)
+            for previous_temporary_file in Path(self.tempdir).iterdir():
+                if str(previous_temporary_file) != tmp_filepath:
+                    previous_temporary_file.unlink()

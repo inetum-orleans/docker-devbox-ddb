@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 from ddb.__main__ import load_registered_features
 from ddb.feature import features
@@ -25,5 +25,5 @@ class TestCookiecutterAction:
         action = CookiecutterAction()
         action.execute()
 
-        assert os.path.isdir("my_awesome_project")
-        assert os.path.isfile(os.path.join("my_awesome_project", "pyproject.toml"))
+        assert Path("my_awesome_project").is_dir()
+        assert (Path("my_awesome_project") / "pyproject.toml").is_file()

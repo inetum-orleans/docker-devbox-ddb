@@ -179,6 +179,7 @@ select = [
     "C90",  # mccabe complexity
     "DTZ",  # flake8-datetimez
     "FBT",  # flake8-boolean-trap
+    "PTH",  # flake8-use-pathlib
     "LOG",  # flake8-logging
     "G",    # flake8-logging-format
 ]

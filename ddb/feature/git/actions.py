@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from git import InvalidGitRepositoryError, Repo
 
@@ -48,7 +49,7 @@ class FixFilePermissionsAction(Action):
         for file_data in repo.git.ls_files(s=True).splitlines():
             file_config, file_path = file_data.split("\t")
             git_mode = file_config.split(" ")[0]
-            file_full_path = os.path.join(repo.working_dir, file_path)
+            file_full_path = str(Path(repo.working_dir) / file_path)
             FixFilePermissionsAction.update_mode(file_full_path, git_mode)
 
         for submodule in repo.submodules:
@@ -63,7 +64,7 @@ class FixFilePermissionsAction(Action):
         :param git_mode: the chmod to apply
         :return:
         """
-        if os.path.isdir(path):
+        if Path(path).is_dir():
             return
 
         if git_mode[-4:] == "0755" and not os.access(path, os.X_OK):

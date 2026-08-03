@@ -2,6 +2,7 @@ import os
 import re
 import tempfile
 from collections.abc import Iterable
+from pathlib import Path
 
 import yaml
 
@@ -58,7 +59,7 @@ class YttAction(AbstractTemplateAction):
             includes,
             [],
             config.data["ytt.depends_suffixes"],
-            os.path.dirname(target),
+            str(Path(target).parent),
             recursive=False,
             skip_processed_targets=False,
         )
@@ -89,7 +90,7 @@ class YttAction(AbstractTemplateAction):
 
             yield rendered, target
         finally:
-            os.unlink(yaml_config_file.name)
+            Path(yaml_config_file.name).unlink()
 
     def _autofix_render_error(
         self, template: str, target: str, original_template: str, render_error: Exception
@@ -113,7 +114,7 @@ class YttAction(AbstractTemplateAction):
                     property_migration_set.add(property_migration)
 
         if property_migration_set:
-            with open(template, encoding="utf-8") as template_file:
+            with Path(template).open(encoding="utf-8") as template_file:
                 initial_template_data = template_file.read()
                 template_data = initial_template_data
 
@@ -134,7 +135,7 @@ class YttAction(AbstractTemplateAction):
                     "ytt",
                     mode="w",
                     prefix="",
-                    suffix="." + os.path.basename(original_template),
+                    suffix="." + Path(original_template).name,
                     encoding="utf-8",
                 ) as tmp_file:
                     tmp_file.write(template_data)

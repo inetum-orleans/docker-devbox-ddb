@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import yaml
 
@@ -14,25 +14,25 @@ class TestFilesGenerated:
 
         main(["activate"])
 
-        assert os.path.exists("test.dev.yml.jsonnet")
-        assert not os.path.exists("test.dev.yml.jinja")
-        with open("test.dev.yml.jsonnet") as dockerfile:
+        assert Path("test.dev.yml.jsonnet").exists()
+        assert not Path("test.dev.yml.jinja").exists()
+        with Path("test.dev.yml.jsonnet").open() as dockerfile:
             data = dockerfile.read()
             assert data == '{["e" + "n" + "v"]: "dev"}\n'
 
-        assert os.path.exists("test.dev.yml")
-        with open("test.dev.yml") as dockerfile:
+        assert Path("test.dev.yml").exists()
+        with Path("test.dev.yml").open() as dockerfile:
             data = dockerfile.read()
             assert yaml.load(data, yaml.SafeLoader) == {"env": "dev"}
 
-        assert os.path.exists("test.yml")
-        with open("test.yml") as dockerfile:
+        assert Path("test.yml").exists()
+        with Path("test.yml").open() as dockerfile:
             data = dockerfile.read()
             assert yaml.load(data, yaml.SafeLoader) == {"env": "dev"}
 
-        assert os.path.islink("test.yml")
+        assert Path("test.yml").is_symlink()
 
-        assert os.path.exists(".gitignore")
+        assert Path(".gitignore").exists()
         assert expect_gitignore(".gitignore", "/test.dev.yml.jsonnet", "/test.dev.yml", "/test.yml")
 
     def test_ensure_chaining_with_custom_dependencies(self, project_loader):
@@ -42,38 +42,38 @@ class TestFilesGenerated:
 
         main(["activate"])
 
-        assert not os.path.exists("test.dev.yml.jsonnet")
-        assert os.path.exists("test.dev.yml.jinja")
-        with open("test.dev.yml.jinja") as dockerfile:
+        assert not Path("test.dev.yml.jsonnet").exists()
+        assert Path("test.dev.yml.jinja").exists()
+        with Path("test.dev.yml.jinja").open() as dockerfile:
             data = dockerfile.read().splitlines()
             assert data == ["{", '   "env": "{{ core.env.current }}"', "}"]
 
-        assert os.path.exists("test.dev.yml")
-        with open("test.dev.yml") as dockerfile:
+        assert Path("test.dev.yml").exists()
+        with Path("test.dev.yml").open() as dockerfile:
             data = dockerfile.read()
             assert yaml.load(data, yaml.SafeLoader) == {"env": "dev"}
 
-        assert os.path.exists("test.yml")
-        with open("test.yml") as dockerfile:
+        assert Path("test.yml").exists()
+        with Path("test.yml").open() as dockerfile:
             data = dockerfile.read()
             assert yaml.load(data, yaml.SafeLoader) == {"env": "dev"}
 
-        assert os.path.islink("test.yml")
+        assert Path("test.yml").is_symlink()
 
-        assert os.path.exists(".gitignore")
+        assert Path(".gitignore").exists()
         assert expect_gitignore(".gitignore", "/test.dev.yml.jinja", "/test.dev.yml", "/test.yml")
 
     def test_directories_overriden(self, project_loader):
         project_loader("directories-overriden")
 
-        assert os.path.isdir("test")
+        assert Path("test").is_dir()
 
         main(["configure"])
 
         main(["activate"])
 
-        assert not os.path.isdir("test")
-        assert os.path.isfile("test")
+        assert not Path("test").is_dir()
+        assert Path("test").is_file()
 
     def test_remove_target_on_source_removed(self, project_loader):
         project_loader("remove_target_on_source_removed")
@@ -82,32 +82,32 @@ class TestFilesGenerated:
 
         main(["activate"])
 
-        assert os.path.islink("test")
+        assert Path("test").is_symlink()
 
-        os.remove("test.dev")
-        os.remove("test2.jinja")
+        Path("test.dev").unlink()
+        Path("test2.jinja").unlink()
 
         main(["configure"])
 
-        assert not os.path.exists("test")
-        assert not os.path.exists("test2")
+        assert not Path("test").exists()
+        assert not Path("test2").exists()
 
     def test_do_not_remove_modified_target_on_source_removed_symlink(self, project_loader):
         project_loader("remove_target_on_source_removed")
 
         main(["configure"])
 
-        assert os.path.islink("test")
-        assert os.path.isfile("test2")
+        assert Path("test").is_symlink()
+        assert Path("test2").is_file()
 
-        os.remove("test")
-        os.remove("test.dev")
-        os.remove("test2.jinja")
+        Path("test").unlink()
+        Path("test.dev").unlink()
+        Path("test2.jinja").unlink()
 
-        with open("test", "w") as fp:
+        with Path("test").open("w") as fp:
             fp.write("test")
 
         main(["configure"])
 
-        assert os.path.exists("test")
-        assert not os.path.exists("test2")
+        assert Path("test").exists()
+        assert not Path("test2").exists()

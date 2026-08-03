@@ -7,6 +7,8 @@ def found_with_glob(value):
 
     :param value: glob expression.
     """
-    for _ in glob.glob(value):
+    # PTH207: expressions come from user templates and may be absolute, which Path.glob
+    # rejects, and Path.glob would also match hidden entries that glob.glob leaves out.
+    for _ in glob.glob(value):  # noqa: PTH207
         return True
     return False

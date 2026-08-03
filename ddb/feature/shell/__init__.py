@@ -1,6 +1,7 @@
 import os
 from argparse import ArgumentParser
 from collections.abc import Iterable
+from pathlib import Path
 
 from dotty_dict import Dotty
 
@@ -115,9 +116,9 @@ class ShellFeature(Feature):
         directories = feature_config.get("path.directories")
         absolute_directories = []
         for directory in directories:
-            if os.path.isabs(directory):
+            if Path(directory).is_absolute():
                 absolute_directories.append(directory)
             else:
-                absolute_directory = os.path.join(config.paths.project_home, directory)
+                absolute_directory = str(Path(config.paths.project_home) / directory)
                 absolute_directories.append(absolute_directory)
         feature_config["path.directories"] = absolute_directories

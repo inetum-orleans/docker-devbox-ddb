@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from shutil import copy
 
 import pytest
@@ -21,7 +22,7 @@ class TestBinaries:
         exceptions = main(["run", "psql"])
         assert not exceptions
 
-        assert os.path.exists(os.path.join(os.getcwd(), ".bin", "psql" + bin_ext))
+        assert (Path.cwd() / ".bin" / ("psql" + bin_ext)).exists()
 
         output = capsys.readouterr()
         assert (
@@ -39,7 +40,7 @@ class TestBinaries:
         exceptions = main(["run", "psql"])
         assert not exceptions
 
-        assert os.path.exists(os.path.join(os.getcwd(), ".bin", "psql" + bin_ext))
+        assert (Path.cwd() / ".bin" / ("psql" + bin_ext)).exists()
 
         output = capsys.readouterr()
 
@@ -57,7 +58,7 @@ class TestBinaries:
         exceptions = main(["run", "psql"])
         assert not exceptions
 
-        assert os.path.exists(os.path.join(os.getcwd(), ".bin", "psql" + bin_ext))
+        assert (Path.cwd() / ".bin" / ("psql" + bin_ext)).exists()
 
         output = capsys.readouterr()
         assert output.out.strip() == docker_compose_bin + " exec --workdir=/workdir/. db psql"
@@ -71,7 +72,7 @@ class TestBinaries:
         exceptions = main(["run", "psql"])
         assert not exceptions
 
-        assert os.path.exists(os.path.join(os.getcwd(), ".bin", "psql" + bin_ext))
+        assert (Path.cwd() / ".bin" / ("psql" + bin_ext)).exists()
 
         output = capsys.readouterr()
         assert (
@@ -89,8 +90,8 @@ class TestBinaries:
         exceptions = main(["run", "psql"])
         assert not exceptions
 
-        assert not os.path.exists(os.path.join(os.getcwd(), ".bin", "psql" + bin_ext))
-        assert os.path.exists(os.path.join(os.getcwd(), "..", "home", ".bin", "psql" + bin_ext))
+        assert not (Path.cwd() / ".bin" / ("psql" + bin_ext)).exists()
+        assert (Path.cwd() / ".." / "home" / ".bin" / ("psql" + bin_ext)).exists()
 
         output = capsys.readouterr()
         assert (
@@ -106,8 +107,8 @@ class TestBinaries:
         exceptions = main(["run", "psql"])
         assert not exceptions
 
-        assert not os.path.exists(os.path.join(os.getcwd(), ".bin", "psql" + bin_ext))
-        assert os.path.exists(os.path.join(os.getcwd(), "..", "home", ".bin", "psql" + bin_ext))
+        assert not (Path.cwd() / ".bin" / ("psql" + bin_ext)).exists()
+        assert (Path.cwd() / ".." / "home" / ".bin" / ("psql" + bin_ext)).exists()
 
         output = capsys.readouterr()
         assert (
@@ -122,7 +123,7 @@ class TestBinaries:
         exceptions = main(["run", "psql"])
         assert not exceptions
 
-        assert os.path.exists(os.path.join(os.getcwd(), ".bin", "psql" + bin_ext))
+        assert (Path.cwd() / ".bin" / ("psql" + bin_ext)).exists()
 
     def test_docker_binaries_removed(self, project_loader, capsys: CaptureFixture):
         Config.defaults = None
@@ -131,18 +132,18 @@ class TestBinaries:
 
         main(["configure"])
 
-        assert os.path.isfile(os.path.join(".bin", "psql" + bin_ext))
+        assert (Path(".bin") / ("psql" + bin_ext)).is_file()
 
         exceptions = main(["run", "psql"])
         assert not exceptions
 
-        assert os.path.exists(os.path.join(os.getcwd(), ".bin", "psql" + bin_ext))
+        assert (Path.cwd() / ".bin" / ("psql" + bin_ext)).exists()
 
-        copy(os.path.join("..", "replacement", "docker-compose.yml.jsonnet"), "docker-compose.yml.jsonnet")
+        copy(str(Path("..") / "replacement" / "docker-compose.yml.jsonnet"), "docker-compose.yml.jsonnet")
 
         main(["configure"])
 
-        assert not os.path.isfile(os.path.join(".bin", "psql" + bin_ext))
+        assert not (Path(".bin") / ("psql" + bin_ext)).is_file()
 
         exceptions = main(["run", "psql"])
         assert exceptions
@@ -156,11 +157,11 @@ class TestBinaries:
     def test_docker_binaries_condition(self, relative_cwd, expected, project_loader, capsys: CaptureFixture):
         project_loader("docker_condition")
 
-        cwd = os.getcwd()
+        cwd = str(Path.cwd())
         if relative_cwd:
-            cwd = os.path.join(cwd, relative_cwd)
+            cwd = str(Path(cwd) / relative_cwd)
             os.chdir(cwd)
-            assert os.getcwd() == cwd
+            assert str(Path.cwd()) == cwd
 
         try:
             main(["--clear-cache", "configure"], reset_disabled=True)

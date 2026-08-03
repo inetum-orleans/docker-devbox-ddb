@@ -1,5 +1,6 @@
 import os
 from collections.abc import Iterable
+from pathlib import Path
 
 from ddb.action.action import AbstractTemplateAction
 from ddb.config import config
@@ -29,22 +30,22 @@ class SymlinksAction(AbstractTemplateAction):
         """
         Create a symbolic link.
         """
-        reltemplate = os.path.relpath(template, os.path.dirname(target))
+        reltemplate = os.path.relpath(template, Path(target).parent)
 
-        if os.path.islink(target) and os.readlink(target) == reltemplate:
+        if Path(target).is_symlink() and str(Path(target).readlink()) == reltemplate:
             context.log.notice("%s -> %s", template, target)
             yield False, target
         else:
-            if os.path.exists(target):
+            if Path(target).exists():
                 force_remove(target)
 
-            os.symlink(reltemplate, os.path.normpath(target))
+            Path(os.path.normpath(target)).symlink_to(reltemplate)
             context.log.success("%s -> %s", template, target)
 
             yield True, target
 
     def _target_is_modified(self, template: str, target: str) -> bool:
-        if not os.path.islink(target):
+        if not Path(target).is_symlink():
             return True
-        reltemplate = os.path.relpath(template, os.path.dirname(target))
-        return os.readlink(target) != reltemplate
+        reltemplate = os.path.relpath(template, Path(target).parent)
+        return str(Path(target).readlink()) != reltemplate

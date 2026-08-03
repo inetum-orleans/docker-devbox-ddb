@@ -2,6 +2,7 @@ import hashlib
 import os
 import re
 from collections.abc import Iterable
+from pathlib import Path
 
 from dotty_dict import Dotty
 from slugify import slugify
@@ -12,6 +13,7 @@ from ddb.feature import Feature
 from ...config import config
 from ...utils.compat import path_as_posix_fast
 from ...utils.file import TemplateFinder
+from ...utils.path import absolute_path
 from .actions import JsonnetAction
 from .schema import JsonnetSchema
 
@@ -183,7 +185,7 @@ class JsonnetFeature(Feature):
             return re.sub(r"[^-_a-z0-9]", "", name.lower()).replace("_", "-")
 
         if not compose_project_name:
-            compose_project_name = os.path.basename(os.path.abspath(config.paths.project_home))
+            compose_project_name = Path(absolute_path(config.paths.project_home)).name
 
         compose_project_name = normalize_name(compose_project_name)
         feature_config["docker.compose.project_name"] = compose_project_name
@@ -241,7 +243,7 @@ class JsonnetFeature(Feature):
     def _configure_defaults_mount(feature_config):
         directory = feature_config.get("docker.mount.directory")
         if directory is not None:
-            absolute_directory = os.path.abspath(directory) if not os.path.isabs(directory) else directory
+            absolute_directory = directory if Path(directory).is_absolute() else absolute_path(directory)
             if os.name == "nt":
                 absolute_directory = path_as_posix_fast(absolute_directory)
             feature_config["docker.mount.directory"] = absolute_directory
@@ -250,7 +252,7 @@ class JsonnetFeature(Feature):
             absolute_directories = {}
             for directory_key, directory_value in directories.items():
                 absolute_directories[directory_key] = (
-                    os.path.abspath(directory_value) if not os.path.isabs(directory_value) else directory_value
+                    directory_value if Path(directory_value).is_absolute() else absolute_path(directory_value)
                 )
                 if os.name == "nt":
                     absolute_directories[directory_key] = path_as_posix_fast(absolute_directories[directory_key])

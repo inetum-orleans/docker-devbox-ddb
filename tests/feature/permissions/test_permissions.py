@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import pytest
 
@@ -26,7 +27,7 @@ class TestPermissionsAction:
         action.execute()
 
         assert os.access("script.sh", os.X_OK)
-        assert os.access(os.path.join("subdirectory", "another-script.sh"), os.X_OK)
+        assert os.access(str(Path("subdirectory") / "another-script.sh"), os.X_OK)
 
     def test_project3(self, project_loader):
         project_loader("project3")
@@ -42,9 +43,9 @@ class TestPermissionsAction:
         action.execute()
 
         assert os.access("script.sh", os.X_OK)
-        assert os.access(os.path.join("subdirectory", "another-script.sh"), os.X_OK)
-        assert os.access(os.path.join("subdirectory"), os.W_OK)
-        assert not os.access(os.path.join("denied"), os.W_OK)
+        assert os.access(str(Path("subdirectory") / "another-script.sh"), os.X_OK)
+        assert os.access(str(Path("subdirectory")), os.W_OK)
+        assert not os.access(str(Path("denied")), os.W_OK)
 
     def test_inherit_from_template(self, project_loader):
         project_loader("inherit_from_template")
@@ -60,5 +61,5 @@ class TestPermissionsAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists("script.sh")
+        assert Path("script.sh").exists()
         assert os.access("script.sh", os.X_OK)

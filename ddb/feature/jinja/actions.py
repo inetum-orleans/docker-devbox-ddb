@@ -101,7 +101,7 @@ class JinjaAction(AbstractTemplateAction):
                     "jinja",
                     mode="w",
                     prefix="",
-                    suffix="." + os.path.basename(original_template),
+                    suffix="." + Path(original_template).name,
                     encoding="utf-8",
                 ) as tmp_file:
                     tmp_file.write(altered_template_data)
@@ -137,7 +137,7 @@ class JinjaAction(AbstractTemplateAction):
     def _apply_migration_set(
         self, template: str, original_template: str, property_migration_set: Iterable[AbstractPropertyMigration]
     ):
-        with open(template, encoding="utf-8") as template_file:
+        with Path(template).open(encoding="utf-8") as template_file:
             altered = False
             altered_template_data = ""
             variable_content = ""

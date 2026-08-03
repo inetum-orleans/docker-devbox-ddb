@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import pytest
 from _pytest.capture import CaptureFixture
@@ -96,7 +97,7 @@ class TestRunFeature:
 
     def test_run_docker_binary_workdir(self, project_loader, capsys: CaptureFixture):
         project_loader("empty")
-        config.cwd = os.path.join(config.paths.project_home, "sub")
+        config.cwd = str(Path(config.paths.project_home) / "sub")
 
         features.register(CoreFeature())
         features.register(DockerFeature())
@@ -116,7 +117,7 @@ class TestRunFeature:
 
     def test_run_docker_binary_workdir_outside(self, project_loader, capsys: CaptureFixture):
         project_loader("outside")
-        config.cwd = os.path.join(config.paths.project_home, "../outside")
+        config.cwd = str(Path(config.paths.project_home) / "../outside")
 
         features.register(CoreFeature())
         features.register(DockerFeature())
@@ -132,11 +133,11 @@ class TestRunFeature:
 
         read = capsys.readouterr()
 
-        cwd = config.cwd if config.cwd else os.getcwd()
+        cwd = config.cwd if config.cwd else str(Path.cwd())
         real_cwd = os.path.realpath(cwd)
 
         assert (
-            read.out == docker_compose_bin + " -f " + os.path.join("..", "project", "docker-compose.yml") + " "
+            read.out == docker_compose_bin + " -f " + str(Path("..") / "project" / "docker-compose.yml") + " "
             "run --rm "
             f"--volume={real_cwd}:/app "
             "--workdir=/app "

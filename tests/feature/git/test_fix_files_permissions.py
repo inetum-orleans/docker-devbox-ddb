@@ -1,5 +1,6 @@
 import os
 import shutil
+from pathlib import Path
 
 import pytest
 from git import Repo
@@ -41,7 +42,7 @@ class TestGitFixFilesPermissionsAction:
         action = FixFilePermissionsAction()
         action.execute()
 
-        assert os.access(os.path.join(config.path.project_home, ".gitignore"), os.X_OK)
+        assert os.access(str(Path(config.path.project_home) / ".gitignore"), os.X_OK)
 
         shutil.rmtree(config.path.project_home)
 
@@ -53,7 +54,7 @@ class TestGitFixFilesPermissionsAction:
         load_registered_features()
 
         path_main = config.path.project_home
-        path_submodule = os.path.join(path_main, "submodule")
+        path_submodule = str(Path(path_main) / "submodule")
 
         submodule = Repo.init(path_submodule)
         submodule.create_remote("origin", "https://github.com/inetum-orleans/docker-devbox-ddb")
@@ -70,6 +71,6 @@ class TestGitFixFilesPermissionsAction:
         action = FixFilePermissionsAction()
         action.execute()
 
-        assert os.access(os.path.join(config.path.project_home, ".gitignore"), os.X_OK)
-        assert os.access(os.path.join(config.path.project_home, "submodule", ".gitignore"), os.X_OK)
-        assert not os.access(os.path.join(config.path.project_home, ".gitmodules"), os.X_OK)
+        assert os.access(str(Path(config.path.project_home) / ".gitignore"), os.X_OK)
+        assert os.access(str(Path(config.path.project_home) / "submodule" / ".gitignore"), os.X_OK)
+        assert not os.access(str(Path(config.path.project_home) / ".gitmodules"), os.X_OK)

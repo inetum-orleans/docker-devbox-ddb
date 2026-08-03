@@ -4,6 +4,7 @@ import re
 import shlex
 from collections import namedtuple
 from collections.abc import Iterable
+from pathlib import Path
 from subprocess import CalledProcessError
 
 from chmod_monkey import tmp_chmod
@@ -16,6 +17,7 @@ from ...config import config
 from ...context import context
 from ...event import events
 from ...utils.file import force_remove
+from ...utils.path import absolute_path
 from ...utils.process import run
 from ..copy.actions import copy_from_url
 
@@ -141,16 +143,16 @@ class FixuidDockerComposeAction(Action):
             return None
 
         def file_found_processor(file: str):
-            if os.path.basename(file) == "fixuid.yml":
-                dockerfile_filepath = os.path.join(os.path.dirname(file), "Dockerfile")
+            if Path(file).name == "fixuid.yml":
+                dockerfile_filepath = str(Path(file).parent / "Dockerfile")
                 service = self.find_fixuid_service(dockerfile_filepath)
                 if service:
                     return (), {"service": service}
             return None
 
         def file_deleted_processor(file: str):
-            if os.path.basename(file) == "fixuid.yml":
-                dockerfile_filepath = os.path.join(os.path.dirname(file), "Dockerfile")
+            if Path(file).name == "fixuid.yml":
+                dockerfile_filepath = str(Path(file).parent / "Dockerfile")
                 service = self.find_fixuid_service(dockerfile_filepath, include_missing_fixuid=True)
                 if service:
                     return (), {"service": service}
@@ -196,9 +198,9 @@ class FixuidDockerComposeAction(Action):
         """
         Apply fixuid to given service.
         """
-        dockerfile_path = os.path.join(service.context, service.dockerfile)
-        if os.path.exists(dockerfile_path):
-            with tmp_chmod(dockerfile_path, "+w"), open(dockerfile_path, "ba+") as dockerfile_file:
+        dockerfile_path = str(Path(service.context) / service.dockerfile)
+        if Path(dockerfile_path).exists():
+            with tmp_chmod(dockerfile_path, "+w"), Path(dockerfile_path).open("ba+") as dockerfile_file:
                 parser = CustomDockerfileParser(fileobj=dockerfile_file)
 
                 if FixuidDockerComposeAction._apply_fixuid_from_parser(self, parser, service):
@@ -210,9 +212,9 @@ class FixuidDockerComposeAction(Action):
         """
         Remove fixuid from given service.
         """
-        dockerfile_path = os.path.join(service.context, service.dockerfile)
-        if os.path.exists(dockerfile_path):
-            with tmp_chmod(dockerfile_path, "+w"), open(dockerfile_path, "ba+") as dockerfile_file:
+        dockerfile_path = str(Path(service.context) / service.dockerfile)
+        if Path(dockerfile_path).exists():
+            with tmp_chmod(dockerfile_path, "+w"), Path(dockerfile_path).open("ba+") as dockerfile_file:
                 parser = CustomDockerfileParser(fileobj=dockerfile_file)
 
                 if FixuidDockerComposeAction._remove_fixuid_from_parser(self, parser, service):
@@ -340,8 +342,8 @@ class FixuidDockerComposeAction(Action):
 
         removed = False
 
-        fixuid_targz = os.path.join(service.context, "fixuid.tar.gz")
-        if os.path.exists(fixuid_targz):
+        fixuid_targz = str(Path(service.context) / "fixuid.tar.gz")
+        if Path(fixuid_targz).exists():
             force_remove(fixuid_targz)
             removed = True
 
@@ -370,9 +372,7 @@ class FixuidDockerComposeAction(Action):
         Find related fixuid service from dockerfile filepath.
         """
         for service in self.get_fixuid_services(include_missing_fixuid=include_missing_fixuid):
-            if os.path.abspath(os.path.join(service.context, service.dockerfile)) == os.path.abspath(
-                dockerfile_filepath
-            ):
+            if absolute_path(Path(service.context) / service.dockerfile) == absolute_path(dockerfile_filepath):
                 return service
         return None
 
@@ -394,7 +394,7 @@ class FixuidDockerComposeAction(Action):
             else:
                 continue
 
-            if not include_missing_fixuid and not os.path.exists(os.path.join(build_context, "fixuid.yml")):
+            if not include_missing_fixuid and not (Path(build_context) / "fixuid.yml").exists():
                 continue
 
             dockerfile = Dotty(service).get("build.dockerfile", "Dockerfile")

@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import pytest
 import yaml
@@ -17,32 +18,32 @@ class TestEject:
 
         main(["configure"])
 
-        assert os.path.exists("docker-compose.yml")
-        assert os.path.exists("docker-compose.yml.jsonnet")
+        assert Path("docker-compose.yml").exists()
+        assert Path("docker-compose.yml.jsonnet").exists()
         assert expect_gitignore(".gitignore", "/docker-compose.yml")
 
-        assert os.path.exists(os.path.join(".bin", "psql" + (".bat" if os.name == "nt" else "")))
+        assert (Path(".bin") / ("psql" + (".bat" if os.name == "nt" else ""))).exists()
         assert expect_gitignore(".gitignore", "/.bin/psql" + (".bat" if os.name == "nt" else ""))
 
-        assert os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
+        assert (Path(".docker") / "db" / "Dockerfile.jinja").exists()
         assert expect_gitignore(".gitignore", "/.docker/db/Dockerfile")
 
         main(["configure", "--eject"], reset_disabled=True)
 
-        assert os.path.exists("docker-compose.yml")
-        assert not os.path.exists("docker-compose.yml.jsonnet")
+        assert Path("docker-compose.yml").exists()
+        assert not Path("docker-compose.yml.jsonnet").exists()
         assert not expect_gitignore(".gitignore", "/docker-compose.yml")
 
-        assert os.path.exists(os.path.join(".bin", "psql" + (".bat" if os.name == "nt" else "")))
+        assert (Path(".bin") / ("psql" + (".bat" if os.name == "nt" else ""))).exists()
         assert expect_gitignore(".gitignore", "/.bin/psql" + (".bat" if os.name == "nt" else ""))
 
-        assert not os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
+        assert not (Path(".docker") / "db" / "Dockerfile.jinja").exists()
         assert not expect_gitignore(".gitignore", "/.docker/db/Dockerfile")
 
-        with open("docker-compose.yml") as dc_file:
+        with Path("docker-compose.yml").open() as dc_file:
             actual = yaml.load(dc_file, yaml.SafeLoader)
 
-        with open("../expected/docker-compose.yml") as expected_dc_file:
+        with Path("../expected/docker-compose.yml").open() as expected_dc_file:
             expected_data = expected_dc_file.read()
             expected_data = expected_data.replace(
                 "%network_name%", str(config.data.get("jsonnet.docker.compose.network_name"))
@@ -59,32 +60,32 @@ class TestEject:
 
         main(["configure"])
 
-        assert os.path.exists("docker-compose.yml")
-        assert os.path.exists("docker-compose.yml.jsonnet")
+        assert Path("docker-compose.yml").exists()
+        assert Path("docker-compose.yml.jsonnet").exists()
         assert expect_gitignore(".gitignore", "/docker-compose.yml")
 
-        assert os.path.exists(os.path.join(".bin", "psql" + (".bat" if os.name == "nt" else "")))
+        assert (Path(".bin") / ("psql" + (".bat" if os.name == "nt" else ""))).exists()
         assert expect_gitignore(".gitignore", "/.bin/psql" + (".bat" if os.name == "nt" else ""))
 
-        assert os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
+        assert (Path(".docker") / "db" / "Dockerfile.jinja").exists()
         assert expect_gitignore(".gitignore", "/.docker/db/Dockerfile")
 
         main(["configure", "--eject"], reset_disabled=True)
 
-        assert os.path.exists("docker-compose.yml")
-        assert not os.path.exists("docker-compose.yml.jsonnet")
+        assert Path("docker-compose.yml").exists()
+        assert not Path("docker-compose.yml.jsonnet").exists()
         assert not expect_gitignore(".gitignore", "/docker-compose.yml")
 
-        assert os.path.exists(os.path.join(".bin", "psql" + (".bat" if os.name == "nt" else "")))
+        assert (Path(".bin") / ("psql" + (".bat" if os.name == "nt" else ""))).exists()
         assert expect_gitignore(".gitignore", "/.bin/psql" + (".bat" if os.name == "nt" else ""))
 
-        assert not os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
+        assert not (Path(".docker") / "db" / "Dockerfile.jinja").exists()
         assert not expect_gitignore(".gitignore", "/.docker/db/Dockerfile")
 
-        with open("docker-compose.yml") as dc_file:
+        with Path("docker-compose.yml").open() as dc_file:
             actual = yaml.load(dc_file, yaml.SafeLoader)
 
-        with open("../expected/docker-compose.yml") as expected_dc_file:
+        with Path("../expected/docker-compose.yml").open() as expected_dc_file:
             expected_data = expected_dc_file.read()
             expected_data = expected_data.replace(
                 "%network_name%", str(config.data.get("jsonnet.docker.compose.network_name"))
@@ -101,34 +102,34 @@ class TestEject:
 
         main(["configure"])
 
-        assert os.path.exists("docker-compose.yml")
-        assert os.path.exists("docker-compose.yml.jsonnet")
+        assert Path("docker-compose.yml").exists()
+        assert Path("docker-compose.yml.jsonnet").exists()
         assert expect_gitignore(".gitignore", "/docker-compose.yml")
 
-        assert os.path.exists(os.path.join(".bin", "psql" + (".bat" if os.name == "nt" else "")))
+        assert (Path(".bin") / ("psql" + (".bat" if os.name == "nt" else ""))).exists()
         assert expect_gitignore(".gitignore", "/.bin/psql" + (".bat" if os.name == "nt" else ""))
 
-        assert os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
+        assert (Path(".docker") / "db" / "Dockerfile.jinja").exists()
         assert expect_gitignore(".gitignore", "/.docker/db/Dockerfile")
 
         os.environ["DDB_OVERRIDE_JSONNET_DOCKER_VIRTUALHOST_DISABLED"] = "1"
         os.environ["DDB_OVERRIDE_JSONNET_DOCKER_BINARY_DISABLED"] = "True"
         main(["configure", "--eject"], reset_disabled=True)
 
-        assert os.path.exists("docker-compose.yml")
-        assert not os.path.exists("docker-compose.yml.jsonnet")
+        assert Path("docker-compose.yml").exists()
+        assert not Path("docker-compose.yml.jsonnet").exists()
         assert not expect_gitignore(".gitignore", "/docker-compose.yml")
 
-        assert not os.path.exists(os.path.join(".bin", "psql" + (".bat" if os.name == "nt" else "")))
+        assert not (Path(".bin") / ("psql" + (".bat" if os.name == "nt" else ""))).exists()
         assert not expect_gitignore(".gitignore", "/.bin/psql" + (".bat" if os.name == "nt" else ""))
 
-        assert not os.path.exists(os.path.join(".docker", "db", "Dockerfile.jinja"))
+        assert not (Path(".docker") / "db" / "Dockerfile.jinja").exists()
         assert not expect_gitignore(".gitignore", "/.docker/db/Dockerfile")
 
-        with open("docker-compose.yml") as dc_file:
+        with Path("docker-compose.yml").open() as dc_file:
             actual = yaml.load(dc_file, yaml.SafeLoader)
 
-        with open("../expected/docker-compose.jsonnet.disabled.yml") as expected_dc_file:
+        with Path("../expected/docker-compose.jsonnet.disabled.yml").open() as expected_dc_file:
             expected_data = expected_dc_file.read()
             expected_data = expected_data.replace(
                 "%network_name%", str(config.data.get("jsonnet.docker.compose.network_name"))
@@ -142,16 +143,16 @@ class TestEject:
 
         main(["configure"])
 
-        assert os.path.exists("../home/test.txt")
-        assert os.path.exists(".docker/c1/test.txt")
-        assert os.path.exists(".docker/c2/test.txt")
-        assert os.path.exists("config.jinja.txt")
-        assert os.path.exists("config.txt")
+        assert Path("../home/test.txt").exists()
+        assert Path(".docker/c1/test.txt").exists()
+        assert Path(".docker/c2/test.txt").exists()
+        assert Path("config.jinja.txt").exists()
+        assert Path("config.txt").exists()
 
         main(["configure", "--eject"])
 
-        assert os.path.exists("../home/test.txt")
-        assert os.path.exists(".docker/c1/test.txt")
-        assert os.path.exists(".docker/c2/test.txt")
-        assert not os.path.exists("config.jinja.txt")
-        assert os.path.exists("config.txt")
+        assert Path("../home/test.txt").exists()
+        assert Path(".docker/c1/test.txt").exists()
+        assert Path(".docker/c2/test.txt").exists()
+        assert not Path("config.jinja.txt").exists()
+        assert Path("config.txt").exists()

@@ -9,6 +9,7 @@ from ddb.config import config
 from ddb.context import context
 from ddb.event import events
 from ddb.utils.file import force_remove
+from ddb.utils.path import absolute_path
 
 
 class UpdateGitignoreAction(InitializableAction):
@@ -117,7 +118,7 @@ class UpdateGitignoreAction(InitializableAction):
 
     @staticmethod
     def _get_relative_path(target: str, gitignore: str, *, first_slash: bool = True):
-        relpath = pathlib.Path(os.path.relpath(target, os.path.dirname(gitignore))).as_posix()
+        relpath = pathlib.Path(os.path.relpath(target, pathlib.Path(gitignore).parent)).as_posix()
         if first_slash:
             return "/" + relpath
         return relpath
@@ -129,12 +130,12 @@ class UpdateGitignoreAction(InitializableAction):
         """
         dirname = target
 
-        while os.path.abspath(dirname).startswith(config.paths.project_home) and os.path.abspath(
-            dirname
-        ) != os.path.abspath(config.paths.project_home):
-            dirname = os.path.dirname(dirname)
-            gitignore = os.path.join(dirname, ".gitignore")
-            if os.path.exists(gitignore) and os.access(gitignore, os.W_OK):
+        project_home = absolute_path(config.paths.project_home)
+
+        while absolute_path(dirname).startswith(config.paths.project_home) and absolute_path(dirname) != project_home:
+            dirname = str(pathlib.Path(dirname).parent)
+            gitignore = str(pathlib.Path(dirname) / ".gitignore")
+            if pathlib.Path(gitignore).exists() and os.access(gitignore, os.W_OK):
                 yield gitignore
 
     @staticmethod
@@ -204,7 +205,7 @@ class UpdateGitignoreAction(InitializableAction):
     @staticmethod
     def _write_gitignore_content(gitignore: str, content: list[str]):
         if [line for line in content if line]:
-            with open(gitignore, "w", encoding="utf-8") as gitignore_file:
+            with pathlib.Path(gitignore).open("w", encoding="utf-8") as gitignore_file:
                 for lineno, line in enumerate(content):
                     if lineno > 0:
                         gitignore_file.write("\n")
@@ -235,8 +236,8 @@ class UpdateGitignoreAction(InitializableAction):
 
     @staticmethod
     def _read_and_split_gitignore_file(gitignore_file: str):
-        if os.path.exists(gitignore_file):
-            with open(gitignore_file, "r+", encoding="utf-8") as gitignore_fp:
+        if pathlib.Path(gitignore_file).exists():
+            with pathlib.Path(gitignore_file).open("r+", encoding="utf-8") as gitignore_fp:
                 return UpdateGitignoreAction._split_block_lines(gitignore_fp.read())
         else:
             return [], [], []

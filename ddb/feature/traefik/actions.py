@@ -1,5 +1,5 @@
-import os
 import re
+from pathlib import Path
 
 from jinja2 import Template
 
@@ -48,11 +48,11 @@ class TraefikInstalllCertsAction(Action):
         config_directory = config.data.get("traefik.config_directory")
 
         private_key_filename = f"{domain}.key"
-        private_key_filename_target = os.path.join(certs_directory, private_key_filename)
+        private_key_filename_target = str(Path(certs_directory) / private_key_filename)
         copy_if_different(private_key, private_key_filename_target, log=True)
 
         certificate_filename = f"{domain}.crt"
-        certificate_filename_target = os.path.join(certs_directory, certificate_filename)
+        certificate_filename_target = str(Path(certs_directory) / certificate_filename)
         copy_if_different(certificate, certificate_filename_target, log=True)
 
         config_data = dict(config.data)
@@ -63,7 +63,7 @@ class TraefikInstalllCertsAction(Action):
 
         ssl_config = get_template(config.data.get("traefik.ssl_config_template")).render(config_data)
 
-        config_target = os.path.join(config_directory, f"{domain}.ssl.toml")
+        config_target = str(Path(config_directory) / f"{domain}.ssl.toml")
         if write_if_different(config_target, ssl_config, "r", "w"):
             context.log.success(f"SSL Configuration file written for domain {domain}")
         else:
@@ -89,22 +89,22 @@ class TraefikUninstalllCertsAction(Action):
         Execute action.
         """
         config_directory = config.data.get("traefik.config_directory")
-        config_target = os.path.join(config_directory, f"{domain}.ssl.toml")
+        config_target = str(Path(config_directory) / f"{domain}.ssl.toml")
 
-        if os.path.exists(config_target):
+        if Path(config_target).exists():
             force_remove(config_target)
             context.log.notice(f"SSL Configuration file removed for domain {domain}")
 
         certs_directory = config.data.get("traefik.certs_directory")
         private_key_filename = f"{domain}.key"
-        private_key_filename_target = os.path.join(certs_directory, private_key_filename)
-        if os.path.exists(private_key_filename_target):
+        private_key_filename_target = str(Path(certs_directory) / private_key_filename)
+        if Path(private_key_filename_target).exists():
             force_remove(private_key_filename_target)
             context.log.notice(f"SSL private key file removed for domain {domain}")
 
         certificate_filename = f"{domain}.crt"
-        certificate_filename_target = os.path.join(certs_directory, certificate_filename)
-        if os.path.exists(certificate_filename_target):
+        certificate_filename_target = str(Path(certs_directory) / certificate_filename)
+        if Path(certificate_filename_target).exists():
             force_remove(certificate_filename_target)
             context.log.notice(f"SSL certificate file removed for domain {domain}")
 
@@ -166,7 +166,7 @@ class TraefikExtraServicesAction(InitializableAction):
                     x for x in ["rule", config.data.get("core.domain.sub"), config.data.get("core.domain.ext")] if x
                 )
 
-            config_target = os.path.join(config_directory, f"{prefix}.extra-service.{id_}.toml")
+            config_target = str(Path(config_directory) / f"{prefix}.extra-service.{id_}.toml")
             if write_if_different(config_target, rendered_config, "r", "w"):
                 context.log.success(f"Extra service configuration file written for domain {prefix}")
             else:

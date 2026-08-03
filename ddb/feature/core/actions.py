@@ -19,6 +19,7 @@ from ddb.cache import caches, register_global_cache
 from ddb.config import config
 from ddb.event import events
 from ddb.utils.file import force_remove
+from ddb.utils.path import absolute_path
 from ddb.utils.table_display import get_table_display
 
 from ...action.action import EventBinding
@@ -217,25 +218,25 @@ def get_local_binary_path():
     context.log.debug("__file__: %s", __file__)
 
     local_binary_path = None
-    if sys.executable and os.path.isfile(sys.executable):
+    if sys.executable and Path(sys.executable).is_file():
         context.log.debug("sys.executable match an existing file. Using this value as binary path.")
         local_binary_path = sys.executable
 
     if not local_binary_path:
-        if os.path.isabs(sys.argv[0]):
+        if Path(sys.argv[0]).is_absolute():
             context.log.debug("sys.argv[0] is absolute. Using this value as binary path.")
             local_binary_path = sys.argv[0]
 
     if not local_binary_path:
-        argv0_basename = os.path.basename(sys.argv[0])
+        argv0_basename = Path(sys.argv[0]).name
         if argv0_basename == sys.argv[0]:
             context.log.debug("sys.argv[0] is basename only. Use configuration values to find expected binary path.")
-            local_binary_path = os.path.join(config.paths.home, "bin", sys.argv[0])
+            local_binary_path = str(Path(config.paths.home) / "bin" / sys.argv[0])
 
     if not local_binary_path:
         if config.cwd:
             context.log.debug("config.cwd is defined. Use configuration values to find expected binary path.")
-            local_binary_path = os.path.join(config.cwd, sys.argv[0])
+            local_binary_path = str(Path(config.cwd) / sys.argv[0])
 
     context.log.debug("local_binary_path: %s", local_binary_path)
 
@@ -438,7 +439,7 @@ class EjectAction(Action):
     @property
     def event_bindings(self):
         def eject_processor(source: str | None, target: str):
-            if not source or not os.path.abspath(source).startswith(config.paths.project_home):
+            if not source or not absolute_path(source).startswith(config.paths.project_home):
                 return False
             return (), {"source": source, "target": target}
 
@@ -477,7 +478,7 @@ class ReloadConfigAction(Action):
     @property
     def event_bindings(self):
         def config_file_processor(file: str):
-            if os.path.abspath(file) in config.files:
+            if absolute_path(file) in config.files:
                 return (), {"file": file}
             return None
 
@@ -668,7 +669,7 @@ class SelfUpdateAction(Action):
             msg = f"You don't have permission to write on ddb binary file. ({local_binary_path})"
             raise PermissionError(msg)
 
-        if not os.path.isfile(local_binary_path):
+        if not Path(local_binary_path).is_file():
             msg = f"Local binary path is not a file. ({local_binary_path})"
             raise ValueError(msg)
 
@@ -700,7 +701,7 @@ class SelfUpdateAction(Action):
             shutil.copy(local_binary_path, local_old_binary_path)
             shutil.copymode(local_binary_path, tmp.name)
             force_remove(local_binary_path)  # This is required on windows
-            os.rename(tmp.name, local_binary_path)
+            Path(tmp.name).rename(local_binary_path)
 
             progress_bar.finish()
 

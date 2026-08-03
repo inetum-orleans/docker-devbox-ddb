@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import yaml
 from _pytest.capture import CaptureFixture
@@ -66,7 +67,7 @@ class TestConfig:
             filename, config = part.split("\n", 1)
             assert filename.startswith("# ")
             filename = filename[2:]
-            filename = os.path.relpath(filename, os.getcwd())
+            filename = os.path.relpath(filename, str(Path.cwd()))
             configurations[filename] = Dotty(yaml.safe_load(config))
 
         assert tuple(configurations.keys()) == (
@@ -99,7 +100,7 @@ class TestConfig:
             filename, config = part.split("\n", 1)
             assert filename.startswith("# ")
             filename = filename[2:]
-            filename = os.path.relpath(filename, os.getcwd())
+            filename = os.path.relpath(filename, str(Path.cwd()))
             configurations[filename] = Dotty(yaml.safe_load(config))
 
         assert tuple(configurations.keys()) == ("some.custom.yml",)
@@ -148,12 +149,12 @@ class TestConfig:
     def test_config_env_ddb2(self, project_loader):
         project_loader("env-ddb")
 
-        os.rename("ddb.dev.tmp.yml", "ddb.dev.yml")
+        Path("ddb.dev.tmp.yml").rename("ddb.dev.yml")
 
         main(["configure"], reset_disabled=True)
 
         assert config.data.get("app.test")
-        assert not os.path.islink("ddb.yml")
+        assert not Path("ddb.yml").is_symlink()
 
         reset()
 

@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import cfssl as cfssl_client
 
@@ -39,7 +39,7 @@ class GenerateCertAction(Action):
         certificate_path, private_key_path = writer.get_certs_path(
             domain, config.data["certs.cfssl.writer"], config.data["certs.destination"]
         )
-        if not os.path.exists(certificate_path) or not os.path.exists(private_key_path):
+        if not Path(certificate_path).exists() or not Path(private_key_path).exists():
             client_config = config.data.get("certs.cfssl.server")
 
             client = cfssl_client.CFSSL(**client_config)
@@ -52,8 +52,7 @@ class GenerateCertAction(Action):
             checksums.validate_checksums(response)
 
             destination = config.data["certs.destination"]
-            if not os.path.isdir(destination):
-                os.makedirs(destination)
+            Path(destination).mkdir(parents=True, exist_ok=True)
 
             generated = writer.write_files(
                 response,
@@ -115,12 +114,12 @@ class RemoveCertAction(Action):
         )
 
         removed = False
-        if os.path.exists(certificate_path):
+        if Path(certificate_path).exists():
             force_remove(certificate_path)
             events.file.deleted(certificate_path)
             removed = True
 
-        if os.path.exists(private_key_path):
+        if Path(private_key_path).exists():
             force_remove(private_key_path)
             events.file.deleted(certificate_path)
             removed = True
@@ -155,15 +154,14 @@ class GenerateSignerCertificateAction(Action):
             output, config.data["certs.cfssl.writer"], config.data["certs.destination"]
         )
 
-        if not os.path.exists(certificate_path):
+        if not Path(certificate_path).exists():
             client_config = config.data.get("certs.cfssl.server")
 
             client = cfssl_client.CFSSL(**client_config)
             response = client.info("")
 
             destination = config.data["certs.destination"]
-            if not os.path.isdir(destination):
-                os.makedirs(destination)
+            Path(destination).mkdir(parents=True, exist_ok=True)
 
             generated = writer.write_files(
                 response,
@@ -186,14 +184,12 @@ class GenerateSignerCertificateAction(Action):
 
         signer_destinations = config.data["certs.signer_destinations"]
         if signer_destinations:
-            certificate = os.path.join(
-                config.data["certs.destination"],
-                output + config.data["certs.cfssl.writer"]["filenames"]["certificate"] % "",
+            certificate = str(
+                Path(config.data["certs.destination"])
+                / (output + config.data["certs.cfssl.writer"]["filenames"]["certificate"] % "")
             )
 
             for signer_destination in signer_destinations:
-                dirname = os.path.dirname(signer_destination)
-                if not os.path.isdir(dirname):
-                    os.makedirs(dirname)
+                Path(signer_destination).parent.mkdir(parents=True, exist_ok=True)
                 if copy_if_different(certificate, signer_destination) or config.eject:
                     events.file.generated(source=certificate, target=signer_destination)

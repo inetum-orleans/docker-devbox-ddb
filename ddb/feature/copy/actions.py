@@ -2,6 +2,7 @@ import contextlib
 import glob
 import os
 import re
+from pathlib import Path
 
 import requests
 
@@ -25,7 +26,7 @@ def copy_from_url(source, destination, filename=None):
     if not filename:
         content_disposition = response.headers["content-disposition"]
         filename = re.findall("filename=(.+)", content_disposition)[0]
-    target_path = os.path.join(destination, filename)
+    target_path = str(Path(destination) / filename)
     if write_if_different(target_path, response.content, "rb", "wb", log_source=source) or config.eject:
         return target_path
     return None
@@ -35,18 +36,20 @@ def get_dispatch_directories(dispatch):
     """
     Get dispatch directories from dispatch glob.
     """
+    # PTH207: dispatch expressions come from the project configuration and may be absolute,
+    # which Path.glob rejects, and Path.glob would also match hidden entries.
     dispatch_directories = []
     if dispatch:
         for dispatch_expr in dispatch:
             if dispatch_expr.startswith("!"):
-                matches = glob.glob(dispatch_expr[1:])
-                dirs = [match for match in matches if os.path.isdir(match)]
+                matches = glob.glob(dispatch_expr[1:])  # noqa: PTH207
+                dirs = [match for match in matches if Path(match).is_dir()]
                 for to_remove in dirs:
                     with contextlib.suppress(ValueError):
                         dispatch_directories.remove(to_remove)
             else:
-                matches = glob.glob(dispatch_expr)
-                dirs = [match for match in matches if os.path.isdir(match)]
+                matches = glob.glob(dispatch_expr)  # noqa: PTH207
+                dirs = [match for match in matches if Path(match).is_dir()]
                 for to_add in dirs:
                     if to_add not in dispatch_directories:
                         dispatch_directories.append(to_add)
@@ -90,8 +93,8 @@ class CopyAction(Action):
 
             for dispatch_directory in dispatch_directories:
                 if destination:
-                    file_destination = os.path.relpath(os.path.join(dispatch_directory, destination))
-                    os.makedirs(file_destination, exist_ok=True)
+                    file_destination = os.path.relpath(Path(dispatch_directory) / destination)
+                    Path(file_destination).mkdir(parents=True, exist_ok=True)
                 else:
                     file_destination = os.path.relpath(dispatch_directory)
 
@@ -107,15 +110,16 @@ class CopyAction(Action):
             target_path = copy_from_url(source, destination, spec.get("filename"))
             if target_path:
                 yield None, target_path
-        elif os.path.exists(source) and os.path.isfile(source):
-            filename = spec.get("filename", os.path.basename(source))
-            target_path = os.path.join(destination, filename)
+        elif Path(source).exists() and Path(source).is_file():
+            filename = spec.get("filename", Path(source).name)
+            target_path = str(Path(destination) / filename)
             if copy_if_different(source, target_path, "rb", "wb", log=True) or config.eject:
                 yield source, target_path
         else:
-            if os.path.isdir(source):
+            if Path(source).is_dir():
                 source = source + "/*"
-            for file in glob.glob(source):
-                target_path = os.path.join(destination, os.path.basename(file))
+            # PTH207: sources come from the project configuration, see get_dispatch_directories.
+            for file in glob.glob(source):  # noqa: PTH207
+                target_path = str(Path(destination) / Path(file).name)
                 if copy_if_different(file, target_path, "rb", "wb", log=True) or config.eject:
                     yield file, target_path

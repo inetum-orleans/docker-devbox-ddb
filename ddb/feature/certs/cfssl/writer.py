@@ -2,16 +2,24 @@
 Writer module.
 """
 
-from os.path import expanduser, expandvars, join, normpath
+import os.path
+from pathlib import Path
 
 from .checksums import validate_checksum
 from .crypto import convert_pem_to_der
 
 
+def _expanded_destination(destination) -> Path:
+    """
+    Expand user, variables and navigation parts of a destination directory.
+    """
+    return Path(os.path.normpath(os.path.expandvars(Path(destination).expanduser())))
+
+
 def _write_file(path, binary, destination=None):
     if destination:
-        path = join(normpath(expandvars(expanduser(destination))), path)
-    with open(path, "wb") as stream:
+        path = str(_expanded_destination(destination) / path)
+    with Path(path).open("wb") as stream:
         stream.write(binary)
     return path
 
@@ -31,8 +39,9 @@ def get_certs_path(output, conf=None, destination=None):
     certificate_path = filenames.get("certificate", "%s.pem") % output
 
     if destination:
-        private_key_path = join(normpath(expandvars(expanduser(destination))), private_key_path)
-        certificate_path = join(normpath(expandvars(expanduser(destination))), certificate_path)
+        expanded_destination = _expanded_destination(destination)
+        private_key_path = str(expanded_destination / private_key_path)
+        certificate_path = str(expanded_destination / certificate_path)
 
     return certificate_path, private_key_path
 
@@ -122,7 +131,7 @@ def write_files(
                 filenames.get("certificate_der", "%s.der") % output, certificate_der, destination=destination
             )
             if verify_checksum and should_verify_certificate_der:
-                with open(filenames.get("certificate_der", "%s.der") % output, "rb") as der_file:
+                with Path(filenames.get("certificate_der", "%s.der") % output).open("rb") as der_file:
                     content = der_file.read()
                     validate_checksum("certificate", content, response["sums"]["certificate"], content_is_der=True)
         if csr and "certificate_request" in response:
@@ -132,7 +141,7 @@ def write_files(
                 destination=destination,
             )
             if verify_checksum:
-                with open(filenames.get("certificate_request_der", "%s.csr.der") % output, "rb") as der_file:
+                with Path(filenames.get("certificate_request_der", "%s.csr.der") % output).open("rb") as der_file:
                     content = der_file.read()
                     validate_checksum(
                         "certificate_request", content, response["sums"]["certificate_request"], content_is_der=True

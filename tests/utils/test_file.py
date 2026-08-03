@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import pytest
 
@@ -12,14 +12,14 @@ from ddb.utils.file import FileUtils, FileWalker
 
 class TestHasSameContent:
     def test_should_return_true_if_same_content(self, data_dir: str):
-        file.has_same_content(os.path.join(data_dir, "512bytes.bin"), os.path.join(data_dir, "512bytes.copy.bin"))
+        file.has_same_content(str(Path(data_dir) / "512bytes.bin"), str(Path(data_dir) / "512bytes.copy.bin"))
 
     def test_should_return_false_if_different_content(self, data_dir: str):
-        file.has_same_content(os.path.join(data_dir, "512bytes.bin"), os.path.join(data_dir, "1KB.bin"))
+        file.has_same_content(str(Path(data_dir) / "512bytes.bin"), str(Path(data_dir) / "1KB.bin"))
 
     def test_should_raise_file_not_found_error_if_file_doesnt_exists(self, data_dir: str):
         with pytest.raises(FileNotFoundError):
-            file.has_same_content(os.path.join(data_dir, "512bytes.bin"), os.path.join(data_dir, "another.bin"))
+            file.has_same_content(str(Path(data_dir) / "512bytes.bin"), str(Path(data_dir) / "another.bin"))
 
 
 class TestFileWalker:
@@ -51,7 +51,7 @@ class TestFileUtils:
         url_content = FileUtils.get_file_content(url)
         assert expected_file_content == url_content
 
-        url_content = FileUtils.get_file_content("file://" + os.path.join(config.path.project_home, path))
+        url_content = FileUtils.get_file_content("file://" + str(Path(config.path.project_home) / path))
         assert url_content == "this is a file for test_file_content"
 
         url_content = FileUtils.get_file_content("file://" + path)

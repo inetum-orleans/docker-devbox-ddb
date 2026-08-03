@@ -3,6 +3,7 @@ import shlex
 import subprocess
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
+from pathlib import Path
 from typing import Any
 
 from slugify import slugify
@@ -134,8 +135,8 @@ class BashShellIntegration(ShellIntegration):
         yield f"rm -- {shlex.quote(script_path)}"
 
     def remove_binary_shim(self, shims_path: str, name: str) -> str | None:
-        shim = os.path.join(shims_path, name)
-        if not os.path.isfile(shim):
+        shim = str(Path(shims_path) / name)
+        if not Path(shim).is_file():
             return None
         force_remove(shim)
         return shim
@@ -179,8 +180,8 @@ class BashShellIntegration(ShellIntegration):
 
         :return:
         """
-        os.makedirs(shims_path, exist_ok=True)
-        shim = os.path.join(os.path.normpath(shims_path), shim_name)
+        Path(shims_path).mkdir(parents=True, exist_ok=True)
+        shim = str(Path(os.path.normpath(shims_path)) / shim_name)
 
         all_lines = ["#!/usr/bin/env bash", "# ddb:shim:" + shim_type]
         all_lines.extend(lines)
@@ -233,8 +234,8 @@ class CmdShellIntegration(ShellIntegration):
         yield f'start /b "" cmd /c del "{script_path}"&exit /b'
 
     def remove_binary_shim(self, shims_path: str, name: str) -> str | None:
-        shim = os.path.join(shims_path, name + ".bat")
-        if not os.path.isfile(shim):
+        shim = str(Path(shims_path) / (name + ".bat"))
+        if not Path(shim).is_file():
             return None
         force_remove(shim)
         return shim
@@ -290,8 +291,8 @@ class CmdShellIntegration(ShellIntegration):
 
         :return:
         """
-        os.makedirs(shims_path, exist_ok=True)
-        shim = os.path.join(os.path.normpath(shims_path), shim_name + ".bat")
+        Path(shims_path).mkdir(parents=True, exist_ok=True)
+        shim = str(Path(os.path.normpath(shims_path)) / (shim_name + ".bat"))
 
         all_lines = ["@echo off", "REM ddb:shim:" + shim_type, "SHIFT"]
         all_lines.extend(lines)

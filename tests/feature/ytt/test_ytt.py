@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import pytest
 
@@ -51,11 +51,11 @@ class TestYttAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists("yaml.yml")
-        with open("yaml.yml") as f:
+        assert Path("yaml.yml").exists()
+        with Path("yaml.yml").open() as f:
             rendered = f.read()
 
-        with open("yaml.expected.yml") as f:
+        with Path("yaml.expected.yml").open() as f:
             expected = f.read()
 
         assert rendered == expected
@@ -73,11 +73,11 @@ class TestYttAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists("variables.yaml")
-        with open("variables.yaml") as f:
+        assert Path("variables.yaml").exists()
+        with Path("variables.yaml").open() as f:
             rendered = f.read()
 
-        with open("variables.expected.yaml") as f:
+        with Path("variables.expected.yaml").open() as f:
             expected = f.read()
 
         assert rendered == expected
@@ -95,8 +95,8 @@ class TestYttAction:
         action.initialize()
         action.execute()
 
-        assert not os.path.exists("yaml.txt")
-        assert not os.path.exists("yaml.yml")
+        assert not Path("yaml.txt").exists()
+        assert not Path("yaml.yml").exists()
 
     def test_depends_suffixes(self, project_loader):
         project_loader("depends_suffixes")
@@ -111,11 +111,11 @@ class TestYttAction:
         action.initialize()
         action.execute()
 
-        assert os.path.exists("variables.yaml")
-        with open("variables.yaml") as f:
+        assert Path("variables.yaml").exists()
+        with Path("variables.yaml").open() as f:
             rendered = f.read()
 
-        with open("variables.expected.yaml") as f:
+        with Path("variables.expected.yaml").open() as f:
             expected = f.read()
 
         assert rendered == expected
@@ -148,19 +148,19 @@ class TestYttAutofix:
         action.initialize()
         action.execute()
 
-        assert os.path.exists("variables.yaml")
-        with open("variables.yaml") as f:
+        assert Path("variables.yaml").exists()
+        with Path("variables.yaml").open() as f:
             rendered = f.read()
 
-        with open("variables.expected.yaml") as f:
+        with Path("variables.expected.yaml").open() as f:
             expected = f.read()
 
         assert expected == rendered
 
-        with open("variables.ytt.yaml") as f:
+        with Path("variables.ytt.yaml").open() as f:
             source = f.read()
 
-        with open("variables.yaml.autofix") as f:
+        with Path("variables.yaml.autofix").open() as f:
             fixed = f.read()
 
         assert source == fixed

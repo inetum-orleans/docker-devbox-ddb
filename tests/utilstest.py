@@ -1,6 +1,7 @@
 import os
 import re
 import time
+from pathlib import Path
 
 from cfssl import cfssl
 
@@ -20,16 +21,16 @@ def load_config(data_dir: str | None = None, name: str | None = None):
 
 
 def init_config_paths(data_dir: str | None = None, name: str | None = None):
-    root_dir = os.path.join(data_dir, name) if name else data_dir
+    root_dir = str(Path(data_dir) / name) if name else data_dir
 
     paths = ConfigPaths(
-        ddb_home=os.path.join(root_dir, "ddb_home"),
-        home=os.path.join(root_dir, "home"),
-        user_home=os.path.join(root_dir, "user_home"),
-        project_home=os.path.join(root_dir, "project"),
+        ddb_home=str(Path(root_dir) / "ddb_home"),
+        home=str(Path(root_dir) / "home"),
+        user_home=str(Path(root_dir) / "user_home"),
+        project_home=str(Path(root_dir) / "project"),
     )
 
-    if not [path for path in paths if os.path.isdir(path)]:
+    if not [path for path in paths if Path(path).is_dir()]:
         paths = ConfigPaths(ddb_home=None, home=None, user_home=None, project_home=root_dir)
 
     config.paths = paths
@@ -77,8 +78,8 @@ def setup_cfssl(container_getter):
 def expect_gitignore(gitignore: str, *expected_lines: str):
     in_block_lines = set()
 
-    if os.path.exists(gitignore):
-        with open(gitignore) as file:
+    if Path(gitignore).exists():
+        with Path(gitignore).open() as file:
             inside_block = False
             for gitignore_line in file.read().splitlines():
                 if UpdateGitignoreAction._is_block_limit(gitignore_line, start=True):

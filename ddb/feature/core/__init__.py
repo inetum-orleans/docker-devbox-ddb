@@ -1,7 +1,7 @@
-import os
 import platform
 from argparse import ArgumentParser
 from collections.abc import Iterable
+from pathlib import Path
 
 import distro
 from dotty_dict import Dotty
@@ -189,7 +189,7 @@ class CoreFeature(Feature):
 
     def _configure_defaults(self, feature_config: Dotty):
         if not feature_config.get("project.name"):
-            project_name = os.path.basename(config.paths.project_home)
+            project_name = Path(config.paths.project_home).name
             feature_config["project.name"] = project_name
 
         if not feature_config.get("domain.sub"):

@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 from ddb.__main__ import load_registered_features, main
 from ddb.feature import features
@@ -44,7 +44,7 @@ class TestUpdateGitIgnoreAction:
         action.execute(target="./to-ignore.yml")
         action.execute(target="./to-ignore-2.yml")
 
-        assert os.path.exists(".gitignore")
+        assert Path(".gitignore").exists()
         assert expect_gitignore(".gitignore", "/to-ignore.yml", "/to-ignore-2.yml")
 
     def test_empty_project_with_core(self, project_loader):
@@ -57,12 +57,12 @@ class TestUpdateGitIgnoreAction:
         action = UpdateGitignoreAction()
         action.execute(target="./to-ignore.yml")
 
-        assert os.path.exists(".gitignore")
+        assert Path(".gitignore").exists()
         assert expect_gitignore(".gitignore", "/to-ignore.yml")
 
         action.remove("./to-ignore.yml")
 
-        assert not os.path.exists(".gitignore")
+        assert not Path(".gitignore").exists()
 
     def test_empty_skip_outside_additions(self, project_loader):
         project_loader("empty")
@@ -74,13 +74,13 @@ class TestUpdateGitIgnoreAction:
         action = UpdateGitignoreAction()
         action.execute(target="../outside/to-ignore.yml")
 
-        assert not os.path.exists(".gitignore")
+        assert not Path(".gitignore").exists()
 
     def test_already_ignored(self, project_loader):
         project_loader("already_ignored")
 
-        assert os.path.exists(".gitignore")
-        with open(".gitignore") as f:
+        assert Path(".gitignore").exists()
+        with Path(".gitignore").open() as f:
             expected_gitignore = f.read()
 
         features.register(GitignoreFeature())
@@ -89,8 +89,8 @@ class TestUpdateGitIgnoreAction:
         action = UpdateGitignoreAction()
         action.execute(target="./exists.yml")
 
-        assert os.path.exists(".gitignore")
-        with open(".gitignore") as f:
+        assert Path(".gitignore").exists()
+        with Path(".gitignore").open() as f:
             gitignore = f.read()
 
         assert gitignore == expected_gitignore
@@ -98,8 +98,8 @@ class TestUpdateGitIgnoreAction:
     def test_remove_empty_block(self, project_loader):
         project_loader("already_ignored")
 
-        assert os.path.exists(".gitignore")
-        with open(".gitignore") as f:
+        assert Path(".gitignore").exists()
+        with Path(".gitignore").open() as f:
             expected_gitignore = f.read()
 
         features.register(GitignoreFeature())
@@ -109,8 +109,8 @@ class TestUpdateGitIgnoreAction:
         action.execute(target="./another.yml")
 
         action.remove("./another.yml")
-        assert os.path.exists(".gitignore")
-        with open(".gitignore") as f:
+        assert Path(".gitignore").exists()
+        with Path(".gitignore").open() as f:
             gitignore = f.read()
 
         assert gitignore == expected_gitignore
@@ -118,8 +118,8 @@ class TestUpdateGitIgnoreAction:
     def test_keep_negated(self, project_loader):
         project_loader("keep_negated")
 
-        assert os.path.exists(".gitignore")
-        with open(".gitignore") as f:
+        assert Path(".gitignore").exists()
+        with Path(".gitignore").open() as f:
             expected_gitignore = f.read()
 
         features.register(GitignoreFeature())
@@ -128,8 +128,8 @@ class TestUpdateGitIgnoreAction:
         action = UpdateGitignoreAction()
         action.execute(target="./exists.yml")
 
-        assert os.path.exists(".gitignore")
-        with open(".gitignore") as f:
+        assert Path(".gitignore").exists()
+        with Path(".gitignore").open() as f:
             gitignore = f.read()
 
         assert gitignore == expected_gitignore
@@ -139,14 +139,14 @@ class TestUpdateGitIgnoreAction:
 
         main(["configure"])
 
-        assert os.path.exists(os.path.join(".gitignore"))
+        assert Path(".gitignore").exists()
         assert expect_gitignore(".gitignore", "/*ddb.local.*")
 
         # TODO faire fonctionner ce test
         # config.data.__setitem__('gitignore.enforce', ['config.txt'])
         # main(["configure"])
         #
-        # assert os.path.exists(os.path.join('.gitignore'))
+        # assert Path('.gitignore').exists()
         # assert not expect_gitignore('.gitignore', '*ddb.local.*')
         # assert expect_gitignore('.gitignore', 'config.txt')
 

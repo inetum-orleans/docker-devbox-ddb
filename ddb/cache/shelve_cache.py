@@ -1,7 +1,7 @@
 import dbm
-import os
 import shelve
 import tempfile
+from pathlib import Path
 
 from ..config import config
 from .cache import Cache
@@ -25,13 +25,10 @@ class ShelveCache(Cache):
 
         clear_cache = config.clear_cache and not eternal
 
-        if config.paths.home:
-            path = os.path.join(config.paths.home, "cache")
-        else:
-            path = os.path.join(tempfile.gettempdir(), "ddb", "cache")
-        os.makedirs(path, exist_ok=True)
+        path = Path(config.paths.home) / "cache" if config.paths.home else Path(tempfile.gettempdir()) / "ddb" / "cache"
+        path.mkdir(parents=True, exist_ok=True)
 
-        self.basename = os.path.join(path, self._namespace)
+        self.basename = str(path / self._namespace)
         if clear_cache:
             self._delete_files(self.basename)
         try:
@@ -51,8 +48,8 @@ class ShelveCache(Cache):
     def _delete_files(basename):
         deleted = False
         for filename in (basename, f"{basename}.dat", f"{basename}.dir"):
-            if os.path.exists(filename):
-                os.remove(filename)
+            if Path(filename).exists():
+                Path(filename).unlink()
                 deleted = True
         return deleted
 

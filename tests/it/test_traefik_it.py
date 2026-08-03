@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import pytest
 
@@ -16,17 +16,17 @@ class TestTraefik:
 
         main(["configure"])
 
-        api_toml = os.path.join(config.paths.home, "traefik", "config", "sub.project.test.extra-service.api.toml")
-        cert = os.path.join(config.paths.home, "certs", "sub.project.test.crt")
-        key = os.path.join(config.paths.home, "certs", "sub.project.test.key")
-        web_toml = os.path.join(config.paths.home, "traefik", "config", "rule.project.test.extra-service.web.toml")
+        api_toml = str(Path(config.paths.home) / "traefik" / "config" / "sub.project.test.extra-service.api.toml")
+        cert = str(Path(config.paths.home) / "certs" / "sub.project.test.crt")
+        key = str(Path(config.paths.home) / "certs" / "sub.project.test.key")
+        web_toml = str(Path(config.paths.home) / "traefik" / "config" / "rule.project.test.extra-service.web.toml")
 
-        assert os.path.exists(api_toml)
-        assert os.path.exists(cert)
-        assert os.path.exists(key)
-        assert os.path.exists(web_toml)
+        assert Path(api_toml).exists()
+        assert Path(cert).exists()
+        assert Path(key).exists()
+        assert Path(web_toml).exists()
 
-        with open("ddb.yml", "w"):
+        with Path("ddb.yml").open("w"):
             pass
 
         Config.defaults = {"defaults": {"fail_fast": True}}
@@ -35,10 +35,10 @@ class TestTraefik:
 
         main(["configure"])
 
-        assert not os.path.exists(api_toml)
-        assert not os.path.exists(cert)
-        assert not os.path.exists(key)
-        assert not os.path.exists(web_toml)
+        assert not Path(api_toml).exists()
+        assert not Path(cert).exists()
+        assert not Path(key).exists()
+        assert not Path(web_toml).exists()
 
     @pytest.mark.docker
     def test_traefik_extra_services_without_remove(self, project_loader, module_scoped_container_getter):
@@ -48,19 +48,19 @@ class TestTraefik:
 
         main(["configure"])
 
-        api_toml = os.path.join(config.paths.home, "traefik", "config", "sub.project.test.extra-service.api.toml")
-        cert = os.path.join(config.paths.home, "certs", "sub.project.test.crt")
-        key = os.path.join(config.paths.home, "certs", "sub.project.test.key")
-        web_toml = os.path.join(config.paths.home, "traefik", "config", "rule.project.test.extra-service.web.toml")
+        api_toml = str(Path(config.paths.home) / "traefik" / "config" / "sub.project.test.extra-service.api.toml")
+        cert = str(Path(config.paths.home) / "certs" / "sub.project.test.crt")
+        key = str(Path(config.paths.home) / "certs" / "sub.project.test.key")
+        web_toml = str(Path(config.paths.home) / "traefik" / "config" / "rule.project.test.extra-service.web.toml")
 
-        assert os.path.exists(api_toml)
-        assert os.path.exists(cert)
-        assert os.path.exists(key)
-        assert os.path.exists(web_toml)
+        assert Path(api_toml).exists()
+        assert Path(cert).exists()
+        assert Path(key).exists()
+        assert Path(web_toml).exists()
 
         main(["configure"])
 
-        assert os.path.exists(api_toml)
-        assert os.path.exists(cert)
-        assert os.path.exists(key)
-        assert os.path.exists(web_toml)
+        assert Path(api_toml).exists()
+        assert Path(cert).exists()
+        assert Path(key).exists()
+        assert Path(web_toml).exists()

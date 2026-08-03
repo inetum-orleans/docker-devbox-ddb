@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import yaml
 
@@ -19,13 +20,13 @@ def test_load_and_clear(data_dir):
     Config.overrides = None
 
     ddb_home, home, user_home, project = (
-        os.path.join(data_dir, "load", "ddb_home"),
-        os.path.join(data_dir, "load", "home"),
-        os.path.join(data_dir, "load", "user_home"),
-        os.path.join(data_dir, "load", "project"),
+        str(Path(data_dir) / "load" / "ddb_home"),
+        str(Path(data_dir) / "load" / "home"),
+        str(Path(data_dir) / "load" / "user_home"),
+        str(Path(data_dir) / "load" / "project"),
     )
 
-    with open(os.path.join(data_dir, "load", "expect.yml"), "rb") as stream:
+    with (Path(data_dir) / "load" / "expect.yml").open("rb") as stream:
         expected = yaml.load(stream, Loader=yaml.FullLoader)
 
     config = Config(paths=(ddb_home, home, user_home, project))
@@ -42,16 +43,16 @@ def test_load_with_env_overrides(data_dir):
     Config.overrides = None
 
     ddb_home, home, user_home, project = (
-        os.path.join(data_dir, "load", "ddb_home"),
-        os.path.join(data_dir, "load", "home"),
-        os.path.join(data_dir, "load", "user_home"),
-        os.path.join(data_dir, "load", "project"),
+        str(Path(data_dir) / "load" / "ddb_home"),
+        str(Path(data_dir) / "load" / "home"),
+        str(Path(data_dir) / "load" / "user_home"),
+        str(Path(data_dir) / "load" / "project"),
     )
 
     os.environ["DDB_OVERRIDE_SOME_DEEP"] = "env"
     os.environ["DDB_OVERRIDE_SOME_LIST[1]"] = "replaced"
 
-    with open(os.path.join(data_dir, "load", "expect_env.yml"), "rb") as stream:
+    with (Path(data_dir) / "load" / "expect_env.yml").open("rb") as stream:
         expected = yaml.load(stream, Loader=yaml.FullLoader)
 
     config = Config(paths=(ddb_home, home, user_home, project))
@@ -61,7 +62,7 @@ def test_load_with_env_overrides(data_dir):
 
 
 def test_load_env_variables(data_dir):
-    env = os.path.join(data_dir, "load", "env")
+    env = str(Path(data_dir) / "load" / "env")
 
     config = Config(paths=(env,))
     config.load()

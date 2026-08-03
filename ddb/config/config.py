@@ -3,13 +3,13 @@ from argparse import Namespace
 from collections import namedtuple
 from collections.abc import Iterable
 from copy import deepcopy
-from os.path import exists
 from pathlib import Path
 
 import yaml
 
 from ddb.config.merger import config_merger
 from ddb.config.migrations import MigrationsDotty
+from ddb.utils.path import absolute_path
 
 ConfigPaths = namedtuple("ConfigPaths", ["ddb_home", "home", "user_home", "project_home"])
 
@@ -21,8 +21,8 @@ def configuration_file(path: str, filenames: Iterable[str], extensions: Iterable
     if path:
         for basename in filenames:
             for ext in extensions:
-                file = os.path.join(path, basename + "." + ext)
-                if exists(file):
+                file = str(Path(path) / (basename + "." + ext))
+                if Path(file).exists():
                     return file
     return None
 
@@ -33,20 +33,20 @@ def get_default_config_paths(env_prefix, filenames, extensions) -> ConfigPaths:
     """
     project_home = os.environ.get(env_prefix + "_PROJECT_HOME")
     if not project_home:
-        project_home_candidate = os.getcwd()
+        project_home_candidate = str(Path.cwd())
         while not configuration_file(project_home_candidate, filenames, extensions):
             project_home_candidate_parent = str(Path(project_home_candidate).parent)
             if project_home_candidate_parent == project_home_candidate:
-                project_home_candidate = os.getcwd()
+                project_home_candidate = str(Path.cwd())
                 break
             project_home_candidate = project_home_candidate_parent
         project_home = project_home_candidate
 
-    project_home = os.path.abspath(project_home)
+    project_home = absolute_path(project_home)
 
     user_home = os.environ.get(env_prefix + "_USER_HOME", str(Path.home()))
-    home = os.environ.get(env_prefix + "_HOME", os.path.join(user_home, ".docker-devbox"))
-    ddb_home = os.environ.get(env_prefix + "_DDB_HOME", os.path.join(home, "ddb"))
+    home = os.environ.get(env_prefix + "_HOME", str(Path(user_home) / ".docker-devbox"))
+    ddb_home = os.environ.get(env_prefix + "_DDB_HOME", str(Path(home) / "ddb"))
 
     return ConfigPaths(ddb_home=ddb_home, home=home, user_home=user_home, project_home=project_home)
 
@@ -149,10 +149,10 @@ class Config:
                 continue
             for basename in self.filenames:
                 for ext in self.extensions:
-                    if basename.endswith("." + ext) and os.path.exists(os.path.join(path, basename)):
-                        file = os.path.join(path, basename)
+                    if basename.endswith("." + ext) and (Path(path) / basename).exists():
+                        file = str(Path(path) / basename)
                     else:
-                        file = os.path.join(path, basename + "." + ext)
+                        file = str(Path(path) / (basename + "." + ext))
                     ret.append(file)
         return ret
 
@@ -168,8 +168,8 @@ class Config:
         found_files = {}
 
         for file in files:
-            if exists(file):
-                with open(file, "rb") as stream:
+            if Path(file).exists():
+                with Path(file).open("rb") as stream:
                     file_data = yaml.safe_load(stream)
                     found_files[file] = self.apply_environ_overrides(deepcopy(file_data))
                     if file_data:

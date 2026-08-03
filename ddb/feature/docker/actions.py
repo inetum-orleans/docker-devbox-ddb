@@ -59,7 +59,7 @@ class EmitDockerComposeConfigAction(Action):
         """
         Execute action.
         """
-        if not os.path.exists("docker-compose.yml"):
+        if not Path("docker-compose.yml").exists():
             return
 
         control = DockerComposeControl()
@@ -338,8 +338,8 @@ class LocalVolumesAction(Action):
                     related_path = str(PurePosixPath().joinpath(source_a, relative_destination))
                     rel_related_path = os.path.relpath(os.path.normpath(str(related_path)), ".")
 
-                    if not os.path.exists(rel_related_path):
-                        os.makedirs(rel_related_path)
+                    if not Path(rel_related_path).exists():
+                        Path(rel_related_path).mkdir(parents=True)
                         context.log.info("Local volume source: %s (related directory created)", rel_related_path)
 
                     self._fix_owner(rel_related_path)
@@ -347,7 +347,7 @@ class LocalVolumesAction(Action):
     @staticmethod
     def _fix_owner(relative_path):
         if hasattr(os, "chown"):
-            stat_info = os.stat(relative_path)
+            stat_info = Path(relative_path).stat()
             uid = stat_info.st_uid
             gid = stat_info.st_gid
             if uid != config.data.get("docker.user.uid") and gid != config.data.get("docker.user.gid"):
@@ -378,23 +378,23 @@ class LocalVolumesAction(Action):
             source = posix_as_path_fast(source)
 
         rel_source = os.path.relpath(source, ".")
-        if os.path.exists(source):
+        if Path(source).exists():
             context.log.notice("Local volume source: %s (exists)", rel_source)
         else:
-            _, source_ext = os.path.splitext(source)
+            source_ext = Path(source).suffix
             target_ext = None
             if target:
-                _, target_ext = os.path.splitext(target)
+                target_ext = Path(target).suffix
             if source_ext or target_ext:
                 # Create empty file, because with have an extension in source or target.
-                os.makedirs(str(Path(source).parent), exist_ok=True)
+                Path(source).parent.mkdir(parents=True, exist_ok=True)
                 context.log.info("Local volume source: %s (file created)", rel_source)
-                with open(source, "wb"):
+                with Path(source).open("wb"):
                     pass
                 events.file.generated(source=None, target=rel_source)
             else:
                 # Create empty directory, because neither source or target has an extension.
-                os.makedirs(source)
+                Path(source).mkdir(parents=True)
                 context.log.info("Local volume source: %s (directory created)", rel_source)
         LocalVolumesAction._fix_owner(rel_source)
 
@@ -459,7 +459,7 @@ class DockerDisplayInfoAction(Action):
         """
         Execute action.
         """
-        if not os.path.exists("docker-compose.yml"):
+        if not Path("docker-compose.yml").exists():
             return
 
         control = DockerComposeControl()

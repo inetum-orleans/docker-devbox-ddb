@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import pytest
 import yaml
@@ -15,11 +15,11 @@ class TestJsonnet:
 
         main(["configure"])
 
-        assert os.path.exists("config.yml")
-        with open("config.yml") as f:
+        assert Path("config.yml").exists()
+        with Path("config.yml").open() as f:
             variables = f.read()
 
-        with open("config.expected.yml") as f:
+        with Path("config.expected.yml").open() as f:
             variables_expected = f.read()
 
         assert variables == variables_expected
@@ -32,11 +32,11 @@ class TestDockerJsonnet:
 
         main(["configure"], reset_disabled=True)
 
-        assert os.path.exists("docker-compose.yml")
-        with open("docker-compose.yml") as f:
+        assert Path("docker-compose.yml").exists()
+        with Path("docker-compose.yml").open() as f:
             docker_compose = yaml.load(f, yaml.SafeLoader)
 
-        with open("docker-compose.expected.yml") as f:
+        with Path("docker-compose.expected.yml").open() as f:
             expected_data = f.read()
             expected_data = expected_data.replace(
                 "%network_name%", str(config.data.get("jsonnet.docker.compose.network_name"))
@@ -61,11 +61,11 @@ class TestDockerJsonnet:
 
         main(["configure"], reset_disabled=True)
 
-        assert os.path.exists("docker-compose.yml")
-        with open("docker-compose.yml") as f:
+        assert Path("docker-compose.yml").exists()
+        with Path("docker-compose.yml").open() as f:
             docker_compose = yaml.load(f, yaml.SafeLoader)
 
-        with open("docker-compose.expected.yml") as f:
+        with Path("docker-compose.expected.yml").open() as f:
             expected_data = f.read()
             expected_data = expected_data.replace(
                 "%network_name%", str(config.data.get("jsonnet.docker.compose.network_name"))
@@ -80,11 +80,11 @@ class TestDockerJsonnet:
 
         main(["configure"], reset_disabled=True)
 
-        assert os.path.exists("docker-compose.yml")
-        with open("docker-compose.yml") as f:
+        assert Path("docker-compose.yml").exists()
+        with Path("docker-compose.yml").open() as f:
             docker_compose = yaml.safe_load(f)
 
-        with open("docker-compose.expected.yml") as f:
+        with Path("docker-compose.expected.yml").open() as f:
             expected_data = f.read()
             expected_data = expected_data.replace(
                 "%network_name%", str(config.data.get("jsonnet.docker.compose.network_name"))

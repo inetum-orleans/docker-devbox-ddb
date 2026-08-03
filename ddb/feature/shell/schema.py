@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 from marshmallow import Schema, fields
 
@@ -15,10 +15,10 @@ def _get_path_default():
         _path_default.append("bin")
 
     if config.paths.home:
-        _path_default.append(os.path.join(config.paths.home, ".bin"))
+        _path_default.append(str(Path(config.paths.home) / ".bin"))
 
     if config.paths.ddb_home:
-        _path_default.append(os.path.join(config.paths.ddb_home, ".bin"))
+        _path_default.append(str(Path(config.paths.ddb_home) / ".bin"))
 
     return _path_default
 

@@ -8,6 +8,7 @@ from argparse import ArgumentParser, Namespace
 from collections.abc import Callable, Iterable, Sequence
 from gettext import gettext as _
 from importlib import import_module
+from pathlib import Path
 
 import verboselogs
 from colorlog import ColoredFormatter, default_log_colors
@@ -42,6 +43,7 @@ from ddb.feature.core import ConfigureSecondPassException
 from ddb.phase import phases
 from ddb.registry import Registry, RegistryObject
 from ddb.service import services
+from ddb.utils.path import absolute_path
 
 _watch_started_event = threading.Event()
 _watch_stop_event = threading.Event()
@@ -50,9 +52,9 @@ _watch_stop_event = threading.Event()
 def load_plugins():
     """Load plugins."""
     for directory in [d for d in config.paths if d]:
-        extension_directory = os.path.join(directory, ".ddb")
-        if os.path.exists(extension_directory):
-            sys.path.append(os.path.abspath(extension_directory))
+        extension_directory = str(Path(directory) / ".ddb")
+        if Path(extension_directory).exists():
+            sys.path.append(absolute_path(extension_directory))
             for dirpath, _, files in os.walk(extension_directory):
                 module_name = os.path.relpath(dirpath, extension_directory).replace(os.sep, ".")
                 if module_name == ".":
@@ -62,7 +64,7 @@ def load_plugins():
                     if file == "__init__.py":
                         _load_plugins_module(module_name)
                     elif file.endswith("py"):
-                        file_module_name = os.path.splitext(file)[0]
+                        file_module_name = Path(file).stem
                         _load_plugins_module(
                             file_module_name if not module_name else ".".join((module_name, file_module_name))
                         )
@@ -88,7 +90,7 @@ def prepare_project_home():
     Set working directory to project home.
     """
     if config.paths.project_home:
-        config.cwd = os.getcwd()
+        config.cwd = str(Path.cwd())
         os.chdir(config.paths.project_home)
 
 
@@ -404,7 +406,7 @@ def main(
     global _watch_started_event, _watch_stop_event
     _watch_started_event = threading.Event()
     _watch_stop_event = threading.Event()
-    initial_cwd = os.getcwd()
+    initial_cwd = str(Path.cwd())
     try:
         load_plugins()
         bootstrap_register_features()

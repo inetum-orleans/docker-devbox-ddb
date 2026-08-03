@@ -4,6 +4,7 @@ import json
 import os
 import shlex
 from collections.abc import Iterable
+from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 import zgitignore
@@ -40,8 +41,8 @@ def get_shims_path(*, global_: bool = False):
 
     shim_directory = None
     for directory in directories:
-        if not os.path.isabs(directory):
-            directory = os.path.join(config.paths.project_home, directory)
+        if not Path(directory).is_absolute():
+            directory = str(Path(config.paths.project_home) / directory)
         if directory.startswith(shim_directory_prefix) and (
             not forbidden_shim_directory_prefix or not directory.startswith(forbidden_shim_directory_prefix)
         ):
@@ -306,7 +307,7 @@ class ActivateAction(Action):
             path_directories = config.data.get("shell.path.directories")
             if path_directories:
                 path_additions = (
-                    os.path.normpath(os.path.join(config.paths.project_home, path_addition))
+                    os.path.normpath(Path(config.paths.project_home) / path_addition)
                     for path_addition in path_directories
                 )
                 file.writelines("\n".join(add_to_system_path(self.shell, path_additions)))
@@ -521,7 +522,7 @@ class CommandAction(Action):
                 path_directories = config.data.get("shell.path.directories")
                 if path_directories:
                     path_additions = (
-                        os.path.normpath(os.path.join(config.paths.project_home, path_addition))
+                        os.path.normpath(Path(config.paths.project_home) / path_addition)
                         for path_addition in path_directories
                     )
                     for instruction in remove_from_system_path(self.shell, path_additions):

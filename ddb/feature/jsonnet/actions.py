@@ -1,8 +1,8 @@
 import json
-import os
 import re
 from collections.abc import Iterable
 from importlib import import_module
+from pathlib import Path
 
 import yaml
 from _jsonnet import evaluate_file
@@ -41,14 +41,12 @@ class JsonnetAction(AbstractTemplateAction):
         multiple_file_output, multiple_file_dir = JsonnetAction._parse_multiple_header(template, target)
         if multiple_file_output:
             for filename, content in json.loads(evaluated).items():
-                evaluated_target_path = os.path.join(multiple_file_dir, filename)
-                evaluated_target_parent_path = os.path.dirname(evaluated_target_path)
-                if evaluated_target_parent_path and not os.path.exists(evaluated_target_parent_path):
-                    os.makedirs(evaluated_target_parent_path)
+                evaluated_target_path = str(Path(multiple_file_dir) / filename)
+                Path(evaluated_target_path).parent.mkdir(parents=True, exist_ok=True)
 
                 yield content, evaluated_target_path
         else:
-            ext = os.path.splitext(target)[-1]
+            ext = Path(target).suffix
             if ext.lower() in [".yaml", ".yml"]:
                 data = json.loads(evaluated)
                 self._do_postprocess(data)
@@ -90,7 +88,7 @@ class JsonnetAction(AbstractTemplateAction):
             if property_migration and not property_migration.requires_value_migration:
                 property_migration.warn(original_template)
 
-                with open(template, encoding="utf-8") as template_file:
+                with Path(template).open(encoding="utf-8") as template_file:
                     initial_template_data = template_file.read()
                     template_data = initial_template_data
                     template_data = template_data.replace(
@@ -109,7 +107,7 @@ class JsonnetAction(AbstractTemplateAction):
                         "jsonnet",
                         mode="w",
                         prefix="",
-                        suffix="." + os.path.basename(original_template),
+                        suffix="." + Path(original_template).name,
                         encoding="utf-8",
                     ) as tmp_file:
                         tmp_file.write(template_data)
@@ -136,18 +134,18 @@ class JsonnetAction(AbstractTemplateAction):
             template_path,
             ext_vars=ext_vars,
             ext_codes=ext_codes,
-            jpathdir=os.path.join(os.path.dirname(__file__), "lib"),
+            jpathdir=str(Path(__file__).parent / "lib"),
         )
 
     @staticmethod
     def _parse_multiple_header(template_path, target_path):
         multiple_file_output = False
         multiple_file_dir = None
-        with open(template_path, encoding="utf-8") as template:
+        with Path(template_path).open(encoding="utf-8") as template:
             first_line = template.readline()
             if first_line.startswith("// multiple-file-output"):
                 multiple_file_output = True
-                multiple_file_dir = os.path.dirname(target_path)
+                multiple_file_dir = str(Path(target_path).parent)
             first_line_splitted = first_line.rsplit(":", 1)
             if len(first_line_splitted) > 1:
                 multiple_file_dir = first_line_splitted[-1].strip()

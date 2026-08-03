@@ -1,5 +1,5 @@
-import os
 import shlex
+from pathlib import Path
 from subprocess import CalledProcessError
 
 import yaml
@@ -51,7 +51,7 @@ class DockerComposeControl:
         :raise DockerComposeYamlMissingException: in case of missing docker-compose.yml in folder
         :return:
         """
-        if not os.path.exists("docker-compose.yml"):
+        if not Path("docker-compose.yml").exists():
             raise DockerComposeYamlMissingException
         if name is None:
             run(*self.docker_compose_command, "up", "-d")
@@ -66,7 +66,7 @@ class DockerComposeControl:
         :raise DockerComposeYamlMissingException: in case of missing docker-compose.yml in folder
         :return:
         """
-        if not os.path.exists("docker-compose.yml"):
+        if not Path("docker-compose.yml").exists():
             raise DockerComposeYamlMissingException
         if name is None:
             run(*self.docker_compose_command, "stop")
@@ -81,7 +81,7 @@ class DockerComposeControl:
         :raise DockerComposeYamlMissingException: in case of missing docker-compose.yml in folder
         :return:
         """
-        if not os.path.exists("docker-compose.yml"):
+        if not Path("docker-compose.yml").exists():
             raise DockerComposeYamlMissingException
         if name is None:
             run(*self.docker_compose_command, "start")
@@ -96,7 +96,7 @@ class DockerComposeControl:
         :raise DockerComposeYamlMissingException: in case of missing docker-compose.yml in folder
         :return:
         """
-        if not os.path.exists("docker-compose.yml"):
+        if not Path("docker-compose.yml").exists():
             raise DockerComposeYamlMissingException
         run(*self.docker_compose_command, "down")
 
@@ -108,7 +108,7 @@ class DockerComposeControl:
         :raise DockerComposeYamlMissingException: in case of missing docker-compose.yml in folder
         :return:
         """
-        if not os.path.exists("docker-compose.yml"):
+        if not Path("docker-compose.yml").exists():
             raise DockerComposeYamlMissingException
         try:
             container_id = run(*self.docker_compose_command, "ps", "-q", name).decode("utf-8").rstrip()
@@ -128,7 +128,7 @@ class DockerComposeControl:
         :raise DockerComposeYamlMissingException: in case of missing docker-compose.yml
         :return:
         """
-        if not os.path.exists("docker-compose.yml"):
+        if not Path("docker-compose.yml").exists():
             raise DockerComposeYamlMissingException
 
         compose_config = run(*self.docker_compose_command, "config")
@@ -144,4 +144,4 @@ class DockerComposeYamlMissingException(Exception):
 
     def __init__(self):
         super().__init__()
-        self.message = f"There is no docker-compose.yml file in current folder ({os.getcwd()})"
+        self.message = f"There is no docker-compose.yml file in current folder ({Path.cwd()})"

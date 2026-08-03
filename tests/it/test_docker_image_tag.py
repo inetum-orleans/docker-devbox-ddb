@@ -1,5 +1,5 @@
-import os
 import zipfile
+from pathlib import Path
 
 import yaml
 from dotty_dict import Dotty
@@ -18,15 +18,15 @@ class TestDockerImageTag:
 
         project_loader("image_tag_from_git_tag")
 
-        if os.path.exists("repo.zip"):
+        if Path("repo.zip").exists():
             with zipfile.ZipFile("repo.zip", "r") as zip_ref:
                 zip_ref.extractall(".")
 
         main(["configure"])
 
-        assert os.path.exists("docker-compose.yml")
+        assert Path("docker-compose.yml").exists()
 
-        with open("docker-compose.yml") as f:
+        with Path("docker-compose.yml").open() as f:
             docker_compose = yaml.load(f, yaml.SafeLoader)
             assert Dotty(docker_compose).get("services.node.image") == "some-registry/node:some-tag"
 
@@ -37,13 +37,13 @@ class TestDockerImageTag:
 
         project_loader("image_tag_from_git_branch")
 
-        if os.path.exists("repo.zip"):
+        if Path("repo.zip").exists():
             with zipfile.ZipFile("repo.zip", "r") as zip_ref:
                 zip_ref.extractall(".")
 
         main(["configure"])
 
-        with open("docker-compose.yml") as f:
+        with Path("docker-compose.yml").open() as f:
             docker_compose = yaml.load(f, yaml.SafeLoader)
             assert Dotty(docker_compose).get("services.node.image") == "some-registry/node:some-branch"
 
@@ -54,12 +54,12 @@ class TestDockerImageTag:
 
         project_loader("image_tag_from_git_disabled")
 
-        if os.path.exists("repo.zip"):
+        if Path("repo.zip").exists():
             with zipfile.ZipFile("repo.zip", "r") as zip_ref:
                 zip_ref.extractall(".")
 
         main(["configure"])
 
-        with open("docker-compose.yml") as f:
+        with Path("docker-compose.yml").open() as f:
             docker_compose = yaml.load(f, yaml.SafeLoader)
             assert Dotty(docker_compose).get("services.node.image") == "some-registry/node"

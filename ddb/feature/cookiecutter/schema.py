@@ -1,5 +1,5 @@
-import os
 import tempfile
+from pathlib import Path
 
 from marshmallow import Schema, fields
 
@@ -31,7 +31,7 @@ class TemplateSchema(CookiecutterOptions):
     version = fields.String(allow_none=True, dump_default=None)
 
 
-cookiecutter_tmp_dir = os.path.join(tempfile.gettempdir(), "ddb", "cookiecutter")
+cookiecutter_tmp_dir = str(Path(tempfile.gettempdir()) / "ddb" / "cookiecutter")
 
 
 class CookiecutterFeatureSchema(FeatureSchema, CookiecutterOptions):
@@ -40,6 +40,6 @@ class CookiecutterFeatureSchema(FeatureSchema, CookiecutterOptions):
     """
 
     templates = fields.List(fields.Nested(TemplateSchema()))
-    cookiecutters_dir = fields.String(allow_none=True, dump_default=os.path.join(cookiecutter_tmp_dir, "templates"))
-    replay_dir = fields.String(allow_none=True, dump_default=os.path.join(cookiecutter_tmp_dir, "replay"))
+    cookiecutters_dir = fields.String(allow_none=True, dump_default=str(Path(cookiecutter_tmp_dir) / "templates"))
+    replay_dir = fields.String(allow_none=True, dump_default=str(Path(cookiecutter_tmp_dir) / "replay"))
     default_context = fields.Dict(allow_none=True)

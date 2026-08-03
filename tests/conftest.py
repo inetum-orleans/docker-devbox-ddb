@@ -2,6 +2,7 @@ import os
 import shutil
 import zipfile
 from collections.abc import Callable
+from pathlib import Path
 
 import pytest
 from _pytest.fixtures import FixtureRequest
@@ -18,16 +19,13 @@ from .utilstest import init_config_paths
 @pytest.fixture(scope="module")
 def global_data_dir(request: FixtureRequest) -> str:
     filename = request.module.__file__
-    dirname = os.path.dirname(filename)
-    return os.path.join(os.path.join(dirname, "data"))
+    return str(Path(filename).parent / "data")
 
 
 @pytest.fixture(scope="module")
 def data_dir(global_data_dir: str, request: FixtureRequest) -> str:
     filename = request.module.__file__
-    dirname = os.path.dirname(global_data_dir)
-    data_dirname, _ = os.path.splitext(os.path.basename(filename))
-    return os.path.join(dirname, data_dirname + ".data")
+    return str(Path(global_data_dir).parent / (Path(filename).stem + ".data"))
 
 
 @pytest.fixture
@@ -35,7 +33,7 @@ def project_loader(
     data_dir: str, tmp_path_factory: TempPathFactory, request: FixtureRequest
 ) -> Callable[[str | None], Config]:
     def load(name: str | None = None, before_load_config=None, config_provider=init_config_paths):
-        root_dir = os.path.join(data_dir, name) if name else data_dir
+        root_dir = str(Path(data_dir) / name) if name else data_dir
 
         tmp_path = tmp_path_factory.mktemp(request.function.__name__)  # type: Path
         tmp_path.rmdir()
@@ -47,7 +45,7 @@ def project_loader(
         conf = config_provider(str(tmp_path))
         os.chdir(str(conf.paths.project_home))
 
-        if os.path.exists("repo.zip"):
+        if Path("repo.zip").exists():
             with zipfile.ZipFile("repo.zip", "r") as zip_ref:
                 zip_ref.extractall(".")
 
@@ -59,7 +57,7 @@ def project_loader(
 @pytest.fixture(autouse=True)
 def configure(mocker: MockerFixture):
     original_environ = dict(os.environ)
-    cwd = os.getcwd()
+    cwd = str(Path.cwd())
 
     Config.defaults = {"defaults": {"fail_fast": True}}
 

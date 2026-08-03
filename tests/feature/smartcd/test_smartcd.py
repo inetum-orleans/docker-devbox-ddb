@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import pytest
 from pytest_mock import MockerFixture
@@ -23,8 +23,8 @@ class TestSmartcdAction:
         action = SmartcdAction()
         action.execute()
 
-        assert not os.path.exists(".bash_enter")
-        assert not os.path.exists(".bash_leave")
+        assert not Path(".bash_enter").exists()
+        assert not Path(".bash_leave").exists()
 
     def test_empty_project_with_core(self, project_loader, mocker: MockerFixture):
         mocker.patch("ddb.feature.smartcd.actions.is_smartcd_installed", lambda: True)
@@ -38,8 +38,8 @@ class TestSmartcdAction:
         action = SmartcdAction()
         action.execute()
 
-        assert not os.path.exists(".bash_enter")
-        assert not os.path.exists(".bash_leave")
+        assert not Path(".bash_enter").exists()
+        assert not Path(".bash_leave").exists()
 
     def test_empty_project_with_activate_deactivate_commands(self, project_loader, mocker: MockerFixture):
         mocker.patch("ddb.feature.smartcd.actions.is_smartcd_installed", lambda: True)
@@ -54,14 +54,14 @@ class TestSmartcdAction:
         action = SmartcdAction()
         action.execute()
 
-        assert os.path.exists(".bash_enter")
-        assert os.path.exists(".bash_leave")
+        assert Path(".bash_enter").exists()
+        assert Path(".bash_leave").exists()
 
-        with open(".bash_enter") as f:
+        with Path(".bash_enter").open() as f:
             content = f.read()
             assert "$(ddb activate)" in content
 
-        with open(".bash_leave") as f:
+        with Path(".bash_leave").open() as f:
             assert "$(ddb deactivate)" in f.read()
 
     def test_empty_project_main(self, project_loader, mocker: MockerFixture):
@@ -71,14 +71,14 @@ class TestSmartcdAction:
 
         main(["configure"])
 
-        assert os.path.exists(".bash_enter")
-        assert os.path.exists(".bash_leave")
+        assert Path(".bash_enter").exists()
+        assert Path(".bash_leave").exists()
 
-        with open(".bash_enter") as f:
+        with Path(".bash_enter").open() as f:
             content = f.read()
             assert "$(ddb activate)" in content
 
-        with open(".bash_leave") as f:
+        with Path(".bash_leave").open() as f:
             assert "$(ddb deactivate)" in f.read()
 
     def test_empty_project_main_no_smartcd(self, project_loader, mocker: MockerFixture):
@@ -88,8 +88,8 @@ class TestSmartcdAction:
 
         main(["configure"])
 
-        assert not os.path.exists(".bash_enter")
-        assert not os.path.exists(".bash_leave")
+        assert not Path(".bash_enter").exists()
+        assert not Path(".bash_leave").exists()
 
 
 @pytest.mark.skipif("os.name != 'nt'")
@@ -103,8 +103,8 @@ class TestWindowsProjectActivate:
         action = WindowsProjectActivate()
         action.execute()
 
-        assert not os.path.exists("ddb_activate.bat")
-        assert not os.path.exists("ddb_deactivate.bat")
+        assert not Path("ddb_activate.bat").exists()
+        assert not Path("ddb_deactivate.bat").exists()
 
     def test_empty_project_with_core(self, project_loader):
         project_loader("empty")
@@ -116,8 +116,8 @@ class TestWindowsProjectActivate:
         action = WindowsProjectActivate()
         action.execute()
 
-        assert not os.path.exists("ddb_activate.bat")
-        assert not os.path.exists("ddb_deactivate.bat")
+        assert not Path("ddb_activate.bat").exists()
+        assert not Path("ddb_deactivate.bat").exists()
 
     def test_empty_project_with_activate_deactivate_commands(self, project_loader):
         project_loader("empty")
@@ -130,13 +130,13 @@ class TestWindowsProjectActivate:
         action = WindowsProjectActivate()
         action.execute()
 
-        assert os.path.exists("ddb_activate.bat")
-        assert os.path.exists("ddb_deactivate.bat")
+        assert Path("ddb_activate.bat").exists()
+        assert Path("ddb_deactivate.bat").exists()
 
-        with open("ddb_activate.bat") as f:
+        with Path("ddb_activate.bat").open() as f:
             assert "set command=(ddb activate)" in f.read()
 
-        with open("ddb_deactivate.bat") as f:
+        with Path("ddb_deactivate.bat").open() as f:
             assert "set command=(ddb deactivate)" in f.read()
 
     def test_empty_project_main(self, project_loader):
@@ -144,11 +144,11 @@ class TestWindowsProjectActivate:
 
         main(["configure"])
 
-        assert os.path.exists("ddb_activate.bat")
-        assert os.path.exists("ddb_deactivate.bat")
+        assert Path("ddb_activate.bat").exists()
+        assert Path("ddb_deactivate.bat").exists()
 
-        with open("ddb_activate.bat") as f:
+        with Path("ddb_activate.bat").open() as f:
             assert "set command=(ddb activate)" in f.read()
 
-        with open("ddb_deactivate.bat") as f:
+        with Path("ddb_deactivate.bat").open() as f:
             assert "set command=(ddb deactivate)" in f.read()
