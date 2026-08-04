@@ -27,6 +27,7 @@ management.
         | `cfssl.verify_checksum` | integer<br>`false` | Should the CFSSL generated certificates be verified with checksums. |
         | `cfssl.append_ca_certificate` | boolean<br>`true` | Should the signer (CA) certificate be appended to the generated certificate ? |
         | `destination` | string<br>`.certs` | Destination directory of generated certificates. |
+        | `renew_before_days` | integer<br>`30` | Number of days before expiration from which a certificate is generated again. `0` renews it only once it has expired. |
         | `signer_destinations` | string[]<br>`[]` | Additional destinations for signer (CA) certificates. |
     === "Internal"
         | Property | Type | Description |
@@ -43,6 +44,10 @@ Certificate generation
 When running `ddb configure` command, this action will be triggered. Based on the configuration, the right certificate
 manager will be used to generate the appropriate certificate in the `certs.destination` folder if it does not already
 exist.
+
+An existing certificate is generated again when it has expired, or when it expires in less than
+`certs.renew_before_days` days, so it is replaced before it stops being accepted rather than once it already is. The
+signer (CA) certificate installed through `certs.signer_destinations` is refreshed the same way.
 
 At the end, it will trigger a `certs.generated` and `certs.available` event which can be used by other features to use
 those generated certificates.

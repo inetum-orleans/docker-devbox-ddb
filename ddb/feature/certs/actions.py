@@ -1,3 +1,4 @@
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -11,6 +12,38 @@ from ...context import context
 from ...event import events
 from ...utils.file import copy_if_different, force_remove
 from .cfssl import checksums, writer
+from .cfssl.crypto import get_certificate_expiration
+
+
+def certificate_should_be_generated(certificate_path: str) -> bool:
+    """
+    Check if a certificate has to be generated, because it is missing, unreadable, or about to expire.
+
+    The renewal margin is `certs.renew_before_days`.
+    """
+    certificate = Path(certificate_path)
+    if not certificate.exists():
+        return True
+
+    try:
+        expiration = get_certificate_expiration(certificate.read_bytes())
+    except (OSError, ValueError) as error:
+        # An unreadable certificate is of no use to whoever reads it next, and generating a
+        # new one is what makes the project work again.
+        context.log.warning("%s can't be read (%s), it will be generated again", certificate_path, error)
+        return True
+
+    now = datetime.now(UTC)
+    if expiration <= now:
+        context.log.notice("%s expired on %s, it will be generated again", certificate_path, expiration.date())
+        return True
+
+    renew_before = timedelta(days=config.data.get("certs.renew_before_days", 0))
+    if expiration - renew_before <= now:
+        context.log.notice("%s expires on %s, it will be generated again", certificate_path, expiration.date())
+        return True
+
+    return False
 
 
 class GenerateCertAction(Action):
@@ -42,7 +75,7 @@ class GenerateCertAction(Action):
         certificate_path, private_key_path = writer.get_certs_path(
             domain, config.data["certs.cfssl.writer"], config.data["certs.destination"]
         )
-        if not Path(certificate_path).exists() or not Path(private_key_path).exists():
+        if not Path(private_key_path).exists() or certificate_should_be_generated(certificate_path):
             client_config = config.data.get("certs.cfssl.server")
 
             client = cfssl_client.CFSSL(**client_config)
@@ -155,7 +188,7 @@ class GenerateSignerCertificateAction(Action):
             output, config.data["certs.cfssl.writer"], config.data["certs.destination"]
         )
 
-        if not Path(certificate_path).exists():
+        if certificate_should_be_generated(certificate_path):
             client_config = config.data.get("certs.cfssl.server")
 
             client = cfssl_client.CFSSL(**client_config)

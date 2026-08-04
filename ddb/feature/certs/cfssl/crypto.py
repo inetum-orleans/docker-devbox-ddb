@@ -2,6 +2,8 @@
 Crypto module.
 """
 
+from datetime import datetime
+
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
@@ -11,6 +13,18 @@ class CryptoException(Exception):
     """
     Exception raised when something wrong occurs in cryto module.
     """
+
+
+def get_certificate_expiration(content: bytes) -> datetime:
+    """
+    Read the expiration date of a PEM certificate, as a timezone aware datetime.
+
+    :param content: PEM data, which may hold the signer certificate after the leaf one
+    :return: the expiration date of the leaf certificate
+    """
+    # load_pem_x509_certificate reads the first certificate of the file, which is the leaf
+    # one: `certs.cfssl.append_ca_certificate` appends the signer certificate after it.
+    return x509.load_pem_x509_certificate(content, default_backend()).not_valid_after_utc
 
 
 def convert_pem_to_der(part: str, content: bytes) -> bytes:

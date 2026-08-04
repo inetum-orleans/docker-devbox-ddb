@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, validate
 
 from ddb.feature.schema import FeatureSchema
 
@@ -66,4 +66,6 @@ class CertsSchema(FeatureSchema):
     type = fields.String(required=True, dump_default="cfssl")
     destination = fields.String(required=True, dump_default=".certs")
     signer_destinations = fields.List(fields.String(), required=False, dump_default=[])
+    # 0 renews only once the certificate has actually expired.
+    renew_before_days = fields.Integer(required=True, dump_default=30, validate=validate.Range(min=0))
     cfssl = fields.Nested(CfsslSchema(), required=False, dump_default=CfsslSchema())
