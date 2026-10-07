@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
-from typing import Iterable, ClassVar
+from collections.abc import Iterable
 
-from .actions import FileWalkAction
-from .schema import FileSchema
+from ...action import Action
 from ..feature import Feature
 from ..schema import FeatureSchema
-from ...action import Action
+from .actions import FileWalkAction
+from .schema import FileSchema
 
 
 class FileFeature(Feature):
@@ -22,11 +21,9 @@ class FileFeature(Feature):
         return ["core"]
 
     @property
-    def schema(self) -> ClassVar[FeatureSchema]:
+    def schema(self) -> type[FeatureSchema]:
         return FileSchema
 
     @property
     def actions(self) -> Iterable[Action]:
-        return (
-            FileWalkAction(),
-        )
+        return (FileWalkAction(),)

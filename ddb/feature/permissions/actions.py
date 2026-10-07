@@ -1,18 +1,17 @@
-# -*- coding: utf-8 -*-
 import os
 import shutil
-from typing import Optional
+from typing import Any
 
 from ddb.action import Action
-from ddb.action.action import EventBinding
+from ddb.action.action import EventBinding, EventBindings
 from ddb.config import config
 from ddb.event import events
-from ddb.utils.file import chmod, FileWalker
+from ddb.utils.file import FileWalker, chmod
 
 
 class PermissionsAction(Action):
     """
-    Update file access permissions based on git index
+    Update file access permissions based on git index.
     """
 
     @property
@@ -20,20 +19,20 @@ class PermissionsAction(Action):
         return "git:permissions"
 
     @property
-    def event_bindings(self):
-        specs = config.data.get('permissions.specs')
+    def event_bindings(self) -> EventBindings:
+        specs = config.data.get("permissions.specs")
         compiled_specs = []
         if specs:
             for spec, mode in specs.items():
                 compiled_specs.append((FileWalker.re_compile_patterns(spec), mode))
 
-        def file_found_processor(file: str):
+        def file_found_processor(file: str) -> tuple[tuple[()], dict[str, Any]] | None:
             for spec, mode in compiled_specs:
                 if FileWalker.match_any_pattern(file, spec):
                     return (), {"file": file, "mode": mode}
             return None
 
-        def file_generated_processor(source: Optional[str], target: str):
+        def file_generated_processor(source: str | None, target: str) -> tuple[tuple[()], dict[str, Any]] | None:
             mode = file_found_processor(target)
             if mode is None and source is not None:
                 shutil.copymode(source, target)
@@ -42,9 +41,9 @@ class PermissionsAction(Action):
 
         return (
             EventBinding(events.file.found, chmod, file_found_processor),
-            EventBinding(events.file.generated, chmod, file_generated_processor)
+            EventBinding(events.file.generated, chmod, file_generated_processor),
         )
 
     @property
     def disabled(self) -> bool:
-        return os.name == 'nt'
+        return os.name == "nt"

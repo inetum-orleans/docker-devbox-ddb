@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from marshmallow import fields
 
 from ddb.feature.schema import FeatureSchema
@@ -6,6 +5,7 @@ from ddb.feature.schema import FeatureSchema
 
 class PermissionsSchema(FeatureSchema):
     """
-    Permissions Schema
+    Permissions Schema.
     """
+
     specs = fields.Dict(fields.String(required=True), fields.String(required=True), allow_none=True, dump_default=None)

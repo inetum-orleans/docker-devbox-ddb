@@ -1,21 +1,34 @@
-# -*- coding: utf-8 -*-
 import os
 import pathlib
-from typing import Optional, List
+from collections.abc import Iterable, Iterator
+from typing import NamedTuple
 
 import zgitignore
 
-from ddb.action.action import EventBinding, InitializableAction
+from ddb.action.action import EventBinding, EventBindings, InitializableAction
 from ddb.cache import caches, register_project_cache
 from ddb.config import config
 from ddb.context import context
 from ddb.event import events
 from ddb.utils.file import force_remove
+from ddb.utils.path import absolute_path
+
+
+class IgnoredEntry(NamedTuple):
+    """
+    A file matched by a .gitignore, with the content of that .gitignore split around the ddb block.
+    """
+
+    relative_file: str
+    gitignore: str
+    block_lines: list[str]
+    before_lines: list[str]
+    after_lines: list[str]
 
 
 class UpdateGitignoreAction(InitializableAction):
     """
-    Append generated files to .gitignore
+    Append generated files to .gitignore.
     """
 
     @property
@@ -23,29 +36,29 @@ class UpdateGitignoreAction(InitializableAction):
         return "git:update-gitignore"
 
     @property
-    def event_bindings(self):
-        return (events.file.generated,
-                EventBinding(events.file.deleted, self.remove),
-                EventBinding(events.phase.configure, self.enforced)
-                )
+    def event_bindings(self) -> EventBindings:
+        return (
+            events.file.generated,
+            EventBinding(events.file.deleted, self.remove),
+            EventBinding(events.phase.configure, self.enforced),
+        )
 
-    def initialize(self):
+    def initialize(self) -> None:
         register_project_cache("gitignore")
 
-    def destroy(self):
+    def destroy(self) -> None:
         if caches.has("gitignore"):
             caches.unregister("gitignore", callback=lambda c: c.close())
 
     @staticmethod
-    def execute(target: str, source: str = None):
+    def execute(target: str, source: str | None = None) -> None:
         """
-        Execute action
+        Execute action.
         """
         if not UpdateGitignoreAction._check_file_in_project(target):
             return
 
-        ignored, _, _, _, _, _ = UpdateGitignoreAction._check_file_ignored(target)
-        if ignored:
+        if UpdateGitignoreAction._find_ignored_entry(target):
             return
 
         try:
@@ -67,13 +80,13 @@ class UpdateGitignoreAction(InitializableAction):
             context.log.success("%s added to %s", relative_target, gitignore)
 
     @staticmethod
-    def enforced():
+    def enforced() -> None:
         """
-        Handle the list of enforced actions
+        Handle the list of enforced actions.
         """
-        files = config.data.get('gitignore.enforce')
+        files = config.data.get("gitignore.enforce")
         cache = caches.get("gitignore")
-        cached_files = cache.get('enforced', [])
+        cached_files = cache.get("enforced", [])
 
         for file in cached_files:
             if file not in files:
@@ -84,61 +97,65 @@ class UpdateGitignoreAction(InitializableAction):
             if file not in cached_files:
                 cached_files.append(file)
 
-        cache.set('enforced', cached_files)
+        cache.set("enforced", cached_files)
         cache.flush()
 
     @staticmethod
-    def remove(file: str):
+    def remove(file: str) -> None:
         """
-        Remove an ignored file
+        Remove an ignored file.
+
         :param file:
         :return:
         """
-        ignored, target_file, gitignore, block_lines, before_lines, after_lines = \
-            UpdateGitignoreAction._check_file_ignored(file)
-        if not ignored:
+        entry = UpdateGitignoreAction._find_ignored_entry(file)
+        if not entry:
             return
 
         # Removal of the target_file to the block and sort the whole block.
-        if target_file in block_lines:
-            block_lines.remove(target_file)
+        if entry.relative_file in entry.block_lines:
+            entry.block_lines.remove(entry.relative_file)
 
-            UpdateGitignoreAction._sanitize_block(block_lines, before_lines, after_lines)
-            UpdateGitignoreAction._write_gitignore_content(gitignore, before_lines + block_lines + after_lines)
+            UpdateGitignoreAction._sanitize_block(entry.block_lines, entry.before_lines, entry.after_lines)
+            UpdateGitignoreAction._write_gitignore_content(
+                entry.gitignore, entry.before_lines + entry.block_lines + entry.after_lines
+            )
 
-            context.log.warning("%s removed from %s", file, gitignore)
+            context.log.warning("%s removed from %s", file, entry.gitignore)
 
     @staticmethod
-    def _check_file_in_project(target):
+    def _check_file_in_project(target: str) -> bool:
         target_path = os.path.realpath(target)
         cwd = os.path.realpath(".")
         return target_path.startswith(cwd)
 
     @staticmethod
-    def _get_relative_path(target: str, gitignore: str, first_slash: bool = True):
-        relpath = pathlib.Path(os.path.relpath(target, os.path.dirname(gitignore))).as_posix()
+    def _get_relative_path(target: str, gitignore: str, *, first_slash: bool = True) -> str:
+        relpath = pathlib.Path(os.path.relpath(target, pathlib.Path(gitignore).parent)).as_posix()
         if first_slash:
             return "/" + relpath
         return relpath
 
     @staticmethod
-    def _find_gitignores(target: str):
+    def _find_gitignores(target: str) -> Iterator[str]:
         """
         Find writable .gitignore files, walking directories up to project home.
         """
         dirname = target
 
-        while os.path.abspath(dirname).startswith(config.paths.project_home) and \
-                os.path.abspath(dirname) != os.path.abspath(config.paths.project_home):
-            dirname = os.path.dirname(dirname)
-            gitignore = os.path.join(dirname, ".gitignore")
-            if os.path.exists(gitignore) and os.access(gitignore, os.W_OK):
+        project_home = absolute_path(config.paths.project_home)
+
+        while absolute_path(dirname).startswith(config.paths.project_home) and absolute_path(dirname) != project_home:
+            dirname = str(pathlib.Path(dirname).parent)
+            gitignore = str(pathlib.Path(dirname) / ".gitignore")
+            if pathlib.Path(gitignore).exists() and os.access(gitignore, os.W_OK):
                 yield gitignore
 
     @staticmethod
-    def _check_file_ignored(file: str, gitignores=None):
+    def _find_ignored_entry(file: str, gitignores: Iterable[str] | None = None) -> IgnoredEntry | None:
         """
-        Check if a file is ignored, going throw all provided gitignore files
+        Find the first .gitignore ignoring the given file, going throw all provided gitignore files.
+
         :param file:
         :param gitignores:
         :return:
@@ -151,7 +168,7 @@ class UpdateGitignoreAction(InitializableAction):
 
             gitignore_content = before_lines + block_lines + after_lines
 
-            inversed_gitignore_content = []
+            inversed_gitignore_content: list[str] = []
             for pattern in gitignore_content:
                 if pattern.startswith("!"):
                     inversed_gitignore_content.append(pattern[1:])
@@ -161,61 +178,63 @@ class UpdateGitignoreAction(InitializableAction):
             zgitignore_helper = zgitignore.ZgitIgnore(gitignore_content)
             inversed_zgitignore_helper = zgitignore.ZgitIgnore(inversed_gitignore_content)
             if zgitignore_helper.is_ignored(relative_file) or inversed_zgitignore_helper.is_ignored(relative_file):
-                return True, relative_file, gitignore, block_lines, before_lines, after_lines
-        return False, None, None, None, None, None
+                return IgnoredEntry(relative_file, gitignore, block_lines, before_lines, after_lines)
+        return None
 
     @staticmethod
-    def _get_block_limit(start: bool):
+    def _get_block_limit(*, start: bool) -> str:
         """
-        Generate the gitignore block limit
+        Generate the gitignore block limit.
+
         :param start: if it is the start of the block or not
         :return:
         """
-        markers = config.data.get('gitignore.markers', ['inetum-orleans/docker-devbox'])
+        markers = config.data.get("gitignore.markers", ["inetum-orleans/docker-devbox"])
 
         if start:
-            return f'###> {markers[0]} ###'
-        return f'###< {markers[0]} ###'
+            return f"###> {markers[0]} ###"
+        return f"###< {markers[0]} ###"
 
     @staticmethod
-    def _is_block_limit(line: str, start: Optional[bool] = None):
+    def _is_block_limit(line: str, *, start: bool | None = None) -> bool:
         """
         Check if line match a block limit.
+
         :param line: line to check
         :param start: if it is the start of the block or not
         :return:
         """
-        markers = config.data.get('gitignore.markers', ['inetum-orleans/docker-devbox'])
+        markers = config.data.get("gitignore.markers", ["inetum-orleans/docker-devbox"])
 
         for marker in markers:
             if start or start is None:
-                if f'###> {marker} ###' == line:
+                if f"###> {marker} ###" == line:
                     return True
             if not start or start is None:
-                if f'###< {marker} ###' == line:
+                if f"###< {marker} ###" == line:
                     return True
         return False
 
     @staticmethod
-    def _write_gitignore_content(gitignore: str, content: List[str]):
+    def _write_gitignore_content(gitignore: str, content: list[str]) -> None:
         if [line for line in content if line]:
-            with open(gitignore, "w", encoding="utf-8") as gitignore_file:
+            with pathlib.Path(gitignore).open("w", encoding="utf-8") as gitignore_file:
                 for lineno, line in enumerate(content):
                     if lineno > 0:
-                        gitignore_file.write('\n')
+                        gitignore_file.write("\n")
                     gitignore_file.write(line)
         else:
             force_remove(gitignore)
 
     @staticmethod
-    def _split_block_lines(gitignore_file_content: str):
+    def _split_block_lines(gitignore_file_content: str) -> tuple[list[str], list[str], list[str]]:
         started = False
         ended = False
         before_lines = []
         content_lines = []
         after_lines = []
-        for line in gitignore_file_content.split('\n'):
-            if UpdateGitignoreAction._is_block_limit(line, False):
+        for line in gitignore_file_content.split("\n"):
+            if UpdateGitignoreAction._is_block_limit(line, start=False):
                 ended = True
             if not started and not ended:
                 before_lines.append(line)
@@ -223,21 +242,21 @@ class UpdateGitignoreAction(InitializableAction):
                 content_lines.append(line)
             elif started and ended:
                 after_lines.append(line)
-            if UpdateGitignoreAction._is_block_limit(line, True):
+            if UpdateGitignoreAction._is_block_limit(line, start=True):
                 started = True
 
         return content_lines, before_lines, after_lines
 
     @staticmethod
-    def _read_and_split_gitignore_file(gitignore_file: str):
-        if os.path.exists(gitignore_file):
-            with open(gitignore_file, "r+", encoding="utf-8") as gitignore_fp:
+    def _read_and_split_gitignore_file(gitignore_file: str) -> tuple[list[str], list[str], list[str]]:
+        if pathlib.Path(gitignore_file).exists():
+            with pathlib.Path(gitignore_file).open("r+", encoding="utf-8") as gitignore_fp:
                 return UpdateGitignoreAction._split_block_lines(gitignore_fp.read())
         else:
             return [], [], []
 
     @staticmethod
-    def _sanitize_block(block_lines, before_lines, after_lines):
+    def _sanitize_block(block_lines: list[str], before_lines: list[str], after_lines: list[str]) -> None:
         block_lines = [line for line in block_lines if line]
         block_lines.sort()
 

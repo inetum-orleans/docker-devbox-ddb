@@ -1,10 +1,10 @@
-# -*- coding: utf-8 -*-
-from typing import ClassVar, Iterable
+from collections.abc import Iterable
+
+from dotty_dict import Dotty
 
 from ddb.action import Action
 from ddb.config import config
 from ddb.feature import Feature
-from dotty_dict import Dotty
 
 from .actions import UpdateGitignoreAction
 from .schema import GitignoreSchema
@@ -24,24 +24,22 @@ class GitignoreFeature(Feature):
         return ["core"]
 
     @property
-    def schema(self) -> ClassVar[GitignoreSchema]:
+    def schema(self) -> type[GitignoreSchema]:
         return GitignoreSchema
 
     @property
     def actions(self) -> Iterable[Action]:
-        return (
-            UpdateGitignoreAction(),
-        )
+        return (UpdateGitignoreAction(),)
 
-    def _configure_defaults(self, feature_config: Dotty):
+    def _configure_defaults(self, feature_config: Dotty) -> None:
         self._configure_defaults_disabled(feature_config)
 
     @staticmethod
-    def _configure_defaults_disabled(feature_config):
-        if feature_config.get('disabled') is None:
-            feature_config['disabled'] = False
+    def _configure_defaults_disabled(feature_config: Dotty) -> None:
+        if feature_config.get("disabled") is None:
+            feature_config["disabled"] = False
             # Feature is disabled on non-dev environment.
-            current = config.data.get('core.env.current')
-            available = config.data.get('core.env.available')
+            current = config.data.get("core.env.current")
+            available = config.data.get("core.env.available")
             if current and available:
-                feature_config['disabled'] = current != available[-1]
+                feature_config["disabled"] = current != available[-1]

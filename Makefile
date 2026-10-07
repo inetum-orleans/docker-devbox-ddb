@@ -9,10 +9,10 @@ git-pre-push:
 	make test
 
 style:
-	pylint ddb
+	uv run pre-commit run --all-files
 
 test:
-	pytest
+	uv run pytest
 
-check-manifest:
-	check-manifest -u -v
+binary:
+	uv run pyinstaller --dist ./dist ddb.spec

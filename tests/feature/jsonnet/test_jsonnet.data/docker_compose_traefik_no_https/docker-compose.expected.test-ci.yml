@@ -10,7 +10,7 @@ services:
     image: gfiorleans.azurecr.io/gli-biometrie/db
     init: true
     restart: "no"
-    user: %uid%:%gid%
+    user: "%uid%:%gid%"
     volumes:
       - db-data:/var/lib/postgresql/data:rw
       - source: %ddb.path.project%
@@ -27,7 +27,7 @@ services:
     image: gfiorleans.azurecr.io/gli-biometrie/db
     init: true
     restart: "no"
-    user: %uid%:%gid%
+    user: "%uid%:%gid%"
     volumes:
       - db-test-data:/var/lib/postgresql/data:rw
       - %ddb.path.project%:/workdir
@@ -76,7 +76,7 @@ services:
     image: gfiorleans.azurecr.io/gli-biometrie/node
     init: true
     restart: "no"
-    user: %uid%:%gid%
+    user: "%uid%:%gid%"
     volumes:
       - %ddb.path.project%:/app:rw
       - node-cache:/home/node/.cache:rw
@@ -89,7 +89,7 @@ services:
     image: gfiorleans.azurecr.io/gli-biometrie/php
     init: true
     restart: "no"
-    user: %uid%:%gid%
+    user: "%uid%:%gid%"
     volumes:
       - php-composer-cache:/composer/cache:rw
       - php-composer-vendor:/composer/vendor:rw

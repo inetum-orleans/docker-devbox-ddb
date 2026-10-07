@@ -1,14 +1,14 @@
 import math
-from typing import Iterable
+from collections.abc import Iterable
 
 
-def _get_content(content: str, line_length: int, centered: bool = True):
-    left = ' '
-    right = (line_length - len(content) - 1) * ' '
+def _get_content(content: str, line_length: int, *, centered: bool = True) -> str:
+    left = " "
+    right = (line_length - len(content) - 1) * " "
 
     if centered:
-        left = math.floor((line_length - len(content)) / 2) * ' '
-        right = math.ceil((line_length - len(content)) / 2) * ' '
+        left = math.floor((line_length - len(content)) / 2) * " "
+        right = math.ceil((line_length - len(content)) / 2) * " "
 
     return left + content + right
 
@@ -21,9 +21,10 @@ def _max_length(cells: Iterable[Iterable[str]]) -> int:
     return max_length
 
 
-def get_table_display(blocks: Iterable[Iterable[str]], centered: bool = True):
+def get_table_display(blocks: Iterable[Iterable[str]], *, centered: bool = True) -> str:
     """
-    Convert the input data into a table with centered text
+    Convert the input data into a table with centered text.
+
     :param blocks: the blocks of the table. A block is an iterable of rows.
     :param centered: if the cell content is centered or not
     :return:
@@ -32,9 +33,9 @@ def get_table_display(blocks: Iterable[Iterable[str]], centered: bool = True):
 
     content = []
     for block in blocks:
-        content.append('+' + (line_length * '-') + '+')
+        content.append("+" + (line_length * "-") + "+")
         for row in block:
-            content.append('|' + _get_content(row, line_length, centered) + '|')
+            content.append("|" + _get_content(row, line_length, centered=centered) + "|")
     if content:
-        content.append('+' + (line_length * '-') + '+')
-    return '\n'.join(content)
+        content.append("+" + (line_length * "-") + "+")
+    return "\n".join(content)

@@ -1,94 +1,102 @@
-# -*- coding: utf-8 -*-
 import os
 from argparse import Namespace
 from collections import namedtuple
+from collections.abc import Callable, Iterable, Sequence
 from copy import deepcopy
-from os.path import exists
 from pathlib import Path
-from typing import Union, Iterable, Dict
+from typing import Any, ClassVar
 
 import yaml
 
 from ddb.config.merger import config_merger
 from ddb.config.migrations import MigrationsDotty
+from ddb.utils.path import absolute_path
 
-ConfigPaths = namedtuple('ConfigPaths', ['ddb_home', 'home', 'user_home', 'project_home'])
+ConfigPaths = namedtuple("ConfigPaths", ["ddb_home", "home", "user_home", "project_home"])
 
 
-def configuration_file(path: str, filenames: Iterable[str], extensions: Iterable[str]):
+def configuration_file(path: str, filenames: Iterable[str], extensions: Iterable[str]) -> str | None:
     """
-    Find configuration file for given path and possible filename/extensions
+    Find configuration file for given path and possible filename/extensions.
     """
     if path:
         for basename in filenames:
             for ext in extensions:
-                file = os.path.join(path, basename + '.' + ext)
-                if exists(file):
+                file = str(Path(path) / (basename + "." + ext))
+                if Path(file).exists():
                     return file
     return None
 
 
-def get_default_config_paths(env_prefix, filenames, extensions) -> ConfigPaths:
+def get_default_config_paths(env_prefix: str, filenames: Iterable[str], extensions: Iterable[str]) -> ConfigPaths:
     """
-    Get configuration paths
+    Get configuration paths.
     """
-    if os.environ.get(env_prefix + '_PROJECT_HOME'):
-        project_home = os.environ.get(env_prefix + '_PROJECT_HOME')
-    else:
-        project_home_candidate = os.getcwd()
+    project_home = os.environ.get(env_prefix + "_PROJECT_HOME")
+    if not project_home:
+        project_home_candidate = str(Path.cwd())
         while not configuration_file(project_home_candidate, filenames, extensions):
             project_home_candidate_parent = str(Path(project_home_candidate).parent)
             if project_home_candidate_parent == project_home_candidate:
-                project_home_candidate = os.getcwd()
+                project_home_candidate = str(Path.cwd())
                 break
             project_home_candidate = project_home_candidate_parent
         project_home = project_home_candidate
 
-    project_home = os.path.abspath(project_home)
+    project_home = absolute_path(project_home)
 
-    user_home = os.environ.get(env_prefix + '_USER_HOME', str(Path.home()))
-    home = os.environ.get(env_prefix + '_HOME', os.path.join(user_home, '.docker-devbox'))
-    ddb_home = os.environ.get(env_prefix + '_DDB_HOME', os.path.join(home, 'ddb'))
+    user_home = os.environ.get(env_prefix + "_USER_HOME", str(Path.home()))
+    home = os.environ.get(env_prefix + "_HOME", str(Path(user_home) / ".docker-devbox"))
+    ddb_home = os.environ.get(env_prefix + "_DDB_HOME", str(Path(home) / "ddb"))
 
     return ConfigPaths(ddb_home=ddb_home, home=home, user_home=user_home, project_home=project_home)
 
 
-class Config:  # pylint:disable=too-many-instance-attributes
+class Config:
     """
-    Configuration
+    Configuration.
     """
-    # Static default/overrides values for configuration, can be modified from code mainly for tests purpose
-    defaults = None
-    overrides = lambda config: config
 
-    def __init__(self,
-                 paths: Union[ConfigPaths, None] = None,
-                 env_prefix='DDB',
-                 env_override_prefix='DDB_OVERRIDE',
-                 filenames=('ddb', 'ddb.local'),
-                 extensions=('yml', 'yaml'),
-                 cwd=None,
-                 args=None,
-                 unknown_args=None):
+    # Set by the core feature from the effective configuration, which may override
+    # the discovered paths (notably when ejecting).
+    path: ConfigPaths
+
+    # Static default/overrides values for configuration, can be modified from code mainly for tests purpose
+    defaults: ClassVar[dict[str, Any] | None] = None
+
+    # Extension point, replaced as a whole (Config.overrides = ...), and set to None to disable.
+    overrides: ClassVar[Callable[[dict[str, Any]], dict[str, Any]] | None] = staticmethod(lambda config: config)
+
+    def __init__(
+        self,
+        paths: ConfigPaths | None = None,
+        env_prefix: str = "DDB",
+        env_override_prefix: str = "DDB_OVERRIDE",
+        filenames: Sequence[str] = ("ddb", "ddb.local"),
+        extensions: Sequence[str] = ("yml", "yaml"),
+        cwd: str | None = None,
+        args: Namespace | None = None,
+        unknown_args: Sequence[str] | None = None,
+    ) -> None:
         self.env_prefix = env_prefix
         self.env_override_prefix = env_override_prefix
         self.filenames = filenames
         self.extensions = extensions
-        self.env_additions = {}
+        self.env_additions: dict[str, str] = {}
         self.data = MigrationsDotty()
         self.paths = paths if paths else get_default_config_paths(env_prefix, filenames, extensions)
         self.cwd = cwd
-        self.args = args if args else Namespace()
+        self.args: Namespace = args if args else Namespace()
         self.unknown_args = unknown_args if unknown_args else []
-        self.env_key = 'env'
+        self.env_key = "env"
 
-    def reset(self, *args, **kwargs):
+    def reset(self, **kwargs: Any) -> None:
         """
         Reset the configuration object, while keeping configured paths.
         """
-        self.__init__(*args, paths=self.paths, **kwargs)
+        Config.__init__(self, paths=self.paths, **kwargs)
 
-    def clear(self):
+    def clear(self) -> None:
         """
         Remove all configuration data.
         """
@@ -96,16 +104,17 @@ class Config:  # pylint:disable=too-many-instance-attributes
         self.env_additions.clear()
 
     @property
-    def project_configuration_file(self):
+    def project_configuration_file(self) -> str | None:
         """
         Retrieve the project configuration file.
         """
         return configuration_file(self.paths.project_home, self.filenames, self.extensions)
 
     @property
-    def project_cwd(self):
+    def project_cwd(self) -> str | None:
         """
         Retrieve the current working directory, relative to project_home.
+
         :return:
         """
         if self.paths.project_home and self.cwd:
@@ -113,25 +122,25 @@ class Config:  # pylint:disable=too-many-instance-attributes
         return None
 
     @property
-    def eject(self):
+    def eject(self) -> bool:
         """
         Check if command line is running configure command with --eject flag.
+
         :return:
         """
-        return 'command' in self.args and self.args.command == 'configure' and \
-               'eject' in self.args and self.args.eject
+        return "command" in self.args and self.args.command == "configure" and "eject" in self.args and self.args.eject
 
     @property
-    def clear_cache(self):
+    def clear_cache(self) -> bool:
         """
-        Should cache be cleared on load
+        Should cache be cleared on load.
         """
-        if 'clear_cache' in self.args:
-            return self.args.clear_cache
+        if "clear_cache" in self.args:
+            return bool(self.args.clear_cache)
         return False
 
     @property
-    def files(self):
+    def files(self) -> list[str]:
         """
         Possible configuration files to load.
         """
@@ -141,21 +150,20 @@ class Config:  # pylint:disable=too-many-instance-attributes
                 continue
             for basename in self.filenames:
                 for ext in self.extensions:
-                    if basename.endswith('.' + ext) and os.path.exists(os.path.join(path, basename)):
-                        file = os.path.join(path, basename)
+                    if basename.endswith("." + ext) and (Path(path) / basename).exists():
+                        file = str(Path(path) / basename)
                     else:
-                        file = os.path.join(path, basename + '.' + ext)
+                        file = str(Path(path) / (basename + "." + ext))
                     ret.append(file)
         return ret
 
-    def read(self, defaults=None, files=None):
+    def read(
+        self, defaults: dict[str, Any] | None = None, files: Iterable[str] | None = None
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
         """
         Read configuration data from files.
         """
-        if defaults is None:
-            loaded_data = {}
-        else:
-            loaded_data = dict(defaults)
+        loaded_data = {} if defaults is None else dict(defaults)
 
         if files is None:
             files = self.files
@@ -163,19 +171,19 @@ class Config:  # pylint:disable=too-many-instance-attributes
         found_files = {}
 
         for file in files:
-            if exists(file):
-                with open(file, 'rb') as stream:
+            if Path(file).exists():
+                with Path(file).open("rb") as stream:
                     file_data = yaml.safe_load(stream)
                     found_files[file] = self.apply_environ_overrides(deepcopy(file_data))
                     if file_data:
                         loaded_data = config_merger.merge(loaded_data, file_data)
 
-        if Config.overrides:  # pylint:disable=using-constant-test,missing-parentheses-for-call-in-test
+        if Config.overrides is not None:
             Config.overrides(loaded_data)
 
         return self.apply_environ_overrides(loaded_data), found_files
 
-    def load_from_data(self, data: Dict):
+    def load_from_data(self, data: dict[str, Any]) -> None:
         """
         Load configuration data from readen files.
         """
@@ -185,21 +193,21 @@ class Config:  # pylint:disable=too-many-instance-attributes
         if self.env_key in self.data:
             env = self.data.pop(self.env_key)
             if env:
-                for (name, value) in env.items():
+                for name, value in env.items():
                     os.environ[name] = value
 
-    def load(self, defaults=None, files=None):
+    def load(self, defaults: dict[str, Any] | None = None, files: Iterable[str] | None = None) -> None:
         """
         Load configuration data from files. Variable in 'env_key' key will be placed loaded as environment variables.
         """
-        defaults_to_apply = {} if Config.defaults is None else dict(Config.defaults)
+        defaults_to_apply: dict[str, Any] = {} if Config.defaults is None else dict(Config.defaults)
         if defaults:
             # Config.defaults should have the priority over given defaults.
             defaults_to_apply = config_merger.merge(defaults, defaults_to_apply)
         read_data, _ = self.read(defaults_to_apply, files)
         self.load_from_data(read_data)
 
-    def apply_environ_overrides(self, data, prefix=None):
+    def apply_environ_overrides(self, data: Any, prefix: str | None = None) -> Any:
         """
         Apply environment variables to configuration.
         """
@@ -207,7 +215,7 @@ class Config:  # pylint:disable=too-many-instance-attributes
             prefix = self.env_override_prefix
         prefix = prefix.upper()
 
-        environ_value = os.environ.get(prefix)
+        environ_value: Any = os.environ.get(prefix)
         if environ_value:
             if environ_value.lower() == str(True):
                 environ_value = True
@@ -220,21 +228,18 @@ class Config:  # pylint:disable=too-many-instance-attributes
             return environ_value
 
         if isinstance(data, dict):
-            for (name, value) in data.items():
+            for name, value in data.items():
                 key_prefix = prefix + "_" + name
                 key_prefix = key_prefix.upper()
 
                 data[name] = self.apply_environ_overrides(value, key_prefix)
         if isinstance(data, list):
-            i = 0
-            for value in data:
+            for i, value in enumerate(data):
                 replace_prefix = prefix + "[" + str(i) + "]"
                 replace_prefix = replace_prefix.upper()
 
                 environ_value = os.environ.get(replace_prefix)
                 if environ_value:
                     data[i] = self.apply_environ_overrides(value, replace_prefix)
-
-                i += 1
 
         return data

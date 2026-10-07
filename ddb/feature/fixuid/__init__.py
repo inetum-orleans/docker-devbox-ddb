@@ -1,16 +1,15 @@
-# -*- coding: utf-8 -*-
-from typing import Iterable, ClassVar
+from collections.abc import Iterable
 
-from .actions import FixuidDockerComposeAction
-from .schema import FixuidSchema
+from ...action import Action
 from ..feature import Feature
 from ..schema import FeatureSchema
-from ...action import Action
+from .actions import FixuidDockerComposeAction
+from .schema import FixuidSchema
 
 
 class FixuidFeature(Feature):
     """
-    Auto-configure fixuid from docker-compose.yml services (https://github.com/boxboat/fixuid)
+    Auto-configure fixuid from docker-compose.yml services (https://github.com/boxboat/fixuid).
     """
 
     @property
@@ -22,11 +21,9 @@ class FixuidFeature(Feature):
         return ["core", "docker[optional]"]
 
     @property
-    def schema(self) -> ClassVar[FeatureSchema]:
+    def schema(self) -> type[FeatureSchema]:
         return FixuidSchema
 
     @property
     def actions(self) -> Iterable[Action]:
-        return (
-            FixuidDockerComposeAction(),
-        )
+        return (FixuidDockerComposeAction(),)

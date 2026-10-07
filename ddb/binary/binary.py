@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
-from abc import abstractmethod, ABC
-from typing import Iterable, Tuple
+from abc import ABC, abstractmethod
+from collections.abc import Iterable
 
 from ddb.registry import RegistryObject
 
@@ -18,13 +17,13 @@ class Binary(RegistryObject, ABC):
         """
 
     @abstractmethod
-    def command(self, *args) -> Iterable[str]:
+    def command(self, *args: str) -> Iterable[str]:
         """
         Get the binary command.
         """
 
     @abstractmethod
-    def should_run(self, *args) -> bool:
+    def should_run(self, *args: str) -> bool:
         """
         Check if this binary should run.
         """
@@ -36,7 +35,7 @@ class Binary(RegistryObject, ABC):
         """
 
     @abstractmethod
-    def before_run(self, *args) -> None:
+    def before_run(self, *args: str) -> None:
         """
         Add action to be executed before running the command.
         """
@@ -49,11 +48,11 @@ class Binary(RegistryObject, ABC):
         """
 
     @abstractmethod
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
         pass
 
     @abstractmethod
-    def __hash__(self):
+    def __hash__(self) -> int:
         pass
 
 
@@ -62,17 +61,17 @@ class AbstractBinary(Binary, ABC):
     Abstract implementation for binary.
     """
 
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         self._name = name
 
     @property
     def name(self) -> str:
         return self._name
 
-    def before_run(self, *args) -> None:
+    def before_run(self, *args: str) -> None:
         return None
 
-    def should_run(self, *args) -> bool:
+    def should_run(self, *args: str) -> bool:
         return True
 
     def priority(self) -> int:
@@ -82,12 +81,12 @@ class AbstractBinary(Binary, ABC):
     def global_(self) -> bool:
         return False
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, AbstractBinary):
             return False
         return self.name == other.name
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.name,))
 
 
@@ -96,19 +95,19 @@ class DefaultBinary(AbstractBinary):
     Default implementation for binary.
     """
 
-    def __init__(self, name: str, command: Iterable[str]):
+    def __init__(self, name: str, command: Iterable[str]) -> None:
         super().__init__(name)
         self._command = tuple(command)
 
-    def command(self, *args) -> Tuple[str]:
+    def command(self, *args: str) -> tuple[str, ...]:
         return self._command
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not super().__eq__(other):
             return False
         if not isinstance(other, DefaultBinary):
             return False
         return self.command() == other.command()
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((super().__hash__(), self.command()))

@@ -1,5 +1,6 @@
-# -*- coding: utf-8 -*-
-from .command import LifecycleCommand, Command
 from ..registry import Registry
+from .command import Command, LifecycleCommand
 
-commands = Registry(Command, "Command")  # type: Registry[Command]
+__all__ = ["Command", "LifecycleCommand", "commands"]
+
+commands: Registry[Command] = Registry(Command, "Command")  # type: ignore[type-abstract]

@@ -1,86 +1,103 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import inspect
 import logging
 import os
 import sys
 import threading
 from argparse import ArgumentParser, Namespace
+from collections.abc import Callable, Iterable, Sequence
 from gettext import gettext as _
 from importlib import import_module
-from typing import Optional, Sequence, Iterable, Callable, Union, List
+from pathlib import Path
+from typing import Any, TypeVar
 
 import verboselogs
-from colorlog import default_log_colors, ColoredFormatter
+from colorlog import ColoredFormatter, default_log_colors
 
 from ddb.action import actions
-from ddb.action.action import EventBinding, Action, WatchSupport
+from ddb.action.action import Action, EventBinding, WatchSupport
 from ddb.action.runner import ExpectedError
 from ddb.action.runnerfactory import action_event_binding_runner_factory
 from ddb.binary import binaries
-from ddb.cache import caches, global_cache_name, requests_cache_name, \
-    project_binary_cache_name, register_global_cache, project_cache_name
-from ddb.cache import register_project_cache
+from ddb.cache import (
+    caches,
+    global_cache_name,
+    project_binary_cache_name,
+    project_cache_name,
+    register_global_cache,
+    register_project_cache,
+    requests_cache_name,
+)
 from ddb.command import commands
-from ddb.command.command import execute_command, Command
+from ddb.command.command import Command, execute_command
 from ddb.config import config
 from ddb.context import context
-from ddb.event import bus, events
-from ddb.feature import features, Feature
-from ddb.feature.bootstrap import reset_available_features, append_available_feature, \
-    load_bootstrap_config, bootstrap_register_features
+from ddb.event import bus, event_name, events
+from ddb.feature import Feature, features
+from ddb.feature.bootstrap import (
+    append_available_feature,
+    bootstrap_register_features,
+    load_bootstrap_config,
+    reset_available_features,
+)
 from ddb.feature.core import ConfigureSecondPassException
 from ddb.phase import phases
 from ddb.registry import Registry, RegistryObject
 from ddb.service import services
+from ddb.utils.path import absolute_path
 
 _watch_started_event = threading.Event()
 _watch_stop_event = threading.Event()
 
+R = TypeVar("R", bound=RegistryObject)
 
-def load_plugins():
-    """Load plugins"""
+
+def load_plugins() -> None:
+    """Load plugins."""
     for directory in [d for d in config.paths if d]:
-        extension_directory = os.path.join(directory, ".ddb")
-        if os.path.exists(extension_directory):
-            sys.path.append(os.path.abspath(extension_directory))
+        extension_directory = str(Path(directory) / ".ddb")
+        if Path(extension_directory).exists():
+            sys.path.append(absolute_path(extension_directory))
             for dirpath, _, files in os.walk(extension_directory):
-                module_name = os.path.relpath(dirpath, extension_directory).replace(os.sep, ".")
-                if module_name == '.':
+                module_name: str | None = os.path.relpath(dirpath, extension_directory).replace(os.sep, ".")
+                if module_name == ".":
                     module_name = None
 
                 for file in files:
                     if file == "__init__.py":
                         _load_plugins_module(module_name)
                     elif file.endswith("py"):
-                        file_module_name = os.path.splitext(file)[0]
+                        file_module_name = Path(file).stem
                         _load_plugins_module(
-                            file_module_name if not module_name else '.'.join((module_name, file_module_name)))
+                            file_module_name if not module_name else ".".join((module_name, file_module_name))
+                        )
 
 
-def _load_plugins_module(module_name):
+def _load_plugins_module(module_name: str | None) -> None:
     if not module_name:
         return
     module = import_module(module_name)
-    for _, clazz in inspect.getmembers(module):
-        if inspect.isclass(clazz) and \
-                clazz.__module__ == module.__name__ and \
-                not clazz.__name__.startswith("_") and \
-                issubclass(clazz, Feature):
+    for _name, clazz in inspect.getmembers(module):
+        if (
+            inspect.isclass(clazz)
+            and clazz.__module__ == module.__name__
+            and not clazz.__name__.startswith("_")
+            and issubclass(clazz, Feature)
+        ):
             feature = clazz()
             append_available_feature(feature)
 
 
-def prepare_project_home():
+def prepare_project_home() -> None:
     """
     Set working directory to project home.
     """
     if config.paths.project_home:
-        config.cwd = os.getcwd()
+        config.cwd = str(Path.cwd())
         os.chdir(config.paths.project_home)
 
 
-def register_default_caches():
+def register_default_caches() -> None:
     """
     Register default caches.
     """
@@ -90,13 +107,15 @@ def register_default_caches():
     register_global_cache(requests_cache_name)
 
 
-def register_objects(features_list: Iterable[Feature],
-                     objects_getter: Callable[[Feature], Iterable[RegistryObject]],
-                     registry: Registry[RegistryObject]):
+def register_objects(
+    features_list: Iterable[Feature],
+    objects_getter: Callable[[Feature], Iterable[R]],
+    registry: Registry[R],
+) -> None:
     """
     Register objects from features inside registry.
     """
-    all_objects = []
+    all_objects: list[R] = []
 
     for feature in features_list:
         objects = objects_getter(feature)
@@ -106,19 +125,19 @@ def register_objects(features_list: Iterable[Feature],
         registry.register(obj)
 
 
-def preload_registered_features():
+def preload_registered_features() -> Iterable[Feature]:
     """
     Load phases and commands from all registered features.
     """
     load_bootstrap_config()
     all_features = features.all()
-    enabled_features = [f for f in all_features if not f.disabled]  # type: Iterable[Feature]
+    enabled_features = [f for f in all_features if not f.disabled]
     register_objects(enabled_features, lambda f: f.phases, phases)
     register_objects(enabled_features, lambda f: f.commands, commands)
     return enabled_features
 
 
-def load_registered_features(preload=True):
+def load_registered_features(*, preload: bool = True) -> Iterable[Feature]:
     """
     Load all registered features.
     """
@@ -142,7 +161,7 @@ def load_registered_features(preload=True):
 
     # migrations.compat(config.data)
 
-    enabled_features = [f for f in all_features if not f.disabled]  # type: Iterable[Feature]
+    enabled_features = [f for f in all_features if not f.disabled]
 
     if preload:
         register_objects(enabled_features, lambda f: f.phases, phases)
@@ -158,32 +177,30 @@ def load_registered_features(preload=True):
     return enabled_features
 
 
-def configure_logging(level: Union[str, int] = logging.INFO):
+def configure_logging(level: str | int = logging.INFO) -> None:
     """
     Configure context logger.
     """
     verboselogs.install()
 
     log_colors = dict(default_log_colors)
-    log_colors['NOTICE'] = 'thin_white'
-    log_colors['VERBOSE'] = 'thin_white'
-    log_colors['DEBUG'] = 'thin_cyan'
-    log_colors['SUCCESS'] = 'bold_green'
-    log_colors['SPAM'] = 'bold_red'
+    log_colors["NOTICE"] = "thin_white"
+    log_colors["VERBOSE"] = "thin_white"
+    log_colors["DEBUG"] = "thin_cyan"
+    log_colors["SUCCESS"] = "bold_green"
+    log_colors["SPAM"] = "bold_red"
 
     class CustomFormatter(ColoredFormatter):
         """
         Custom context logger formatter.
         """
 
-        def format(self, record):
+        def format(self, record: logging.LogRecord) -> str:
             record.simplename = record.name.rsplit(".", 1)[-1]
             return super().format(record)
 
     handler = logging.StreamHandler()
-    handler.setFormatter(CustomFormatter(
-        '%(log_color)s[%(simplename)s] %(message)s',
-        log_colors=log_colors))
+    handler.setFormatter(CustomFormatter("%(log_color)s[%(simplename)s] %(message)s", log_colors=log_colors))
 
     logger = logging.getLogger("ddb")
     logger.handlers.clear()
@@ -191,18 +208,18 @@ def configure_logging(level: Union[str, int] = logging.INFO):
     logger.addHandler(handler)
 
 
-def handle_watch():
+def handle_watch() -> None:
     """
-    Handle watch option
+    Handle watch option.
     """
-    watch_supports = []  # type:List[Union[Action, WatchSupport]]
+    watch_supports: list[tuple[str, WatchSupport]] = []
     for action in actions.all():
         if isinstance(action, WatchSupport):
-            watch_supports.append(action)
+            watch_supports.append((action.name, action))
 
     if watch_supports:
-        for watch_support in watch_supports:
-            logging.getLogger("ddb.watch").info("Initializing %s watcher ...", watch_support.name)
+        for name, watch_support in watch_supports:
+            logging.getLogger("ddb.watch").info("Initializing %s watcher ...", name)
             watch_support.start_watching()
         _watch_started_event.set()
         try:
@@ -215,10 +232,10 @@ def handle_watch():
         finally:
             context.watching = False
         logging.getLogger("ddb.watch").warning("Terminating ...")
-        for watch_support in watch_supports:
+        for _, watch_support in watch_supports:
             watch_support.stop_watching()
 
-        for watch_support in watch_supports:
+        for _, watch_support in watch_supports:
             watch_support.join_watching()
     else:
         logging.getLogger("ddb.watch").warning("Watching is supported by none enabled features")
@@ -229,44 +246,72 @@ class ParseCommandLineException(Exception):
     Exception raised when an invalid command line is given.
     """
 
-    def __init__(self, opts: ArgumentParser, parsed_args: Namespace, unknown_args: List[str]):
+    def __init__(self, opts: ArgumentParser, parsed_args: Namespace, unknown_args: list[str]) -> None:
         super().__init__()
         self.opts = opts
         self.parsed_args = parsed_args
         self.unknown_args = unknown_args
 
 
-def parse_command_line(args: Optional[Sequence[str]] = None):
+def parse_command_line(args: Sequence[str] | None = None) -> tuple[Command, Namespace, list[str]]:
     """
     Parse command line arguments, returning the command to execute, args and unknown args.
     """
     opts = ArgumentParser()
-    opts.add_argument('-v', '--verbose', action="store_true",
-                      default=config.data.get('defaults.verbose', False),
-                      help="Enable more logs")
-    opts.add_argument('-vv', '--very-verbose', action="store_true",
-                      default=config.data.get('defaults.very_verbose', False),
-                      help="Enable even more logs")
-    opts.add_argument('-s', '--silent', action="store_true",
-                      default=config.data.get('defaults.silent', False),
-                      help="Disable all logs")
-    opts.add_argument('-x', '--exceptions', action="store_true",
-                      default=config.data.get('defaults.exceptions', False),
-                      help="Display exceptions on errors")
-    opts.add_argument("-c", "--clear-cache", action="store_true",
-                      default=config.data.get('defaults.clear_cache', False),
-                      help="Clear all used caches")
-    opts.add_argument('-w', '--watch', action="store_true",
-                      default=config.data.get('defaults.watch', False),
-                      help="Enable watch mode (hot reload of generated files)")
-    opts.add_argument('-ff', '--fail-fast', action="store_true",
-                      default=config.data.get('defaults.fail_fast', False),
-                      help="Stop on first error")
-    opts.add_argument('--version', action="store_true", help='Display the ddb version and check for new ones.')
+    opts.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        default=config.data.get("defaults.verbose", False),
+        help="Enable more logs",
+    )
+    opts.add_argument(
+        "-vv",
+        "--very-verbose",
+        action="store_true",
+        default=config.data.get("defaults.very_verbose", False),
+        help="Enable even more logs",
+    )
+    opts.add_argument(
+        "-s",
+        "--silent",
+        action="store_true",
+        default=config.data.get("defaults.silent", False),
+        help="Disable all logs",
+    )
+    opts.add_argument(
+        "-x",
+        "--exceptions",
+        action="store_true",
+        default=config.data.get("defaults.exceptions", False),
+        help="Display exceptions on errors",
+    )
+    opts.add_argument(
+        "-c",
+        "--clear-cache",
+        action="store_true",
+        default=config.data.get("defaults.clear_cache", False),
+        help="Clear all used caches",
+    )
+    opts.add_argument(
+        "-w",
+        "--watch",
+        action="store_true",
+        default=config.data.get("defaults.watch", False),
+        help="Enable watch mode (hot reload of generated files)",
+    )
+    opts.add_argument(
+        "-ff",
+        "--fail-fast",
+        action="store_true",
+        default=config.data.get("defaults.fail_fast", False),
+        help="Stop on first error",
+    )
+    opts.add_argument("--version", action="store_true", help="Display the ddb version and check for new ones.")
 
     command_parsers = {}
 
-    subparsers = opts.add_subparsers(dest="command", help='Available commands')
+    subparsers = opts.add_subparsers(dest="command", help="Available commands")
     for command in commands.all():
         parser = command.add_parser(subparsers)
         command.configure_parser(parser)
@@ -274,13 +319,13 @@ def parse_command_line(args: Optional[Sequence[str]] = None):
 
     parsed_args, unknown_args = opts.parse_known_args(args)
 
-    log_level = 'INFO'
+    log_level = "INFO"
     if parsed_args.very_verbose:
-        log_level = 'DEBUG'
+        log_level = "DEBUG"
     elif parsed_args.verbose:
-        log_level = 'VERBOSE'
+        log_level = "VERBOSE"
     elif parsed_args.silent:
-        log_level = 'CRITICAL'
+        log_level = "CRITICAL"
 
     configure_logging(log_level)
 
@@ -290,15 +335,15 @@ def parse_command_line(args: Optional[Sequence[str]] = None):
     command = commands.get(parsed_args.command)
 
     if unknown_args and not command.allow_unknown_args:
-        msg = _('unrecognized arguments: %s')
-        opts.error(msg % ' '.join(unknown_args))
+        msg = _("unrecognized arguments: %s")
+        opts.error(msg % " ".join(unknown_args))
 
     return command, parsed_args, unknown_args
 
 
-def handle_command_line(command: Command):
+def handle_command_line(command: Command) -> None:
     """
-    Execute the command and handle additional given arguments like watch mode
+    Execute the command and handle additional given arguments like watch mode.
     """
     execute_command(command)
 
@@ -306,25 +351,42 @@ def handle_command_line(command: Command):
         handle_watch()
 
 
-def _register_action_in_event_bus(action: Action, binding: Union[Callable, str, EventBinding], fail_fast=False):
+def _as_event_binding(binding: Callable[..., Any] | str | EventBinding) -> EventBinding:
+    """
+    Normalize an event binding declaration. It supports name property added by @event decorator on events
+    callable.
+    """
+    if callable(binding) and hasattr(binding, "name"):
+        binding = event_name(binding)
+    if isinstance(binding, str):
+        return EventBinding(binding)
+    if isinstance(binding, EventBinding):
+        return binding
+    msg = f"Unsupported event binding declaration: {binding!r}"
+    raise ValueError(msg)
+
+
+def _register_action_in_event_bus(
+    action: Action, binding: Callable[..., Any] | str | EventBinding, *, fail_fast: bool = False
+) -> None:
     """
     Register a single event binding. It supports name property added by @event decorator on events callable.
     """
-    if callable(binding) and hasattr(binding, "name"):
-        binding = binding.name
-    if isinstance(binding, str):
-        binding = EventBinding(binding)
-    if callable(binding.event) and hasattr(binding.event, "name"):
-        binding.event = binding.event.name
+    event_binding = _as_event_binding(binding)
 
-    bus.on(binding.event, action_event_binding_runner_factory(action,
-                                                              binding.event,
-                                                              to_call=binding.call,
-                                                              event_processor=binding.processor,
-                                                              fail_fast=fail_fast).run)
+    bus.on(
+        event_binding.event,
+        action_event_binding_runner_factory(
+            action,
+            event_binding.event,
+            to_call=event_binding.call,
+            event_processor=event_binding.processor,
+            fail_fast=fail_fast,
+        ).run,
+    )
 
 
-def register_actions_in_event_bus(fail_fast=False):
+def register_actions_in_event_bus(*, fail_fast: bool = False) -> None:
     """
     Register actions into event bus.
     """
@@ -332,30 +394,32 @@ def register_actions_in_event_bus(fail_fast=False):
 
     for action in sorted_actions:
         if isinstance(action.event_bindings, (str, EventBinding)) or callable(action.event_bindings):
-            _register_action_in_event_bus(action, action.event_bindings, fail_fast)
+            _register_action_in_event_bus(action, action.event_bindings, fail_fast=fail_fast)
         else:
             for event_binding in action.event_bindings:
-                _register_action_in_event_bus(action, event_binding, fail_fast)
+                _register_action_in_event_bus(action, event_binding, fail_fast=fail_fast)
 
 
-def main(args: Optional[Sequence[str]] = None,  # pylint:disable=too-many-statements
-         reset_disabled=False,
-         before_handle_command_line=None):
+def main(
+    args: Sequence[str] | None = None,
+    *,
+    reset_disabled: bool = False,
+) -> list[Exception]:
     """
-    Load all features and handle command line
+    Load all features and handle command line.
     """
-    global _watch_started_event, _watch_stop_event  # pylint:disable=global-statement
+    global _watch_started_event, _watch_stop_event
     _watch_started_event = threading.Event()
     _watch_stop_event = threading.Event()
-    initial_cwd = os.getcwd()
+    initial_cwd = str(Path.cwd())
     try:
         load_plugins()
         bootstrap_register_features()
         preload_registered_features()
 
         try:
-            command, args, unknown_args = parse_command_line(args)
-            config.args = args
+            command, parsed_args, unknown_args = parse_command_line(args)
+            config.args = parsed_args
             config.unknown_args = unknown_args
         except ParseCommandLineException as exc:
             config.args = exc.parsed_args
@@ -364,8 +428,8 @@ def main(args: Optional[Sequence[str]] = None,  # pylint:disable=too-many-statem
                 exc.opts.print_help()
                 raise
 
-        load_registered_features(False)
-        register_actions_in_event_bus(config.args.fail_fast)
+        load_registered_features(preload=False)
+        register_actions_in_event_bus(fail_fast=config.args.fail_fast)
 
         if config.args.version:
             events.main.version(silent=config.args.silent)
@@ -374,8 +438,8 @@ def main(args: Optional[Sequence[str]] = None,  # pylint:disable=too-many-statem
         prepare_project_home()
         register_default_caches()
 
-        def on_config_reloaded():
-            global _watch_started_event, _watch_stop_event  # pylint:disable=global-statement
+        def on_config_reloaded() -> None:
+            global _watch_started_event, _watch_stop_event
             _watch_stop_event.set()
             _watch_started_event = threading.Event()
             _watch_stop_event = threading.Event()
@@ -390,7 +454,7 @@ def main(args: Optional[Sequence[str]] = None,  # pylint:disable=too-many-statem
 
             handle_command_line(command)
 
-        bus.on(events.config.reloaded.name, on_config_reloaded)  # pylint:disable=no-member
+        bus.on(event_name(events.config.reloaded), on_config_reloaded)
 
         events.main.start(command=command)
         handle_command_line(command)
@@ -400,45 +464,46 @@ def main(args: Optional[Sequence[str]] = None,  # pylint:disable=too-many-statem
         return context.exceptions
     except ExpectedError as exception:
         return [exception]
-    except Exception as exception:  # pylint:disable=broad-except
+    except Exception:
         try:
             clear_caches()
-        except Exception as clear_cache_exception:  # pylint:disable=broad-except
-            logging.getLogger('ddb').exception("An error has occured while clearing caches",
-                                               exc_info=clear_cache_exception)
-        raise exception
+        except Exception as clear_cache_exception:
+            logging.getLogger("ddb").exception(
+                "An error has occured while clearing caches", exc_info=clear_cache_exception
+            )
+        raise
     finally:
         os.chdir(initial_cwd)
         if not reset_disabled:
             reset()
 
 
-def wait_watch_started(timeout: Optional[float] = None):
+def wait_watch_started(timeout: float | None = None) -> bool:
     """
     Wait for watch mode to be started.
     """
     return _watch_started_event.wait(timeout)
 
 
-def stop_watch():
+def stop_watch() -> None:
     """
     Stop watch mode.
     """
     _watch_stop_event.set()
 
 
-def clear_caches():
+def clear_caches() -> None:
     """
-    Clear all caches
+    Clear all caches.
     """
     for cache in caches.all():
         cache.clear()
         cache.flush()
 
 
-def reset():
+def reset() -> None:
     """
-    Close all caches and reset registries to run main method again
+    Close all caches and reset registries to run main method again.
     """
     bus.clear()
 
@@ -456,9 +521,9 @@ def reset():
     reset_available_features()
 
 
-def console_script():  # pragma: no cover
+def console_script() -> None:  # pragma: no cover
     """
-    Console script entrypoint
+    Console script entrypoint.
     """
     try:
         exceptions = main()
@@ -468,5 +533,5 @@ def console_script():  # pragma: no cover
         sys.exit(1)
 
 
-if __name__ == '__main__':  # pragma: no cover
+if __name__ == "__main__":  # pragma: no cover
     console_script()

@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import pytest
 import yaml
@@ -6,7 +6,7 @@ from dotty_dict import Dotty
 
 from ddb.__main__ import main
 from ddb.config import config
-from tests.utilstest import get_user_uid_gid, get_group_gid
+from tests.utilstest import get_group_gid, get_user_uid_gid
 
 
 class TestJsonnet:
@@ -15,11 +15,11 @@ class TestJsonnet:
 
         main(["configure"])
 
-        assert os.path.exists('config.yml')
-        with open('config.yml', 'r') as f:
+        assert Path("config.yml").exists()
+        with Path("config.yml").open() as f:
             variables = f.read()
 
-        with open('config.expected.yml', 'r') as f:
+        with Path("config.expected.yml").open() as f:
             variables_expected = f.read()
 
         assert variables == variables_expected
@@ -32,20 +32,21 @@ class TestDockerJsonnet:
 
         main(["configure"], reset_disabled=True)
 
-        assert os.path.exists('docker-compose.yml')
-        with open('docker-compose.yml', 'r') as f:
+        assert Path("docker-compose.yml").exists()
+        with Path("docker-compose.yml").open() as f:
             docker_compose = yaml.load(f, yaml.SafeLoader)
 
-        with open('docker-compose.expected.yml', 'r') as f:
+        with Path("docker-compose.expected.yml").open() as f:
             expected_data = f.read()
-            expected_data = expected_data.replace("%network_name%",
-                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
+            expected_data = expected_data.replace(
+                "%network_name%", str(config.data.get("jsonnet.docker.compose.network_name"))
+            )
             docker_compose_expected = yaml.load(expected_data, yaml.SafeLoader)
 
-        uid, _ = get_user_uid_gid('root')
-        gid = get_group_gid('nobody')
+        uid, _ = get_user_uid_gid("root")
+        gid = get_group_gid("nobody")
 
-        Dotty(docker_compose_expected)['services.maven.user'] = f"{uid}:{gid}"
+        Dotty(docker_compose_expected)["services.maven.user"] = f"{uid}:{gid}"
 
         assert docker_compose == docker_compose_expected
 
@@ -60,14 +61,15 @@ class TestDockerJsonnet:
 
         main(["configure"], reset_disabled=True)
 
-        assert os.path.exists('docker-compose.yml')
-        with open('docker-compose.yml', 'r') as f:
+        assert Path("docker-compose.yml").exists()
+        with Path("docker-compose.yml").open() as f:
             docker_compose = yaml.load(f, yaml.SafeLoader)
 
-        with open('docker-compose.expected.yml', 'r') as f:
+        with Path("docker-compose.expected.yml").open() as f:
             expected_data = f.read()
-            expected_data = expected_data.replace("%network_name%",
-                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
+            expected_data = expected_data.replace(
+                "%network_name%", str(config.data.get("jsonnet.docker.compose.network_name"))
+            )
 
             docker_compose_expected = yaml.load(expected_data, yaml.SafeLoader)
 
@@ -78,14 +80,15 @@ class TestDockerJsonnet:
 
         main(["configure"], reset_disabled=True)
 
-        assert os.path.exists('docker-compose.yml')
-        with open('docker-compose.yml', 'r') as f:
+        assert Path("docker-compose.yml").exists()
+        with Path("docker-compose.yml").open() as f:
             docker_compose = yaml.safe_load(f)
 
-        with open('docker-compose.expected.yml', 'r') as f:
+        with Path("docker-compose.expected.yml").open() as f:
             expected_data = f.read()
-            expected_data = expected_data.replace("%network_name%",
-                                                  str(config.data.get('jsonnet.docker.compose.network_name')))
+            expected_data = expected_data.replace(
+                "%network_name%", str(config.data.get("jsonnet.docker.compose.network_name"))
+            )
 
             docker_compose_expected = yaml.load(expected_data, yaml.SafeLoader)
 

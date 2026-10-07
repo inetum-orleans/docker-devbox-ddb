@@ -1,19 +1,50 @@
-# -*- coding: utf-8 -*-
 from marshmallow import fields
 
 from ddb.feature.schema import FeatureSchema
 
-keywords = ["and", "elif", "in", "or", "break", "else", "lambda", "pass", "continue", "for",
-            "load", "return", "def", "if", "not", "while"]
+keywords = [
+    "and",
+    "elif",
+    "in",
+    "or",
+    "break",
+    "else",
+    "lambda",
+    "pass",
+    "continue",
+    "for",
+    "load",
+    "return",
+    "def",
+    "if",
+    "not",
+    "while",
+]
 
-reserved = ["as", "finally", "nonlocal", "assert", "from", "raise", "class", "global", "try",
-            "del", "import", "with", "except", "is", "yield"]
+reserved = [
+    "as",
+    "finally",
+    "nonlocal",
+    "assert",
+    "from",
+    "raise",
+    "class",
+    "global",
+    "try",
+    "del",
+    "import",
+    "with",
+    "except",
+    "is",
+    "yield",
+]
 
 
 class YttSchema(FeatureSchema):
     """
     Ytt schema.
     """
+
     suffixes = fields.List(fields.String(), dump_default=[".ytt"])
     includes = fields.List(fields.String())  # default is build automatically from suffixes value
     excludes = fields.List(fields.String())

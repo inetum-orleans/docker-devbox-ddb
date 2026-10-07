@@ -1,14 +1,16 @@
+import contextlib
 import logging
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from subprocess import CalledProcessError
-from typing import TypeVar, Generic
+from typing import Any, Generic, TypeVar
 
 from ddb.action import Action, InitializableAction
 from ddb.config import config
 from ddb.context import context
 from ddb.context.context import ContextStackItem
 
-A = TypeVar('A', bound=Action)  # pylint:disable=invalid-name
+A = TypeVar("A", bound=Action)
 
 
 class FailFastError(Exception):
@@ -22,18 +24,18 @@ class ExpectedError(Exception):
     A base exception that can display it's own message in logs.
     """
 
-    def log_error(self):
+    def log_error(self) -> None:
         """
-        Log the error
+        Log the error.
+
         :return:
         """
-        log_error = context.log.exception if \
-            context.log.isEnabledFor(logging.DEBUG) or config.args.exceptions \
+        log_error = (
+            context.log.exception
+            if context.log.isEnabledFor(logging.DEBUG) or config.args.exceptions
             else context.log.error
+        )
         log_error(str(self))
-
-
-# pylint:disable=too-few-public-methods
 
 
 class EventBindingRunner(Generic[A], ABC):
@@ -41,13 +43,13 @@ class EventBindingRunner(Generic[A], ABC):
     Runner for an event binding.
     """
 
-    def __init__(self, action: A, event_name: str, to_call=None):
+    def __init__(self, action: A, event_name: str, to_call: Callable[..., Any] | None = None) -> None:
         self.action = action
         self.event_name = event_name
-        self.to_call = to_call if to_call else action.execute
+        self.to_call = to_call if to_call else action.execute  # type: ignore[attr-defined]
 
     @abstractmethod
-    def run(self, *args, **kwargs):
+    def run(self, *args: Any, **kwargs: Any) -> bool | None:
         """
         Run the callable registered on this event binding.
         """
@@ -58,20 +60,26 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
     Runner for an action event binding.
     """
 
-    def __init__(self, action: A, event_name: str, to_call=None, event_processor=None, fail_fast=False):
+    def __init__(
+        self,
+        action: A,
+        event_name: str,
+        to_call: Callable[..., Any] | None = None,
+        event_processor: Callable[..., Any] | None = None,
+        *,
+        fail_fast: bool = False,
+    ) -> None:
         super().__init__(action, event_name, to_call)
         self.event_processor = event_processor
         self.fail_fast = fail_fast
 
-    def run(self, *args, **kwargs):  # pylint:disable=missing-function-docstring
+    def run(self, *args: Any, **kwargs: Any) -> bool | None:
         if self.event_processor:
             resp = self.event_processor(*args, **kwargs)
             if resp is False or resp is None:
                 return None
-            try:
+            with contextlib.suppress(ValueError):
                 args, kwargs = resp
-            except ValueError:
-                pass
 
         context.stack.append(ContextStackItem(self.event_name, self.action, self.to_call, args, kwargs))
         try:
@@ -80,7 +88,7 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
 
             self._execute_action(*args, **kwargs)
             return True
-        except Exception as exception:  # pylint:disable=broad-except
+        except Exception as exception:
             self._handle_exception(exception)
             if self.fail_fast or isinstance(exception, FailFastError):
                 raise
@@ -89,27 +97,27 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
             if context.stack:
                 context.stack.pop()
 
-    def _execute_action(self, *args, **kwargs):
+    def _execute_action(self, *args: Any, **kwargs: Any) -> None:
         """
-        Execute the action
+        Execute the action.
         """
         self.to_call(*args, **kwargs)
 
     @staticmethod
-    def _handle_exception(exception: Exception):
+    def _handle_exception(exception: Exception) -> None:
         """
         Handle an exception occured in an action.
         """
         context.exceptions.append(exception)
-        log_error = context.log.exception if \
-            context.log.isEnabledFor(logging.DEBUG) or config.args.exceptions \
+        log_error = (
+            context.log.exception
+            if context.log.isEnabledFor(logging.DEBUG) or config.args.exceptions
             else context.log.error
+        )
         if isinstance(exception, ExpectedError):
             exception.log_error()
         else:
-            log_error("An unexpected error has occured %s: %s",
-                      context.stack,
-                      str(exception).strip())
+            log_error("An unexpected error has occured %s: %s", context.stack, str(exception).strip())
         if isinstance(exception, CalledProcessError):
             if exception.stderr:
                 for err_line in exception.stderr.decode("utf-8").splitlines():
@@ -121,12 +129,12 @@ class ActionEventBindingRunner(Generic[A], EventBindingRunner[A]):
 
 class InitializableActionEventBindingRunner(ActionEventBindingRunner[InitializableAction]):
     """
-    Runner for an initializable action event binding
+    Runner for an initializable action event binding.
     """
 
-    def run(self, *args, **kwargs):
+    def run(self, *args: Any, **kwargs: Any) -> bool | None:
         """
-        Initialize if required and run
+        Initialize if required and run.
         """
         if not self.action.initialized:
             self.action.initialize()

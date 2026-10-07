@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
-from typing import Iterable
+from collections.abc import Iterable
 
 from ddb.action import Action
 from ddb.feature import Feature
+
 from .actions import CustomAction
 
 
@@ -17,6 +17,4 @@ class CustomFeature(Feature):
 
     @property
     def actions(self) -> Iterable[Action]:
-        return (
-            CustomAction(),
-        )
+        return (CustomAction(),)

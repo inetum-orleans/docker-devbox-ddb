@@ -1,13 +1,11 @@
-# -*- coding: utf-8 -*-
 import os
 import re
 import shutil
 import sys
-from datetime import date
+from datetime import UTC, datetime
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Optional
-from urllib.error import HTTPError
+from typing import Any
 
 import requests
 import yaml
@@ -17,48 +15,54 @@ from semver import VersionInfo
 
 from ddb import __version__
 from ddb.action import Action, InitializableAction
+from ddb.action.action import EventBindings
 from ddb.cache import caches, register_global_cache
 from ddb.config import config
 from ddb.event import events
 from ddb.utils.file import force_remove
+from ddb.utils.path import absolute_path
 from ddb.utils.table_display import get_table_display
-from .. import features
+
 from ...action.action import EventBinding
-from ...action.runner import FailFastError, ExpectedError
+from ...action.runner import ExpectedError, FailFastError
 from ...command import Command
 from ...config.flatten import flatten
 from ...context import context
+from .. import features
 
 
-def get_latest_release(github_repository: str):
+def get_latest_release(github_repository: str) -> tuple[str | None, str | None]:
     """
-    Retrieve latest release version and tag_name from GitHub API
+    Retrieve latest release version and tag_name from GitHub API.
+
     :param github_repository github repository to check
-    :return: Version from tag_name retrieved from GitHub API
+    :return: Version from tag_name retrieved from GitHub API.
     """
-    response = requests.get('https://api.github.com/repos/{}/releases/latest'.format(github_repository))
+    response = requests.get(f"https://api.github.com/repos/{github_repository}/releases/latest", timeout=30)
     try:
         response.raise_for_status()
-        tag_name = response.json().get('tag_name')
+        tag_name = response.json().get("tag_name")
         version = tag_name
-        if version and version.startswith('v'):
+        if version and version.startswith("v"):
             version = version[1:]
         return version, tag_name
-    except HTTPError:  # pylint:disable=bare-except
+    except requests.HTTPError:
         return None, None
 
 
-def get_current_version():
+def get_current_version() -> str:
     """
-    Get the current version
+    Get the current version.
+
     :return:
     """
     return __version__
 
 
-def print_version(github_repository, silent=False):
+def print_version(github_repository: str, *, silent: bool = False) -> None:
     """
     Print the version and informations.
+
     :return:
     """
     if silent:
@@ -66,18 +70,17 @@ def print_version(github_repository, silent=False):
         return
 
     blocks = []
-    header_block = ['ddb ' + get_current_version()]
+    header_block = ["ddb " + get_current_version()]
     blocks.append(header_block)
 
     last_release, tag_name = get_latest_release(github_repository)
 
-    if last_release and get_current_version() < last_release:
+    if last_release and tag_name and get_current_version() < last_release:
         blocks.append(_build_update_header(last_release))
         blocks.append(_build_update_details(github_repository, tag_name))
-    blocks.append([
-        'Please report any bug or feature request at',
-        'https://github.com/inetum-orleans/docker-devbox-ddb/issues'
-    ])
+    blocks.append(
+        ["Please report any bug or feature request at", "https://github.com/inetum-orleans/docker-devbox-ddb/issues"]
+    )
     print(get_table_display(blocks))
 
 
@@ -95,10 +98,10 @@ _version_re = re.compile(
 )
 
 
-def coerce_version(version):
+def coerce_version(version: str) -> tuple[VersionInfo | None, str]:
     """
     Convert an incomplete version string into a semver-compatible VersionInfo
-    object
+    object.
 
     * Tries to detect a "basic" version string (``major.minor.patch``).
     * If not enough components can be found, missing components are
@@ -114,18 +117,17 @@ def coerce_version(version):
     if not match:
         return None, version
 
-    ver = {
-        key: 0 if value is None else value for key, value in match.groupdict().items()
-    }
+    parts = {key: 0 if value is None else value for key, value in match.groupdict().items()}
 
-    ver = VersionInfo(**ver)
-    rest = match.string[match.end():]
-    return ver, rest
+    rest = match.string[match.end() :]
+    # semver parses the string parts of the match itself.
+    return VersionInfo(**parts), rest  # type: ignore[arg-type]
 
 
-def is_version_greater(reference, version):
+def is_version_greater(reference: str, version: str) -> bool:
     """
     Check if version is greater than reference.
+
     :param reference:
     :param version:
     :return:
@@ -133,9 +135,10 @@ def is_version_greater(reference, version):
     return coerce_version(reference) < coerce_version(version)
 
 
-def is_version_greater_or_equal(reference, version):
+def is_version_greater_or_equal(reference: str, version: str) -> bool:
     """
     Check if version is greater or equal than reference.
+
     :param reference:
     :param version:
     :return:
@@ -143,7 +146,9 @@ def is_version_greater_or_equal(reference, version):
     return coerce_version(reference) < coerce_version(version)
 
 
-def check_for_update(github_repository: str, output=False, details=False):
+def check_for_update(
+    github_repository: str, *, output: bool = False, details: bool = False
+) -> tuple[str | None, str | None]:
     """
     Check if a new version is available on github.
     :param github_repository github repository to check
@@ -156,112 +161,116 @@ def check_for_update(github_repository: str, output=False, details=False):
     if last_release and is_version_greater(get_current_version(), last_release):
         if output:
             blocks = [_build_update_header(last_release)]
-            if details:
-                row = _build_update_details(github_repository, tag_name)
-                blocks.append(row)
+            if details and tag_name:
+                blocks.append(_build_update_details(github_repository, tag_name))
                 print(get_table_display(blocks))
             else:
                 for block in blocks:
-                    for row in block:
-                        print(row)
+                    for line in block:
+                        print(line)
         return last_release, tag_name
     return None, None
 
 
-def _build_update_header(version):
-    return ['A new version is available: {}'.format(version)]
+def _build_update_header(version: str) -> list[str]:
+    return [f"A new version is available: {version}"]
 
 
-def _build_update_details(github_repository, tag_name):
+def _build_update_details(github_repository: str, tag_name: str) -> list[str]:
     row = []
     update_tip = _build_update_tip()
     if update_tip:
         row.append(update_tip)
-    row.extend((
-        'For more information, check the following links:',
-        'https://github.com/{}/releases/tag/{}'.format(github_repository, tag_name),
-        'https://github.com/{}/releases/tag/{}/CHANGELOG.md'.format(github_repository, tag_name),
-    ))
+    row.extend(
+        (
+            "For more information, check the following links:",
+            f"https://github.com/{github_repository}/releases/tag/{tag_name}",
+            f"https://github.com/{github_repository}/releases/tag/{tag_name}/CHANGELOG.md",
+        )
+    )
     return row
 
 
-def _build_update_tip():
+def _build_update_tip() -> str:
     if is_binary():
         return 'run "ddb self-update" command to update.'
-    return ''
+    return ""
 
 
-def is_binary():
+def is_binary() -> bool:
     """
     Check if current process is binary.
+
     :return:
     """
-    return getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
+    return getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS")
 
 
-def get_local_binary_path():
+def get_local_binary_path() -> str:
     """
-    Get the binary path
+    Get the binary path.
+
     :return:
     """
     context.log.debug("sys.argv[0]: %s", sys.argv[0])
     context.log.debug("config.cwd: %s", config.cwd)
-    context.log.debug("sys.frozen: %s", getattr(sys, 'frozen', False))
-    context.log.debug("sys._MEIPASS: %s", getattr(sys, '_MEIPASS', ''))
+    context.log.debug("sys.frozen: %s", getattr(sys, "frozen", False))
+    context.log.debug("sys._MEIPASS: %s", getattr(sys, "_MEIPASS", ""))
     context.log.debug("sys.executable: %s", sys.executable)
     context.log.debug("__file__: %s", __file__)
 
     local_binary_path = None
-    if sys.executable and os.path.isfile(sys.executable):
+    if sys.executable and Path(sys.executable).is_file():
         context.log.debug("sys.executable match an existing file. Using this value as binary path.")
         local_binary_path = sys.executable
 
     if not local_binary_path:
-        if os.path.isabs(sys.argv[0]):
+        if Path(sys.argv[0]).is_absolute():
             context.log.debug("sys.argv[0] is absolute. Using this value as binary path.")
             local_binary_path = sys.argv[0]
 
     if not local_binary_path:
-        argv0_basename = os.path.basename(sys.argv[0])
+        argv0_basename = Path(sys.argv[0]).name
         if argv0_basename == sys.argv[0]:
             context.log.debug("sys.argv[0] is basename only. Use configuration values to find expected binary path.")
-            local_binary_path = os.path.join(config.paths.home, "bin", sys.argv[0])
+            local_binary_path = str(Path(config.paths.home) / "bin" / sys.argv[0])
 
     if not local_binary_path:
         if config.cwd:
             context.log.debug("config.cwd is defined. Use configuration values to find expected binary path.")
-            local_binary_path = os.path.join(config.cwd, sys.argv[0])
+            local_binary_path = str(Path(config.cwd) / sys.argv[0])
 
     context.log.debug("local_binary_path: %s", local_binary_path)
 
     if not local_binary_path:
-        raise ValueError("Can't find local binary path to update.")
+        msg = "Can't find local binary path to update."
+        raise ValueError(msg)
     return local_binary_path
 
 
-def get_binary_destination_path(binary_path: str):
+def get_binary_destination_path(binary_path: str) -> str:
     """
-    Get binary path destination
+    Get binary path destination.
+
     :param binary_path:
     :return:
     """
-    if binary_path.endswith('.py') \
-            and Path(binary_path).read_bytes().startswith(b'#!/usr/bin/env python'):
+    if binary_path.endswith(".py") and Path(binary_path).read_bytes().startswith(b"#!/usr/bin/env python"):
         # Avoid removing main source file when running on development.
         binary_path = binary_path[:-3] + ".bin"
 
-    for qualifier in ['-linux', '-alpine', '-macos', '-windows']:
-        binary_path = binary_path.replace(qualifier, '')
+    for qualifier in ["-linux", "-alpine", "-macos", "-windows"]:
+        binary_path = binary_path.replace(qualifier, "")
     return binary_path
 
 
 class FeaturesAction(Action):
     """
-    Display all features
+    Display all features.
     """
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return events.phase.features
 
     @property
@@ -269,23 +278,23 @@ class FeaturesAction(Action):
         return "core:features"
 
     @staticmethod
-    def execute():
+    def execute() -> None:
         """
-        Execute action
+        Execute action.
         """
         enabled_features = [f for f in features.all() if not f.disabled]
 
         for feature in enabled_features:
-            print("%s: %s" % (feature.name, feature.description))
+            print(f"{feature.name}: {feature.description}")
 
 
 class ConfigAction(Action):
     """
-    Dump configuration
+    Dump configuration.
     """
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return events.phase.config
 
     @property
@@ -293,12 +302,12 @@ class ConfigAction(Action):
         return "core:config"
 
     @staticmethod
-    def execute():
+    def execute() -> None:
         """
-        Execute action
+        Execute action.
         """
         configuration, configuration_files = ConfigAction._get_configuration_files(
-            config.args.full, config.args.files
+            full=config.args.full, files=config.args.files
         )
 
         if config.args.property:
@@ -313,28 +322,26 @@ class ConfigAction(Action):
         return ConfigAction._print_config_yaml(configuration, configuration_files)
 
     @staticmethod
-    def _handle_property(configuration, configuration_files):
+    def _handle_property(
+        configuration: Any, configuration_files: dict[str, Any] | None
+    ) -> tuple[Any, dict[str, Any] | None]:
         configuration, configuration_files = ConfigAction._get_configurations_for_prop(
-            config.args.property,
-            configuration,
-            configuration_files
+            config.args.property, configuration, configuration_files
         )
         if configuration is None and not config.args.full:
             configuration, configuration_files = ConfigAction._get_configuration_files(
-                True, config.args.files
+                full=True, files=config.args.files
             )
 
             configuration, configuration_files = ConfigAction._get_configurations_for_prop(
-                config.args.property,
-                configuration,
-                configuration_files
+                config.args.property, configuration, configuration_files
             )
         if configuration is not None:
             root_config = Dotty({})
             root_config[config.args.property] = configuration
             configuration = dict(root_config)
         if configuration_files:
-            root_configuration_files = {}
+            root_configuration_files: dict[str, Any] = {}
             for k, configuration_file in configuration_files.items():
                 root_configuration_file = Dotty({})
                 root_configuration_file[config.args.property] = configuration_file
@@ -343,7 +350,7 @@ class ConfigAction(Action):
         return configuration, configuration_files
 
     @staticmethod
-    def _print_config_yaml(configuration, configuration_files):
+    def _print_config_yaml(configuration: Any, configuration_files: dict[str, Any] | None) -> None:
         if config.args.files and configuration_files:
             for file, configuration_file in configuration_files.items():
                 print(f"--- # {file}")
@@ -355,7 +362,7 @@ class ConfigAction(Action):
                 print(configuration)
 
     @staticmethod
-    def _print_config_variables(configuration, configuration_files):
+    def _print_config_variables(configuration: Any, configuration_files: dict[str, Any] | None) -> None:
         if config.args.files and configuration_files:
             for index, (file, configuration_file) in enumerate(configuration_files.items()):
                 if index > 0:
@@ -370,19 +377,24 @@ class ConfigAction(Action):
                 print(f"{key}: {flat[key]}")
 
     @staticmethod
-    def _print_config_value(configuration, prop):
+    def _print_config_value(configuration: Any, prop: str | None) -> None:
         if configuration is None:
-            raise ValueError(f"{prop} not found in configuration.")
+            msg = f"{prop} not found in configuration."
+            raise ValueError(msg)
         dotty_configuration = Dotty(configuration)
         if prop and prop not in dotty_configuration:
-            raise ValueError(f"{prop} not found in configuration.")
+            msg = f"{prop} not found in configuration."
+            raise ValueError(msg)
         value = dotty_configuration[prop] if prop and prop in dotty_configuration else configuration
         print(value)
 
     @staticmethod
-    def _get_configurations_for_prop(prop, configuration, configuration_files):
+    def _get_configurations_for_prop(
+        prop: str, configuration: Any, configuration_files: dict[str, Any] | None
+    ) -> tuple[Any, dict[str, Any] | None]:
         prop_configuration = Dotty(configuration).get(prop)
 
+        prop_configuration_files: dict[str, Any] | None
         if configuration_files:
             prop_configuration_files = {}
             for file, configuration_file in configuration_files.items():
@@ -395,13 +407,15 @@ class ConfigAction(Action):
         return prop_configuration, prop_configuration_files
 
     @staticmethod
-    def _prune_default_configuration(default_configuration, flat_file_configuration):
+    def _prune_default_configuration(
+        default_configuration: dict[str, Any], flat_file_configuration: dict[str, Any]
+    ) -> None:
         for file_key in flat_file_configuration.values():
             if file_key in default_configuration:
                 default_configuration.pop(file_key, None)
                 parent_k = file_key
-                while '.' in parent_k:
-                    (parent_k, _) = parent_k.rsplit('.', 1)
+                while "." in parent_k:
+                    (parent_k, _) = parent_k.rsplit(".", 1)
                     parent_value = default_configuration.get(parent_k)
                     if parent_value is None or not parent_value:
                         default_configuration.pop(parent_k, None)
@@ -409,7 +423,7 @@ class ConfigAction(Action):
                         break
 
     @staticmethod
-    def _get_configuration_files(full, files):
+    def _get_configuration_files(*, full: bool, files: bool) -> tuple[Any, dict[str, Any] | None]:
         default_configuration = dict(config.data.copy())
 
         if full and not files:
@@ -422,7 +436,7 @@ class ConfigAction(Action):
                 flat_file_configuration = flatten(file_configuration)
                 ConfigAction._prune_default_configuration(default_configuration, flat_file_configuration)
 
-            tmp = {'default': default_configuration}
+            tmp = {"default": default_configuration}
             tmp.update(configuration_files)
             configuration_files = tmp
         return configuration, configuration_files
@@ -430,27 +444,24 @@ class ConfigAction(Action):
 
 class EjectAction(Action):
     """
-    Dump configuration
+    Dump configuration.
     """
 
     @property
-    def event_bindings(self):
-        def eject_processor(source: Optional[str], target: str):
-            if not source or not \
-                    os.path.abspath(source).startswith(config.paths.project_home):
+    def event_bindings(self) -> EventBindings:
+        def eject_processor(source: str | None, target: str) -> tuple[tuple[()], dict[str, Any]] | bool:
+            if not source or not absolute_path(source).startswith(config.paths.project_home):
                 return False
             return (), {"source": source, "target": target}
 
-        return (
-            EventBinding(events.file.generated, self.delete_generated_source, eject_processor)
-        )
+        return EventBinding(events.file.generated, self.delete_generated_source, eject_processor)
 
     @property
     def name(self) -> str:
         return "core:eject"
 
     @property
-    def order(self):
+    def order(self) -> int:
         return 1024 * 1024
 
     @property
@@ -460,12 +471,13 @@ class EjectAction(Action):
         return super().disabled
 
     @staticmethod
-    def delete_generated_source(source: Optional[str], target: str):
+    def delete_generated_source(source: str | None, target: str) -> None:
         """
-        Execute action
+        Execute action.
         """
-        force_remove(source)
-        events.file.deleted(source)
+        if source:
+            force_remove(source)
+            events.file.deleted(source)
         events.file.deleted(target)
 
 
@@ -475,28 +487,26 @@ class ReloadConfigAction(Action):
     """
 
     @property
-    def event_bindings(self):
-        def config_file_processor(file: str):
-            if os.path.abspath(file) in config.files:
+    def event_bindings(self) -> EventBindings:
+        def config_file_processor(file: str) -> tuple[tuple[()], dict[str, Any]] | None:
+            if absolute_path(file) in config.files:
                 return (), {"file": file}
             return None
 
-        return (
-            EventBinding(events.file.found, self.execute, config_file_processor)
-        )
+        return EventBinding(events.file.found, self.execute, config_file_processor)
 
     @property
     def disabled(self) -> bool:
-        return 'watch' not in config.args or not config.args.watch
+        return "watch" not in config.args or not config.args.watch
 
     @property
     def name(self) -> str:
         return "core:reload-config"
 
     @staticmethod
-    def execute(file: str):
+    def execute(file: str) -> None:
         """
-        Execute action
+        Execute action.
         """
         if context.watching:
             data, _ = config.read()
@@ -509,8 +519,9 @@ class ReloadConfigAction(Action):
                     feature.configure()
                 context.log.info("Configuration has been reloaded.")
                 events.config.reloaded()
-            except Exception as exc:  # pylint:disable=broad-except
+            except Exception as exc:
                 context.log.warning("Configuration has fail to reload: %s", str(exc))
+
 
 class VersionAction(Action):
     """
@@ -522,18 +533,19 @@ class VersionAction(Action):
         return "core:version"
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return events.main.version
 
     @staticmethod
-    def execute(silent: bool):
+    def execute(*, silent: bool) -> None:
         """
-        Check for updates
+        Check for updates.
+
         :param command command name
         :return:
         """
-        github_repository = config.data.get('core.github_repository')
-        print_version(github_repository, silent)
+        github_repository = config.data.get("core.github_repository")
+        print_version(github_repository, silent=silent)
 
 
 class CheckForUpdateAction(InitializableAction):
@@ -541,34 +553,35 @@ class CheckForUpdateAction(InitializableAction):
     Check if a new version is available on github.
     """
 
-    def initialize(self):
-        register_global_cache('core.check_for_update.version')
+    def initialize(self) -> None:
+        register_global_cache("core.check_for_update.version")
 
     @property
     def name(self) -> str:
         return "core:check-for-update"
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return events.main.terminate
 
     @staticmethod
-    def execute(command: Command):
+    def execute(command: Command) -> None:
         """
-        Check for updates
+        Check for updates.
+
         :param command command name
         :return:
         """
-        if not command.avoid_stdout and config.data.get('core.check_updates'):
-            cache = caches.get('core.check_for_update.version')
-            last_check = cache.get('last_check', None)
-            today = date.today()
+        if not command.avoid_stdout and config.data.get("core.check_updates"):
+            cache = caches.get("core.check_for_update.version")
+            last_check = cache.get("last_check", None)
+            today = datetime.now(UTC).astimezone().date()
 
             if last_check is None or last_check < today:
-                github_repository = config.data.get('core.github_repository')
-                check_for_update(github_repository, True, True)
+                github_repository = config.data.get("core.github_repository")
+                check_for_update(github_repository, output=True, details=True)
 
-            cache.set('last_check', today)
+            cache.set("last_check", today)
 
 
 class RequiredVersionError(FailFastError, ExpectedError):
@@ -576,7 +589,7 @@ class RequiredVersionError(FailFastError, ExpectedError):
     Exception that should be raised when the current version doesn't fullfil the required one.
     """
 
-    def log_error(self):
+    def log_error(self) -> None:
         context.log.error(str(self))
 
 
@@ -590,28 +603,30 @@ class CheckRequiredVersion(Action):
         return "core:check-required-version"
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return events.main.start
 
     @staticmethod
-    def execute(command: Command):
+    def execute(command: Command) -> None:
         """
-        Check for updates
+        Check for updates.
+
         :param command command name
         :return:
         """
-        if command.name not in ['self-update']:
-            required_version = config.data.get('core.required_version')
+        if command.name not in ["self-update"]:
+            required_version = config.data.get("core.required_version")
             if not required_version:
                 return
             if is_version_greater_or_equal(get_current_version(), required_version):
                 update_tip = _build_update_tip()
                 if update_tip:
-                    update_tip = ' ' + update_tip
-                raise RequiredVersionError(
-                    "This project requires ddb {}+. Current version is {}.{}".format(required_version,
-                                                                                     get_current_version(),
-                                                                                     update_tip))
+                    update_tip = " " + update_tip
+                msg = (
+                    f"This project requires ddb {required_version}+. "
+                    f"Current version is {get_current_version()}.{update_tip}"
+                )
+                raise RequiredVersionError(msg)
 
 
 class SelfUpdateAction(Action):
@@ -624,36 +639,38 @@ class SelfUpdateAction(Action):
         return "core:selfupdate"
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return events.phase.selfupdate
 
-    def execute(self):
+    def execute(self) -> None:
         """
-        Execute action
+        Execute action.
         """
-        github_repository = config.data.get('core.github_repository')
+        github_repository = config.data.get("core.github_repository")
 
         if not is_binary():
-            print('ddb is running from a package mode than doesn\'t support self-update.')
+            print("ddb is running from a package mode than doesn't support self-update.")
             print(
-                'You can download binary package supporting it ' +
-                'from github: https://github.com/{}/releases'.format(github_repository)
+                "You can download binary package supporting it "
+                f"from github: https://github.com/{github_repository}/releases"
             )
             return
 
-        last_release, tag_name = check_for_update(github_repository, True)
+        last_release, tag_name = check_for_update(github_repository, output=True)
         if not last_release:
-            print('ddb is already up to date.')
-            if 'force' not in config.args or not config.args.force:
+            print("ddb is already up to date.")
+            if "force" not in config.args or not config.args.force:
                 return
-            tag_name = 'v' + get_current_version()
+            tag_name = "v" + get_current_version()
 
-        self.self_update_binary(github_repository, tag_name)
+        if tag_name:
+            self.self_update_binary(github_repository, tag_name)
 
     @staticmethod
-    def self_update_binary(github_repository, tag_name):
+    def self_update_binary(github_repository: str, tag_name: str) -> None:
         """
-        Self update the ddb binary
+        Self update the ddb binary.
+
         :param github_repository:
         :param tag_name:
         :return:
@@ -661,42 +678,44 @@ class SelfUpdateAction(Action):
         local_binary_path = get_local_binary_path()
 
         if not os.access(local_binary_path, os.W_OK):
-            raise PermissionError(f"You don't have permission to write on ddb binary file. ({local_binary_path})")
+            msg = f"You don't have permission to write on ddb binary file. ({local_binary_path})"
+            raise PermissionError(msg)
 
-        if not os.path.isfile(local_binary_path):
-            raise ValueError(f"Local binary path is not a file. ({local_binary_path})")
+        if not Path(local_binary_path).is_file():
+            msg = f"Local binary path is not a file. ({local_binary_path})"
+            raise ValueError(msg)
 
-        release_asset_name = config.data.get('core.release_asset_name')
+        release_asset_name = config.data.get("core.release_asset_name")
         if not release_asset_name:
-            print('ddb is running from a platform that doesn\'t support binary package mode.')
+            print("ddb is running from a platform that doesn't support binary package mode.")
             return
 
-        url = 'https://github.com/{}/releases/download/{}/{}'.format(github_repository, tag_name, release_asset_name)
-        context.log.debug('Downloading ddb asset: %s', url)
+        url = f"https://github.com/{github_repository}/releases/download/{tag_name}/{release_asset_name}"
+        context.log.debug("Downloading ddb asset: %s", url)
 
         progress_bar = None
-        with requests.get(url, stream=True) as response:
+        with requests.get(url, stream=True, timeout=30) as response:
             response.raise_for_status()
 
             with NamedTemporaryFile(delete=False) as tmp:
                 if not progress_bar:
-                    content_length = int(response.headers['content-length'])
-                    progress_bar = IncrementalBar('Downloading', max=content_length, suffix='%(percent)d%%')
+                    content_length = int(response.headers["content-length"])
+                    progress_bar = IncrementalBar("Downloading", max=content_length, suffix="%(percent)d%%")
 
                 for chunk in response.iter_content(32 * 1024):
-                    progress_bar.next(len(chunk))  # pylint:disable=not-callable
+                    progress_bar.next(len(chunk))
                     tmp.write(chunk)
                 tmp.flush()
 
             local_binary_path = get_binary_destination_path(local_binary_path)
-            local_old_binary_path = local_binary_path + '.old'
+            local_old_binary_path = local_binary_path + ".old"
             # Create a backup to be able to restore in case of failure
             shutil.copy(local_binary_path, local_old_binary_path)
             shutil.copymode(local_binary_path, tmp.name)
             force_remove(local_binary_path)  # This is required on windows
-            os.rename(tmp.name, local_binary_path)
+            Path(tmp.name).rename(local_binary_path)
 
             progress_bar.finish()
 
-        config.data['core.check_updates'] = False
+        config.data["core.check_updates"] = False
         print("ddb has been updated.")

@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 from ddb.__main__ import main
 from tests.utilstest import expect_gitignore
@@ -12,15 +12,15 @@ class TestCopy:
 
         main(["activate"])
 
-        assert os.path.exists("destination/test1")
-        assert os.path.exists("destination/test2")
+        assert Path("destination/test1").exists()
+        assert Path("destination/test2").exists()
 
-        assert expect_gitignore('.gitignore', '/destination/test1', '/destination/test2')
+        assert expect_gitignore(".gitignore", "/destination/test1", "/destination/test2")
 
-        os.remove("destination/test1")
+        Path("destination/test1").unlink()
 
         main(["configure"])
 
-        assert os.path.exists("destination/test1")
-        assert os.path.exists("destination/test2")
-        assert expect_gitignore('.gitignore', '/destination/test1', '/destination/test2')
+        assert Path("destination/test1").exists()
+        assert Path("destination/test2").exists()
+        assert expect_gitignore(".gitignore", "/destination/test1", "/destination/test2")

@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
-from typing import ClassVar, Iterable
+from collections.abc import Iterable
 
 from ddb.action import Action
 from ddb.feature import Feature
+
 from .actions import FixFilePermissionsAction
 from .schema import GitSchema
 
@@ -21,11 +21,9 @@ class GitFeature(Feature):
         return ["core"]
 
     @property
-    def schema(self) -> ClassVar[GitSchema]:
+    def schema(self) -> type[GitSchema]:
         return GitSchema
 
     @property
     def actions(self) -> Iterable[Action]:
-        return (
-            FixFilePermissionsAction(),
-        )
+        return (FixFilePermissionsAction(),)

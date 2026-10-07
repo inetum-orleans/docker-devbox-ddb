@@ -1,27 +1,41 @@
-# -*- coding: utf-8 -*-
 from uuid import uuid4
 
 from slugify import slugify
 
-from .cache import Cache
-from .shelve_cache import ShelveCache
 from ..config import config
 from ..registry import Registry
+from .cache import Cache
+from .shelve_cache import ShelveCache
 
-caches = Registry(Cache, 'Cache')  # type: Registry[Cache]
+__all__ = [
+    "Cache",
+    "ShelveCache",
+    "caches",
+    "global_cache",
+    "global_cache_name",
+    "project_binary_cache_name",
+    "project_cache",
+    "project_cache_name",
+    "register_global_cache",
+    "register_project_cache",
+    "requests_cache",
+    "requests_cache_name",
+]
 
-global_cache_name = 'global'
-requests_cache_name = 'requests'
+caches: Registry[Cache] = Registry(Cache, "Cache")  # type: ignore[type-abstract]
 
-project_cache_name = 'project'
-project_binary_cache_name = 'binary'
+global_cache_name = "global"
+requests_cache_name = "requests"
+
+project_cache_name = "project"
+project_binary_cache_name = "binary"
 
 
-def register_project_cache(cache_name):
+def register_project_cache(cache_name: str) -> Cache:
     """
     Creates a ShelveCache for current project, and register it with given name.
     """
-    registered_projects_cache_name = ShelveCache('project-cache-uuid', eternal=True)
+    registered_projects_cache_name = ShelveCache("project-cache-uuid", eternal=True)
     try:
         project_cache_uuid = registered_projects_cache_name.get(config.paths.project_home)
         if project_cache_uuid is None:
@@ -31,17 +45,17 @@ def register_project_cache(cache_name):
         registered_projects_cache_name.close()
 
     namespace = [item for item in (project_cache_uuid, cache_name) if item]
-    cache = ShelveCache(slugify('.'.join(namespace), regex_pattern=r'[^-a-z0-9_\.]+'))
+    cache = ShelveCache(slugify(".".join(namespace), regex_pattern=r"[^-a-z0-9_\.]+"))
 
     caches.register(cache, cache_name)
     return cache
 
 
-def register_global_cache(cache_name):
+def register_global_cache(cache_name: str) -> Cache:
     """
     Creates a ShelveCache shared for all projects, and register it with given name.
     """
-    cache = ShelveCache(slugify(cache_name, regex_pattern=r'[^-a-z0-9_\.]+'))
+    cache = ShelveCache(slugify(cache_name, regex_pattern=r"[^-a-z0-9_\.]+"))
     caches.register(cache, cache_name)
     return cache
 

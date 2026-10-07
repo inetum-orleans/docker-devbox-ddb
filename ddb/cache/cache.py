@@ -1,56 +1,58 @@
-# -*- coding: utf-8 -*-
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
+from typing import Any
 
 
 class Cache(ABC):
     """
-    Cache interface
+    Cache interface.
     """
 
-    def __init__(self, namespace: str):
+    def __init__(self, namespace: str) -> None:
         self._namespace = namespace
 
     @abstractmethod
-    def get(self, key: str, default=None):
+    def get(self, key: str, default: Any = None) -> Any:
         """
-        Get a cache entry value
-        """
-
-    @abstractmethod
-    def keys(self):
-        """
-        Get all cache keys
+        Get a cache entry value.
         """
 
     @abstractmethod
-    def set(self, key: str, data):
+    def keys(self) -> Iterable[str]:
         """
-        Set a cache entry value
-        """
-
-    @abstractmethod
-    def pop(self, key: str):
-        """
-        Remove a cache entry
+        Get all cache keys.
         """
 
     @abstractmethod
-    def clear(self):
+    def set(self, key: str, data: Any) -> None:
+        """
+        Set a cache entry value.
+        """
+
+    @abstractmethod
+    def pop(self, key: str) -> Any:
+        """
+        Remove a cache entry.
+        """
+
+    @abstractmethod
+    def clear(self) -> None:
         """
         Remove all cache entries.
         """
 
-    def close(self):
+    def close(self) -> None:
         """
         Close the cache access.
         """
 
-    def flush(self):
+    def flush(self) -> None:
         """
         Synchronize the cache with persistent system.
         """
 
-    def __contains__(self, key):
+    @abstractmethod
+    def __contains__(self, key: str) -> bool:
         """
         Check if key exists.
         """

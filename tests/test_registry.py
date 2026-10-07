@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 import pytest
 
-from ddb.binary.binary import DefaultBinary, Binary
+from ddb.binary.binary import Binary, DefaultBinary
 from ddb.feature.docker.binaries import DockerBinary
-from ddb.registry import Registry, DefaultRegistryObject, RegistryOrderedSet
+from ddb.registry import DefaultRegistryObject, Registry, RegistryOrderedSet
 
 
 class Dummy(DefaultRegistryObject):
@@ -60,7 +59,7 @@ class TestRegistry:
         r.unregister("dummy")
         with pytest.raises(ValueError) as e:
             r.get("dummy")
-        assert str(e.value) == "Dummy name \"dummy\" is not registered"
+        assert str(e.value) == 'Dummy name "dummy" is not registered'
         assert not r.has("dummy")
         assert r.all() == ()
 
@@ -72,7 +71,7 @@ class TestRegistry:
 
         with pytest.raises(ValueError) as e:
             r.get("dummy")
-        assert str(e.value) == "Dummy name \"dummy\" is not registered"
+        assert str(e.value) == 'Dummy name "dummy" is not registered'
 
         assert r.get("alt") == d
         assert r.all() == (d,)
@@ -85,21 +84,21 @@ class TestRegistry:
 
         with pytest.raises(ValueError) as e:
             r.register(d)
-        assert str(e.value) == "Dummy name \"dummy\" is already registered"
+        assert str(e.value) == 'Dummy name "dummy" is already registered'
 
     def test_unregistered(self):
         r = Registry(Dummy, "Dummy")
 
         with pytest.raises(ValueError) as e:
             r.get("dummy")
-        assert str(e.value) == "Dummy name \"dummy\" is not registered"
+        assert str(e.value) == 'Dummy name "dummy" is not registered'
 
     def test_register_another_class(self):
         r = Registry(Dummy, "Dummy")
 
         with pytest.raises(ValueError) as e:
             r.register(Another("testing"))
-        assert str(e.value) == "Dummy name \"testing\" should be an instance of Dummy"
+        assert str(e.value) == 'Dummy name "testing" should be an instance of Dummy'
 
     def test_register_invalid_instance(self):
         r = Registry(Dummy, "Dummy")
@@ -108,7 +107,7 @@ class TestRegistry:
 
         with pytest.raises(ValueError) as e:
             r.register(n, "no-name")
-        assert str(e.value) == "Dummy name \"no-name\" should be an instance of Dummy"
+        assert str(e.value) == 'Dummy name "no-name" should be an instance of Dummy'
 
     def test_register_no_name_class_missing_name(self):
         r = Registry(NoName, "NoName")
@@ -146,7 +145,7 @@ class TestRegistrySet:
         r.unregister("dummy")
         with pytest.raises(ValueError) as e:
             r.get("dummy")
-        assert str(e.value) == "HashbableDummy name \"dummy\" is not registered"
+        assert str(e.value) == 'HashbableDummy name "dummy" is not registered'
         assert not r.has("dummy")
         assert r.all() == ()
 
@@ -158,7 +157,7 @@ class TestRegistrySet:
 
         with pytest.raises(ValueError) as e:
             r.get("dummy")
-        assert str(e.value) == "HashbableDummy name \"dummy\" is not registered"
+        assert str(e.value) == 'HashbableDummy name "dummy" is not registered'
 
         assert r.get("alt") == {d}
 
@@ -171,7 +170,7 @@ class TestRegistrySet:
         d2 = HashbableDummy("dummy", "1", "2")
         with pytest.raises(ValueError) as e:
             r.register(d2)
-        assert str(e.value) == "This HashbableDummy is already registered for name \"dummy\""
+        assert str(e.value) == 'This HashbableDummy is already registered for name "dummy"'
 
         d3 = HashbableDummy("dummy", "1", "3")
         r.register(d3)
@@ -184,14 +183,14 @@ class TestRegistrySet:
 
         with pytest.raises(ValueError) as e:
             r.get("dummy")
-        assert str(e.value) == "HashbableDummy name \"dummy\" is not registered"
+        assert str(e.value) == 'HashbableDummy name "dummy" is not registered'
 
     def test_register_another_class(self):
         r = RegistryOrderedSet(HashbableDummy, "HashbableDummy")
 
         with pytest.raises(ValueError) as e:
             r.register(Another("testing"))
-        assert str(e.value) == "HashbableDummy name \"testing\" should be an instance of HashbableDummy"
+        assert str(e.value) == 'HashbableDummy name "testing" should be an instance of HashbableDummy'
 
     def test_register_invalid_instance(self):
         r = RegistryOrderedSet(HashbableDummy, "HashbableDummy")
@@ -200,7 +199,7 @@ class TestRegistrySet:
 
         with pytest.raises(ValueError) as e:
             r.register(n, "no-name")
-        assert str(e.value) == "HashbableDummy name \"no-name\" should be an instance of HashbableDummy"
+        assert str(e.value) == 'HashbableDummy name "no-name" should be an instance of HashbableDummy'
 
     def test_register_no_name_class_missing_name(self):
         r = RegistryOrderedSet(NoName, "NoName")

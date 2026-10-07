@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 from ddb.__main__ import main
 
@@ -7,14 +7,14 @@ class TestPlugin:
     def test_copy_ca_certificates(self, project_loader):
         project_loader("feature")
 
-        assert not os.path.exists("test")
-        assert not os.path.exists("test2")
-        assert not os.path.exists("test3")
-        assert not os.path.exists("some")
+        assert not Path("test").exists()
+        assert not Path("test2").exists()
+        assert not Path("test3").exists()
+        assert not Path("some").exists()
 
         main(["configure"])
 
-        assert os.path.exists("test")
-        assert os.path.exists("test2")
-        assert os.path.exists("test3")
-        assert os.path.exists("some")
+        assert Path("test").exists()
+        assert Path("test2").exists()
+        assert Path("test3").exists()
+        assert Path("some").exists()

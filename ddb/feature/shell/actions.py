@@ -1,15 +1,17 @@
-# -*- coding: utf-8 -*-
 import base64
+import contextlib
 import json
 import os
 import shlex
+from collections.abc import Iterable, Mapping
+from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Iterable
 
 import zgitignore
 from dictdiffer import diff
 
-from .integrations import ShellIntegration
+from ddb.action.action import EventBindings
+
 from ...action import Action, actions
 from ...action.action import EventBinding
 from ...binary import Binary, binaries
@@ -18,17 +20,19 @@ from ...config import config
 from ...config.flatten import to_environ
 from ...context import context
 from ...event import events
+from .integrations import ShellIntegration
 
 _env_environ_backup = config.env_prefix + "_SHELL_ENVIRON_BACKUP"
 
 
-def get_shims_path(global_: bool = False):
+def get_shims_path(*, global_: bool = False) -> str | None:
     """
     Get local or global shims path.
+
     :param global_:
     :return:
     """
-    directories = config.data.get('shell.path.directories')
+    directories = config.data.get("shell.path.directories")
 
     if global_:
         shim_directory_prefix = config.paths.home
@@ -39,48 +43,51 @@ def get_shims_path(global_: bool = False):
 
     shim_directory = None
     for directory in directories:
-        if not os.path.isabs(directory):
-            directory = os.path.join(config.paths.project_home, directory)
-        if directory.startswith(shim_directory_prefix) and \
-                (not forbidden_shim_directory_prefix or
-                 not directory.startswith(forbidden_shim_directory_prefix)):
+        if not Path(directory).is_absolute():
+            directory = str(Path(config.paths.project_home) / directory)
+        if directory.startswith(shim_directory_prefix) and (
+            not forbidden_shim_directory_prefix or not directory.startswith(forbidden_shim_directory_prefix)
+        ):
             shim_directory = directory
             break
 
     return shim_directory
 
 
-def encode_environ_backup(environ_backup: dict) -> str:
+def encode_environ_backup(environ_backup: dict[str, str]) -> str:
     """
     Encode environ backup into a safe string.
     """
     return base64.b64encode(json.dumps(environ_backup).encode("utf-8")).decode("utf-8")
 
 
-def decode_environ_backup(encoded_environ_backup: str) -> dict:
+def decode_environ_backup(encoded_environ_backup: str) -> dict[str, str]:
     """
     Decode environ backup from safe string.
     """
-    return json.loads(base64.b64decode(encoded_environ_backup).decode("utf-8"))
+    decoded: dict[str, str] = json.loads(base64.b64decode(encoded_environ_backup).decode("utf-8"))
+    return decoded
 
 
-def apply_diff_to_shell(shell: ShellIntegration,
-                        source_environment: dict,
-                        target_environment: dict,
-                        envignore=None) -> Iterable[str]:
+def apply_diff_to_shell(
+    shell: ShellIntegration,
+    source_environment: Mapping[str, str],
+    target_environment: Mapping[str, str],
+    envignore: Iterable[str] | None = None,
+) -> Iterable[str]:
     """
     Compute and apply environment diff for given shell, returning a list of shell instruction to run.
     """
     variables = []
 
-    for (action, source, dest_items) in diff(source_environment, target_environment):
-        if action == 'add':
-            for (key, value) in dest_items:
+    for action, source, dest_items in diff(source_environment, target_environment):
+        if action == "add":
+            for key, value in dest_items:
                 variables.append((key, value))
-        if action == 'change':
+        if action == "change":
             variables.append((source, dest_items[1]))
-        if action == 'remove':
-            for (key, value) in dest_items:
+        if action == "remove":
+            for key, _value in dest_items:
                 variables.append((key, None))
 
     envignore_helper = None
@@ -97,46 +104,48 @@ def apply_diff_to_shell(shell: ShellIntegration,
 
 def add_to_system_path(shell: ShellIntegration, paths: Iterable[str]) -> Iterable[str]:
     """
-    Add given path to system PATH environment variable
+    Add given path to system PATH environment variable.
     """
-    system_path = os.environ.get('PATH', '')
+    system_path = os.environ.get("PATH", "")
     for path in paths:
-        if config.data.get('shell.path.prepend'):
+        if config.data.get("shell.path.prepend"):
             system_path = path + os.pathsep + system_path
         else:
             system_path = system_path + os.pathsep + path
 
-    yield from shell.set_environment_variable('PATH', system_path)
+    yield from shell.set_environment_variable("PATH", system_path)
 
 
 def remove_from_system_path(shell: ShellIntegration, paths: Iterable[str]) -> Iterable[str]:
     """
-    Remove given path to system PATH environment variable
+    Remove given path to system PATH environment variable.
     """
-    system_path = os.environ.get('PATH', '')
+    system_path = os.environ.get("PATH", "")
     for path in paths:
-        if config.data.get('shell.path.prepend'):
+        if config.data.get("shell.path.prepend"):
             system_path = system_path.replace(path + os.pathsep, "")
         else:
             system_path = system_path.replace(os.pathsep + path, "")
 
-    yield from shell.set_environment_variable('PATH', system_path)
+    yield from shell.set_environment_variable("PATH", system_path)
 
 
 class CreateBinaryShim(Action):
     """
-    Create binary shim for each generated binary
+    Create binary shim for each generated binary.
     """
 
-    def __init__(self, shell: ShellIntegration):
+    def __init__(self, shell: ShellIntegration) -> None:
         super().__init__()
         self.shell = shell
 
     @property
-    def event_bindings(self):
-        return (events.binary.registered,
-                events.binary.found,
-                EventBinding(events.binary.unregistered, call=self.remove))
+    def event_bindings(self) -> EventBindings:
+        return (
+            events.binary.registered,
+            events.binary.found,
+            EventBinding(events.binary.unregistered, call=self.remove),
+        )
 
     @property
     def name(self) -> str:
@@ -148,25 +157,28 @@ class CreateBinaryShim(Action):
 
     @property
     def disabled(self) -> bool:
-        return config.data.get('shell.shell') != self.shell.name
+        return bool(config.data.get("shell.shell") != self.shell.name)
 
-    def remove(self, binary: Binary):
+    def remove(self, binary: Binary) -> None:
         """
-        Remove binary shim
+        Remove binary shim.
         """
-        directories = config.data.get('shell.path.directories')
+        directories = config.data.get("shell.path.directories")
         if not binaries.has(binary.name):
             # Remove shim only if no binary are remaining for this name
             removed = self.shell.remove_binary_shim(directories[0], binary.name)
             if removed:
                 events.file.deleted(removed)
 
-    def execute(self, binary: Binary):
+    def execute(self, binary: Binary) -> None:
         """
-        Create binary shim
+        Create binary shim.
         """
-        shims_path = get_shims_path(binary.global_)
-        written, shim = self.shell.create_binary_shim(shims_path, binary.name, binary.global_)
+        shims_path = get_shims_path(global_=binary.global_)
+        if not shims_path:
+            return
+
+        written, shim = self.shell.create_binary_shim(shims_path, binary.name, global_=binary.global_)
         if written:
             context.log.success("Shim created: %s", shim)
         else:
@@ -178,15 +190,15 @@ class CreateBinaryShim(Action):
 
 class CreateAliasShim(Action):
     """
-    Create alias shim for each alias
+    Create alias shim for each alias.
     """
 
-    def __init__(self, shell: ShellIntegration):
+    def __init__(self, shell: ShellIntegration) -> None:
         super().__init__()
         self.shell = shell
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return events.phase.configure
 
     @property
@@ -199,18 +211,18 @@ class CreateAliasShim(Action):
 
     @property
     def disabled(self) -> bool:
-        return config.data.get('shell.shell') != self.shell.name
+        return bool(config.data.get("shell.shell") != self.shell.name)
 
-    def execute(self):
+    def execute(self) -> None:
         """
-        Create binary shim
+        Create binary shim.
         """
-        aliases = config.data.get('shell.aliases')
-        global_aliases = frozenset(config.data.get('shell.global_aliases'))
+        aliases = config.data.get("shell.aliases")
+        global_aliases = frozenset(config.data.get("shell.global_aliases"))
         for alias in aliases:
             global_alias = alias in global_aliases
 
-            shim_directory = get_shims_path(global_alias)
+            shim_directory = get_shims_path(global_=global_alias)
             if not shim_directory:
                 continue
 
@@ -228,15 +240,15 @@ class CreateAliasShim(Action):
 
 class ActivateAction(Action):
     """
-    Generates activation script
+    Generates activation script.
     """
 
-    def __init__(self, shell: ShellIntegration):
+    def __init__(self, shell: ShellIntegration) -> None:
         super().__init__()
         self.shell = shell
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return "phase:activate"
 
     @property
@@ -249,26 +261,28 @@ class ActivateAction(Action):
 
     @property
     def disabled(self) -> bool:
-        return config.data.get('shell.shell') != self.shell.name
+        return bool(config.data.get("shell.shell") != self.shell.name)
 
     @property
     def order(self) -> int:
         return -256
 
-    def _deactivate(self):
+    def _deactivate(self) -> None:
         deactivate_action = actions.get("shell:" + self.shell.name + ":deactivate")
-        deactivate_action.execute()
+        # execute is the conventional entry point of an action, not part of the Action interface.
+        deactivate_action.execute()  # type: ignore[attr-defined]
 
-    def execute(self):
+    def execute(self) -> None:
         """
-        Execute action
+        Execute action.
         """
         try:
-            check_activated('force' not in config.args or not config.args.force)
+            check_activated(do_raise="force" not in config.args or not config.args.force)
             if config.args.force:
                 self._deactivate()
             else:
-                raise CheckIsActivatedException("project is already activated.")
+                msg = "project is already activated."
+                raise CheckIsActivatedException(msg)
         except CheckIsNotActivatedException:
             pass
 
@@ -280,37 +294,40 @@ class ActivateAction(Action):
         self.shell.before_environ_backup(to_encode_environ)
         os.environ.update(config_environ)
         os.environ[_env_environ_backup] = encode_environ_backup(to_encode_environ)
-        os.environ[config.env_prefix + '_PROJECT_HOME'] = config.paths.project_home
+        os.environ[config.env_prefix + "_PROJECT_HOME"] = config.paths.project_home
 
-        with NamedTemporaryFile(delete=False,
-                                 mode='w',
-                                 prefix="ddb_activate_",
-                                 suffix="." + self.shell.name,
-                                 **self.shell.temporary_file_kwargs) as file:
+        with NamedTemporaryFile(
+            delete=False,
+            mode="w",
+            prefix="ddb_activate_",
+            suffix="." + self.shell.name,
+            **self.shell.temporary_file_kwargs,
+        ) as file:
             script_filepath = file.name
-            file.writelines('\n'.join(self.shell.header()))
-            file.write('\n')
+            file.writelines("\n".join(self.shell.header()))
+            file.write("\n")
 
-            file.writelines('\n'.join(apply_diff_to_shell(
-                self.shell,
-                initial_environ,
-                os.environ,
-                config.data.get('shell.envignore'))))
-            file.write('\n')
+            file.writelines(
+                "\n".join(
+                    apply_diff_to_shell(self.shell, initial_environ, os.environ, config.data.get("shell.envignore"))
+                )
+            )
+            file.write("\n")
 
-            path_directories = config.data.get('shell.path.directories')
+            path_directories = config.data.get("shell.path.directories")
             if path_directories:
-                path_additions = map(
-                    lambda path_addition: os.path.normpath(os.path.join(config.paths.project_home, path_addition)),
-                    path_directories)
-                file.writelines('\n'.join(add_to_system_path(self.shell, path_additions)))
-                file.write('\n')
+                path_additions = (
+                    os.path.normpath(Path(config.paths.project_home) / path_addition)
+                    for path_addition in path_directories
+                )
+                file.writelines("\n".join(add_to_system_path(self.shell, path_additions)))
+                file.write("\n")
 
-            file.writelines('\n'.join(self.shell.footer()))
-            file.write('\n')
+            file.writelines("\n".join(self.shell.footer()))
+            file.write("\n")
 
-            file.writelines('\n'.join(self.shell.remove_self_script(file.name)))
-            file.write('\n')
+            file.writelines("\n".join(self.shell.remove_self_script(file.name)))
+            file.write("\n")
 
         for ins in self.shell.evaluate_script(script_filepath):
             print(ins)
@@ -318,15 +335,15 @@ class ActivateAction(Action):
 
 class DeactivateAction(Action):
     """
-    Generations deactivation script
+    Generations deactivation script.
     """
 
-    def __init__(self, shell: ShellIntegration):
+    def __init__(self, shell: ShellIntegration) -> None:
         super().__init__()
         self.shell = shell
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return "phase:deactivate"
 
     @property
@@ -339,41 +356,41 @@ class DeactivateAction(Action):
 
     @property
     def disabled(self) -> bool:
-        return config.data.get('shell.shell') != self.shell.name
+        return bool(config.data.get("shell.shell") != self.shell.name)
 
-    def execute(self):
+    def execute(self) -> None:
         """
-        Execute action
+        Execute action.
         """
-        try:
-            check_activated('force' not in config.args or not config.args.force)
-        except CheckAnotherProjectActivatedException:
-            pass
+        with contextlib.suppress(CheckAnotherProjectActivatedException):
+            check_activated(do_raise="force" not in config.args or not config.args.force)
 
         if os.environ.get(_env_environ_backup):
             environ_backup = decode_environ_backup(os.environ[_env_environ_backup])
 
-            with NamedTemporaryFile(delete=False,
-                                     mode='w',
-                                     prefix="ddb_deactivate_",
-                                     suffix="." + self.shell.name,
-                                     **self.shell.temporary_file_kwargs) as file:
+            with NamedTemporaryFile(
+                delete=False,
+                mode="w",
+                prefix="ddb_deactivate_",
+                suffix="." + self.shell.name,
+                **self.shell.temporary_file_kwargs,
+            ) as file:
                 script_filepath = file.name
-                file.writelines('\n'.join(self.shell.header()))
-                file.write('\n')
+                file.writelines("\n".join(self.shell.header()))
+                file.write("\n")
 
-                file.writelines('\n'.join(apply_diff_to_shell(
-                    self.shell,
-                    os.environ,
-                    environ_backup,
-                    config.data.get('shell.envignore'))))
-                file.write('\n')
+                file.writelines(
+                    "\n".join(
+                        apply_diff_to_shell(self.shell, os.environ, environ_backup, config.data.get("shell.envignore"))
+                    )
+                )
+                file.write("\n")
 
-                file.writelines('\n'.join(self.shell.footer()))
-                file.write('\n')
+                file.writelines("\n".join(self.shell.footer()))
+                file.write("\n")
 
-                file.writelines('\n'.join(self.shell.remove_self_script(file.name)))
-                file.write('\n')
+                file.writelines("\n".join(self.shell.remove_self_script(file.name)))
+                file.write("\n")
 
             for ins in self.shell.evaluate_script(script_filepath):
                 print(ins)
@@ -381,34 +398,35 @@ class DeactivateAction(Action):
 
 class CheckActivatedException(Exception):
     """
-    Exception for activated check
+    Exception for activated check.
     """
 
 
 class CheckIsActivatedException(CheckActivatedException):
     """
-    Exception for activated check
+    Exception for activated check.
     """
 
 
 class CheckIsNotActivatedException(CheckActivatedException):
     """
-    Exception for activated check
+    Exception for activated check.
     """
 
 
 class CheckAnotherProjectActivatedException(CheckActivatedException):
     """
-    Exception for activated check
+    Exception for activated check.
     """
 
 
-def check_activated(do_raise=False, do_log=False):
+def check_activated(*, do_raise: bool = False, do_log: bool = False) -> bool:
     """
     Check if project is activated in current shell.
+
     :return:
     """
-    project_home_key = config.env_prefix + '_PROJECT_HOME'
+    project_home_key = config.env_prefix + "_PROJECT_HOME"
 
     if project_home_key in os.environ:
         if os.environ[project_home_key] == config.paths.project_home:
@@ -416,36 +434,37 @@ def check_activated(do_raise=False, do_log=False):
                 context.log.info("Project is activated.")
             return True
         try:
-            raise CheckAnotherProjectActivatedException(
-                "Another project is already activated (%s)" % os.environ[project_home_key])
+            msg = f"Another project is already activated ({os.environ[project_home_key]})"
+            raise CheckAnotherProjectActivatedException(msg)
         except CheckAnotherProjectActivatedException as exc:
             if do_log:
                 context.log.error(str(exc))
             if do_raise:
-                raise exc
+                raise
         return False
 
     try:
-        raise CheckIsNotActivatedException("Project is not activated")
+        msg = "Project is not activated"
+        raise CheckIsNotActivatedException(msg)
     except CheckIsNotActivatedException as exc:
         if do_log:
             context.log.error(str(exc))
         if do_raise:
-            raise exc
+            raise
         return False
 
 
 class CheckActivatedAction(Action):
     """
-    Check if project is activated in current shell
+    Check if project is activated in current shell.
     """
 
-    def __init__(self, shell: ShellIntegration):
+    def __init__(self, shell: ShellIntegration) -> None:
         super().__init__()
         self.shell = shell
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return "phase:check-activated"
 
     @property
@@ -458,29 +477,29 @@ class CheckActivatedAction(Action):
 
     @property
     def disabled(self) -> bool:
-        return config.data.get('shell.shell') != self.shell.name
+        return bool(config.data.get("shell.shell") != self.shell.name)
 
-    def execute(self):
+    def execute(self) -> None:
         """
-        Execute action
+        Execute action.
         """
         try:
-            check_activated(True, True)
+            check_activated(do_raise=True, do_log=True)
         except CheckActivatedException as exc:
             context.exceptions.append(exc)
 
 
 class CommandAction(Action):
     """
-    Display a requested command for it to be evaluated by the shell
+    Display a requested command for it to be evaluated by the shell.
     """
 
-    def __init__(self, shell: ShellIntegration):
+    def __init__(self, shell: ShellIntegration) -> None:
         super().__init__()
         self.shell = shell
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return events.run.command
 
     @property
@@ -493,11 +512,11 @@ class CommandAction(Action):
 
     @property
     def disabled(self) -> bool:
-        return config.data.get('shell.shell') != self.shell.name
+        return bool(config.data.get("shell.shell") != self.shell.name)
 
-    def execute(self, command: Iterable[str], system_path: bool = False):
+    def execute(self, command: Iterable[str], *, system_path: bool = False) -> None:
         """
-        Execute action
+        Execute action.
         """
         if not system_path:
             print(self.shell.generate_cmdline(command))
@@ -505,18 +524,17 @@ class CommandAction(Action):
 
         path_additions = None
 
-        with NamedTemporaryFile(delete=False,
-                                 mode='w',
-                                 prefix="ddb_run_",
-                                 suffix="." + self.shell.name,
-                                 **self.shell.temporary_file_kwargs) as file:
+        with NamedTemporaryFile(
+            delete=False, mode="w", prefix="ddb_run_", suffix="." + self.shell.name, **self.shell.temporary_file_kwargs
+        ) as file:
             script_filepath = file.name
             if system_path:
-                path_directories = config.data.get('shell.path.directories')
+                path_directories = config.data.get("shell.path.directories")
                 if path_directories:
-                    path_additions = map(
-                        lambda path_addition: os.path.normpath(os.path.join(config.paths.project_home, path_addition)),
-                        path_directories)
+                    path_additions = (
+                        os.path.normpath(Path(config.paths.project_home) / path_addition)
+                        for path_addition in path_directories
+                    )
                     for instruction in remove_from_system_path(self.shell, path_additions):
                         print(instruction, file=file)
                     print(file=file)
@@ -527,15 +545,15 @@ class CommandAction(Action):
                 or_generated = False
                 for instruction in add_to_system_path(self.shell, path_additions):
                     if not or_generated:
-                        print(self.shell.generate_or_operator(True), file=file)
+                        print(self.shell.generate_or_operator(new_line=True), file=file)
                     else:
-                        print(self.shell.generate_and_operator(True), file=file)
+                        print(self.shell.generate_and_operator(new_line=True), file=file)
                     print(instruction, end="", file=file)
 
             print(file=file)
 
-            file.writelines('\n'.join(self.shell.remove_self_script(file.name)))
-            file.write('\n')
+            file.writelines("\n".join(self.shell.remove_self_script(file.name)))
+            file.write("\n")
 
         for ins in self.shell.evaluate_script(script_filepath):
             print(ins)

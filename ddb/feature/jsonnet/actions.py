@@ -1,18 +1,18 @@
-# -*- coding: utf-8 -*-
 import json
-import os
 import re
+from collections.abc import Iterable
 from importlib import import_module
-from typing import Tuple, Union, Iterable, Optional
+from pathlib import Path
+from typing import Any
 
 import yaml
-from _jsonnet import evaluate_file  # pylint: disable=no-name-in-module
+from _jsonnet import evaluate_file
 
 from ddb.action.action import AbstractTemplateAction
 from ddb.config import config, migrations
 from ddb.config.flatten import flatten
 from ddb.feature import features
-from ddb.utils.file import TemplateFinder, SingleTemporaryFile
+from ddb.utils.file import SingleTemporaryFile, TemplateFinder
 
 
 class JsonnetAction(AbstractTemplateAction):
@@ -25,35 +25,35 @@ class JsonnetAction(AbstractTemplateAction):
         return "jsonnet:render"
 
     def _build_template_finder(self) -> TemplateFinder:
-        return TemplateFinder([],
-                              [],
-                              config.data.get("jsonnet.includes"),
-                              config.data.get("jsonnet.excludes"),
-                              config.data.get("jsonnet.suffixes"))
+        return TemplateFinder(
+            [],
+            [],
+            config.data.get("jsonnet.includes"),
+            config.data.get("jsonnet.excludes"),
+            config.data.get("jsonnet.suffixes"),
+        )
 
-    def _render_template(self, template: str, target: str) -> Iterable[Tuple[Union[str, bytes, bool], str]]:
+    def _render_template(self, template: str, target: str) -> Iterable[tuple[str | bytes | bool, str]]:
         """
-        Render jsonnet template
+        Render jsonnet template.
         """
         evaluated = self._evaluate_jsonnet(template)
 
         multiple_file_output, multiple_file_dir = JsonnetAction._parse_multiple_header(template, target)
-        if multiple_file_output:
-            for (filename, content) in json.loads(evaluated).items():
-                evaluated_target_path = os.path.join(multiple_file_dir, filename)
-                evaluated_target_parent_path = os.path.dirname(evaluated_target_path)
-                if evaluated_target_parent_path and not os.path.exists(evaluated_target_parent_path):
-                    os.makedirs(evaluated_target_parent_path)
+        if multiple_file_output and multiple_file_dir is not None:
+            for filename, content in json.loads(evaluated).items():
+                evaluated_target_path = str(Path(multiple_file_dir) / filename)
+                Path(evaluated_target_path).parent.mkdir(parents=True, exist_ok=True)
 
                 yield content, evaluated_target_path
         else:
-            ext = os.path.splitext(target)[-1]
-            if ext.lower() in ['.yaml', '.yml']:
+            ext = Path(target).suffix
+            if ext.lower() in [".yaml", ".yml"]:
                 data = json.loads(evaluated)
                 self._do_postprocess(data)
                 evaluated = yaml.safe_dump(data)
             else:
-                if '__post_processors__' in evaluated:
+                if "__post_processors__" in evaluated:
                     data = json.loads(evaluated)
                     if self._do_postprocess(data):
                         evaluated = json.dumps(data)
@@ -61,28 +61,26 @@ class JsonnetAction(AbstractTemplateAction):
             yield evaluated, target
 
     @staticmethod
-    def _do_postprocess(data):
+    def _do_postprocess(data: Any) -> bool:
         """
         Post process jsonnet output with python functions.
         """
-        if isinstance(data, dict) and '__post_processors__' in data.keys():
-            for post_processor_str in data.pop('__post_processors__'):
-                if '__value__' in data:
-                    data = data.pop('__value__')
-                module_name, func_name = post_processor_str.rsplit('.', 1)
-                if module_name == 'ddb.feature.jsonnet.docker':
+        if isinstance(data, dict) and "__post_processors__" in data.keys():
+            for post_processor_str in data.pop("__post_processors__"):
+                if "__value__" in data:
+                    data = data.pop("__value__")
+                module_name, func_name = post_processor_str.rsplit(".", 1)
+                if module_name == "ddb.feature.jsonnet.docker":
                     mod = import_module(module_name)
                     post_processor = getattr(mod, func_name)
                     post_processor(data)
                     return True
         return False
 
-    def _autofix_render_error(self,
-                              template: str,
-                              target: str,
-                              original_template: str,
-                              render_error: Exception) -> Optional[str]:
-        property_name_match = re.match('RUNTIME ERROR: undefined external variable: (.*)\n', str(render_error))
+    def _autofix_render_error(
+        self, template: str, target: str, original_template: str, render_error: Exception
+    ) -> str | None:
+        property_name_match = re.match("RUNTIME ERROR: undefined external variable: (.*)\n", str(render_error))
         if property_name_match:
             property_name = property_name_match.group(1)
 
@@ -91,52 +89,65 @@ class JsonnetAction(AbstractTemplateAction):
             if property_migration and not property_migration.requires_value_migration:
                 property_migration.warn(original_template)
 
-                with open(template, "r", encoding="utf-8") as template_file:
+                with Path(template).open(encoding="utf-8") as template_file:
                     initial_template_data = template_file.read()
                     template_data = initial_template_data
-                    template_data = template_data.replace('std.extVar("' + property_migration.old_config_key + '")',
-                                                          'std.extVar("' + property_migration.new_config_key + '")')
-                    template_data = template_data.replace("std.extVar('" + property_migration.old_config_key + "')",
-                                                          "std.extVar('" + property_migration.new_config_key + "')")
+                    template_data = template_data.replace(
+                        'std.extVar("' + property_migration.old_config_key + '")',
+                        'std.extVar("' + property_migration.new_config_key + '")',
+                    )
+                    template_data = template_data.replace(
+                        "std.extVar('" + property_migration.old_config_key + "')",
+                        "std.extVar('" + property_migration.new_config_key + "')",
+                    )
 
                 if initial_template_data != template_data:
-                    with SingleTemporaryFile("ddb", "migration", "jsonnet",
-                                             mode="w",
-                                             prefix="",
-                                             suffix="." + os.path.basename(original_template),
-                                             encoding="utf-8") as tmp_file:
+                    with SingleTemporaryFile(
+                        "ddb",
+                        "migration",
+                        "jsonnet",
+                        mode="w",
+                        prefix="",
+                        suffix="." + Path(original_template).name,
+                        encoding="utf-8",
+                    ) as tmp_file:
                         tmp_file.write(template_data)
                         return tmp_file.name
 
         return None
 
     @staticmethod
-    def _evaluate_jsonnet(template_path):
+    def _evaluate_jsonnet(template_path: str) -> str:
         data = config.data.copy()
 
         vars_config = flatten(data, stop_for_features=features.all())
         codes_config = flatten(data, keep_primitive_list=True, stop_for_features=features.all())
-        codes_config['_config.eject'] = config.eject
-        codes_config['_config.args'] = vars(config.args)
-        codes_config['_config.unknown_args'] = config.unknown_args
+        codes_config["_config.eject"] = config.eject
+        codes_config["_config.args"] = vars(config.args)
+        codes_config["_config.unknown_args"] = config.unknown_args
         ext_vars = {k: v for (k, v) in vars_config.items() if isinstance(v, str)}
-        ext_codes = {k: str(v).lower() if isinstance(v, bool) else str(v) if v is not None else "null"
-                     for (k, v) in codes_config.items() if not isinstance(v, str)}
-        evaluated = evaluate_file(template_path,
-                                  ext_vars=ext_vars,
-                                  ext_codes=ext_codes,
-                                  jpathdir=os.path.join(os.path.dirname(__file__), "lib"))
+        ext_codes = {
+            k: str(v).lower() if isinstance(v, bool) else str(v) if v is not None else "null"
+            for (k, v) in codes_config.items()
+            if not isinstance(v, str)
+        }
+        evaluated: str = evaluate_file(
+            template_path,
+            ext_vars=ext_vars,
+            ext_codes=ext_codes,
+            jpathdir=str(Path(__file__).parent / "lib"),
+        )
         return evaluated
 
     @staticmethod
-    def _parse_multiple_header(template_path, target_path):
+    def _parse_multiple_header(template_path: str, target_path: str) -> tuple[bool, str | None]:
         multiple_file_output = False
         multiple_file_dir = None
-        with open(template_path, 'r', encoding="utf-8") as template:
+        with Path(template_path).open(encoding="utf-8") as template:
             first_line = template.readline()
-            if first_line.startswith('// multiple-file-output'):
+            if first_line.startswith("// multiple-file-output"):
                 multiple_file_output = True
-                multiple_file_dir = os.path.dirname(target_path)
+                multiple_file_dir = str(Path(target_path).parent)
             first_line_splitted = first_line.rsplit(":", 1)
             if len(first_line_splitted) > 1:
                 multiple_file_dir = first_line_splitted[-1].strip()

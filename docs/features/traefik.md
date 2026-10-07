@@ -14,6 +14,7 @@ access.
         | :---------: | :----: | :----------- |
         | `disabled` | boolean<br>`false` | Should this feature be disabled ? |
         | `extra_services` | dict[string, **ExtraService**]<br>`[]` | A dict of ExtraService configuration. |
+        | `version` | integer<br>`3` | Major version of the traefik instance the generated files are written for, `2` or `3`. A path prefix is matched with `PathPrefix` and a `{regex:…}` pattern on traefik 2, and with `PathRegexp` on traefik 3: each form is silently ignored by the other version. |
 
     === "Advanced"
         | Property | Type | Description |
@@ -22,7 +23,7 @@ access.
         | `mapped_certs_directory` | string<br>`${core.path.home}/certs` | Traefik container custom certificates location. |
         | `config_directory` | string<br>`${core.path.home}/traefik/config` | Traefik configuration directory. |
         | `ssl_config_template` | string<br>`<Jinja template>` | The Jinja template for the traefik configuration file registering CFSSL SSL certificates. This template can be a template string, or a link to a file containing the template, prefixed with `http(s)://` for web files, or `file://` for local ones. |
-        | `extra_services_config_template` | string<br>`<Jinja template>` | The Jinja template for extra-services configuration file. This template can be a template string, or a link to a file containing the template, prefixed with `http(s)://` for web files, or `file://` for local ones. |
+        | `extra_services_config_template` | string<br>`<Jinja template>` | The Jinja template for extra-services configuration file, defaulting to the one matching `version`. This template can be a template string, or a link to a file containing the template, prefixed with `http(s)://` for web files, or `file://` for local ones. |
 
 !!! summary "ExtraService configuration (used in `traefik.extra_services`)"
     === "Simple"

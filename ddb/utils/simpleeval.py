@@ -92,7 +92,6 @@ well:
 """
 
 # We need latest changes to be released before moving this back into setup.py proper dependency.
-# pylint: skip-file
 
 import ast
 import operator as op
@@ -150,7 +149,6 @@ class FunctionNotDefined(InvalidExpression):
         setattr(self, 'func_name', func_name)  # bypass 2to3 confusion.
         self.expression = expression
 
-        # pylint: disable=bad-super-call
         super(InvalidExpression, self).__init__(self.message)
 
 
@@ -163,7 +161,6 @@ class NameNotDefined(InvalidExpression):
             name, expression)
         self.expression = expression
 
-        # pylint: disable=bad-super-call
         super(InvalidExpression, self).__init__(self.message)
 
 
@@ -209,7 +206,7 @@ def random_int(top):
     return int(random() * top)
 
 
-def safe_power(a, b):  # pylint: disable=invalid-name
+def safe_power(a, b):
     """ a limited exponent/to-the-power-of function, for safety reasons """
 
     if abs(a) > MAX_POWER or abs(b) > MAX_POWER:
@@ -218,7 +215,7 @@ def safe_power(a, b):  # pylint: disable=invalid-name
     return a ** b
 
 
-def safe_mult(a, b):  # pylint: disable=invalid-name
+def safe_mult(a, b):
     """ limit the number of times an iterable can be repeated... """
 
     if hasattr(a, '__len__') and b * len(a) > MAX_STRING_LENGTH:
@@ -229,7 +226,7 @@ def safe_mult(a, b):  # pylint: disable=invalid-name
     return a * b
 
 
-def safe_add(a, b):  # pylint: disable=invalid-name
+def safe_add(a, b):
     """ iterable length limit again """
 
     if hasattr(a, '__len__') and hasattr(b, '__len__'):
@@ -269,7 +266,7 @@ ATTR_INDEX_FALLBACK = True
 # And the actual evaluator:
 
 
-class SimpleEval(object):  # pylint: disable=too-few-public-methods
+class SimpleEval(object):
     """ A very simple expression parser.
         >>> s = SimpleEval()
         >>> s.eval("20 + 30 - ( 10 * 5)")
@@ -298,8 +295,7 @@ class SimpleEval(object):  # pylint: disable=too-few-public-methods
             ast.Assign: self._eval_assign,
             ast.AugAssign: self._eval_aug_assign,
             ast.Import: self._eval_import,
-            ast.Num: self._eval_num,
-            ast.Str: self._eval_str,
+            ast.Constant: self._eval_constant,
             ast.Name: self._eval_name,
             ast.UnaryOp: self._eval_unaryop,
             ast.BinOp: self._eval_binop,
@@ -310,22 +306,10 @@ class SimpleEval(object):  # pylint: disable=too-few-public-methods
             ast.keyword: self._eval_keyword,
             ast.Subscript: self._eval_subscript,
             ast.Attribute: self._eval_attribute,
-            ast.Index: self._eval_index,
             ast.Slice: self._eval_slice,
+            ast.JoinedStr: self._eval_joinedstr,  # f-string
+            ast.FormattedValue: self._eval_formattedvalue,  # formatted value in f-string
         }
-
-        # py3k stuff:
-        if hasattr(ast, 'NameConstant'):
-            self.nodes[ast.NameConstant] = self._eval_constant
-
-        # py3.6, f-strings
-        if hasattr(ast, 'JoinedStr'):
-            self.nodes[ast.JoinedStr] = self._eval_joinedstr  # f-string
-            self.nodes[ast.FormattedValue] = self._eval_formattedvalue  # formatted value in f-string
-
-        # py3.8 uses ast.Constant instead of ast.Num, ast.Str, ast.NameConstant
-        if hasattr(ast, 'Constant'):
-            self.nodes[ast.Constant] = self._eval_constant
 
         # Defaults:
 
@@ -374,18 +358,6 @@ class SimpleEval(object):  # pylint: disable=too-few-public-methods
     def _eval_import(self, node):
         raise FeatureNotAvailable("Sorry, 'import' is not allowed.")
         return self._eval(node.value)
-
-    @staticmethod
-    def _eval_num(node):
-        return node.n
-
-    @staticmethod
-    def _eval_str(node):
-        if len(node.s) > MAX_STRING_LENGTH:
-            raise IterableTooLong("String Literal in statement is too long!"
-                                  " ({0}, when {1} is max)".format(
-                                      len(node.s), MAX_STRING_LENGTH))
-        return node.s
 
     @staticmethod
     def _eval_constant(node):
@@ -512,9 +484,6 @@ class SimpleEval(object):  # pylint: disable=too-few-public-methods
 
         # If it is neither, raise an exception
         raise AttributeDoesNotExist(node.attr, self.expr)
-
-    def _eval_index(self, node):
-        return self._eval(node.value)
 
     def _eval_slice(self, node):
         lower = upper = step = None

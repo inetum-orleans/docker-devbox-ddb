@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
-from typing import Iterable, ClassVar
+from collections.abc import Iterable
 
-from .actions import GenerateCertAction, RemoveCertAction, GenerateSignerCertificateAction
-from .schema import CertsSchema
+from ...action import Action
 from ..feature import Feature
 from ..schema import FeatureSchema
-from ...action import Action
+from .actions import GenerateCertAction, GenerateSignerCertificateAction, RemoveCertAction
+from .schema import CertsSchema
 
 
 class CertsFeature(Feature):
@@ -22,13 +21,9 @@ class CertsFeature(Feature):
         return ["core"]
 
     @property
-    def schema(self) -> ClassVar[FeatureSchema]:
+    def schema(self) -> type[FeatureSchema]:
         return CertsSchema
 
     @property
     def actions(self) -> Iterable[Action]:
-        return (
-            GenerateCertAction(),
-            RemoveCertAction(),
-            GenerateSignerCertificateAction()
-        )
+        return (GenerateCertAction(), RemoveCertAction(), GenerateSignerCertificateAction())

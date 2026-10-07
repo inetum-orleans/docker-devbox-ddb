@@ -3,7 +3,7 @@ import re
 from _pytest.logging import LogCaptureFixture
 
 from ddb.config import migrations
-from ddb.config.migrations import PropertyMigration, MigrationsDotty
+from ddb.config.migrations import MigrationsDotty, PropertyMigration
 
 
 class TestWarnDeprecatedDotty:
@@ -11,16 +11,11 @@ class TestWarnDeprecatedDotty:
         migrations.set_history()
 
     def test_warn_deprecated_simple(self, caplog: LogCaptureFixture):
-        history = (
-            PropertyMigration("old_property",
-                              "new_property", since="v1.1.0"),
-        )
+        history = (PropertyMigration("old_property", "new_property", since="v1.1.0"),)
 
         migrations.set_history(history)
 
-        data = MigrationsDotty({
-            "old_property": "value"
-        })
+        data = MigrationsDotty({"old_property": "value"})
 
         migrations.migrate(data)
 
@@ -31,13 +26,12 @@ class TestWarnDeprecatedDotty:
 
         assert re.match(
             r"WARNING .*\"old_property\" configuration property is deprecated since v1\.1\.0 and will be removed "
-            r"in a future major release\. You should use \"new_property\" instead\.", logs)
+            r"in a future major release\. You should use \"new_property\" instead\.",
+            logs,
+        )
 
     def test_warn_deprecated_deep(self, caplog: LogCaptureFixture):
-        history = (
-            PropertyMigration("some.namespace.old_property",
-                              "another.namespace.new_property"),
-        )
+        history = (PropertyMigration("some.namespace.old_property", "another.namespace.new_property"),)
 
         migrations.set_history(history)
 
@@ -59,13 +53,12 @@ class TestWarnDeprecatedDotty:
 
         assert re.match(
             r"WARNING .*\"some.namespace.old_property\" configuration property is deprecated and will be removed "
-            r"in a future major release\. You should use \"another.namespace.new_property\" instead\.", logs)
+            r"in a future major release\. You should use \"another.namespace.new_property\" instead\.",
+            logs,
+        )
 
     def test_compat_deep(self, caplog: LogCaptureFixture):
-        history = (
-            PropertyMigration("some.namespace.old_property",
-                              "another.namespace.new_property"),
-        )
+        history = (PropertyMigration("some.namespace.old_property", "another.namespace.new_property"),)
 
         migrations.set_history(history)
 
@@ -85,13 +78,12 @@ class TestWarnDeprecatedDotty:
 
         assert re.match(
             r"WARNING .*\"some.namespace.old_property\" configuration property is deprecated and will be removed "
-            r"in a future major release\. You should use \"another.namespace.new_property\" instead\.", logs)
+            r"in a future major release\. You should use \"another.namespace.new_property\" instead\.",
+            logs,
+        )
 
     def test_compat_deep_merge(self, caplog: LogCaptureFixture):
-        history = (
-            PropertyMigration("some.namespace.old_property",
-                              "another.namespace.new_property"),
-        )
+        history = (PropertyMigration("some.namespace.old_property", "another.namespace.new_property"),)
 
         migrations.set_history(history)
 
@@ -111,4 +103,6 @@ class TestWarnDeprecatedDotty:
 
         assert re.match(
             r"WARNING .*\"some.namespace.old_property\" configuration property is deprecated and will be removed "
-            r"in a future major release\. You should use \"another.namespace.new_property\" instead\.", logs)
+            r"in a future major release\. You should use \"another.namespace.new_property\" instead\.",
+            logs,
+        )

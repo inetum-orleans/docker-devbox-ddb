@@ -1,13 +1,13 @@
-# -*- coding: utf-8 -*-
 import inspect
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import TypeVar, Generic, ClassVar, TYPE_CHECKING, Tuple, Optional, Callable, Any
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from ordered_set import OrderedSet
 
 if TYPE_CHECKING:
-    from ddb.cache import Cache  # pylint:disable=cyclic-import
+    from ddb.cache import Cache
 
 
 class RegistryObject(ABC):
@@ -27,7 +27,7 @@ class RegistryObject(ABC):
         """
         The description of the object.
         """
-        return inspect.getdoc(self.__class__)
+        return inspect.getdoc(self.__class__) or ""
 
 
 class DefaultRegistryObject(RegistryObject):
@@ -35,7 +35,7 @@ class DefaultRegistryObject(RegistryObject):
     Default object that can be registered in a registry. It should have a unique name.
     """
 
-    def __init__(self, name: str, description: str = None):
+    def __init__(self, name: str, description: str | None = None) -> None:
         self._name = name
         self._description = description
 
@@ -48,7 +48,7 @@ class DefaultRegistryObject(RegistryObject):
         return self._description if self._description else super().description
 
 
-T = TypeVar('T')  # pylint:disable=invalid-name
+T = TypeVar("T")
 
 
 class Registry(Generic[T]):
@@ -56,14 +56,14 @@ class Registry(Generic[T]):
     Container for registered objects. Objects can be retrieved with their unique name.
     """
 
-    def __init__(self, clazz: ClassVar[T], type_name="Object"):
+    def __init__(self, clazz: type[T], type_name: str = "Object") -> None:
         self._clazz = clazz
         self._type_name = type_name
-        self._objects = []
-        self._objects_dict = {}
-        self._cache = None
+        self._objects: list[T] = []
+        self._objects_dict: dict[str, Any] = {}
+        self._cache: Cache | None = None
 
-    def set_cache(self, cache: 'Cache'):
+    def set_cache(self, cache: "Cache") -> None:
         """
         Set a cache provider, and register cached entries into registry.
         """
@@ -72,34 +72,34 @@ class Registry(Generic[T]):
             for key in self._cache.keys():
                 self._register_cache_value_impl(self._cache.get(key), key)
 
-    def _register_cache_value_impl(self, value, key):
+    def _register_cache_value_impl(self, value: Any, key: str) -> None:
         self.register(value, key)
 
-    def _default_name(self, obj: T):
+    def _default_name(self, obj: T) -> str:
         """
         The name getter for an object.
         """
         if hasattr(obj, "name"):
-            return obj.name
-        raise ValueError("Name should be provided to register this kind of object")
+            return str(obj.name)
+        msg = "Name should be provided to register this kind of object"
+        raise ValueError(msg)
 
-    def register(self, obj: T, name=None):
+    def register(self, obj: T, name: str | None = None) -> T:
         """
         Register an object instance.
         """
         name = name if name else self._default_name(obj)
 
         if not isinstance(obj, self._clazz):
-            raise ValueError(self._type_name + " name \"" +
-                             name + "\" should be an instance of " +
-                             self._clazz.__name__)
+            raise ValueError(  # noqa: TRY004
+                self._type_name + ' name "' + name + '" should be an instance of ' + self._clazz.__name__
+            )
 
-        data = self._register_impl(name, obj)
-        return data
+        return self._register_impl(name, obj)
 
-    def _register_impl(self, name: str, obj: T):
+    def _register_impl(self, name: str, obj: T) -> T:
         if name in self._objects_dict:
-            raise ValueError(self._type_name + " name \"" + name + "\" is already registered")
+            raise ValueError(self._type_name + ' name "' + name + '" is already registered')
 
         self._objects_dict[name] = obj
         self._objects.append(obj)
@@ -110,7 +110,7 @@ class Registry(Generic[T]):
 
         return obj
 
-    def has(self, name: str, obj: Optional[T] = None) -> bool:
+    def has(self, name: str, obj: T | None = None) -> bool:
         """
         Check if name is registered.
         """
@@ -119,20 +119,22 @@ class Registry(Generic[T]):
             return self._has_obj_impl(self._objects_dict.get(name), obj)
         return ret
 
-    def _has_obj_impl(self, dict_value, obj) -> bool:
-        return dict_value == obj
+    def _has_obj_impl(self, dict_value: Any, obj: T) -> bool:
+        return bool(dict_value == obj)
 
-    def unregister(self, name, obj: Optional[T] = None, callback: Optional[Callable[[T], Any]] = None) -> bool:
+    def unregister(self, name: str, obj: T | None = None, callback: Callable[[T], Any] | None = None) -> bool:
         """
-        Unregister an object instance
+        Unregister an object instance.
         """
         if name not in self._objects_dict:
-            raise ValueError(self._type_name + " name \"" + name + "\" is not registered")
+            raise ValueError(self._type_name + ' name "' + name + '" is not registered')
 
         return self._unregister_impl(name, obj, callback)
 
-    def _unregister_impl(self, name, obj=None, callback: Optional[Callable[[T], Any]] = None) -> bool:
+    def _unregister_impl(self, name: str, obj: T | None = None, callback: Callable[[T], Any] | None = None) -> bool:
         item = self._objects_dict.get(name)
+        if item is None:
+            return False
         if obj is None or item == obj:
             self._objects_dict.pop(name)
             self._objects.remove(item)
@@ -151,16 +153,17 @@ class Registry(Generic[T]):
         Get an object instance from it's unique name.
         """
         if name not in self._objects_dict:
-            raise ValueError(self._type_name + " name \"" + name + "\" is not registered")
-        return self._objects_dict[name]
+            raise ValueError(self._type_name + ' name "' + name + '" is not registered')
+        obj: T = self._objects_dict[name]
+        return obj
 
-    def all(self) -> Tuple[T]:
+    def all(self) -> tuple[T, ...]:
         """
         Get all object instances.
         """
         return tuple(self._objects)
 
-    def clear(self):
+    def clear(self) -> None:
         """
         Remove all object instances.
         """
@@ -169,9 +172,10 @@ class Registry(Generic[T]):
         if self._cache:
             self._cache.clear()
 
-    def close(self):
+    def close(self) -> None:
         """
         Close this registry, closing the underlying cache if defined and then removing all objects instances.
+
         :return:
         """
         if self._cache:
@@ -180,22 +184,24 @@ class Registry(Generic[T]):
         self.clear()
 
 
-class RegistryOrderedSet(Registry):
+class RegistryOrderedSet(Registry[T]):
     """
     Container for registered objects. Objects set can be retrieved with their unique name.
     """
-    def __init__(self, clazz: ClassVar[T], type_name="Object"):
+
+    def __init__(self, clazz: type[T], type_name: str = "Object") -> None:
         super().__init__(clazz, type_name)
         self._objects_dict = defaultdict(OrderedSet)
 
-    def _register_cache_value_impl(self, value, key):
+    def _register_cache_value_impl(self, value: Any, key: str) -> None:
         for obj in value:
             self.register(obj, key)
 
-    def _register_impl(self, name: str, obj: T):
-        items = self._objects_dict[name]
+    # Deliberately narrows the base registry: entries are sets of objects sharing a name.
+    def _register_impl(self, name: str, obj: T) -> OrderedSet[T]:  # type: ignore[override]
+        items: OrderedSet[T] = self._objects_dict[name]
         if obj in items:
-            raise ValueError("This " + self._type_name + " is already registered for name \"" + name + "\"")
+            raise ValueError("This " + self._type_name + ' is already registered for name "' + name + '"')
         items.add(obj)
         self._objects.append(obj)
 
@@ -205,7 +211,7 @@ class RegistryOrderedSet(Registry):
 
         return items
 
-    def _unregister_impl(self, name, obj=None, callback: Optional[Callable[[T], Any]] = None) -> bool:
+    def _unregister_impl(self, name: str, obj: T | None = None, callback: Callable[[T], Any] | None = None) -> bool:
         items = self._objects_dict.get(name)
         ret = False
         if items:
@@ -226,8 +232,8 @@ class RegistryOrderedSet(Registry):
                         self._cache.set(name, items)
         return ret
 
-    def _has_obj_impl(self, dict_value: OrderedSet[T], obj) -> bool:
+    def _has_obj_impl(self, dict_value: OrderedSet[T], obj: T) -> bool:
         return obj in dict_value
 
-    def get(self, name: str) -> OrderedSet[T]:  # pylint:disable=useless-super-delegation
-        return super().get(name)
+    def get(self, name: str) -> OrderedSet[T]:  # type: ignore[override]
+        return super().get(name)  # type: ignore[return-value]

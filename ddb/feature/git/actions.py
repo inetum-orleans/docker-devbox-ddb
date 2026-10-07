@@ -1,9 +1,10 @@
-# -*- coding: utf-8 -*-
 import os
+from pathlib import Path
 
-from git import Repo, InvalidGitRepositoryError
+from git import InvalidGitRepositoryError, Repo
 
 from ddb.action import Action
+from ddb.action.action import EventBindings
 from ddb.config import config
 from ddb.context import context
 from ddb.event import events
@@ -12,7 +13,7 @@ from ddb.utils.file import chmod
 
 class FixFilePermissionsAction(Action):
     """
-    Update file access permissions based on git index
+    Update file access permissions based on git index.
     """
 
     @property
@@ -20,16 +21,17 @@ class FixFilePermissionsAction(Action):
         return "git:fix-file-permissions"
 
     @property
-    def event_bindings(self):
+    def event_bindings(self) -> EventBindings:
         return events.phase.configure
 
     @property
     def disabled(self) -> bool:
-        return not config.data.get("git.fix_files_permissions") or os.name == 'nt'
+        return not config.data.get("git.fix_files_permissions") or os.name == "nt"
 
-    def execute(self):
+    def execute(self) -> None:
         """
-        Execute the action
+        Execute the action.
+
         :return:
         """
         try:
@@ -38,47 +40,54 @@ class FixFilePermissionsAction(Action):
         except InvalidGitRepositoryError:
             pass
 
-    def process_repository(self, repo: Repo):
+    def process_repository(self, repo: Repo) -> None:
         """
-        Process a repository
+        Process a repository.
+
         :param repo: the repository to process
         :return:
         """
         for file_data in repo.git.ls_files(s=True).splitlines():
             file_config, file_path = file_data.split("\t")
             git_mode = file_config.split(" ")[0]
-            file_full_path = os.path.join(repo.working_dir, file_path)
+            file_full_path = str(Path(repo.working_dir) / file_path)
             FixFilePermissionsAction.update_mode(file_full_path, git_mode)
 
         for submodule in repo.submodules:
             self.process_repository(submodule.module())
 
     @staticmethod
-    def update_mode(path, git_mode):
+    def update_mode(path: str, git_mode: str) -> None:
         """
-        Update the chmod of the file
+        Update the chmod of the file.
+
         :param path: the path to the file
         :param git_mode: the chmod to apply
         :return:
         """
-        if os.path.isdir(path):
+        if Path(path).is_dir():
             return
 
-        if git_mode[-4:] == '0755' and not os.access(path, os.X_OK):
-            chmod(path, '+x')
-            context.log.warning('If this chmod is not expected, update the file permission in git using command "git '
-                                'update-index --chmod=+x foo.sh"')
+        if git_mode[-4:] == "0755" and not os.access(path, os.X_OK):
+            chmod(path, "+x")
+            context.log.warning(
+                'If this chmod is not expected, update the file permission in git using command "git '
+                'update-index --chmod=+x foo.sh"'
+            )
             return
 
-        if git_mode[-4:] != '0755' and os.access(path, os.X_OK):
-            chmod(path, '-x')
-            context.log.warning('If this chmod is not expected, update the file permission in git using command "git '
-                                'update-index --chmod=+x foo.sh"')
+        if git_mode[-4:] != "0755" and os.access(path, os.X_OK):
+            chmod(path, "-x")
+            context.log.warning(
+                'If this chmod is not expected, update the file permission in git using command "git '
+                'update-index --chmod=+x foo.sh"'
+            )
 
     @staticmethod
     def get_current_chmod(path: str) -> str:
         """
-        Retrieve the current chmod for the given path
+        Retrieve the current chmod for the given path.
+
         :param path: the path to check
         :return:
         """

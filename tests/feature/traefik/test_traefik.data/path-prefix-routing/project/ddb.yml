@@ -1,0 +1,7 @@
+traefik:
+  extra_services:
+    prefixed:
+      rule: Host(`prefixed.test`)
+      https: false
+      path_prefix: /prefix
+      url: http://127.0.0.1:9

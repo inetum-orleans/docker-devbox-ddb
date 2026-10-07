@@ -15,14 +15,13 @@
     How fun, isn't it?
 """
 
-# pylint: skip-file
 
 import os
 import time
 from typing import List
 from pathlib import Path
 import warnings
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 
@@ -88,16 +87,82 @@ def create_network_info_for_container(container: Container):
     ]
 
 
+def generate_scoped_containers_fixture(scope: str):
+    """
+    Create scoped fixtures that retrieve or spin up all containers, and add
+    network info objects to containers and then yield the containers for
+    duration of test.
+
+    After the tests wrap up the fixture prints the logs of each containers
+    and tears them down unless '--use-running-containers' was supplied.
+    """
+
+    def scoped_containers_fixture(self, request, all_docker_projects):
+        docker_project = DockerComposePlugin.get_docker_project(request, all_docker_projects)
+
+        now = datetime.now(timezone.utc)
+        if request.config.getoption("--use-running-containers"):
+            containers = [
+                container
+                for container in docker_project.compose.ps()
+                if container.state.running
+            ]  # type: List[Container]
+        else:
+            if any(
+                (
+                    container
+                    for container in docker_project.compose.ps()
+                    if container.state.running
+                )
+            ):
+                raise ContainersAlreadyExist(
+                    'pytest-docker-compose tried to start containers but there are'
+                    ' already running containers: %s, you probably scoped your'
+                    ' tests wrong' % docker_project.compose.ps()
+                )
+
+            containers = docker_project.compose.up(detach=True, quiet=True)
+            if not any(docker_project.compose.ps()):
+                raise ValueError("`docker-compose` didn't launch any containers!")
+
+        container_getter = ContainerGetter(docker_project)
+        yield container_getter
+
+        # `-q` sets verbosity to -1, which is truthy, and compose.up() returns
+        # None: both would turn this reporting block into a teardown failure,
+        # leaving the containers running for the next test module.
+        if request.config.getoption("--verbose") > 0 and containers:
+            for container in sorted(containers, key=lambda c: c.name):
+                header = "Logs from {name}:".format(name=container.name)
+                print(header, '\n', "=" * len(header))
+                print(container.logs(since=now) or "(no logs)", '\n')
+
+        if not request.config.getoption("--use-running-containers"):
+            docker_project.compose.down(
+                volumes=request.config.getoption("--docker-compose-remove-volumes")
+            )
+
+    scoped_containers_fixture.__doc__ = """
+        Spins up the containers for the Docker project and returns an
+        object that can retrieve the containers. The returned containers
+        all have one additional attribute called network_info to simplify
+        accessing the hostnames and exposed port numbers for each container.
+        This set of containers is scoped to '%s'
+        """ % scope
+    return pytest.fixture(scope=scope)(scoped_containers_fixture)
+
+
 class DockerComposePlugin:
     """
     Integrates docker-compose into pytest integration tests.
     """
 
-    def __init__(self):
-        self.function_scoped_container_getter = self.generate_scoped_containers_fixture('function')
-        self.class_scoped_container_getter = self.generate_scoped_containers_fixture('class')
-        self.module_scoped_container_getter = self.generate_scoped_containers_fixture('module')
-        self.session_scoped_container_getter = self.generate_scoped_containers_fixture('session')
+    # Class attributes, not instance ones: pytest only collects fixtures declared
+    # on the plugin class itself.
+    function_scoped_container_getter = generate_scoped_containers_fixture('function')
+    class_scoped_container_getter = generate_scoped_containers_fixture('class')
+    module_scoped_container_getter = generate_scoped_containers_fixture('module')
+    session_scoped_container_getter = generate_scoped_containers_fixture('session')
 
     # noinspection SpellCheckingInspection
     @staticmethod
@@ -280,69 +345,6 @@ class DockerComposePlugin:
                     "Running containers: %s" % project.compose.ps()
                 )
         return project
-
-    @classmethod
-    def generate_scoped_containers_fixture(cls, scope: str):
-        """
-        Create scoped fixtures that retrieve or spin up all containers, and add
-        network info objects to containers and then yield the containers for
-        duration of test.
-
-        After the tests wrap up the fixture prints the logs of each containers
-        and tears them down unless '--use-running-containers' was supplied.
-        """
-
-        @pytest.fixture(scope=scope)  # type: ignore
-        def scoped_containers_fixture(request, all_docker_projects):
-            docker_project = cls.get_docker_project(request, all_docker_projects)
-
-            now = datetime.utcnow()
-            if request.config.getoption("--use-running-containers"):
-                containers = [
-                    container
-                    for container in docker_project.compose.ps()
-                    if container.state.running
-                ]  # type: List[Container]
-            else:
-                if any(
-                    (
-                        container
-                        for container in docker_project.compose.ps()
-                        if container.state.running
-                    )
-                ):
-                    raise ContainersAlreadyExist(
-                        'pytest-docker-compose tried to start containers but there are'
-                        ' already running containers: %s, you probably scoped your'
-                        ' tests wrong' % docker_project.compose.ps()
-                    )
-
-                containers = docker_project.compose.up(detach=True, quiet=True)
-                if not any(docker_project.compose.ps()):
-                    raise ValueError("`docker-compose` didn't launch any containers!")
-
-            container_getter = ContainerGetter(docker_project)
-            yield container_getter
-
-            if request.config.getoption("--verbose"):
-                for container in sorted(containers, key=lambda c: c.name):
-                    header = "Logs from {name}:".format(name=container.name)
-                    print(header, '\n', "=" * len(header))
-                    print(container.logs(since=now) or "(no logs)", '\n')
-
-            if not request.config.getoption("--use-running-containers"):
-                docker_project.compose.down(
-                    volumes=request.config.getoption("--docker-compose-remove-volumes")
-                )
-
-        scoped_containers_fixture.__wrapped__.__doc__ = """
-            Spins up the containers for the Docker project and returns an
-            object that can retrieve the containers. The returned containers
-            all have one additional attribute called network_info to simplify
-            accessing the hostnames and exposed port numbers for each container.
-            This set of containers is scoped to '%s'
-            """ % scope
-        return scoped_containers_fixture
 
 
 plugin = DockerComposePlugin()

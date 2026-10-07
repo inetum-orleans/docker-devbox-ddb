@@ -6,7 +6,7 @@
     service = "extra-service-path_prefix"
     middlewares = ["extra-service-path_prefix-redirect-to-https"]
   [http.routers.extra-service-path_prefix-tls]
-    rule = "Host(`secured.project.test`) && PathPrefix(`{{_local.path_prefix}}{regex:$$|/.*}`)""
+    rule = "Host(`secured.project.test`) && PathRegexp(`^/path_prefix($|/.*)`)"
     entrypoints = ["https"]
     tls = true
     service = "extra-service-path_prefix"
@@ -16,7 +16,7 @@
   [http.middlewares.extra-service-path_prefix-redirect-to-https.redirectScheme]
     scheme = "https"
   [http.middlewares.extra-service-path_prefix-stripprefix.stripPrefix]
-    prefixes = "/path_prefix"
+    prefixes = ["/path_prefix"]
 
 [http.services]
   [http.services.extra-service-path_prefix]

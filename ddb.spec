@@ -1,33 +1,27 @@
 # -*- mode: python -*-
 
+from PyInstaller.utils.hooks import collect_data_files
+
 block_cipher = None
 
-# since version 2.2.3, cookiecutter comes with a VERSION.txt file that needs to be included
-# as a datafile. This is kind of a temporary hack until a PR for cookiecutter is accepted
-# to turn this VERSION.txt file into a regular Python module.
-
-import cookiecutter
-from pathlib import Path
-COOKIECUTTER_PATH = Path(cookiecutter.__file__).parent.resolve()
-
+# binaryornot (pulled in by cookiecutter) reads its signature lists through
+# importlib.resources, so its data files must be shipped alongside the modules.
+datas = [
+    ('ddb/feature/jsonnet/lib/*', 'ddb/feature/jsonnet/lib'),
+    *collect_data_files('binaryornot'),
+]
 
 a = Analysis(['ddb/__main__.py'],
              pathex=[],
              binaries=[],
-             datas=[
-                 ('ddb/feature/jsonnet/lib/*', 'ddb/feature/jsonnet/lib'),
-                 (str(COOKIECUTTER_PATH / 'VERSION.txt'), 'cookiecutter'),
-             ],
+             datas=datas,
              hiddenimports=[
                  'ddb.feature.jsonnet.docker',
-                 'pkg_resources.py2_warn',  # https://github.com/pypa/setuptools/issues/1963
                  'cookiecutter.extensions',  # https://github.com/cookiecutter/cookiecutter/blob/b155476851448f1858884bf73c177c997319f5a6/cookiecutter/environment.py#L25-L30
-                 'jinja2_time'
              ],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],
-             win_no_prefer_redirects=False,
              cipher=block_cipher)
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)

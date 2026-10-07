@@ -1,9 +1,10 @@
-from typing import Optional, Union, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 from ddb.binary import Binary as BinaryType
-from . import event
-# pylint:disable=redefined-outer-name
+
 from ..command import Command
+from . import event
 
 
 class File:
@@ -12,23 +13,26 @@ class File:
     """
 
     @event("file:deleted")
-    def deleted(self, file: str):
+    def deleted(self, file: str) -> None:
         """
         When a file is deleted.
+
         :param file:
         """
 
     @event("file:found")
-    def found(self, file: str):
+    def found(self, file: str) -> None:
         """
         When a file is found.
+
         :param file:
         """
 
     @event("file:generated")
-    def generated(self, source: Optional[str], target: str):
+    def generated(self, source: str | None, target: str) -> None:
         """
         When a file is generated.
+
         :param source:
         :param target:
         """
@@ -40,24 +44,27 @@ class Certs:
     """
 
     @event("certs:generate")
-    def generate(self, domain: str, wildcard=True):
+    def generate(self, domain: str, *, wildcard: bool = True) -> None:
         """
         Ask to generate a certificate.
+
         :param domain:
         :param wildcard:
         """
 
     @event("certs:remove")
-    def remove(self, domain: str):
+    def remove(self, domain: str) -> None:
         """
         Ask to remove a certificate.
+
         :param domain:
         """
 
     @event("certs:generated")
-    def generated(self, domain: str, wildcard: bool, private_key: Union[bytes, str], certificate: Union[bytes, str]):
+    def generated(self, domain: str, *, wildcard: bool, private_key: bytes | str, certificate: bytes | str) -> None:
         """
         When a certificate is generated.
+
         :param domain:
         :param wildcard:
         :param private_key:
@@ -65,16 +72,18 @@ class Certs:
         """
 
     @event("certs:removed")
-    def removed(self, domain: str):
+    def removed(self, domain: str) -> None:
         """
         When a certificate is removed.
+
         :param domain:
         """
 
     @event("certs:available")
-    def available(self, domain: str, wildcard: bool, private_key: Union[bytes, str], certificate: Union[bytes, str]):
+    def available(self, domain: str, *, wildcard: bool, private_key: bytes | str, certificate: bytes | str) -> None:
         """
         When a certificate is available.
+
         :param domain:
         :param wildcard:
         :param private_key:
@@ -89,25 +98,28 @@ class Binary:
     """
 
     @event("binary:unregistered")
-    def unregistered(self, binary: BinaryType):
+    def unregistered(self, binary: BinaryType) -> None:
         """
         When a binary as been unregistered.
+
         :param binary:
         :return:
         """
 
     @event("binary:registered")
-    def registered(self, binary: BinaryType):
+    def registered(self, binary: BinaryType) -> None:
         """
         When a binary has been registered.
+
         :param binary:
         :return:
         """
 
     @event("binary:found")
-    def found(self, binary: BinaryType):
+    def found(self, binary: BinaryType) -> None:
         """
         When a binary has been found.
+
         :param binary:
         """
 
@@ -118,16 +130,18 @@ class Run:
     """
 
     @event("run:run")
-    def run(self, name: str):
+    def run(self, name: str) -> None:
         """
         When a command has been runned.
+
         :param name:
         """
 
     @event("run:command")
-    def command(self, command: Iterable[str], system_path: bool = False):
+    def command(self, command: Iterable[str], *, system_path: bool = False) -> None:
         """
         When a command request should be handled.
+
         :param command:
         :param system_path:
         """
@@ -139,31 +153,46 @@ class Docker:
     """
 
     @event("docker:docker-compose-config")
-    def docker_compose_config(self, docker_compose_config: dict):
+    def docker_compose_config(self, docker_compose_config: dict[str, Any]) -> None:
         """
         When a docker compose configuration has been read.
+
         :param docker_compose_config:
         """
 
     @event("docker:docker-compose-before-events")
-    def docker_compose_before_events(self, docker_compose_config: dict):
+    def docker_compose_before_events(self, docker_compose_config: dict[str, Any]) -> None:
         """
         Before docker compose to emit events.
+
         :param docker_compose_config:
         """
 
     @event("docker:docker-compose-after-events")
-    def docker_compose_after_events(self, docker_compose_config: dict):
+    def docker_compose_after_events(self, docker_compose_config: dict[str, Any]) -> None:
         """
         After docker compose has emitted events.
+
         :param docker_compose_config:
         """
 
     @event("docker:binary")
-    def binary(self, name=None, workdir=None, options=None, options_condition=None, condition=None, args=None,
-               exe=False, entrypoint=None, global_=None, docker_compose_service=None):
+    def binary(
+        self,
+        name: str | None = None,
+        workdir: str | None = None,
+        options: str | None = None,
+        options_condition: str | None = None,
+        condition: str | None = None,
+        args: str | None = None,
+        *,
+        exe: bool = False,
+        entrypoint: str | None = None,
+        global_: bool | None = None,
+        docker_compose_service: str | None = None,
+    ) -> None:
         """
-        Ask a binary to be generated from docker compose service
+        Ask a binary to be generated from docker compose service.
         """
 
 
@@ -173,51 +202,51 @@ class Phase:
     """
 
     @event("phase:init")
-    def init(self):
+    def init(self) -> None:
         """
-        Init phase
+        Init phase.
         """
 
     @event("phase:configure")
-    def configure(self):
+    def configure(self) -> None:
         """
-        Configure phase
+        Configure phase.
         """
 
     @event("phase:download")
-    def download(self):
+    def download(self) -> None:
         """
-        Download phase
+        Download phase.
         """
 
     @event("phase:features")
-    def features(self):
+    def features(self) -> None:
         """
-        Features phase
+        Features phase.
         """
 
     @event("phase:info")
-    def info(self):
+    def info(self) -> None:
         """
-        Features phase
+        Features phase.
         """
 
     @event("phase:config")
-    def config(self):
+    def config(self) -> None:
         """
-        Config phase
+        Config phase.
         """
 
     @event("phase:run")
-    def run(self):
+    def run(self) -> None:
         """
-        Run phase
+        Run phase.
         """
 
     @event("phase:selfupdate")
-    def selfupdate(self):
+    def selfupdate(self) -> None:
         """
-        Selfupdate phase
+        Selfupdate phase.
         """
 
 
@@ -227,9 +256,9 @@ class Config:
     """
 
     @event("config:reloaded")
-    def reloaded(self):
+    def reloaded(self) -> None:
         """
-        Config has been reloaded
+        Config has been reloaded.
         """
 
 
@@ -239,21 +268,21 @@ class Main:
     """
 
     @event("main:start")
-    def start(self, command: Command):
+    def start(self, command: Command) -> None:
         """
-        Main start
+        Main start.
         """
 
     @event("main:terminate")
-    def terminate(self, command: Command):
+    def terminate(self, command: Command) -> None:
         """
-        Main terminate
+        Main terminate.
         """
 
     @event("main:version")
-    def version(self, silent: bool):
+    def version(self, *, silent: bool) -> None:
         """
-        Main version
+        Main version.
         """
 
 

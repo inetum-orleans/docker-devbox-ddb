@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
-from typing import Iterable, ClassVar
+from collections.abc import Iterable
 
-from .actions import CopyAction
-from .schema import CopySchema
+from ...action import Action
 from ..feature import Feature
 from ..schema import FeatureSchema
-from ...action import Action
+from .actions import CopyAction
+from .schema import CopySchema
 
 
 class CopyFeature(Feature):
@@ -22,11 +21,9 @@ class CopyFeature(Feature):
         return ["core"]
 
     @property
-    def schema(self) -> ClassVar[FeatureSchema]:
+    def schema(self) -> type[FeatureSchema]:
         return CopySchema
 
     @property
     def actions(self) -> Iterable[Action]:
-        return (
-            CopyAction(),
-        )
+        return (CopyAction(),)

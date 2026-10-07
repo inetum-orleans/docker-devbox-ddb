@@ -1,122 +1,131 @@
-# -*- coding: utf-8 -*-
 import json
 import os
 import re
 import shlex
 from collections import namedtuple
+from collections.abc import Callable, Iterable, Iterator
+from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Iterable
+from typing import Any
 
 from chmod_monkey import tmp_chmod
 from dockerfile_parse import DockerfileParser
 from dotty_dict import Dotty
 
-from ..copy.actions import copy_from_url
+from ddb.action.action import EventBindings
+
 from ...action import Action
 from ...action.action import EventBinding
 from ...config import config
 from ...context import context
 from ...event import events
 from ...utils.file import force_remove
+from ...utils.path import absolute_path
 from ...utils.process import run
+from ..copy.actions import copy_from_url
 
 BuildServiceDef = namedtuple("BuildServiceDef", "context dockerfile")
 
 
-class CustomDockerfileParser(DockerfileParser):
+# dockerfile_parse ships no type information, so DockerfileParser is seen as Any by mypy.
+class CustomDockerfileParser(DockerfileParser):  # type: ignore[misc]
     """
     Custom class to implement entrypoint property with the same behavior as cmd property.
     """
 
-    def get_last_instruction(self, instruction_type, instruction_condition=lambda instruction: True):
+    # Declared for the type checker only: DockerfileParser exposes them as untyped properties.
+    lines: list[str]
+    structure: list[dict[str, Any]]
+    baseimage: str | None
+
+    def get_last_instruction(
+        self, instruction_type: str, instruction_condition: Callable[[dict[str, Any]], bool] = lambda instruction: True
+    ) -> dict[str, Any] | None:
         """
         Determine the final instruction_type instruction, if any, in the final build stage.
         instruction_types from earlier stages are ignored.
-        :return: value of final stage instruction_type instruction
+
+        :return: value of final stage instruction_type instruction.
         """
         last_instruction = None
         for insndesc in self.structure:
-            if insndesc['instruction'] == 'FROM':  # new stage, reset
+            if insndesc["instruction"] == "FROM":  # new stage, reset
                 last_instruction = None
-            elif insndesc['instruction'] == instruction_type and instruction_condition(insndesc):
+            elif insndesc["instruction"] == instruction_type and instruction_condition(insndesc):
                 last_instruction = insndesc
         return last_instruction
 
     @property
-    def entrypoint(self):
+    def entrypoint(self) -> str | None:
         """
         Determine the final ENTRYPOINT instruction, if any, in the final build stage.
         ENTRYPOINTs from earlier stages are ignored.
-        :return: value of final stage ENTRYPOINT instruction
+
+        :return: value of final stage ENTRYPOINT instruction.
         """
         last_instruction = self.get_last_instruction("ENTRYPOINT")
-        return last_instruction['value'] if last_instruction else None
+        return last_instruction["value"] if last_instruction else None
 
     @entrypoint.setter
-    def entrypoint(self, value):
+    def entrypoint(self, value: str | None) -> None:
         """
-        setter for final 'ENTRYPOINT' instruction in final build stage
+        Setter for final 'ENTRYPOINT' instruction in final build stage.
         """
         entrypoint = None
         for insndesc in self.structure:
-            if insndesc['instruction'] == 'FROM':  # new stage, reset
+            if insndesc["instruction"] == "FROM":  # new stage, reset
                 entrypoint = None
-            elif insndesc['instruction'] == 'ENTRYPOINT':
+            elif insndesc["instruction"] == "ENTRYPOINT":
                 entrypoint = insndesc
 
-        if value:
-            new_entrypoint = 'ENTRYPOINT ' + value
-        else:
-            new_entrypoint = None
+        new_entrypoint = "ENTRYPOINT " + value if value else None
 
         if entrypoint:
             if new_entrypoint:
                 self.add_lines_at(entrypoint, new_entrypoint, replace=True)
             else:
                 new_lines = list(self.lines)
-                new_lines.remove(entrypoint['content'])
+                new_lines.remove(entrypoint["content"])
                 self.lines = new_lines
         elif new_entrypoint:
             self.add_lines(new_entrypoint)
 
     @property
-    def cmd(self):
+    def cmd(self) -> str | None:
         """
         Determine the final CMD instruction, if any, in the final build stage.
         CMDs from earlier stages are ignored.
-        :return: value of final stage CMD instruction
+
+        :return: value of final stage CMD instruction.
         """
         value = None
         for insndesc in self.structure:
-            if insndesc['instruction'] == 'FROM':  # new stage, reset
+            if insndesc["instruction"] == "FROM":  # new stage, reset
                 value = None
-            elif insndesc['instruction'] == 'CMD':
-                value = insndesc['value']
+            elif insndesc["instruction"] == "CMD":
+                value = insndesc["value"]
         return value
 
     @cmd.setter
-    def cmd(self, value):
+    def cmd(self, value: str | None) -> None:
         """
-        setter for final 'CMD' instruction in final build stage
+        Setter for final 'CMD' instruction in final build stage.
 
         """
         cmd = None
         for insndesc in self.structure:
-            if insndesc['instruction'] == 'FROM':  # new stage, reset
+            if insndesc["instruction"] == "FROM":  # new stage, reset
                 cmd = None
-            elif insndesc['instruction'] == 'CMD':
+            elif insndesc["instruction"] == "CMD":
                 cmd = insndesc
 
-        if value:
-            new_cmd = 'CMD ' + value
-        else:
-            new_cmd = None
+        new_cmd = "CMD " + value if value else None
         if cmd:
             if new_cmd:
                 self.add_lines_at(cmd, new_cmd, replace=True)
             else:
                 new_lines = list(self.lines)
-                new_lines.remove(cmd['content'])
+                new_lines.remove(cmd["content"])
                 self.lines = new_lines
         elif new_cmd:
             self.add_lines(new_cmd)
@@ -125,36 +134,36 @@ class CustomDockerfileParser(DockerfileParser):
 class FixuidDockerComposeAction(Action):
     """
     Automate fixuid configuration for docker compose services where fixuid.yml configuration file is available in
-    build context
+    build context.
     """
 
-    def __init__(self):
-        self.docker_compose_config = {}
-        self._dockerfile_lines = ("ADD fixuid.tar.gz /usr/local/bin",
-                                  "RUN chown root:root /usr/local/bin/fixuid && "
-                                  "chmod 4755 /usr/local/bin/fixuid && "
-                                  "mkdir -p /etc/fixuid",
-                                  "COPY fixuid.yml /etc/fixuid/config.yml")
+    def __init__(self) -> None:
+        self.docker_compose_config: dict[str, Any] = {}
+        self._dockerfile_lines = (
+            "ADD fixuid.tar.gz /usr/local/bin",
+            ("RUN chown root:root /usr/local/bin/fixuid && chmod 4755 /usr/local/bin/fixuid && mkdir -p /etc/fixuid"),
+            "COPY fixuid.yml /etc/fixuid/config.yml",
+        )
 
     @property
-    def event_bindings(self):
-        def file_generated_processor(source: str, target: str):
+    def event_bindings(self) -> EventBindings:
+        def file_generated_processor(source: str, target: str) -> tuple[tuple[()], dict[str, Any]] | None:
             service = self.find_fixuid_service(target)
             if service:
                 return (), {"service": service}
             return None
 
-        def file_found_processor(file: str):
-            if os.path.basename(file) == 'fixuid.yml':
-                dockerfile_filepath = os.path.join(os.path.dirname(file), 'Dockerfile')
+        def file_found_processor(file: str) -> tuple[tuple[()], dict[str, Any]] | None:
+            if Path(file).name == "fixuid.yml":
+                dockerfile_filepath = str(Path(file).parent / "Dockerfile")
                 service = self.find_fixuid_service(dockerfile_filepath)
                 if service:
                     return (), {"service": service}
             return None
 
-        def file_deleted_processor(file: str):
-            if os.path.basename(file) == 'fixuid.yml':
-                dockerfile_filepath = os.path.join(os.path.dirname(file), 'Dockerfile')
+        def file_deleted_processor(file: str) -> tuple[tuple[()], dict[str, Any]] | None:
+            if Path(file).name == "fixuid.yml":
+                dockerfile_filepath = str(Path(file).parent / "Dockerfile")
                 service = self.find_fixuid_service(dockerfile_filepath, include_missing_fixuid=True)
                 if service:
                     return (), {"service": service}
@@ -162,15 +171,9 @@ class FixuidDockerComposeAction(Action):
 
         return (
             events.docker.docker_compose_config,
-            EventBinding(events.file.generated,
-                         call=self.apply_fixuid,
-                         processor=file_generated_processor),
-            EventBinding(events.file.found,
-                         call=self.apply_fixuid,
-                         processor=file_found_processor),
-            EventBinding(events.file.deleted,
-                         call=self.remove_fixuid,
-                         processor=file_deleted_processor)
+            EventBinding(events.file.generated, call=self.apply_fixuid, processor=file_generated_processor),
+            EventBinding(events.file.found, call=self.apply_fixuid, processor=file_found_processor),
+            EventBinding(events.file.deleted, call=self.remove_fixuid, processor=file_deleted_processor),
         )
 
     @property
@@ -178,60 +181,61 @@ class FixuidDockerComposeAction(Action):
         return "fixuid:docker"
 
     @staticmethod
-    def _get_inspect_data(image):
+    def _get_inspect_data(image: str) -> dict[str, Any]:
         try:
             context.log.debug("Inspect base image %s", image)
-            output = run('docker', 'inspect', '--format', '\'{{json .}}\'', image)
+            output = run("docker", "inspect", "--format", "'{{json .}}'", image)
         except CalledProcessError:
             context.log.warning("Pull base image %s (downloading)", image)
-            run('docker', 'pull', '-q', image)
+            run("docker", "pull", "-q", image)
             context.log.success("Pull base image %s (terminated)", image)
             context.log.debug("Inspect base image %s", image)
-            output = run('docker', 'inspect', '--format', '\'{{json .}}\'', image)
-        output = output.decode().strip('\\\'\n').rstrip('\\\'\n')
-        inspect_data = json.loads(output)
+            output = run("docker", "inspect", "--format", "'{{json .}}'", image)
+        decoded_output = output.decode().strip("\\'\n").rstrip("\\'\n")
+        inspect_data: dict[str, Any] = json.loads(decoded_output)
 
-        context.log.debug("%s (%s)", image, inspect_data['Id'])
+        context.log.debug("%s (%s)", image, inspect_data["Id"])
         return inspect_data
 
     @staticmethod
-    def _get_image_config(image):
-        if image and image != 'scratch':
+    def _get_image_config(image: str | None) -> dict[str, Any] | None:
+        if image and image != "scratch":
             attrs = FixuidDockerComposeAction._get_inspect_data(image)
-            if attrs and 'Config' in attrs:
-                return attrs['Config']
+            if attrs and "Config" in attrs:
+                image_config: dict[str, Any] = attrs["Config"]
+                return image_config
         return None
 
-    def apply_fixuid(self, service: BuildServiceDef):
+    def apply_fixuid(self, service: BuildServiceDef) -> None:
         """
-        Apply fixuid to given service
+        Apply fixuid to given service.
         """
-        dockerfile_path = os.path.join(service.context, service.dockerfile)
-        if os.path.exists(dockerfile_path):
-            with tmp_chmod(dockerfile_path, '+w'):
-                with open(dockerfile_path, "ba+") as dockerfile_file:
-                    parser = CustomDockerfileParser(fileobj=dockerfile_file)
+        dockerfile_path = str(Path(service.context) / service.dockerfile)
+        if Path(dockerfile_path).exists():
+            with tmp_chmod(dockerfile_path, "+w"), Path(dockerfile_path).open("ba+") as dockerfile_file:
+                parser = CustomDockerfileParser(fileobj=dockerfile_file)
 
-                    if FixuidDockerComposeAction._apply_fixuid_from_parser(self, parser, service):
-                        context.log.success("Fixuid applied to %s",
-                                            os.path.relpath(dockerfile_path, config.paths.project_home))
+                if FixuidDockerComposeAction._apply_fixuid_from_parser(self, parser, service):
+                    context.log.success(
+                        "Fixuid applied to %s", os.path.relpath(dockerfile_path, config.paths.project_home)
+                    )
 
-    def remove_fixuid(self, service: BuildServiceDef):
+    def remove_fixuid(self, service: BuildServiceDef) -> None:
         """
-        Remove fixuid from given service
+        Remove fixuid from given service.
         """
-        dockerfile_path = os.path.join(service.context, service.dockerfile)
-        if os.path.exists(dockerfile_path):
-            with tmp_chmod(dockerfile_path, '+w'):
-                with open(dockerfile_path, "ba+") as dockerfile_file:
-                    parser = CustomDockerfileParser(fileobj=dockerfile_file)
+        dockerfile_path = str(Path(service.context) / service.dockerfile)
+        if Path(dockerfile_path).exists():
+            with tmp_chmod(dockerfile_path, "+w"), Path(dockerfile_path).open("ba+") as dockerfile_file:
+                parser = CustomDockerfileParser(fileobj=dockerfile_file)
 
-                    if FixuidDockerComposeAction._remove_fixuid_from_parser(self, parser, service):
-                        context.log.success("Fixuid removed from %s",
-                                            os.path.relpath(dockerfile_path, config.paths.project_home))
+                if FixuidDockerComposeAction._remove_fixuid_from_parser(self, parser, service):
+                    context.log.success(
+                        "Fixuid removed from %s", os.path.relpath(dockerfile_path, config.paths.project_home)
+                    )
 
     @staticmethod
-    def _get_cmd_and_entrypoint(parser):
+    def _get_cmd_and_entrypoint(parser: CustomDockerfileParser) -> tuple[str | None, str | None]:
         entrypoint = parser.entrypoint
         cmd = parser.cmd
         # if entrypoint is defined in Dockerfile, we should not grab cmd from base image
@@ -242,58 +246,60 @@ class FixuidDockerComposeAction(Action):
             reset_cmd = True
         if not entrypoint:
             baseimage_config = FixuidDockerComposeAction._get_image_config(parser.baseimage)
-            if baseimage_config and 'Entrypoint' in baseimage_config:
-                entrypoint = json.dumps(baseimage_config['Entrypoint'])
+            if baseimage_config and "Entrypoint" in baseimage_config:
+                entrypoint = json.dumps(baseimage_config["Entrypoint"])
         if not cmd and not reset_cmd:
             baseimage_config = FixuidDockerComposeAction._get_image_config(parser.baseimage)
-            if baseimage_config and 'Cmd' in baseimage_config:
-                cmd = json.dumps(baseimage_config['Cmd'])
+            if baseimage_config and "Cmd" in baseimage_config:
+                cmd = json.dumps(baseimage_config["Cmd"])
         if not cmd:
             cmd = None
         return cmd, entrypoint
 
     @staticmethod
-    def _has_fixuid_disabled_comment(lines: Iterable[str]):
+    def _has_fixuid_disabled_comment(lines: Iterable[str]) -> bool:
         return FixuidDockerComposeAction._has_comment(
-            ['no-fixuid', 'fixuid-no', 'fixuid-disabled?', 'disabled?-fixuid'], lines)
+            ["no-fixuid", "fixuid-no", "fixuid-disabled?", "disabled?-fixuid"], lines
+        )
 
     @staticmethod
-    def _has_fixuid_manual_comment(lines: Iterable[str]):
+    def _has_fixuid_manual_comment(lines: Iterable[str]) -> bool:
         return FixuidDockerComposeAction._has_comment(
-            ['manual-fixuid', 'fixuid-manual', 'custom-fixuid', 'fixuid-custom'], lines)
+            ["manual-fixuid", "fixuid-manual", "custom-fixuid", "fixuid-custom"], lines
+        )
 
     @staticmethod
-    def _has_fixuid_manual_entrypoint_comment(lines: Iterable[str]):
+    def _has_fixuid_manual_entrypoint_comment(lines: Iterable[str]) -> bool:
         return FixuidDockerComposeAction._has_comment(
-            ['manual-fixuid-entrypoint',
-             'fixuid-manual-entrypoint',
-             'custom-fixuid-entrypoint',
-             'fixuid-custom-entrypoint'], lines)
+            [
+                "manual-fixuid-entrypoint",
+                "fixuid-manual-entrypoint",
+                "custom-fixuid-entrypoint",
+                "fixuid-custom-entrypoint",
+            ],
+            lines,
+        )
 
     @staticmethod
-    def _has_fixuid_manual_install_comment(lines: Iterable[str]):
+    def _has_fixuid_manual_install_comment(lines: Iterable[str]) -> bool:
         return FixuidDockerComposeAction._has_comment(
-            ('manual-fixuid-install',
-             'fixuid-manual-install',
-             'custom-fixuid-install',
-             'fixuid-custom-install'), lines)
+            ("manual-fixuid-install", "fixuid-manual-install", "custom-fixuid-install", "fixuid-custom-install"), lines
+        )
 
     @staticmethod
-    def _has_comment(keywords: Iterable[str], lines: Iterable[str]):
-        patterns = [r'^#\s*' + keyword + r'\s*$' for keyword in keywords]
+    def _has_comment(keywords: Iterable[str], lines: Iterable[str]) -> bool:
+        patterns = [r"^#\s*" + keyword + r"\s*$" for keyword in keywords]
         for line in lines:
             for pattern in patterns:
                 if re.match(pattern, line):
                     return True
         return False
 
-    def _apply_fixuid_from_parser(self, parser: CustomDockerfileParser, service: BuildServiceDef):
+    def _apply_fixuid_from_parser(self, parser: CustomDockerfileParser, service: BuildServiceDef) -> bool:
         if self._has_fixuid_disabled_comment(parser.lines):
             return False
 
-        target = copy_from_url(config.data["fixuid.url"],
-                               service.context,
-                               "fixuid.tar.gz")
+        target = copy_from_url(config.data["fixuid.url"], service.context, "fixuid.tar.gz")
         if target:
             events.file.generated(source=None, target=target)
 
@@ -313,10 +319,12 @@ class FixuidDockerComposeAction(Action):
                 ret = True
 
             if not manual_install and self._dockerfile_lines[0] + "\n" not in parser.lines:
-                last_instruction_user = parser \
-                    .get_last_instruction("USER",
-                                          lambda instruction: instruction.get('value') and
-                                                              instruction.get('value').lower() != 'root')
+                last_instruction_user = parser.get_last_instruction(
+                    "USER",
+                    lambda instruction: (
+                        bool(instruction.get("value")) and str(instruction.get("value")).lower() != "root"
+                    ),
+                )
                 last_instruction_entrypoint = parser.get_last_instruction("ENTRYPOINT")
                 if last_instruction_user:
                     parser.add_lines_at(last_instruction_user, *self._dockerfile_lines)
@@ -328,15 +336,15 @@ class FixuidDockerComposeAction(Action):
 
         return ret
 
-    def _remove_fixuid_from_parser(self, parser: CustomDockerfileParser, service: BuildServiceDef):
+    def _remove_fixuid_from_parser(self, parser: CustomDockerfileParser, service: BuildServiceDef) -> bool:
         baseimage_config = FixuidDockerComposeAction._get_image_config(parser.baseimage)
         image_entrypoint = None
-        if baseimage_config and 'Entrypoint' in baseimage_config:
-            image_entrypoint = json.dumps(baseimage_config['Entrypoint'])
+        if baseimage_config and "Entrypoint" in baseimage_config:
+            image_entrypoint = json.dumps(baseimage_config["Entrypoint"])
 
         image_cmd = None
-        if baseimage_config and 'Cmd' in baseimage_config:
-            image_cmd = json.dumps(baseimage_config['Cmd'])
+        if baseimage_config and "Cmd" in baseimage_config:
+            image_cmd = json.dumps(baseimage_config["Cmd"])
 
         if parser.entrypoint:
             parser.entrypoint = FixuidDockerComposeAction._remove_fixuid_entrypoint(parser.entrypoint)
@@ -349,8 +357,8 @@ class FixuidDockerComposeAction(Action):
 
         removed = False
 
-        fixuid_targz = os.path.join(service.context, "fixuid.tar.gz")
-        if os.path.exists(fixuid_targz):
+        fixuid_targz = str(Path(service.context) / "fixuid.tar.gz")
+        if Path(fixuid_targz).exists():
             force_remove(fixuid_targz)
             removed = True
 
@@ -365,33 +373,34 @@ class FixuidDockerComposeAction(Action):
 
         return removed
 
-    def execute(self, docker_compose_config: dict):
+    def execute(self, docker_compose_config: dict[str, Any]) -> None:
         """
-        Execute action
+        Execute action.
         """
         self.docker_compose_config = docker_compose_config
 
         for service in self.get_fixuid_services():
             self.apply_fixuid(service)
 
-    def find_fixuid_service(self, dockerfile_filepath: str, include_missing_fixuid=False):
+    def find_fixuid_service(
+        self, dockerfile_filepath: str, *, include_missing_fixuid: bool = False
+    ) -> BuildServiceDef | None:
         """
-        Find related fixuid service from dockerfile filepath
+        Find related fixuid service from dockerfile filepath.
         """
-        for service in self.get_fixuid_services(include_missing_fixuid):
-            if os.path.abspath(os.path.join(service.context, service.dockerfile)) == \
-                    os.path.abspath(dockerfile_filepath):
+        for service in self.get_fixuid_services(include_missing_fixuid=include_missing_fixuid):
+            if absolute_path(Path(service.context) / service.dockerfile) == absolute_path(dockerfile_filepath):
                 return service
         return None
 
-    def get_fixuid_services(self, include_missing_fixuid=False) -> Iterable[BuildServiceDef]:
+    def get_fixuid_services(self, *, include_missing_fixuid: bool = False) -> Iterator[BuildServiceDef]:
         """
         Services where fixuid.tar.gz is available in build context.
         """
         if "services" not in self.docker_compose_config:
             return
 
-        for _, service in self.docker_compose_config.get("services").items():
+        for service in self.docker_compose_config["services"].values():
             if "build" not in service.keys():
                 continue
 
@@ -402,14 +411,14 @@ class FixuidDockerComposeAction(Action):
             else:
                 continue
 
-            if not include_missing_fixuid and not os.path.exists(os.path.join(build_context, "fixuid.yml")):
+            if not include_missing_fixuid and not (Path(build_context) / "fixuid.yml").exists():
                 continue
 
             dockerfile = Dotty(service).get("build.dockerfile", "Dockerfile")
             yield BuildServiceDef(build_context, dockerfile)
 
     @staticmethod
-    def _parse_entrypoint(entrypoint):
+    def _parse_entrypoint(entrypoint: str | None) -> tuple[list[str], bool, str, str]:
         as_list = False
         start_quote = ""
         end_quote = ""
@@ -422,6 +431,9 @@ class FixuidDockerComposeAction(Action):
             entrypoint_list = json.loads(entrypoint)
         else:
             entrypoint_match = re.compile(r"^(['\"]?)(.*?)(['\"]?)$").match(entrypoint)
+            if not entrypoint_match:
+                msg = f"Unsupported entrypoint: {entrypoint}"
+                raise ValueError(msg)
             start_quote = entrypoint_match.group(1)
             end_quote = entrypoint_match.group(3)
             entrypoint = entrypoint_match.group(2)
@@ -430,33 +442,31 @@ class FixuidDockerComposeAction(Action):
         return entrypoint_list, as_list, start_quote, end_quote
 
     @staticmethod
-    def _add_fixuid_entrypoint(entrypoint):
-        entrypoint_list, as_list, start_quote, end_quote = \
-            FixuidDockerComposeAction._parse_entrypoint(entrypoint)
+    def _add_fixuid_entrypoint(entrypoint: str | None) -> str:
+        entrypoint_list, as_list, start_quote, end_quote = FixuidDockerComposeAction._parse_entrypoint(entrypoint)
 
         fixuid_entrypoint_prefix = ["fixuid", "-q"]
-        if entrypoint_list[:len(fixuid_entrypoint_prefix)] != fixuid_entrypoint_prefix:
-            entrypoint_list = ["fixuid", "-q"] + entrypoint_list
+        if entrypoint_list[: len(fixuid_entrypoint_prefix)] != fixuid_entrypoint_prefix:
+            entrypoint_list = ["fixuid", "-q", *entrypoint_list]
         if as_list:
             entrypoint = json.dumps(entrypoint_list)
         else:
             entrypoint = " ".join(entrypoint_list)
-            entrypoint = "%s%s%s" % (start_quote, entrypoint, end_quote)
+            entrypoint = f"{start_quote}{entrypoint}{end_quote}"
 
         return entrypoint
 
     @staticmethod
-    def _remove_fixuid_entrypoint(entrypoint):
-        entrypoint_list, as_list, start_quote, end_quote = \
-            FixuidDockerComposeAction._parse_entrypoint(entrypoint)
+    def _remove_fixuid_entrypoint(entrypoint: str | None) -> str:
+        entrypoint_list, as_list, start_quote, end_quote = FixuidDockerComposeAction._parse_entrypoint(entrypoint)
 
         fixuid_entrypoint_prefix = ["fixuid", "-q"]
-        if entrypoint_list[:len(fixuid_entrypoint_prefix)] == fixuid_entrypoint_prefix:
-            entrypoint_list = entrypoint_list[len(fixuid_entrypoint_prefix):]
+        if entrypoint_list[: len(fixuid_entrypoint_prefix)] == fixuid_entrypoint_prefix:
+            entrypoint_list = entrypoint_list[len(fixuid_entrypoint_prefix) :]
         if as_list:
             entrypoint = json.dumps(entrypoint_list)
         else:
             entrypoint = " ".join(entrypoint_list)
-            entrypoint = "%s%s%s" % (start_quote, entrypoint, end_quote)
+            entrypoint = f"{start_quote}{entrypoint}{end_quote}"
 
         return entrypoint

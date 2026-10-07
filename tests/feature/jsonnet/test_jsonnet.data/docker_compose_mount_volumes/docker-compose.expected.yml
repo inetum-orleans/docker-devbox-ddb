@@ -26,10 +26,10 @@ volumes:
     driver_opts:
       type: 'none'
       o: 'bind'
-      device: '/custom/another-volume'
+      device: '%mount_directory%/another-volume'
   shared-volume:
     driver: local
     driver_opts:
       type: 'none'
       o: 'bind'
-      device: '/custom/shared-volume'
+      device: '%mount_directory%/shared-volume'

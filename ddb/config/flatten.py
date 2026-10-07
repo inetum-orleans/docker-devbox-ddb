@@ -1,14 +1,15 @@
-from typing import Iterable, Union, TYPE_CHECKING
+from collections.abc import Callable, Iterable
+from typing import TYPE_CHECKING, Any
 
 from dotty_dict import Dotty
 from marshmallow import Schema
-from marshmallow.fields import Nested, Dict, List
+from marshmallow.fields import Dict, List, Nested
 
 if TYPE_CHECKING:
     from ddb.feature import Feature
 
 
-def _get_stop_fields_from_schema(schema: Schema, stack, ret):
+def _get_stop_fields_from_schema(schema: Schema, stack: list[str], ret: list[tuple[str, ...]]) -> None:
     for field_name, field in schema.fields.items():
         stack.append(field_name)
         if isinstance(field, Dict):
@@ -20,9 +21,9 @@ def _get_stop_fields_from_schema(schema: Schema, stack, ret):
         stack.pop()
 
 
-def _get_stop_fields(features: Iterable['Feature']):
-    ret = []
-    stack = []
+def _get_stop_fields(features: Iterable["Feature"]) -> list[tuple[str, ...]]:
+    ret: list[tuple[str, ...]] = []
+    stack: list[str] = []
     for feature in features:
         stack.append(feature.name)
         _get_stop_fields_from_schema(feature.schema(), stack, ret)
@@ -31,70 +32,110 @@ def _get_stop_fields(features: Iterable['Feature']):
     return ret
 
 
-def to_environ(data: Union[Dotty, dict], env_prefix) -> dict:
+def to_environ(data: Dotty | dict[str, Any], env_prefix: str) -> dict[str, str]:
     """
     Export configuration to environment dict.
     """
-    return _flatten(env_prefix, "_", "_%s_",
-                    lambda x: str.upper(x).replace('-', '_'),
-                    str,
-                    data=dict(data))
+    return _flatten(env_prefix, "_", "_%s_", lambda x: str.upper(x).replace("-", "_"), str, data=dict(data))
 
 
-def flatten(data: Union[Dotty, dict], prefix=None, sep=".", array_index_format="[%s]",
-            key_transformer=None, value_transformer=None, keep_primitive_list=False,
-            stop_for_features=None) -> dict:
+def flatten(
+    data: Dotty | dict[str, Any],
+    prefix: str | None = None,
+    sep: str = ".",
+    array_index_format: str = "[%s]",
+    key_transformer: Callable[[str], str] | None = None,
+    value_transformer: Callable[[Any], Any] | None = None,
+    *,
+    keep_primitive_list: bool = False,
+    stop_for_features: Iterable["Feature"] | None = None,
+) -> dict[str, Any]:
     """
     Export configuration to a flat dict.
     """
     stop_for = tuple(map(sep.join, _get_stop_fields(stop_for_features))) if stop_for_features is not None else ()
 
-    return _flatten(prefix, sep, array_index_format,
-                    key_transformer, value_transformer,
-                    keep_primitive_list, stop_for, data=dict(data))
+    return _flatten(
+        prefix,
+        sep,
+        array_index_format,
+        key_transformer,
+        value_transformer,
+        keep_primitive_list=keep_primitive_list,
+        stop_for=stop_for,
+        data=dict(data),
+    )
 
 
-def _flatten(prefix=None, sep=".", array_index_format="[%s]",
-             key_transformer=None, value_transformer=None, keep_primitive_list=False,
-             stop_for=(), data=None, output=None) -> dict:
+def _flatten(
+    prefix: str | None = None,
+    sep: str = ".",
+    array_index_format: str = "[%s]",
+    key_transformer: Callable[[str], str] | None = None,
+    value_transformer: Callable[[Any], Any] | None = None,
+    *,
+    keep_primitive_list: bool = False,
+    stop_for: tuple[str, ...] = (),
+    data: Any = None,
+    output: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     if output is None:
         output = {}
 
     if prefix is None:
         prefix = ""
     if key_transformer is None:
-        key_transformer = lambda x: x
+
+        def key_transformer(x: str) -> str:
+            return x
+
     if value_transformer is None:
-        value_transformer = lambda x: x
+
+        def value_transformer(x: Any) -> Any:
+            return x
 
     stop_recursion = False
     if prefix in stop_for:
         stop_recursion = True
 
     if not stop_recursion and isinstance(data, dict):
-        for (name, value) in data.items():
+        for name, value in data.items():
             key_prefix = (prefix + sep if prefix else "") + key_transformer(name)
             key_prefix = key_transformer(key_prefix)
 
-            _flatten(key_prefix, sep, array_index_format,
-                     key_transformer, value_transformer, keep_primitive_list,
-                     stop_for, value, output)
+            _flatten(
+                key_prefix,
+                sep,
+                array_index_format,
+                key_transformer,
+                value_transformer,
+                keep_primitive_list=keep_primitive_list,
+                stop_for=stop_for,
+                data=value,
+                output=output,
+            )
 
     elif not stop_recursion and isinstance(data, list):
-        if keep_primitive_list and (not data or
-                                    not set(filter(lambda x: x not in (int, float, bool, str), set(map(type, data))))):
+        if keep_primitive_list and (
+            not data or not set(filter(lambda x: x not in (int, float, bool, str), set(map(type, data))))
+        ):
             output[prefix] = value_transformer(data)
         else:
-            i = 0
-            for value in data:
+            for i, value in enumerate(data):
                 replace_prefix = (prefix if prefix else "") + (array_index_format % str(i))
                 replace_prefix = key_transformer(replace_prefix)
 
-                _flatten(replace_prefix, sep, array_index_format,
-                         key_transformer, value_transformer, keep_primitive_list,
-                         stop_for, value, output)
-
-                i += 1
+                _flatten(
+                    replace_prefix,
+                    sep,
+                    array_index_format,
+                    key_transformer,
+                    value_transformer,
+                    keep_primitive_list=keep_primitive_list,
+                    stop_for=stop_for,
+                    data=value,
+                    output=output,
+                )
     else:
         output[prefix] = value_transformer(data)
 

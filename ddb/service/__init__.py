@@ -1,5 +1,6 @@
-# -*- coding: utf-8 -*-
-from .service import Service
 from ..registry import Registry
+from .service import Service
 
-services = Registry(Service, "Service")  # type: Registry[Service]
+__all__ = ["Service", "services"]
+
+services: Registry[Service] = Registry(Service, "Service")  # type: ignore[type-abstract]

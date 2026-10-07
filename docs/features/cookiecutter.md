@@ -29,6 +29,7 @@ This can be used for [djp packages](../djp.md) or any other Cookiecutter with
         | `template` | string<span style="color:red">*</span> | Template to download |
         | `output_dir` | string | Output directory relative to project root. If not defined, it will use `directory` value defined in template's `cookiecutter.json` |
         | `checkout` | string | tag/branch to use for the template |
+        | `accept_hooks` | boolean<br>`true` | Set to `false` to generate the template without running its pre/post generation hooks. |
         | `extra_context` | dict[str, Any] | Extra context to use to render cookiecutter template. This can be used to customize values from template's `cookiecutter.json` |
     === "Advanced"
         | Property | Type | Description |

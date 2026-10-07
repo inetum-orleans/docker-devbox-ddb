@@ -1,33 +1,38 @@
 import os
 import posixpath
 import shlex
-from typing import Optional, Iterable
+from collections.abc import Iterable
+from pathlib import Path
+from typing import Any
 
 from ddb.binary.binary import AbstractBinary
 from ddb.config import config
 from ddb.feature.docker.lib.compose.config.errors import ConfigurationError
-from ddb.feature.docker.utils import get_mapped_path, DockerComposeControl
+from ddb.feature.docker.utils import DockerComposeControl, get_mapped_path
 from ddb.utils.compat import path_as_posix_fast
 from ddb.utils.process import effective_command
 from ddb.utils.simpleeval import simple_eval
 
 
-class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attributes
+class DockerBinary(AbstractBinary):
     """
     Binary to run docker compose command.
     """
 
-    def __init__(self,
-                 name: str,
-                 docker_compose_service: str,
-                 workdir: Optional[str] = None,
-                 options: Optional[str] = None,
-                 options_condition: Optional[str] = None,
-                 condition: Optional[str] = None,
-                 args: Optional[str] = None,
-                 exe: bool = False,
-                 entrypoint: Optional[str] = None,
-                 global_: bool = False):
+    def __init__(
+        self,
+        name: str,
+        docker_compose_service: str,
+        workdir: str | None = None,
+        options: str | None = None,
+        options_condition: str | None = None,
+        condition: str | None = None,
+        args: str | None = None,
+        *,
+        exe: bool = False,
+        entrypoint: str | None = None,
+        global_: bool = False,
+    ) -> None:
         super().__init__(name)
         self.docker_compose_service = docker_compose_service
         self.workdir = workdir
@@ -40,9 +45,9 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
         self._global = global_
 
     @staticmethod
-    def simple_eval_options(*args):
+    def simple_eval_options(*args: str) -> dict[str, Any]:
         """
-        Retrieve the simple_eval options
+        Retrieve the simple_eval options.
         """
         return {
             "functions": {},
@@ -51,21 +56,21 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
                 "argv": args,
                 "config": config,
                 "cwd": path_as_posix_fast(config.cwd) if config.cwd else None,
-                "project_cwd": path_as_posix_fast(config.project_cwd) if config.project_cwd else None
-            }
+                "project_cwd": path_as_posix_fast(config.project_cwd) if config.project_cwd else None,
+            },
         }
 
-    def command(self, *args) -> Iterable[str]:
-        cwd = config.cwd if config.cwd else os.getcwd()
+    def command(self, *args: str) -> Iterable[str]:
+        cwd = config.cwd if config.cwd else str(Path.cwd())
         real_cwd = os.path.realpath(cwd)
         real_project_home = os.path.realpath(config.paths.project_home)
-        project_relpath = os.path.relpath(config.paths.project_home, config.cwd if config.cwd else os.getcwd())
+        project_relpath = os.path.relpath(config.paths.project_home, cwd)
+        # PTH118: the joined path lands in the command line printed by `ddb run` and in the
+        # generated shims, where Path would drop the leading `./` of a relative project path.
+        compose_file = os.path.join(project_relpath, "docker-compose.yml")  # noqa: PTH118
 
         if real_cwd.startswith(real_project_home):
-            params = ["exec"] if hasattr(self, "exe") and self.exe else [
-                "-f", os.path.join(project_relpath, "docker-compose.yml"),
-                "run", "--rm"
-            ]
+            params = ["exec"] if hasattr(self, "exe") and self.exe else ["-f", compose_file, "run", "--rm"]
 
             if self.workdir:
                 relpath = os.path.relpath(cwd, config.paths.project_home)
@@ -73,7 +78,7 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
                 params.append(f"--workdir={container_workdir}")
         else:
             # cwd is outside of project home.
-            params = ["-f", os.path.join(project_relpath, "docker-compose.yml"), "run", "--rm"]
+            params = ["-f", compose_file, "run", "--rm"]
             if self.workdir:
                 mapped_cwd = get_mapped_path(real_cwd)
                 params.append(f"--volume={mapped_cwd}:{self.workdir}")
@@ -82,8 +87,9 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
         if self.entrypoint:
             params.append(f"--entrypoint={self.entrypoint}")
 
-        if os.environ.get('DDB_RUN_OPTS'):
-            params.extend([shlex.quote(param) for param in shlex.split(os.environ.get('DDB_RUN_OPTS'))])
+        run_opts = os.environ.get("DDB_RUN_OPTS")
+        if run_opts:
+            params.extend([shlex.quote(param) for param in shlex.split(run_opts)])
 
         self.add_options_to_params(params, self.options, self.options_condition, *args)
 
@@ -91,15 +97,16 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
         if self.args:
             params.extend([shlex.quote(param) for param in shlex.split(self.args)])
 
-        docker_compose_command = config.data.get('docker.docker_compose_command')
+        docker_compose_command = config.data.get("docker.docker_compose_command")
         if not docker_compose_command:
-            raise ConfigurationError('DockerBinary requires docker feature configuration')
-        command = effective_command(*shlex.split(docker_compose_command), *params)
-        return command
+            msg = "DockerBinary requires docker feature configuration"
+            raise ConfigurationError(msg)
+        return effective_command(*shlex.split(docker_compose_command), *params)
 
-    def add_options_to_params(self, params, options, condition, *args):
+    def add_options_to_params(self, params: list[str], options: str | None, condition: str | None, *args: str) -> None:
         """
-        Add options to params if condition is fulfilled
+        Add options to params if condition is fulfilled.
+
         :param params: the list of parameters
         :param options: options to add
         :param condition: the condition to fulfilled
@@ -113,12 +120,12 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
             if options is not None:
                 params.extend(shlex.split(options))
 
-    def before_run(self, *args):
+    def before_run(self, *args: str) -> None:
         control = DockerComposeControl()
         if self.exe and not control.is_up(self.docker_compose_service):
             control.up(self.docker_compose_service)
 
-    def should_run(self, *args) -> bool:
+    def should_run(self, *args: str) -> bool:
         if self.condition:
             return bool(simple_eval(self.condition, **self.simple_eval_options(*args)))
         return super().should_run(*args)
@@ -127,27 +134,28 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
     def global_(self) -> bool:
         return self._global
 
-    def __lt__(self, other):
+    def __lt__(self, other: object) -> bool:
         """
-        This is used to order binaries in run feature action.
+        Order binaries in run feature action.
         """
         if not isinstance(other, DockerBinary):
             return True
-        return self.condition and not other.condition
+        return bool(self.condition and not other.condition)
 
-    def __gt__(self, other):
+    def __gt__(self, other: object) -> bool:
         """
-        This is used to order binaries in run feature action.
+        Order binaries in run feature action.
         """
         if not isinstance(other, DockerBinary):
             return False
-        return not self.condition and other.condition
+        return bool(not self.condition and other.condition)
 
-    def __eq__(self, other):  # pylint:disable=too-many-return-statements
+    def __eq__(self, other: object) -> bool:
         """
-        Check if given binary is the same as the current one
+        Check if given binary is the same as the current one.
+
         :param binary:
-        :return: True or False depending on it's the same or not
+        :return: True or False depending on it's the same or not.
         """
         if not super().__eq__(other):
             return False
@@ -167,18 +175,19 @@ class DockerBinary(AbstractBinary):  # pylint:disable=too-many-instance-attribut
             return False
         if self.exe != other.exe:
             return False
-        if self.entrypoint != other.entrypoint:
-            return False
+        return self.entrypoint == other.entrypoint
 
-        return True
-
-    def __hash__(self):
-        return hash((super().__hash__(),
-                     self.docker_compose_service,
-                     self.workdir,
-                     self.options,
-                     self.options_condition,
-                     self.condition,
-                     self.args,
-                     self.exe,
-                     self.entrypoint))
+    def __hash__(self) -> int:
+        return hash(
+            (
+                super().__hash__(),
+                self.docker_compose_service,
+                self.workdir,
+                self.options,
+                self.options_condition,
+                self.condition,
+                self.args,
+                self.exe,
+                self.entrypoint,
+            )
+        )

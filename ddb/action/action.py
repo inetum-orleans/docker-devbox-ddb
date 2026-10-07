@@ -1,14 +1,15 @@
-# -*- coding: utf-8 -*-
-import os
-from abc import abstractmethod, ABC
-from typing import Callable, Iterable, Union, Tuple, Optional
+from abc import ABC, abstractmethod
+from collections.abc import Callable, Iterable
+from pathlib import Path
+from typing import Any, TypeAlias
 
-from ddb.cache import register_project_cache, caches
+from ddb.cache import caches, register_project_cache
 from ddb.config import config
 from ddb.context import context
-from ddb.event import events
+from ddb.event import event_name, events
 from ddb.registry import RegistryObject
-from ddb.utils.file import write_if_different, TemplateFinder, force_remove, copy_if_different
+from ddb.utils.file import TemplateFinder, copy_if_different, force_remove, write_if_different
+from ddb.utils.path import absolute_path
 
 
 class EventBinding:
@@ -24,10 +25,18 @@ class EventBinding:
     If processor returns a 2-tuple, it will use those as *args, **kwargs to invoke the method.
     """
 
-    def __init__(self, event: Union[Callable, str], call: Callable = None, processor: Callable = None):
-        self.event = event
+    def __init__(
+        self,
+        event: Callable[..., Any] | str,
+        call: Callable[..., Any] | None = None,
+        processor: Callable[..., Any] | None = None,
+    ) -> None:
+        self.event: str = event if isinstance(event, str) else event_name(event)
         self.call = call
         self.processor = processor
+
+
+EventBindings: TypeAlias = "Iterable[Callable[..., Any] | str | EventBinding] | Callable[..., Any] | str | EventBinding"
 
 
 class Action(RegistryObject, ABC):
@@ -37,7 +46,7 @@ class Action(RegistryObject, ABC):
 
     @property
     @abstractmethod
-    def event_bindings(self) -> Union[Iterable[Union[Callable, str, EventBinding]], Union[Callable, str, EventBinding]]:
+    def event_bindings(self) -> EventBindings:
         """
         The event bindings that should trigger the action.
 
@@ -65,113 +74,118 @@ class Action(RegistryObject, ABC):
         return False
 
 
-class InitializableAction(Action, ABC):  # pylint:disable=abstract-method
+class InitializableAction(Action, ABC):
     """
     An action supporting an initialize singleton method.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.initialized = False
 
-    def initialize(self):
+    def initialize(self) -> None:
         """
         Initialize method, invoked before first event binding execution.
         """
 
-    def destroy(self):
+    def destroy(self) -> None:
         """
-        destroy method, invoked on shutdown.
+        Destroy method, invoked on shutdown.
         """
 
 
 class WatchSupport(ABC):
     """
-    Watch support
+    Watch support.
     """
 
     @abstractmethod
-    def start_watching(self):
+    def start_watching(self) -> None:
         """
-        Start watching
-        """
-
-    @abstractmethod
-    def stop_watching(self):
-        """
-        Stop watching
+        Start watching.
         """
 
     @abstractmethod
-    def join_watching(self):
+    def stop_watching(self) -> None:
         """
-        Join watching
+        Stop watching.
+        """
+
+    @abstractmethod
+    def join_watching(self) -> None:
+        """
+        Join watching.
         """
 
 
-class AbstractTemplateAction(InitializableAction, ABC):  # pylint:disable=abstract-method
+class AbstractTemplateAction(InitializableAction, ABC):
     """
     Abstract action to render templates based on filename suffixes, supporting incoming events from file feature.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.template_finder = None  # type: TemplateFinder
+        # Set by initialize(), before the first event binding runs.
+        self.template_finder: TemplateFinder = None  # type: ignore[assignment]
         register_project_cache(self._cache_key)
 
     @property
-    def _cache_key(self):
+    def _cache_key(self) -> str:
         """
-        This cache is used to store the rendered data of all targets.
+        Cache holding the rendered data of all targets.
         When a template is deleted, target file will remove only if content is still the same than the generated one,
         thanks to this cache.
         """
         return "template.target." + self.__class__.__name__
 
     @property
-    def event_bindings(self):
-        def file_found_processor(file: str):
+    def event_bindings(self) -> EventBindings:
+        def file_found_processor(file: str) -> tuple[tuple[()], dict[str, str]] | None:
             template = file
             target = self.template_finder.get_target(template)
             if target:
                 return (), {"template": template, "target": target}
             return None
 
-        def file_delete_processor(file: str):
+        def file_delete_processor(file: str) -> tuple[tuple[()], dict[str, str]] | None:
             template = file
             target = self.template_finder.get_target(template)
             if target and not self._target_is_modified(template, target):
                 return (), {"template": template, "target": target}
             return None
 
-        def file_generated_processor(source: str, target: str):
+        def file_generated_processor(source: str, target: str) -> tuple[tuple[()], dict[str, str]] | None:
             template = target
-            target = self.template_finder.get_target(template)
-            if target:
-                return (), {"template": template, "target": target}
+            generated_target = self.template_finder.get_target(template)
+            if generated_target:
+                return (), {"template": template, "target": generated_target}
             return None
 
-        return (EventBinding(events.file.found, processor=file_found_processor),
-                EventBinding(events.file.deleted, call=self.delete, processor=file_delete_processor),
-                EventBinding("file:generated", processor=file_generated_processor))
+        return (
+            EventBinding(events.file.found, processor=file_found_processor),
+            EventBinding(events.file.deleted, call=self.delete, processor=file_delete_processor),
+            EventBinding("file:generated", processor=file_generated_processor),
+        )
 
-    def initialize(self):
+    def initialize(self) -> None:
         self.template_finder = self._build_template_finder()
 
-    def delete(self, template: str, target: str):
+    def delete(self, template: str, target: str) -> None:
         """
-        Delete a rendered template
+        Delete a rendered template.
         """
-        if os.path.exists(target):
+        if Path(target).exists():
             force_remove(target)
             context.log.warning("%s removed", target)
             caches.get(self._cache_key).pop(target)
             events.file.deleted(target)
 
-    def execute(self, template: str, target: str, migrate_retries_count=0, original_template=None):
+    def execute(
+        self, template: str, target: str, migrate_retries_count: int = 0, original_template: str | None = None
+    ) -> None:
         """
-        Render a template
+        Render a template.
         """
-        if os.path.abspath(os.path.join(os.getcwd(), target)) in config.files:
+        if absolute_path(target) in config.files:
             # Never write a file that match ddb configuration file
             return
 
@@ -180,47 +194,50 @@ class AbstractTemplateAction(InitializableAction, ABC):  # pylint:disable=abstra
 
         try:
             for rendered, destination in self._render_template(template, target):
-                if original_template != template and 'autofix' in config.args and config.args.autofix:
+                if original_template != template and "autofix" in config.args and config.args.autofix:
                     context.logger.info("[autofix]: %s", original_template)
                     copy_if_different(template, original_template, log=True)
                 written = False
                 if not isinstance(rendered, bool):
                     is_bynary = isinstance(rendered, (bytes, bytearray))
-                    written = write_if_different(destination, rendered,
-                                                 'rb' if is_bynary else 'r',
-                                                 'wb' if is_bynary else 'w',
-                                                 log_source=original_template)
+                    written = write_if_different(
+                        destination,
+                        rendered,
+                        "rb" if is_bynary else "r",
+                        "wb" if is_bynary else "w",
+                        log_source=original_template,
+                    )
                     caches.get(self._cache_key).set(target, rendered)
                 context.mark_as_processed(template, destination)
 
                 if written or rendered is True or config.eject:
                     events.file.generated(source=original_template, target=destination)
-        except Exception as render_error:  # pylint:disable=broad-except
+        except Exception as render_error:
             if migrate_retries_count > 50:
-                raise render_error
+                raise
             try:
-                template = self._autofix_render_error(template, target, original_template, render_error)
+                fixed_template = self._autofix_render_error(template, target, original_template, render_error)
             except Exception as migrate_error:
-                context.log.warning("Automatic template migration has failed for \"%s\": %s", template, migrate_error)
+                context.log.warning('Automatic template migration has failed for "%s": %s', template, migrate_error)
                 raise render_error from migrate_error
-            if not template:
-                raise render_error
+            if not fixed_template:
+                raise
 
             migrate_retries_count += 1
-            self.execute(template, target, migrate_retries_count, original_template)
+            self.execute(fixed_template, target, migrate_retries_count, original_template)
 
     def _target_is_modified(self, template: str, target: str) -> bool:
         rendered = caches.get(self._cache_key).get(target)
         if rendered is None:
             return True
-        if not os.path.exists(target):
+        if not Path(target).exists():
             caches.get(self._cache_key).pop(target)
             return True
         is_bynary = isinstance(rendered, (bytes, bytearray))
         read_encoding = None if is_bynary else "utf-8"
-        with open(target, mode='rb' if is_bynary else 'r', encoding=read_encoding) as read_file:
+        with Path(target).open(mode="rb" if is_bynary else "r", encoding=read_encoding) as read_file:
             existing_data = read_file.read()
-        return existing_data != rendered
+        return bool(existing_data != rendered)
 
     @abstractmethod
     def _build_template_finder(self) -> TemplateFinder:
@@ -229,18 +246,17 @@ class AbstractTemplateAction(InitializableAction, ABC):  # pylint:disable=abstra
         """
 
     @abstractmethod
-    def _render_template(self, template: str, target: str) -> Iterable[Tuple[Union[str, bytes, bool], str]]:
+    def _render_template(self, template: str, target: str) -> Iterable[tuple[str | bytes | bool, str]]:
         """
         Perform template rendering to a string.
         """
 
-    def _autofix_render_error(self,
-                              template: str,
-                              target: str,
-                              original_template: str,
-                              render_error: Exception) -> Optional[str]:
+    def _autofix_render_error(
+        self, template: str, target: str, original_template: str, render_error: Exception
+    ) -> str | None:
         """
         Try to automatically migrate this template in a temporary file when an error occurs.
+
         :return a temporary filepath to render again, if template has been fixed.
         """
         return None

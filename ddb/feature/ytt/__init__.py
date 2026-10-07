@@ -1,13 +1,13 @@
-# -*- coding: utf-8 -*-
-from typing import ClassVar, Iterable
+from collections.abc import Iterable
 
 from dotty_dict import Dotty
 
 from ddb.action import Action
 from ddb.feature import Feature
+
+from ...utils.file import TemplateFinder
 from .actions import YttAction
 from .schema import YttSchema
-from ...utils.file import TemplateFinder
 
 
 class YttFeature(Feature):
@@ -24,20 +24,17 @@ class YttFeature(Feature):
         return ["core", "file"]
 
     @property
-    def schema(self) -> ClassVar[YttSchema]:
+    def schema(self) -> type[YttSchema]:
         return YttSchema
 
     @property
     def actions(self) -> Iterable[Action]:
-        return (
-            YttAction(),
-        )
+        return (YttAction(),)
 
-    def _configure_defaults(self, feature_config: Dotty):
+    def _configure_defaults(self, feature_config: Dotty) -> None:
         includes = feature_config.get("includes")
         if includes is None:
             includes = TemplateFinder.build_default_includes_from_suffixes(
-                feature_config["suffixes"],
-                feature_config["extensions"]
+                feature_config["suffixes"], feature_config["extensions"]
             )
             feature_config["includes"] = includes

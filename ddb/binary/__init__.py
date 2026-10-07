@@ -1,5 +1,6 @@
-# -*- coding: utf-8 -*-
-from .binary import Binary
 from ..registry import RegistryOrderedSet
+from .binary import Binary
 
-binaries = RegistryOrderedSet(Binary, "Binary")  # type: RegistryOrderedSet[Binary]
+__all__ = ["Binary", "binaries"]
+
+binaries: RegistryOrderedSet[Binary] = RegistryOrderedSet(Binary, "Binary")  # type: ignore[type-abstract]

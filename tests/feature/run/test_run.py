@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import pytest
 from _pytest.capture import CaptureFixture
@@ -12,8 +13,9 @@ from ddb.feature.core import CoreFeature
 from ddb.feature.docker import DockerFeature
 from ddb.feature.docker.binaries import DockerBinary
 from ddb.feature.docker.utils import DockerComposeControl
-from ddb.feature.run import RunFeature, RunAction
+from ddb.feature.run import RunAction, RunFeature
 from ddb.feature.shell import ShellFeature
+from tests.utilstest import local_path
 
 docker_compose_bin = "docker compose" if os.name != "nt" else "docker.exe compose"
 
@@ -25,7 +27,7 @@ class TestRunFeature:
         features.register(RunFeature())
         features.register(ShellFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = RunAction()
         action.execute()
@@ -37,7 +39,7 @@ class TestRunFeature:
         features.register(RunFeature())
         features.register(ShellFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = RunAction()
         action.execute()
@@ -49,7 +51,7 @@ class TestRunFeature:
         features.register(RunFeature())
         features.register(ShellFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         action = RunAction()
 
@@ -63,7 +65,7 @@ class TestRunFeature:
         features.register(RunFeature())
         features.register(ShellFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         binaries.register(DefaultBinary("test", ["some", "command"]))
 
@@ -83,7 +85,7 @@ class TestRunFeature:
         features.register(RunFeature())
         features.register(ShellFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         binaries.register(DockerBinary("bin", "service", "/app"))
 
@@ -92,18 +94,21 @@ class TestRunFeature:
 
         read = capsys.readouterr()
 
-        assert read.out == docker_compose_bin + " -f ./docker-compose.yml run --rm --workdir=/app/. service\n"
+        assert (
+            read.out
+            == docker_compose_bin + f" -f {local_path('.', 'docker-compose.yml')} run --rm --workdir=/app/. service\n"
+        )
 
     def test_run_docker_binary_workdir(self, project_loader, capsys: CaptureFixture):
         project_loader("empty")
-        config.cwd = os.path.join(config.paths.project_home, "sub")
+        config.cwd = str(Path(config.paths.project_home) / "sub")
 
         features.register(CoreFeature())
         features.register(DockerFeature())
         features.register(RunFeature())
         features.register(ShellFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         binaries.register(DockerBinary("bin", "service", "/app"))
 
@@ -112,18 +117,22 @@ class TestRunFeature:
 
         read = capsys.readouterr()
 
-        assert read.out == docker_compose_bin + " -f ../docker-compose.yml run --rm --workdir=/app/sub service\n"
+        assert (
+            read.out
+            == docker_compose_bin
+            + f" -f {local_path('..', 'docker-compose.yml')} run --rm --workdir=/app/sub service\n"
+        )
 
     def test_run_docker_binary_workdir_outside(self, project_loader, capsys: CaptureFixture):
         project_loader("outside")
-        config.cwd = os.path.join(config.paths.project_home, "../outside")
+        config.cwd = str(Path(config.paths.project_home) / "../outside")
 
         features.register(CoreFeature())
         features.register(DockerFeature())
         features.register(RunFeature())
         features.register(ShellFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         binaries.register(DockerBinary("bin", "service", "/app"))
 
@@ -132,18 +141,18 @@ class TestRunFeature:
 
         read = capsys.readouterr()
 
-        cwd = config.cwd if config.cwd else os.getcwd()
+        cwd = config.cwd if config.cwd else str(Path.cwd())
         real_cwd = os.path.realpath(cwd)
 
-        assert read.out == docker_compose_bin + \
-               " -f " + \
-               os.path.join("..", "project", "docker-compose.yml") + \
-               " " \
-               "run --rm " \
-               f"--volume={real_cwd}:/app " \
-               "--workdir=/app " \
-               "service\n"
+        assert (
+            read.out == docker_compose_bin + " -f " + str(Path("..") / "project" / "docker-compose.yml") + " "
+            "run --rm "
+            f"--volume={real_cwd}:/app "
+            "--workdir=/app "
+            "service\n"
+        )
 
+    @pytest.mark.docker
     def test_run_docker_binary_exe(self, project_loader, capsys: CaptureFixture):
         project_loader("exe")
 
@@ -152,17 +161,14 @@ class TestRunFeature:
         features.register(RunFeature())
         features.register(ShellFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
-        binaries.register(DockerBinary("echo",
-                                       docker_compose_service="web",
-                                       args="echo",
-                                       exe=True))
+        binaries.register(DockerBinary("echo", docker_compose_service="web", args="echo", exe=True))
 
         control = DockerComposeControl()
 
-        control.stop('web')
-        assert not control.is_up('web')
+        control.stop("web")
+        assert not control.is_up("web")
 
         action = RunAction()
         action.run("echo")
@@ -171,7 +177,7 @@ class TestRunFeature:
 
         assert read.out == docker_compose_bin + " exec web echo\n"
 
-        assert control.is_up('web')
+        assert control.is_up("web")
 
     def test_run_binary_condition(self, project_loader, capsys: CaptureFixture):
         project_loader("empty")
@@ -181,7 +187,7 @@ class TestRunFeature:
         features.register(RunFeature())
         features.register(ShellFeature())
         load_registered_features()
-        register_actions_in_event_bus(True)
+        register_actions_in_event_bus(fail_fast=True)
 
         binary1 = DockerBinary("npm", "node1")
         binary2 = DockerBinary("npm", "node2")

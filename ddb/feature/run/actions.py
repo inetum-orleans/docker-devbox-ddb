@@ -1,31 +1,29 @@
-# -*- coding: utf-8 -*-
-from typing import Optional, Iterable
+from collections.abc import Iterable
+
+from ddb.action.action import EventBindings
 
 from ...action import Action
 from ...action.action import EventBinding
-from ...binary import binaries, Binary
+from ...binary import Binary, binaries
 from ...config import config
 from ...event import events
 
 
 class RunAction(Action):
     """
-    Run a binary
+    Run a binary.
     """
 
     @property
-    def event_bindings(self):
-        return (
-            events.phase.run,
-            EventBinding(events.run.run, self.run)
-        )
+    def event_bindings(self) -> EventBindings:
+        return (events.phase.run, EventBinding(events.run.run, self.run))
 
     @property
     def name(self) -> str:
         return "run:run"
 
     @staticmethod
-    def execute():
+    def execute() -> None:
         """
         Execute the action defined by argument "name".
         """
@@ -34,12 +32,12 @@ class RunAction(Action):
             events.run.run(name=name)
 
     @staticmethod
-    def run(name: str, *args):
+    def run(name: str, *args: str) -> None:
         """
-        Execute the action
+        Execute the action.
         """
         if not args:
-            args = config.unknown_args
+            args = tuple(config.unknown_args)
 
         binary_set = binaries.get(name)
         binary = None
@@ -48,16 +46,16 @@ class RunAction(Action):
 
         if binary:
             binary.before_run()
-            events.run.command(binary.command(*args), False)
+            events.run.command(binary.command(*args), system_path=False)
         else:
-            events.run.command([name, *args], True)
+            events.run.command([name, *args], system_path=True)
 
     @staticmethod
-    def select_binary(binary_set: Iterable[Binary], *args) -> Optional[Binary]:
+    def select_binary(binary_set: Iterable[Binary], *args: str) -> Binary | None:
         """
         Select effective binary between many binaries.
         """
-        ordered_binary = sorted(binary_set)
+        ordered_binary = sorted(binary_set)  # type: ignore[type-var]
         for binary in ordered_binary:
             if binary.should_run(*args):
                 return binary

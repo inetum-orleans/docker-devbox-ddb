@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-from typing import Iterable
+from collections.abc import Iterable
 
 from ddb.action import Action
 from ddb.event import events
@@ -17,9 +16,7 @@ class Custom2Feature(Feature):
 
     @property
     def actions(self) -> Iterable[Action]:
-        return (
-            Custom2Action(),
-        )
+        return (Custom2Action(),)
 
 
 class Custom2Action(Action):

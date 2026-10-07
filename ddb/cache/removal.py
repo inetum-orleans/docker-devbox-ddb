@@ -1,28 +1,30 @@
 from collections import defaultdict
+from collections.abc import Iterable, Iterator
+from typing import Any
 
-from ddb.cache import register_project_cache, caches
+from ddb.cache import caches, register_project_cache
 
 
-class RemovalCacheSupport:  # pylint:disable=too-many-instance-attributes
+class RemovalCacheSupport:
     """
     Handle a cache to support removal of previously generated resources when they are not linked to the current
     configuration anymore.
     """
 
-    def __init__(self, cache_name, keys):
+    def __init__(self, cache_name: str, keys: Iterable[str]) -> None:
         self.cache_name = cache_name
         self.keys = set(keys)
         self.type = set
 
-        self.cached = defaultdict(self.type)
-        self.previous = defaultdict(self.type)
-        self.current = defaultdict(self.type)
+        self.cached: defaultdict[str, set[Any]] = defaultdict(self.type)
+        self.previous: defaultdict[str, set[Any]] = defaultdict(self.type)
+        self.current: defaultdict[str, set[Any]] = defaultdict(self.type)
 
         register_project_cache(self.cache_name)
 
-    def prepare(self):
+    def prepare(self) -> None:
         """
-        This should be called before processing extra-services configuration.
+        Snapshot the current entries, before processing extra-services configuration.
         """
         cache = caches.get(self.cache_name)
 
@@ -31,18 +33,19 @@ class RemovalCacheSupport:  # pylint:disable=too-many-instance-attributes
             self.previous[key] = self.type(self.cached[key])
             self.current[key] = self.type()
 
-    def set_current_value(self, key, value):
+    def set_current_value(self, key: str, value: Any) -> None:
         """
         Set current value for given key.
         """
         if key not in self.keys:
-            raise ValueError("Given key '%s' doesn't match any of the supported key %s" % (key, self.keys))
+            msg = f"Given key '{key}' doesn't match any of the supported key {self.keys}"
+            raise ValueError(msg)
         self.cached[key].add(value)
         self.current[key].add(value)
 
-    def get_removed(self):
+    def get_removed(self) -> Iterator[tuple[str, Any]]:
         """
-        This should be called after processing. Generates (key, value) to remove.
+        Generate the (key, value) entries to remove, after processing.
         """
         cache = caches.get(self.cache_name)
 
@@ -53,7 +56,7 @@ class RemovalCacheSupport:  # pylint:disable=too-many-instance-attributes
             cache.set(key, self.current[key])
 
     @staticmethod
-    def close():
+    def close() -> None:
         """
         Unregister and close the underlying cache.
         """

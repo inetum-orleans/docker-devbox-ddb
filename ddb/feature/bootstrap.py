@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
-from typing import Iterable
+from collections.abc import Iterable, Iterator
+from importlib.metadata import entry_points
 
-import pkg_resources
 from toposort import toposort_flatten
 
+from ..config import config, migrations
 from . import features
 from .certs import CertsFeature
 from .cookiecutter import CookiecutterFeature
@@ -25,33 +25,33 @@ from .symlinks import SymlinksFeature
 from .traefik import TraefikFeature
 from .version import VersionFeature
 from .ytt import YttFeature
-from ..config import config
-from ..config import migrations
 
-_default_available_features = [CertsFeature(),
-                               CopyFeature(),
-                               CookiecutterFeature(),
-                               CoreFeature(),
-                               DockerFeature(),
-                               FileFeature(),
-                               FixuidFeature(),
-                               GitFeature(),
-                               GitignoreFeature(),
-                               JinjaFeature(),
-                               JsonnetFeature(),
-                               PermissionsFeature(),
-                               RunFeature(),
-                               SmartcdFeature(),
-                               ShellFeature(),
-                               SymlinksFeature(),
-                               TraefikFeature(),
-                               VersionFeature(),
-                               YttFeature()]
+_default_available_features = [
+    CertsFeature(),
+    CopyFeature(),
+    CookiecutterFeature(),
+    CoreFeature(),
+    DockerFeature(),
+    FileFeature(),
+    FixuidFeature(),
+    GitFeature(),
+    GitignoreFeature(),
+    JinjaFeature(),
+    JsonnetFeature(),
+    PermissionsFeature(),
+    RunFeature(),
+    SmartcdFeature(),
+    ShellFeature(),
+    SymlinksFeature(),
+    TraefikFeature(),
+    VersionFeature(),
+    YttFeature(),
+]
 
 _available_features = list(_default_available_features)
 
 
-def get_sorted_features(available_features: Iterable[Feature] = None):
+def get_sorted_features(available_features: Iterable[Feature] | None = None) -> Iterator[Feature]:
     """
     Register default features and setuptools entrypoint 'ddb_features' inside features registry.
     Features are registered in order for their dependency to be registered first with a topological sort.
@@ -61,14 +61,14 @@ def get_sorted_features(available_features: Iterable[Feature] = None):
         available_features = _available_features
 
     entrypoint_features = {f.name: f for f in available_features}
-    for entry_point in pkg_resources.iter_entry_points('ddb_features'):
+    for entry_point in entry_points(group="ddb_features"):
         feature = entry_point.load()()
         entrypoint_features[feature.name] = feature
 
     required_dependencies, toposort_data = _prepare_dependencies_data(entrypoint_features)
     _check_missing_dependencies(entrypoint_features, required_dependencies)
 
-    dependencies = config.data.get('dependencies')
+    dependencies = config.data.get("dependencies")
     if dependencies:
         for feat, feat_dependencies in dependencies.items():
             if feat not in toposort_data:
@@ -83,20 +83,22 @@ def get_sorted_features(available_features: Iterable[Feature] = None):
             yield feature
 
 
-def _prepare_dependencies_data(entrypoint_features):
+def _prepare_dependencies_data(
+    entrypoint_features: dict[str, Feature],
+) -> tuple[dict[str, list[str]], dict[str, set[str]]]:
     """
     Compute required dependencies and toposort data.
     """
-    required_dependencies = {}
-    toposort_data = {}
+    required_dependencies: dict[str, list[str]] = {}
+    toposort_data: dict[str, set[str]] = {}
     for name, feat in entrypoint_features.items():
-        feat_required_dependencies = []
-        dependencies = set()
+        feat_required_dependencies: list[str] = []
+        dependencies: set[str] = set()
         for dependency_item in feat.dependencies:
-            if not dependency_item.endswith('[optional]'):
+            if not dependency_item.endswith("[optional]"):
                 feat_required_dependencies.append(dependency_item)
             else:
-                dependency_item = dependency_item[0:len(dependency_item) - len('[optional]')]
+                dependency_item = dependency_item[0 : len(dependency_item) - len("[optional]")]
             dependencies.add(dependency_item)
 
         toposort_data[name] = dependencies
@@ -104,36 +106,40 @@ def _prepare_dependencies_data(entrypoint_features):
     return required_dependencies, toposort_data
 
 
-def _check_missing_dependencies(entrypoint_features, required_dependencies):
+def _check_missing_dependencies(
+    entrypoint_features: dict[str, Feature], required_dependencies: dict[str, list[str]]
+) -> None:
     """
-    Check missing required dependencies
+    Check missing required dependencies.
     """
     for name, feat_required_dependencies in required_dependencies.items():
         for required_dependency in feat_required_dependencies:
             if required_dependency not in entrypoint_features.keys():
-                raise ValueError("A required dependency is missing for " +
-                                 name + " feature (" + required_dependency + ")")
+                raise ValueError(
+                    "A required dependency is missing for " + name + " feature (" + required_dependency + ")"
+                )
 
 
-def reset_available_features():
+def reset_available_features() -> None:
     """
     Reset available features to default list.
     """
-    global _available_features  # pylint:disable=global-statement
+    global _available_features
     _available_features = list(_default_available_features)
 
 
-def append_available_feature(feature):
+def append_available_feature(feature: Feature) -> None:
     """
     Append a feature to available features list.
     """
-    global _available_features  # pylint:disable=global-statement,global-variable-not-assigned
+    global _available_features
     _available_features.append(feature)
 
 
-def bootstrap_register_features():
+def bootstrap_register_features() -> None:
     """
     Register all features in order.
+
     :return:
     """
     config.load()
@@ -143,9 +149,10 @@ def bootstrap_register_features():
     config.clear()
 
 
-def bootstrap_features_configuration():
+def bootstrap_features_configuration() -> None:
     """
     Preconfigure features with default bootstrap configuration.
+
     :return:
     """
     filenames, extensions = config.filenames, config.extensions
@@ -160,7 +167,7 @@ def bootstrap_features_configuration():
         config.filenames, config.extensions = filenames, extensions
 
 
-def load_bootstrap_config():
+def load_bootstrap_config() -> None:
     """
     Load bootstrap configuration.
     """

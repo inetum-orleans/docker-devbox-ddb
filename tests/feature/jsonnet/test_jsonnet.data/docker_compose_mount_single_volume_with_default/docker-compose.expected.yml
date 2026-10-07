@@ -32,7 +32,7 @@ volumes:
     driver_opts:
       type: 'none'
       o: 'bind'
-      device: '/default/another-volume'
+      device: '%mount_directory%/another-volume'
   shared-volume:
     driver: local
     driver_opts:
@@ -44,4 +44,4 @@ volumes:
     driver_opts:
       type: 'none'
       o: 'bind'
-      device: '/default/another-volume2'
+      device: '%mount_directory%/another-volume2'
